@@ -1,0 +1,59 @@
+import { IChannelAdapter, OutboundMessage } from './channel.adapter';
+
+/**
+ * [PLANTILLA] Meta WhatsApp Cloud API Adapter.
+ * 
+ * Para activar este adapter:
+ * 1. Renombra este archivo a 'meta.adapter.ts'.
+ * 2. Implementa la lógica de envío usando fetch a la Graph API de Meta.
+ * 3. Regístralo en 'src/services/message.service.ts'.
+ */
+export class MetaAdapter implements IChannelAdapter {
+  readonly channel = 'whatsapp';
+
+  /**
+   * @param accessToken Permanent Access Token from Meta Developer Console
+   * @param phoneNumberId Phone Number ID from Meta WhatsApp Setup
+   */
+  constructor(
+    private readonly accessToken: string,
+    private readonly phoneNumberId: string
+  ) {}
+
+  async send(message: OutboundMessage): Promise<void> {
+    const API_VERSION = 'v19.0';
+    const url = `https://graph.facebook.com/${API_VERSION}/${this.phoneNumberId}/messages`;
+
+    // NOTA: Meta requiere que los botones se envíen como 'Interactive Messages' 
+    // o usando 'Templates'. Esta implementación básica envía solo texto.
+    
+    const payload = {
+      messaging_product: 'whatsapp',
+      recipient_type: 'individual',
+      to: message.to.replace(/\D/g, ''), // Limpiar el número
+      type: 'text',
+      text: {
+        body: message.text,
+      },
+    };
+
+    console.log(`[MetaAdapter] Sending message to ${message.to}...`);
+
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${this.accessToken}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      console.error('[MetaAdapter] Error sending message:', error);
+      throw new Error(`Meta API error: ${error.error?.message || response.statusText}`);
+    }
+
+    console.log('[MetaAdapter] Message sent successfully.');
+  }
+}

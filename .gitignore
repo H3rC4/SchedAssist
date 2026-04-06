@@ -1,0 +1,39 @@
+# NEXT.JS
+.next
+out
+build
+
+# DEPENDENCIES
+node_modules
+.pnp
+.pnp.js
+
+# ENVIRONMENT
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.env*
+
+# AGENTS / SKILLS
+.agent
+.agents
+antigravity-awesome-skills
+CREDENCIALES_Y_EJECUCION_LOCAL.md
+whatsapp-business-jaspers-market
+
+# DATABASE / MISC
+test.js
+test.json
+unsuspend.js
+*.sql
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db

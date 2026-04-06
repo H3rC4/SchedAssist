@@ -1,0 +1,48 @@
+{
+  "name": "saas-appointment-booking",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "tunnel": "npx ngrok http 3000",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "reminders": "tsx src/scripts/send-reminders.ts",
+    "setup:gastro": "tsx src/scripts/setup-gastro-tenant.ts",
+    "seed:gastro:professionals": "tsx src/scripts/seed-gastro-professionals.ts",
+    "seed:gastro:services": "tsx src/scripts/seed-gastro-services.ts",
+    "seed:gastro": "npm run setup:gastro && npm run seed:gastro:professionals && npm run seed:gastro:services"
+  },
+  "dependencies": {
+    "@supabase/auth-helpers-nextjs": "^0.10.0",
+    "@supabase/ssr": "^0.3.0",
+    "@supabase/supabase-js": "^2.43.1",
+    "body-parser": "^2.2.2",
+    "date-fns": "^3.6.0",
+    "express": "^5.2.1",
+    "lucide-react": "^0.378.0",
+    "next": "14.2.3",
+    "next-themes": "^0.4.6",
+    "qrcode.react": "^4.2.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "tailwind-merge": "^2.3.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.6",
+    "@types/node": "^20.12.12",
+    "@types/qrcode-terminal": "^0.12.2",
+    "@types/react": "^18.3.2",
+    "@types/react-dom": "^18.3.0",
+    "autoprefixer": "^10.4.19",
+    "dotenv": "^17.3.1",
+    "eslint": "^8.57.0",
+    "eslint-config-next": "14.2.3",
+    "postcss": "^8.4.38",
+    "tailwindcss": "^3.4.3",
+    "tsx": "^4.21.0",
+    "typescript": "^5.4.5"
+  }
+}
