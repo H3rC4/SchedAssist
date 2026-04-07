@@ -9,6 +9,7 @@
     "start": "next start",
     "lint": "next lint",
     "reminders": "tsx src/scripts/send-reminders.ts",
+    "link:whatsapp": "tsx src/scripts/link-whatsapp.ts",
     "setup:gastro": "tsx src/scripts/setup-gastro-tenant.ts",
     "seed:gastro:professionals": "tsx src/scripts/seed-gastro-professionals.ts",
     "seed:gastro:services": "tsx src/scripts/seed-gastro-services.ts",
