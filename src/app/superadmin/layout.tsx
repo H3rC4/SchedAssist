@@ -1,8 +1,19 @@
-import { ShieldCheck, LogOut, Activity, Database, Users } from 'lucide-react'
+'use client';
+
+import { ShieldCheck, LogOut, Activity, Database, KeyRound } from 'lucide-react'
 import Link from 'next/link'
 import { signOut } from '@/app/(auth)/login/actions'
+import { createClient } from '@/lib/supabase/client'
 
 export default function SuperAdminLayout({ children }: { children: React.ReactNode }) {
+  async function handleResetPassword() {
+    const supabase = createClient();
+    await supabase.auth.resetPasswordForEmail('hernanenriquecaballero@gmail.com', {
+      redirectTo: `${window.location.origin}/auth/callback?next=/superadmin/reset-password`
+    });
+    alert('Link de recuperación enviado a tu correo.');
+  }
+
   return (
     <div className="flex h-screen w-full bg-[#0a0a0a] font-sans overflow-hidden text-gray-200">
       
@@ -26,6 +37,12 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
           </Link>
           <button className="flex w-full items-center gap-3 px-4 py-3 text-gray-500 hover:bg-[#1a1a1a] hover:text-gray-300 rounded-xl font-semibold transition-all cursor-not-allowed">
             <Activity className="h-4 w-4" /> Métricas (Próximamente)
+          </button>
+          <button
+            onClick={handleResetPassword}
+            className="flex w-full items-center gap-3 px-4 py-3 text-gray-500 hover:bg-[#1a1a1a] hover:text-amber-400 rounded-xl font-semibold transition-all"
+          >
+            <KeyRound className="h-4 w-4" /> Cambiar Contraseña
           </button>
         </nav>
 

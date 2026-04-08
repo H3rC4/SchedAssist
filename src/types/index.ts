@@ -10,6 +10,9 @@ export interface Tenant {
   slug: string;
   timezone: string;
   settings: Record<string, any>;
+  stripe_customer_id?: string;
+  subscription_status?: string;
+  subscription_price_id?: string;
   created_at: string;
   updated_at: string;
 }

@@ -36,18 +36,41 @@ export async function middleware(request: NextRequest) {
 
   const { data: { session } } = await supabase.auth.getSession()
 
-  // Protect /dashboard routes
-  if (request.nextUrl.pathname.startsWith('/dashboard')) {
+  const SUPERADMIN_EMAILS = ['hernanenriquecaballero@gmail.com']
+
+  // Protect /superadmin - only superadmins (except recovery pages)
+  const UNPROTECTED_SUPERADMIN = ['/superadmin/reset-password'];
+  if (request.nextUrl.pathname.startsWith('/superadmin') && 
+      !UNPROTECTED_SUPERADMIN.some(p => request.nextUrl.pathname.startsWith(p))) {
     if (!session) {
       return NextResponse.redirect(new URL('/login', request.url))
+    }
+    const userEmail = session.user.email || ''
+    if (!SUPERADMIN_EMAILS.includes(userEmail)) {
+      return NextResponse.redirect(new URL('/dashboard', request.url))
+    }
+  }
+
+  // Protect /dashboard and /register/clinic routes
+  if (request.nextUrl.pathname.startsWith('/dashboard') || request.nextUrl.pathname.startsWith('/register/clinic')) {
+    if (!session) {
+      return NextResponse.redirect(new URL('/login', request.url))
+    }
+    const userEmail = session.user.email || ''
+    if (SUPERADMIN_EMAILS.includes(userEmail)) {
+      return NextResponse.redirect(new URL('/superadmin', request.url))
     }
   }
 
   // Redirect from public routes to dashboard if logged in
   if (request.nextUrl.pathname === '/' || request.nextUrl.pathname === '/login') {
-      if (session) {
-          return NextResponse.redirect(new URL('/dashboard', request.url))
+    if (session) {
+      const userEmail = session.user.email || ''
+      if (SUPERADMIN_EMAILS.includes(userEmail)) {
+        return NextResponse.redirect(new URL('/superadmin', request.url))
       }
+      return NextResponse.redirect(new URL('/dashboard', request.url))
+    }
   }
 
   return response

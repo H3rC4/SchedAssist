@@ -1,10 +1,14 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { Language } from '@/lib/i18n'
 import { useTheme } from 'next-themes'
 import { Moon, Sun, LogOut } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { Sidebar } from '@/components/dashboard/Sidebar'
+import { TrialBanner } from '@/components/dashboard/TrialBanner'
+import { OnboardingWizard } from '@/components/dashboard/OnboardingWizard'
+import { InteractiveTutorial } from '@/components/dashboard/InteractiveTutorial'
 
 function DashboardHeader() {
   const supabase = createClient()
@@ -87,8 +91,70 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode
 }) {
+  const [tenantInfo, setTenantInfo] = useState<{ id: string; status: string; trial_ends_at: string | null; settings: any; lang: Language } | null>(null)
+
+  useEffect(() => {
+    const supabase = createClient()
+    async function loadStatus() {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+      
+      const { data } = await supabase
+        .from('tenant_users')
+        .select('tenant_id, tenants(id, subscription_status, trial_ends_at, settings)')
+        .eq('user_id', user.id)
+        .limit(1).single()
+      
+      if (data?.tenants) {
+        const t = data.tenants as any
+        setTenantInfo({
+          id: t.id,
+          status: t.subscription_status,
+          trial_ends_at: t.trial_ends_at,
+          settings: t.settings || {},
+          lang: (t.settings?.language as Language) || 'es'
+        })
+      } else {
+        // Un usuario OAuth (Google) que aún no ha creado la clínica
+        window.location.href = '/register/clinic'
+      }
+    }
+    loadStatus()
+  }, [])
+
+  function handleOnboardingComplete() {
+    setTenantInfo(prev => prev ? {
+      ...prev,
+      settings: { ...prev.settings, onboarding_completed: true }
+    } : null)
+  }
+
+  function handleTutorialComplete() {
+    setTenantInfo(prev => prev ? {
+      ...prev,
+      settings: { ...prev.settings, tutorial_completed: true }
+    } : null)
+  }
+
   return (
-    <div className="flex h-screen bg-slate-900 dark:bg-black overflow-hidden font-sans">
+    <div className="flex h-screen bg-slate-900 dark:bg-black overflow-hidden font-sans relative">
+
+      {/* Onboarding Wizard Gate */}
+      {tenantInfo && !tenantInfo.settings?.onboarding_completed && (
+        <OnboardingWizard 
+          tenantId={tenantInfo.id} 
+          lang={tenantInfo.lang} 
+          onComplete={handleOnboardingComplete} 
+        />
+      )}
+
+      {/* Interactive Tutorial Tooltips */}
+      {tenantInfo && tenantInfo.settings?.onboarding_completed && !tenantInfo.settings?.tutorial_completed && (
+        <InteractiveTutorial 
+          tenantId={tenantInfo.id} 
+          onComplete={handleTutorialComplete} 
+        />
+      )}
 
       {/* Sidebar Section */}
       <div className="hidden md:flex flex-shrink-0">
@@ -100,6 +166,13 @@ export default function DashboardLayout({
 
         {/* The White Panel */}
         <div className="flex-1 flex flex-col bg-slate-50 dark:bg-slate-950 rounded-[3rem] shadow-2xl relative overflow-hidden border border-white/5">
+
+          {tenantInfo && (
+            <TrialBanner 
+              status={tenantInfo.status} 
+              trialEndsAt={tenantInfo.trial_ends_at} 
+            />
+          )}
 
           <DashboardHeader />
 

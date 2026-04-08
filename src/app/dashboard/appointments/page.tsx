@@ -338,7 +338,7 @@ function AppointmentsContent() {
 
   async function handleCancelAppointment(id: string) {
     if (!confirm(T.cancelTitle)) return
-    const res = await fetch(`/api/appointments?id=${id}`, { method: 'DELETE' })
+    const res = await fetch(`/api/appointments?id=${id}&tenant_id=${tenantId}`, { method: 'DELETE' })
     if (res.ok) { setSelectedApp(null); fetchDayAppointments(); fetchMonthAppointments() }
   }
 

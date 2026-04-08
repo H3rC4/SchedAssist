@@ -18,8 +18,9 @@ export async function signIn(formData: FormData) {
     return redirect(`/login?error=${encodeURIComponent(error.message)}`)
   }
 
-  // Bouncer Logic
-  if (email === 'admin@saas.com') {
+  // Bouncer Logic - SuperAdmins
+  const SUPERADMIN_EMAILS = ['hernanenriquecaballero@gmail.com'];
+  if (SUPERADMIN_EMAILS.includes(email)) {
     return redirect('/superadmin')
   }
 

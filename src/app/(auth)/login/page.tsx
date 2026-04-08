@@ -5,14 +5,17 @@ import Link from 'next/link';
 import { signIn } from './actions';
 import { ShieldCheck, ArrowLeft, Mail, Lock, AlertCircle, CalendarCheck } from 'lucide-react';
 import { useLandingTranslation } from '@/components/LanguageContext';
+import { GoogleAuthButton } from '@/components/auth/GoogleAuthButton';
+
 
 export default function LoginPage({
   searchParams,
 }: {
-  searchParams: { error?: string };
+  searchParams: { error?: string; confirmed?: string };
 }) {
   const { t, language } = useLandingTranslation();
   const error = searchParams?.error;
+  const confirmed = searchParams?.confirmed === 'true';
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -51,6 +54,17 @@ export default function LoginPage({
             </p>
           </div>
 
+          {confirmed && (
+            <div className="mb-8 rounded-2xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-900/30 p-5 animate-in fade-in slide-in-from-top-2">
+              <div className="flex items-center gap-3">
+                <ShieldCheck className="h-5 w-5 text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
+                <p className="text-sm font-semibold text-emerald-800 dark:text-emerald-300">
+                  ¡Email verificado con éxito! Ya puedes iniciar sesión.
+                </p>
+              </div>
+            </div>
+          )}
+
           {error && (
             <div className="mb-8 rounded-2xl bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-900/30 p-5 animate-in fade-in slide-in-from-top-2">
               <div className="flex items-center gap-3">
@@ -62,12 +76,23 @@ export default function LoginPage({
             </div>
           )}
 
+          <div className="mb-8">
+            <GoogleAuthButton actionText="Continuar con Google" />
+          </div>
+
+          <div className="flex items-center gap-4 mb-8">
+            <div className="h-px flex-1 bg-slate-200 dark:bg-slate-800" />
+            <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">O con tu correo</span>
+            <div className="h-px flex-1 bg-slate-200 dark:bg-slate-800" />
+          </div>
+
           <form action={signIn} method="POST" className="space-y-6">
             <div>
               <label
                 htmlFor="email"
                 className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 ml-1 uppercase tracking-wider"
               >
+
                 {t.email_label}
               </label>
               <div className="relative group">

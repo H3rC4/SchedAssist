@@ -11,7 +11,7 @@ import { enUS } from 'date-fns/locale/en-US'
 // ── i18n strings ──────────────────────────────────────────────────────────────
 const i18n = {
   es: {
-    title: 'Gestión de Clientes', subtitle: 'Consulta las fichas de tus pacientes y su historial de citas.',
+    title: 'Gestión de Pacientes', subtitle: 'Consulta las fichas de tus pacientes y su historial de citas.',
     searchPlaceholder: 'Buscar por nombre o teléfono...', noClients: 'No se encontraron pacientes.',
     editPatient: 'Editar paciente', editData: 'Editar Datos del Paciente',
     name: 'Nombre', lastName: 'Apellido', optional: 'Opcional', phone: 'Teléfono',
@@ -26,7 +26,7 @@ const i18n = {
     errorSave: 'Error al guardar: '
   },
   it: {
-    title: 'Gestione Clienti', subtitle: 'Consulta le schede dei tuoi pazienti e la loro cronologia appuntamenti.',
+    title: 'Gestione Pazienti', subtitle: 'Consulta le schede dei tuoi pazienti e la loro cronologia appuntamenti.',
     searchPlaceholder: 'Cerca per nome o telefono...', noClients: 'Nessun paziente trovato.',
     editPatient: 'Modifica paziente', editData: 'Modifica Dati Paziente',
     name: 'Nome', lastName: 'Cognome', optional: 'Opzionale', phone: 'Telefono',
@@ -41,7 +41,7 @@ const i18n = {
     errorSave: 'Errore durante il salvataggio: '
   },
   en: {
-    title: 'Client Management', subtitle: 'View patient files and their appointment history.',
+    title: 'Patient Management', subtitle: 'View patient files and their appointment history.',
     searchPlaceholder: 'Search by name or phone...', noClients: 'No patients found.',
     editPatient: 'Edit patient', editData: 'Edit Patient Data',
     name: 'First Name', lastName: 'Last Name', optional: 'Optional', phone: 'Phone',
@@ -133,11 +133,24 @@ export default function ClientsPage() {
 
   async function handleSaveEdit() {
     if (!selectedClient) return
-    const { error } = await supabase.from('clients').update({ first_name: editData.first_name, last_name: editData.last_name || null, phone: editData.phone }).eq('id', selectedClient.id)
-    if (!error) {
+    const res = await fetch('/api/clients', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        id: selectedClient.id,
+        tenant_id: tenantId,
+        data: editData
+      })
+    })
+
+    if (res.ok) {
       setSelectedClient({ ...selectedClient, ...editData, last_name: editData.last_name || '' })
       setIsEditing(false)
-    } else { alert((i18n[lang] || i18n['en']).errorSave + error.message) }
+      fetchClients()
+    } else {
+      const resp = await res.json()
+      alert((i18n[lang] || i18n['en']).errorSave + (resp.error || 'Unknown error'))
+    }
   }
 
   const T = i18n[lang] || i18n['en']
@@ -235,6 +248,16 @@ export default function ClientsPage() {
                 </div>
               ) : (
                 <>
+                  <div className="grid grid-cols-2 gap-4 mb-6">
+                    <div className="bg-emerald-50 rounded-2xl p-4 flex flex-col justify-center border border-emerald-100">
+                       <span className="text-2xl font-black text-emerald-700">{clientApps.filter(a => a.status === 'completed' || a.status === 'confirmed').length}</span>
+                       <span className="text-[10px] uppercase tracking-widest text-emerald-600 font-bold mt-1">Citas Exitosas</span>
+                    </div>
+                    <div className="bg-red-50 rounded-2xl p-4 flex flex-col justify-center border border-red-100">
+                       <span className="text-2xl font-black text-red-700">{clientApps.filter(a => a.status === 'cancelled').length}</span>
+                       <span className="text-[10px] uppercase tracking-widest text-red-600 font-bold mt-1">Cancelaciones</span>
+                    </div>
+                  </div>
                   <h4 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2"><Calendar className="h-4 w-4" /> {T.history} ({clientApps.length})</h4>
                   {clientApps.length === 0 ? (
                     <p className="text-sm text-gray-400 text-center py-6">{T.noApps}</p>

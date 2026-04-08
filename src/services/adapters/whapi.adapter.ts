@@ -15,9 +15,17 @@ export class WhapiAdapter implements IChannelAdapter {
   constructor(private readonly accessToken: string) {}
 
   async send(message: OutboundMessage): Promise<void> {
-    const cleanPhone = message.to.replace('@c.us', '').replace(/\D/g, '');
+    // Whapi requiere el formato [numero]@s.whatsapp.net para chats privados
+    // o [id]@g.us para grupos.
+    let to = message.to;
+    if (!to.includes('@')) {
+      // Limpiar el número y agregar el sufijo correcto
+      const cleanPhone = to.replace(/\D/g, '');
+      to = `${cleanPhone}@s.whatsapp.net`;
+    }
 
-    // WhatsApp has no native free-form keyboards — render buttons as numbered list
+    // WhatsApp no tiene teclados libres nativos - renderizar botones como lista numerada
+    // O usar el endpoint de Polls si se prefiere (más estable que interactive)
     let body = message.text;
     if (message.buttons && message.buttons.length > 0) {
       body += '\n\n' + message.buttons.map((b, i) => `${i + 1}. ${b}`).join('\n');
@@ -29,7 +37,11 @@ export class WhapiAdapter implements IChannelAdapter {
         Authorization: `Bearer ${this.accessToken}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ to: cleanPhone, body }),
+      body: JSON.stringify({ 
+        to: to, 
+        body: body,
+        typing_time: 0 // Envío inmediato
+      }),
     });
 
     if (!response.ok) {

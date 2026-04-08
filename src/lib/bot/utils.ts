@@ -14,6 +14,7 @@ export async function updateClientState(supabase: any, clientId: string, state: 
       }
     } catch(e) {}
   }
+  state.last_interaction = new Date().getTime();
   await supabase.from('clients').update({ notes: JSON.stringify(state) }).eq('id', clientId);
 }
 
@@ -68,8 +69,8 @@ export async function showMainMenu(
     sender_phone_id: senderPhoneId, // <--- Passed through
     text: t('mainMenu', lang, { name: firstName?.trim() ? `, ${firstName.trim()}` : '', tenant: tenant.name }),
     buttons: [
-      `📅 ${t('agendar', lang).charAt(0).toUpperCase() + t('agendar', lang).slice(1)} Cita`,
-      `❌ ${t('cancelar', lang).charAt(0).toUpperCase() + t('cancelar', lang).slice(1)} Cita`,
+      `📅 ${t('bookAppointment', lang)}`,
+      `❌ ${t('cancelAppointment', lang)}`,
     ],
   });
 }

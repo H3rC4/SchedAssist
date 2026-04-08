@@ -70,29 +70,16 @@ export async function POST(req: NextRequest) {
     tenantId = tenantUser.tenant_id;
   }
 
-  let result;
-  if (id) {
-    // Update
-    result = await supabase
-      .from('whatsapp_accounts')
-      .update({
-        phone_number_id: phone_number_id?.trim(),
-        access_token: access_token?.trim(),
-        label: label?.trim() || 'Principal'
-      })
-      .eq('id', id)
-      .eq('tenant_id', tenantId);
-  } else {
-    // Insert
-    result = await supabase
-      .from('whatsapp_accounts')
-      .insert({
-        tenant_id: tenantId,
-        phone_number_id: phone_number_id?.trim(),
-        access_token: access_token?.trim(),
-        label: label?.trim() || 'Principal'
-      });
-  }
+  // Realizamos un Upsert basado en el "phone_number_id" para que el número pueda reasignarse
+  // a una clínica diferente sin entrar en conflicto de unicidad.
+  const result = await supabase
+    .from('whatsapp_accounts')
+    .upsert({
+      tenant_id: tenantId,
+      phone_number_id: phone_number_id?.trim(),
+      access_token: access_token?.trim(),
+      label: label?.trim() || 'Principal'
+    }, { onConflict: 'phone_number_id' });
 
   if (result.error) {
     return NextResponse.json({ error: result.error.message }, { status: 500 });

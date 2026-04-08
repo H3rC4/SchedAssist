@@ -106,6 +106,24 @@ export default function SettingsPage() {
 
       <div className="grid gap-10 max-w-xl">
 
+        {/* Services Navigation Link */}
+        <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 shadow-xl shadow-indigo-900/5 p-10 transition-all hover:shadow-indigo-900/10">
+          <div className="flex items-center gap-4 mb-4">
+            <div className="h-12 w-12 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-emerald-500"><rect width="20" height="14" x="2" y="7" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+            </div>
+            <h3 className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight">
+              Gestión de Servicios
+            </h3>
+          </div>
+          <p className="text-sm font-medium text-slate-500 mb-6 uppercase tracking-widest pl-1">
+            Administra los servicios que ofrece tu clínica.
+          </p>
+          <a href="/dashboard/services" className="w-full flex items-center justify-center bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 transition-all text-slate-700 dark:text-slate-300 py-4 px-6 rounded-[1.5rem] text-sm font-black uppercase tracking-widest shadow-sm active:scale-95 text-center">
+            Manejar Servicios
+          </a>
+        </div>
+
         {/* Language Settings */}
         <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 shadow-xl shadow-indigo-900/5 p-10 transition-all hover:shadow-indigo-900/10">
           <div className="flex items-center gap-4 mb-8">

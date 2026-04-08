@@ -1,0 +1,307 @@
+"use client"
+
+import { useEffect, useState } from 'react'
+import { Smartphone, Zap, Loader2, CheckCircle2, AlertCircle, Trash2, Plus, ArrowRight, ShieldCheck } from 'lucide-react'
+import { createClient } from '@/lib/supabase/client'
+import { translations, Language } from '@/lib/i18n'
+
+export default function WhatsAppPage() {
+  const [loading, setLoading] = useState(true)
+  const [tenant, setTenant] = useState<any>(null)
+  const [accounts, setAccounts] = useState<any[]>([])
+  const [lang, setLang] = useState<Language>('es')
+  const [isProcessing, setIsProcessing] = useState(false)
+  
+  // Form state
+  const [showAddForm, setShowAddForm] = useState(false)
+  const [newAccount, setNewAccount] = useState({ label: '', phone_number_id: '', access_token: '' })
+  const [formError, setFormError] = useState('')
+
+  const t = translations[lang] || translations['es']
+
+  const fetchData = async () => {
+    setLoading(true)
+    const supabase = createClient()
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+
+      const { data: tuData } = await supabase
+        .from('tenant_users')
+        .select('tenant_id, tenants(*)')
+        .eq('user_id', user.id)
+        .single()
+
+      if (tuData?.tenants) {
+        setTenant(tuData.tenants)
+        setLang((tuData.tenants.settings?.language as Language) || 'es')
+        
+        // Fetch WhatsApp accounts if active
+        if (tuData.tenants.subscription_status === 'active') {
+          const res = await fetch(`/api/settings/whatsapp?tenant_id=${tuData.tenants.id}`)
+          const data = await res.json()
+          setAccounts(data)
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchData()
+  }, [])
+
+  const handleUpgrade = async () => {
+    setIsProcessing(true)
+    try {
+      const res = await fetch('/api/checkout', { method: 'POST' })
+      const data = await res.json()
+      if (data.url) {
+        window.location.href = data.url
+      } else {
+        alert('Error al iniciar pago: ' + (data.error || 'Desconocido'))
+      }
+    } catch (error) {
+      alert('Error de conexión')
+    } finally {
+      setIsProcessing(false)
+    }
+  }
+
+  const handleAddAccount = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setFormError('')
+    if (!newAccount.phone_number_id || !newAccount.access_token) {
+      setFormError('ID y Token son obligatorios')
+      return
+    }
+
+    setIsProcessing(true)
+    try {
+      const res = await fetch('/api/settings/whatsapp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...newAccount, tenant_id: tenant.id })
+      })
+      const data = await res.json()
+      if (data.success) {
+        setNewAccount({ label: '', phone_number_id: '', access_token: '' })
+        setShowAddForm(false)
+        fetchData()
+      } else {
+        setFormError(data.error || 'Error al guardar')
+      }
+    } catch (error) {
+      setFormError('Error de red')
+    } finally {
+      setIsProcessing(false)
+    }
+  }
+
+  const handleDeleteAccount = async (id: string) => {
+    if (!confirm('¿Eliminar este canal?')) return
+    try {
+      await fetch(`/api/settings/whatsapp?id=${id}&tenant_id=${tenant.id}`, { method: 'DELETE' })
+      fetchData()
+    } catch (error) {
+      alert('Error al eliminar')
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="flex h-[70vh] items-center justify-center">
+        <Loader2 className="h-10 w-10 animate-spin text-amber-500" />
+      </div>
+    )
+  }
+
+  // --- GATE SCREEN (NOT ACTIVE) ---
+  if (tenant?.subscription_status !== 'active') {
+    return (
+      <div className="flex-1 p-8 md:p-12 animate-in fade-in slide-in-from-bottom-4 duration-1000">
+        <div className="max-w-4xl mx-auto">
+          <div className="relative overflow-hidden rounded-[3rem] bg-slate-900 border border-white/10 shadow-2xl">
+            {/* Background Magic */}
+            <div className="absolute top-0 left-0 w-full h-full pointer-events-none opacity-50">
+              <div className="absolute top-[-20%] right-[-10%] w-[60%] h-[60%] bg-amber-500/20 rounded-full blur-[120px] animate-pulse" />
+              <div className="absolute bottom-[-20%] left-[-10%] w-[60%] h-[60%] bg-indigo-500/20 rounded-full blur-[120px]" />
+            </div>
+
+            <div className="relative z-10 p-12 md:p-20 text-center">
+              <div className="inline-flex items-center justify-center h-20 w-20 rounded-3xl bg-amber-500 mb-8 shadow-xl shadow-amber-500/20">
+                <Zap className="h-10 w-10 text-slate-900 fill-slate-900/50" />
+              </div>
+              
+              <h1 className="text-4xl md:text-6xl font-black text-white tracking-tighter uppercase mb-6 leading-none">
+                WhatsApp <span className="text-amber-500">Premium</span>
+              </h1>
+              
+              <p className="text-lg md:text-xl text-slate-400 font-medium max-w-2xl mx-auto mb-12 leading-relaxed">
+                Potencia tu clínica con notificaciones dinámicas, recordatorios automáticos y gestión de citas por WhatsApp. Todo integrado en un solo lugar.
+              </p>
+
+              <div className="grid md:grid-cols-3 gap-6 mb-12 text-left">
+                {[
+                  { title: 'IA Conversacional', desc: 'Bots inteligentes que agendan por ti.' },
+                  { title: 'Multicanal Real', desc: 'Usa múltiples números si lo necesitas.' },
+                  { title: 'Seguridad Total', desc: 'Tus datos y los de tus pacientes, protegidos.' }
+                ].map((feature, idx) => (
+                  <div key={idx} className="p-6 rounded-2xl bg-white/5 border border-white/5 backdrop-blur-sm">
+                    <CheckCircle2 className="h-5 w-5 text-amber-500 mb-3" />
+                    <h3 className="text-sm font-black text-white uppercase tracking-wider mb-1">{feature.title}</h3>
+                    <p className="text-xs text-slate-500 leading-normal">{feature.desc}</p>
+                  </div>
+                ))}
+              </div>
+
+              <div className="flex flex-col md:flex-row items-center justify-center gap-6">
+                <button 
+                  onClick={handleUpgrade}
+                  disabled={isProcessing}
+                  className="w-full md:w-auto px-10 py-5 bg-amber-500 hover:bg-amber-400 text-slate-900 rounded-3xl font-black text-lg uppercase tracking-wider transition-all hover:scale-105 active:scale-95 disabled:opacity-50 disabled:scale-100 shadow-xl shadow-amber-500/20 flex items-center justify-center gap-3"
+                >
+                  {isProcessing ? <Loader2 className="h-6 w-6 animate-spin" /> : <>Activar por $70/mes <ArrowRight className="h-5 w-5" /></>}
+                </button>
+                <div className="flex items-center gap-2 text-slate-500 text-sm font-bold uppercase tracking-widest">
+                  <ShieldCheck className="h-4 w-4" /> Pago Seguro vía Stripe
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // --- ACTIVE CONFIGURATION ---
+  return (
+    <div className="flex-1 p-8 md:p-12 space-y-12 animate-in fade-in duration-700">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 px-4">
+        <div>
+          <div className="flex items-center gap-3 mb-4">
+            <div className="px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 text-[10px] font-black uppercase tracking-[0.2em]">
+              Suscripción Activa
+            </div>
+          </div>
+          <h1 className="text-5xl font-black text-slate-900 dark:text-white uppercase tracking-tighter leading-none">
+            Configuración <span className="text-amber-500">WhatsApp</span>
+          </h1>
+        </div>
+        
+        <button 
+          onClick={() => setShowAddForm(!showAddForm)}
+          className="px-6 py-4 bg-slate-900 dark:bg-white dark:text-slate-900 text-white rounded-[1.5rem] font-black text-xs uppercase tracking-widest transition-all hover:scale-105 flex items-center gap-2"
+        >
+          {showAddForm ? 'Cerrar' : <><Plus className="h-4 w-4" /> Vincular Nuevo Número</>}
+        </button>
+      </div>
+
+      {showAddForm && (
+        <div className="bg-slate-100 dark:bg-slate-900/50 border border-slate-200 dark:border-white/5 rounded-[2.5rem] p-8 md:p-12 animate-in zoom-in-95 duration-300">
+          <form onSubmit={handleAddAccount} className="max-w-xl space-y-8">
+            <div className="space-y-6">
+              <div>
+                <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3 px-1">Etiqueta (Ej: Recepción)</label>
+                <input 
+                  type="text" 
+                  value={newAccount.label}
+                  onChange={e => setNewAccount({...newAccount, label: e.target.value})}
+                  className="w-full h-14 bg-white dark:bg-black rounded-2xl border border-slate-200 dark:border-white/10 px-6 font-bold text-slate-900 dark:text-white transition-all focus:border-amber-500 outline-none"
+                  placeholder="Nombre del canal..." 
+                />
+              </div>
+              <div className="grid md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3 px-1">Channel ID (Whapi)</label>
+                  <input 
+                    type="text" 
+                    required
+                    value={newAccount.phone_number_id}
+                    onChange={e => setNewAccount({...newAccount, phone_number_id: e.target.value})}
+                    className="w-full h-14 bg-white dark:bg-black rounded-2xl border border-slate-200 dark:border-white/10 px-6 font-bold text-slate-900 dark:text-white transition-all focus:border-amber-500 outline-none"
+                    placeholder="THOROD-..." 
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3 px-1">API Token</label>
+                  <input 
+                    type="password" 
+                    required
+                    value={newAccount.access_token}
+                    onChange={e => setNewAccount({...newAccount, access_token: e.target.value})}
+                    className="w-full h-14 bg-white dark:bg-black rounded-2xl border border-slate-200 dark:border-white/10 px-6 font-bold text-slate-900 dark:text-white transition-all focus:border-amber-500 outline-none"
+                    placeholder="••••••••" 
+                  />
+                </div>
+              </div>
+            </div>
+
+            {formError && (
+              <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-500 text-xs font-bold flex items-center gap-2">
+                <AlertCircle className="h-4 w-4" /> {formError}
+              </div>
+            )}
+
+            <button 
+              type="submit"
+              disabled={isProcessing}
+              className="h-16 w-full bg-amber-500 hover:bg-amber-400 text-slate-900 rounded-2xl font-black uppercase tracking-widest transition-all disabled:opacity-50 flex items-center justify-center gap-3"
+            >
+              {isProcessing ? <Loader2 className="h-5 w-5 animate-spin" /> : 'Guardar Configuración'}
+            </button>
+          </form>
+        </div>
+      )}
+
+      <div className="grid gap-6">
+        {accounts.length === 0 ? (
+          <div className="p-12 text-center rounded-[3rem] border border-dashed border-slate-200 dark:border-white/10">
+            <Smartphone className="h-12 w-12 text-slate-300 dark:text-slate-700 mx-auto mb-4" />
+            <p className="text-slate-500 font-bold uppercase tracking-widest text-xs">Aún no has vinculado ningún número de WhatsApp.</p>
+          </div>
+        ) : (
+          accounts.map(acc => (
+            <div key={acc.id} className="group p-8 rounded-[2.5rem] bg-white dark:bg-black border border-slate-200 dark:border-white/10 hover:border-amber-500/30 transition-all duration-300 flex flex-col md:flex-row md:items-center justify-between gap-6 shadow-sm hover:shadow-xl hover:shadow-amber-500/5">
+              <div className="flex items-center gap-6">
+                <div className="h-16 w-16 rounded-2xl bg-slate-100 dark:bg-white/5 flex items-center justify-center group-hover:bg-amber-500 transition-colors duration-300 shadow-inner">
+                  <Smartphone className="h-8 w-8 text-slate-400 dark:text-white/40 group-hover:text-slate-900 transition-colors duration-300" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight">{acc.label}</h3>
+                  <div className="flex items-center gap-3 mt-1">
+                    <span className="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-widest px-2 py-0.5 rounded bg-slate-100 dark:bg-white/5">ID: {acc.phone_number_id}</span>
+                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                    <span className="text-[10px] font-black text-emerald-500 uppercase tracking-[0.2em]">Conectado</span>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-3">
+                <button 
+                  onClick={() => handleDeleteAccount(acc.id)}
+                  className="h-12 w-12 rounded-xl border border-slate-200 dark:border-white/10 text-slate-400 hover:text-red-500 hover:border-red-500/30 flex items-center justify-center transition-all bg-white dark:bg-black"
+                >
+                  <Trash2 className="h-5 w-5" />
+                </button>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
+      <div className="p-8 rounded-[2rem] bg-indigo-500/5 border border-indigo-500/10 flex items-center gap-6">
+        <div className="h-12 w-12 rounded-xl bg-indigo-500/20 flex items-center justify-center text-indigo-500">
+          <AlertCircle className="h-6 w-6" />
+        </div>
+        <div className="flex-1">
+          <h4 className="text-sm font-black text-indigo-500 uppercase tracking-widest mb-1">Nota sobre Whapi</h4>
+          <p className="text-xs text-slate-500 leading-relaxed font-medium">Asegúrate de que tu canal en el panel de Whapi.Cloud esté en estado <span className="text-emerald-500 font-bold uppercase">Authed</span>. Puedes vincular múltiples canales para mayor redundancia.</p>
+        </div>
+      </div>
+    </div>
+  )
+}

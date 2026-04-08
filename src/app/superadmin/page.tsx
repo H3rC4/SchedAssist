@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+import { createClient as createAdminClient } from '@supabase/supabase-js'
 import { Plus, Building2, Globe, ServerCrash } from 'lucide-react'
 import { TenantForm } from './TenantForm'
 import { TenantActions } from './TenantActions'
@@ -6,10 +6,12 @@ import { TenantActions } from './TenantActions'
 export const dynamic = 'force-dynamic'
 
 export default async function SuperAdminPage() {
-  const supabase = createClient()
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
+  const supabaseAdmin = createAdminClient(supabaseUrl, supabaseServiceKey)
   
-  // Obtener todas las clínicas (Tenants) ordenadas
-  const { data: tenants, error } = await supabase
+  // Obtener todas las clínicas (Tenants) ordenadas sin filtros de RLS
+  const { data: tenants, error } = await supabaseAdmin
     .from('tenants')
     .select('*')
     .order('created_at', { ascending: false })

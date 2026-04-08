@@ -30,7 +30,7 @@ export function LandingHero() {
       {/* Hero CTA Button (Optimized for First Interaction) */}
       <div className="animate-in fade-in slide-in-from-bottom-10 duration-1000 delay-300">
         <Link 
-          href="/login" 
+          href="/register" 
           className="px-12 py-6 rounded-[2rem] bg-slate-900 dark:bg-amber-500 hover:bg-slate-800 dark:hover:bg-amber-400 text-white dark:text-slate-900 text-lg font-black uppercase tracking-widest transition-all shadow-2xl shadow-indigo-200 dark:shadow-black/30 hover:scale-105 active:scale-95 flex items-center gap-4 group"
         >
           {t.hero_cta} <ArrowRight className="h-6 w-6 group-hover:translate-x-1 transition-transform" />

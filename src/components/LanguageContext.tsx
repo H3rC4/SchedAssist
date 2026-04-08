@@ -15,13 +15,42 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   const [language, setLanguage] = useState<Language>('es');
   const [mounted, setMounted] = useState(false);
 
-  // Load from local storage if exists
+  // Load from local storage or detect via IP
   useEffect(() => {
-    const saved = localStorage.getItem('landing_lang') as Language;
-    if (saved && ['en', 'es', 'it'].includes(saved)) {
-      setLanguage(saved);
-    }
-    setMounted(true);
+    const detectLanguage = async () => {
+      const saved = localStorage.getItem('landing_lang') as Language;
+      if (saved && ['en', 'es', 'it'].includes(saved)) {
+        setLanguage(saved);
+        setMounted(true);
+        return;
+      }
+
+      try {
+        // Intentar detectar por configuración del navegador
+        const browserLang = navigator.language.split('-')[0];
+        if (['en', 'es', 'it'].includes(browserLang)) {
+           setLanguage(browserLang as Language);
+        }
+
+        // Refinar por IP (GeoIP)
+        const res = await fetch('https://ipapi.co/json/');
+        const data = await res.json();
+        const countryToLang: Record<string, Language> = {
+          'AR': 'es', 'ES': 'es', 'MX': 'es', 'CL': 'es', 'CO': 'es', 'UY': 'es',
+          'IT': 'it',
+          'US': 'en', 'GB': 'en', 'CA': 'en'
+        };
+
+        if (data.country_code && countryToLang[data.country_code]) {
+          setLanguage(countryToLang[data.country_code]);
+        }
+      } catch (e) {
+        console.log('Error detecting language by IP, falling back to browser defaults.');
+      }
+      setMounted(true);
+    };
+
+    detectLanguage();
   }, []);
 
   const handleSetLanguage = (lang: Language) => {

@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import {
   Calendar, Users, Briefcase, Settings,
-  LayoutDashboard, Clock, ChevronRight, Zap
+  LayoutDashboard, Clock, ChevronRight, Zap, Layers
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 
@@ -13,9 +13,9 @@ const navItemsBase = [
   { id: 'dashboard', es: 'Dashboard', it: 'Dashboard', en: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, category: 'General' },
   { id: 'appointments', es: 'Agenda', it: 'Agenda', en: 'Schedule', href: '/dashboard/appointments', icon: Calendar, category: 'Operativo' },
   { id: 'professionals', es: 'Staff', it: 'Personale', en: 'Staff', href: '/dashboard/professionals', icon: Briefcase, category: 'Operativo' },
-  { id: 'clients', es: 'Clientes', it: 'Clienti', en: 'Clients', href: '/dashboard/clients', icon: Users, category: 'Operativo' },
-  { id: 'services', es: 'Servicios', it: 'Servizi', en: 'Services', href: '/dashboard/services', icon: Briefcase, category: 'Configuración' },
-  { id: 'availability', es: 'Horarios', it: 'Orari', en: 'Availability', href: '/dashboard/availability', icon: Clock, category: 'Configuración' },
+  { id: 'services', es: 'Servicios', it: 'Servizi', en: 'Services', href: '/dashboard/services', icon: Layers, category: 'Operativo' },
+  { id: 'clients', es: 'Pacientes', it: 'Pazienti', en: 'Patients', href: '/dashboard/clients', icon: Users, category: 'Operativo' },
+  { id: 'whatsapp', es: 'WhatsApp', it: 'WhatsApp', en: 'WhatsApp', href: '/dashboard/whatsapp', icon: Zap, category: 'Configuración' },
   { id: 'settings', es: 'Ajustes', it: 'Impostazioni', en: 'Settings', href: '/dashboard/settings', icon: Settings, category: 'Sistema' },
 ]
 
@@ -94,6 +94,7 @@ export function Sidebar() {
                 return (
                   <Link
                     key={item.id}
+                    id={`tour-${item.id}`}
                     href={item.href}
                     className={`group flex items-center gap-4 rounded-[1.5rem] px-5 py-4 text-sm font-bold transition-all duration-300 relative
                       ${active 

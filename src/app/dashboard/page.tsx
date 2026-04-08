@@ -180,45 +180,27 @@ export default function DashboardPage() {
 
         {/* Quick Context Panel */}
         <div className="lg:col-span-4 space-y-8">
-            <div className="relative overflow-hidden bg-gradient-to-br from-[#07091a] to-[#12163b] p-10 rounded-[2.5rem] shadow-2xl text-white group h-full min-h-[460px] max-h-[500px] border border-white/10 noise">
-                {/* Visual Ambient Glow */}
-                <div className="absolute -top-32 -right-20 w-80 h-80 bg-indigo-500/30 rounded-full blur-[80px] animate-float pointer-events-none" />
-                <div className="absolute bottom-0 right-0 p-8 opacity-5 group-hover:opacity-20 transition-all duration-700 group-hover:scale-125 z-0">
-                    <Star className="h-40 w-40 fill-white rotate-12" />
-                </div>
-                
-                <div className="relative z-10 flex flex-col h-full">
-                    <h4 className="text-3xl font-black tracking-tighter mb-4 leading-[1.1]">
-                      {t.workload}
+            <div className="relative overflow-hidden bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 p-8 rounded-[2.5rem] shadow-xl h-full min-h-[460px] max-h-[500px]">
+                <div className="relative z-10 flex flex-col h-full items-center justify-center text-center">
+                    <div className="h-24 w-24 rounded-full bg-indigo-50 dark:bg-indigo-500/10 flex items-center justify-center mb-6">
+                       <Target className="h-10 w-10 text-indigo-500" />
+                    </div>
+                    <h4 className="text-2xl font-black text-slate-800 dark:text-white tracking-tighter mb-2">
+                      {t.activity_progress || "Progreso de Actividad"}
                     </h4>
-                    <p className="text-indigo-200/60 text-sm font-semibold leading-relaxed mb-10">
-                        {t.workload_desc(stats.pending)}
+                    <p className="text-slate-500 text-sm font-semibold leading-relaxed mb-8">
+                      {stats.total > 0 ? `Se ha completado el ${Math.round((stats.completed / stats.total) * 100)}% de los turnos activos.` : 'No hay actividad para mostrar hoy.'}
                     </p>
                     
-                    {/* Ring Visualizer Simulation */}
-                    <div className="flex items-center gap-6 mb-8">
-                       <div className="relative h-20 w-20 flex-shrink-0">
-                           {/* SVG Circle */}
-                           <svg className="h-full w-full -rotate-90 pointer-events-none" viewBox="0 0 36 36">
-                               <circle stroke="rgba(255,255,255,0.1)" strokeWidth="3" fill="transparent" r="16" cx="18" cy="18" />
-                               <circle className="text-indigo-400 animate-[count-up_1.5s_ease-out_forwards]" stroke="currentColor" strokeWidth="3" fill="transparent" strokeDasharray="100, 100" strokeLinecap="round" r="16" cx="18" cy="18" style={{ strokeDashoffset: 100 - (stats.completed / (stats.total || 1)) * 100 }} />
-                           </svg>
-                           <div className="absolute inset-0 flex items-center justify-center">
-                               <span className="text-xl font-black text-white">{stats.total > 0 ? Math.round((stats.completed / stats.total) * 100) : 0}%</span>
-                           </div>
-                       </div>
-                       <div>
-                           <p className="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-300 mb-1">
-                             {t.effectiveness}
-                           </p>
-                           <p className="text-2xl font-black text-white">{stats.completed} <span className="text-sm text-white/40 font-medium">/ {stats.total}</span></p>
-                       </div>
-                    </div>
-
-                    <div className="mt-auto pt-4 border-t border-white/10">
-                        <button className="w-full h-14 bg-white text-[10px] font-black uppercase tracking-[0.2em] rounded-[1.5rem] shadow-[0_0_30px_rgba(255,255,255,0.2)] hover:shadow-[0_0_40px_rgba(255,255,255,0.4)] text-[#07091a] hover:bg-indigo-50 transition-all active:scale-95 btn-magnetic flex items-center justify-center gap-2">
-                            {t.manage_requests} <ArrowUpRight className="h-4 w-4" />
-                        </button>
+                    {/* Ring Visualizer */}
+                    <div className="relative h-32 w-32 flex-shrink-0">
+                        <svg className="h-full w-full -rotate-90 pointer-events-none" viewBox="0 0 36 36">
+                            <circle stroke="rgba(99,102,241,0.1)" strokeWidth="4" fill="transparent" r="16" cx="18" cy="18" />
+                            <circle className="text-indigo-500 animate-[count-up_1.5s_ease-out_forwards]" stroke="currentColor" strokeWidth="4" fill="transparent" strokeDasharray="100, 100" strokeLinecap="round" r="16" cx="18" cy="18" style={{ strokeDashoffset: 100 - (stats.total > 0 ? (stats.completed / (stats.total || 1)) * 100 : 0) }} />
+                        </svg>
+                        <div className="absolute inset-0 flex items-center justify-center">
+                            <span className="text-3xl font-black text-slate-800 dark:text-white">{stats.total > 0 ? Math.round((stats.completed / stats.total) * 100) : 0}%</span>
+                        </div>
                     </div>
                 </div>
             </div>

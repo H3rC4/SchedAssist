@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "skills": {
+    "whapi": {
+      "source": "Whapi-Cloud/whapi-whatsapp-api-skill",
+      "sourceType": "github",
+      "computedHash": "802f8b8e008a396a661825af5011a6b521e467d807eb1e82d3b63c5cf620df14"
+    }
+  }
+}

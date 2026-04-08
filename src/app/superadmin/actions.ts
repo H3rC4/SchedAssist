@@ -188,20 +188,31 @@ export async function getTenantStats(tenantId: string) {
   const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
   const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
-  const [clients, appointments, professionals, services, tenantData] = await Promise.all([
+  const [clients, appointments, professionals, services, tenantData, tenantUser] = await Promise.all([
     supabase.from('clients').select('id', { count: 'exact', head: true }).eq('tenant_id', tenantId),
     supabase.from('appointments').select('id', { count: 'exact', head: true }).eq('tenant_id', tenantId),
     supabase.from('professionals').select('id, full_name, active').eq('tenant_id', tenantId),
     supabase.from('services').select('id, name').eq('tenant_id', tenantId),
     supabase.from('tenants').select('settings').eq('id', tenantId).single(),
+    supabase.from('tenant_users').select('user_id').eq('tenant_id', tenantId).limit(1).single()
   ])
+
+  let adminEmail = tenantData.data?.settings?.admin_email ?? null;
+
+  // Si no hay admin_email guardado (ej: registró por Google Auth), lo traemos en vivo desde Supabase Auth
+  if (!adminEmail && tenantUser?.data?.user_id) {
+    const { data: authUser } = await supabase.auth.admin.getUserById(tenantUser.data.user_id)
+    if (authUser?.user?.email) {
+      adminEmail = authUser.user.email
+    }
+  }
 
   return {
     clientCount: clients.count ?? 0,
     appointmentCount: appointments.count ?? 0,
     professionals: professionals.data ?? [],
     services: services.data ?? [],
-    adminEmail: tenantData.data?.settings?.admin_email ?? null,
+    adminEmail,
   }
 }
 

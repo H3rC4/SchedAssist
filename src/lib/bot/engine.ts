@@ -692,8 +692,22 @@ export const StateHandlers: Record<string, (ctx: BotContext) => Promise<boolean>
 
   ASK_COMMENT_DECISION: async ({ supabase, tenant, client, botState, chatId, text, channel, sender_phone_id }) => {
     const lang = (tenant.settings?.language || 'es') as Language;
-    const options = [t('yesComment', lang), t('noComment', lang)];
+    const options = [t('yesComment', lang), t('noComment', lang), t('changeTime', lang)];
     const selected = resolveOption(text, options);
+
+    if (selected === t('changeTime', lang)) {
+      await updateClientState(supabase, client.id, { ...botState, step: 'WAIT_TIME' });
+      const slots = await AppointmentService.getAvailableSlots(supabase, { tenant_id: tenant.id, professional_id: botState.professionalId, date: botState.date });
+      await MessageService.sendMessage({
+        channel,
+        tenant_id: tenant.id,
+        sender_phone_id,
+        chat_id: chatId,
+        text: t('askTime', lang),
+        buttons: [...slots, t('changeDate', lang)],
+      });
+      return true;
+    }
 
     if (selected === t('yesComment', lang)) {
       await updateClientState(supabase, client.id, { ...botState, step: 'WAIT_COMMENT' });
@@ -798,6 +812,22 @@ export async function executeStateMachine(ctx: BotContext): Promise<boolean> {
   const msgLower = ctx.text.toLowerCase().trim();
 
   const greetWords = translations[lang]?.greetWords || translations['es'].greetWords;
+
+  // Verifica si la sesión ha expirado por inactividad (5 minutos = 300000 ms)
+  if (ctx.botState?.last_interaction) {
+    const elapsedMinutes = (new Date().getTime() - ctx.botState.last_interaction) / 60000;
+    if (elapsedMinutes > 5 && ctx.botState.step !== 'INITIAL') {
+      await MessageService.sendMessage({
+        channel: ctx.channel,
+        tenant_id: ctx.tenant.id,
+        sender_phone_id: ctx.sender_phone_id,
+        chat_id: ctx.chatId,
+        text: t('sessionExpired', lang),
+      });
+      await showMainMenu(ctx.supabase, ctx.tenant, ctx.client.id, ctx.chatId, ctx.client.first_name, ctx.channel, ctx.sender_phone_id);
+      return true;
+    }
+  }
 
   // Global reset on any greeting word
   if (greetWords.some((word: string) => msgLower.includes(word))) {
