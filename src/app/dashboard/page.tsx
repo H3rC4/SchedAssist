@@ -70,7 +70,7 @@ export default function DashboardPage() {
 
       const totalRevenue = apps
         .filter(a => a.status === 'completed')
-        .reduce((sum, a) => sum + (a.services?.price || 0), 0)
+        .reduce((sum, a) => sum + ((a.services as any)?.price || 0), 0)
 
       const { count: totalClients } = await supabase.from('clients').select('*', { count: 'exact', head: true }).eq('tenant_id', tenantId)
 

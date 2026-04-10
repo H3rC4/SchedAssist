@@ -11,18 +11,38 @@ const supabase = createClient(
 async function setupTelegram() {
   console.log('--- Configurando Telegram Bot para la Clínica Principal ---');
 
-  // 1. Encontrar la clínica dental por su slug específico
+  // 1. Encontrar al usuario prueba@test.com
+  const { data: users, error: userError } = await supabase.auth.admin.listUsers();
+  const pruebaUser = users?.users.find(u => u.email === 'prueba@test.com');
+
+  if (!pruebaUser) {
+      console.error('No se encontró el usuario prueba@test.com');
+      return;
+  }
+
+  // 1.2 Encontrar a qué tenant pertenece
+  const { data: tenantUser } = await supabase
+    .from('tenant_users')
+    .select('tenant_id')
+    .eq('user_id', pruebaUser.id)
+    .single();
+
+  if (!tenantUser) {
+      console.error('El usuario prueba@test.com no tiene una clínica (tenant) asociada.');
+      return;
+  }
+
   const { data: tenant, error: tenantErr } = await supabase
     .from('tenants')
     .select('id, name, settings')
-    .eq('slug', 'clinica-hero')
+    .eq('id', tenantUser.tenant_id)
     .single();
 
   if (tenantErr || !tenant) {
-      console.error('No se encontró la clínica dental (slug: clinica-hero).');
+      console.error('No se encontró la clínica asociada a prueba@test.com.');
       return;
   }
-  console.log(`Clínica seleccionada: ${tenant.name} (${tenant.id})`);
+  console.log(`Clínica test/prueba seleccionada: ${tenant.name} (${tenant.id})`);
 
   // 2. Actualizar settings con el Telegram Token
   const updatedSettings = {

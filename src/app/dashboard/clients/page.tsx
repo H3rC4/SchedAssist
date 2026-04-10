@@ -487,12 +487,12 @@ export default function ClientsPage() {
                   <div className="lg:col-span-12 xl:col-span-8 space-y-6">
                     <div className="bg-white rounded-3xl p-8 shadow-sm border border-gray-100 min-h-[60vh]">
                       <h4 className="text-lg font-bold text-gray-900 mb-8 flex items-center gap-2">
-                        <Calendar className="h-5 w-5 text-primary-600" /> {translations[lang].clinic_history || 'Historial de Consultas'} ({clientApps.length})
+                        <Calendar className="h-5 w-5 text-primary-600" /> {translations[lang].clinical_history || 'Historial de Consultas'} ({clientApps.length})
                       </h4>
                       
                       {clientApps.length === 0 ? (
                         <div className="text-center py-20 bg-gray-50 rounded-3xl border border-dashed border-gray-200">
-                          <p className="text-sm text-gray-400 font-medium">{translations[lang].noApps}</p>
+                          <p className="text-sm text-gray-400 font-medium">{t.no_activity_today}</p>
                         </div>
                       ) : (
                         <div className="space-y-6 relative before:absolute before:left-3 before:top-2 before:bottom-0 before:w-0.5 before:bg-gray-100">
@@ -504,7 +504,7 @@ export default function ClientsPage() {
                                  <div className="bg-gray-50/50 rounded-2xl p-5 border border-gray-100 hover:border-primary-100 hover:bg-white transition-all group">
                                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
                                      <div>
-                                       <p className="text-md font-bold text-gray-900">{app.services?.name || translations[lang].noService}</p>
+                                       <p className="text-md font-bold text-gray-900">{app.services?.name || 'N/A'}</p>
                                        <p className="text-xs text-gray-500 font-medium mt-1">
                                          {format(parseISO(app.start_at), "d MMMM yyyy · HH:mm'h'", { locale: dateLocale })}
                                        </p>

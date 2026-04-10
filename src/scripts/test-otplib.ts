@@ -1,5 +1,5 @@
 import * as otplib from 'otplib'; 
-const auth: any = otplib.authenticator || (otplib as any).default?.authenticator || otplib;
+const auth: any = (otplib as any).authenticator || (otplib as any).default?.authenticator || otplib;
 async function test() {
   const secret = auth.generateSecret();
   console.log('Testing verify...');

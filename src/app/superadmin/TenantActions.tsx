@@ -46,7 +46,7 @@ export function TenantActions({ tenant }: { tenant: Tenant }) {
   const [newAcc, setNewAcc] = useState({ phone_number_id: '', access_token: '', label: '' })
 
   const isSuspended = tenant.settings?.suspended === true
-  const payment = getPaymentMock(tenant.id)
+  const payment = getPaymentMock(tenant.id) as any
   const [webhookUrl, setWebhookUrl] = useState('')
   
   useEffect(() => {

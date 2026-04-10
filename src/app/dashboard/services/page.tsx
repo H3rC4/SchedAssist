@@ -93,7 +93,7 @@ export default function ServicesPage() {
   }
 
   async function handleDeleteService(id: string) {
-    const T = i18n[lang]
+    const T = T_LEGACY[lang]
     if (!confirm(T.delConfirm)) return
     const res = await fetch(`/api/services?id=${id}&tenant_id=${tenantId}`, { method: 'DELETE' })
     if (res.ok) fetchServices()

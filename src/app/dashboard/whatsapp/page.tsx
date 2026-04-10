@@ -23,7 +23,7 @@ export default function WhatsAppPage() {
   const [newAccount, setNewAccount] = useState({ label: '', phone_number_id: '', access_token: '' })
   const [formError, setFormError] = useState('')
 
-  const t = translations[lang] || translations['es']
+  const t = (translations[lang] || translations['es']) as any
 
   const fetchData = async () => {
     setLoading(true)
@@ -39,12 +39,13 @@ export default function WhatsAppPage() {
         .single()
 
       if (tuData?.tenants) {
-        setTenant(tuData.tenants)
-        setLang((tuData.tenants.settings?.language as Language) || 'es')
+        const tenantData = tuData.tenants as any
+        setTenant(tenantData)
+        setLang((tenantData.settings?.language as Language) || 'es')
         
         // Fetch WhatsApp accounts if active
-        if (tuData.tenants.subscription_status === 'active' || forceSuccess || successParam === 'true') {
-          const res = await fetch(`/api/settings/whatsapp?tenant_id=${tuData.tenants.id}`)
+        if (tenantData.subscription_status === 'active' || forceSuccess || successParam === 'true') {
+          const res = await fetch(`/api/settings/whatsapp?tenant_id=${tenantData.id}`)
           const data = await res.json()
           setAccounts(data)
         }

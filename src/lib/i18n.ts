@@ -18,6 +18,7 @@ export const translations = {
     edit: 'Edit',
     create: 'Create',
     error: 'Error',
+    error_save: 'Error saving data',
     success: 'Success',
     medical_record: 'Medical Record',
     general_observations: 'General Remarks (Allergies, History)',
@@ -40,6 +41,15 @@ export const translations = {
     clinic_settings_title: 'Clinic Configuration',
     contact_phone_label: 'Public Contact Phone',
     contact_phone_desc: 'The number patients will use to call the clinic for inquiries.',
+    fullName: 'Full Name',
+    fullNamePH: 'e.g., Dr. Jane Doe',
+    specialty: 'Specialty',
+    specialtyPH: 'e.g., Cardiology',
+    trial_expired: 'Your trial period has expired',
+    trial_mode: 'You are in trial period',
+    days_left: 'days left',
+    whatsapp_blocked: 'WhatsApp blocked until payment',
+    unlock_whatsapp: 'Unlock WhatsApp',
     
     // Sidebar
     nav_home: 'Dashboard',
@@ -78,8 +88,6 @@ export const translations = {
     workload_desc: (count: number) => `You have ${count} pending requests. Approving them now helps maintain a high conversion rate.`,
     effectiveness: 'Effectiveness',
     manage_requests: 'Manage Requests',
-    canceled: 'Canceled',
-    awaiting: 'Awaiting',
 
     // Settings
     system_settings: 'System Settings',
@@ -111,6 +119,7 @@ export const translations = {
     bot_reminder_multi: (name: string, count: number, tenant: string) => 
       `Hello ${name}, you have *${count} appointments* tomorrow at _${tenant}_:\n\n`,
     bot_reminder_confirm_all: '\nDo you confirm your attendance? Reply YES to confirm.',
+    reminder_immediate: 'Please, confirm your attendance by replying *YES* or cancel by replying *NO*.',
     
     bot_new_title: '✅ <b>NEW APPOINTMENT SCHEDULED</b>',
     bot_new_desc: (name: string, svc: string, prof: string, date: string) => 
@@ -193,7 +202,6 @@ export const translations = {
     },
 
     // Dashboard Extras
-    sign_out: 'Sign Out',
     weekly_activity: 'Weekly Activity',
     appointments: 'Appointments',
     appointments_volume: 'Appointment volume per day',
@@ -217,6 +225,7 @@ export const translations = {
     edit: 'Editar',
     create: 'Crear',
     error: 'Error',
+    error_save: 'Error al guardar los datos',
     success: 'Éxito',
     medical_record: 'Ficha Médica',
     general_observations: 'Observaciones Generales (Alergias, Antecedentes)',
@@ -239,6 +248,15 @@ export const translations = {
     clinic_settings_title: 'Configuración de Local',
     contact_phone_label: 'Teléfono Público de Contacto',
     contact_phone_desc: 'El número que los pacientes usarán para llamar a la clínica por consultas.',
+    fullName: 'Nombre Completo',
+    fullNamePH: 'Ej: Dra. María Antonieta',
+    specialty: 'Especialidad',
+    specialtyPH: 'Ej: Cardiología',
+    trial_expired: 'Tu periodo de prueba ha expirado',
+    trial_mode: 'Estás en el periodo de prueba',
+    days_left: 'días restantes',
+    whatsapp_blocked: 'WhatsApp bloqueado hasta el pago',
+    unlock_whatsapp: 'Desbloquear WhatsApp',
 
     // Sidebar
     nav_home: 'Inicio',
@@ -277,8 +295,6 @@ export const translations = {
     workload_desc: (count: number) => `Tienes ${count} solicitudes pendientes. Revisar ahora ayudará a mantener un alto % de conversión.`,
     effectiveness: 'Efectividad Confirmadas',
     manage_requests: 'Gestionar Solicitudes',
-    canceled: 'Cancelada',
-    awaiting: 'Pendiente',
 
     // Settings
     system_settings: 'Ajustes del Sistema',
@@ -310,6 +326,7 @@ export const translations = {
     bot_reminder_multi: (name: string, count: number, tenant: string) => 
       `Hola ${name}, tienes *${count} citas* para mañana en _${tenant}_:\n\n`,
     bot_reminder_confirm_all: '\n¿Confirmas tu asistencia? Responde SI para confirmar.',
+    reminder_immediate: 'Por favor, confirma respondiendo *SÍ* o cancela con *NO*.',
     
     bot_new_title: '✅ <b>NUEVA CITA AGENDADA</b>',
     bot_new_desc: (name: string, svc: string, prof: string, date: string) => 
@@ -392,7 +409,6 @@ export const translations = {
     },
 
     // Dashboard Extras
-    sign_out: 'Cerrar Sesión',
     weekly_activity: 'Actividad Semanal',
     appointments: 'Citas',
     appointments_volume: 'Volumen de citas por día',
@@ -416,6 +432,7 @@ export const translations = {
     edit: 'Modifica',
     create: 'Crea',
     error: 'Errore',
+    error_save: 'Errore durante il salvataggio dei dati',
     success: 'Successo',
     medical_record: 'Cartella Clinica',
     general_observations: 'Osservazioni Generali (Allergie, Anamnesi)',
@@ -438,6 +455,15 @@ export const translations = {
     clinic_settings_title: 'Configurazione Locale',
     contact_phone_label: 'Telefono Pubblico di Contatto',
     contact_phone_desc: 'Il numero che i pazienti useranno per chiamare la clinica per informazioni.',
+    fullName: 'Nome Completo',
+    fullNamePH: 'Es: Dott.ssa Maria Antonietta',
+    specialty: 'Specializzazione',
+    specialtyPH: 'Es: Cardiologia',
+    trial_expired: 'Il tuo periodo di prova è scaduto',
+    trial_mode: 'Sei nel periodo di prova',
+    days_left: 'giorni rimasti',
+    whatsapp_blocked: 'WhatsApp bloccato fino al pagamento',
+    unlock_whatsapp: 'Sblocca WhatsApp',
 
     // Sidebar
     nav_home: 'Dashboard',
@@ -476,8 +502,6 @@ export const translations = {
     workload_desc: (count: number) => `Hai ${count} richieste in attesa. Controllare ora aiuterà a mantenere alta la conversione.`,
     effectiveness: 'Efficacia Conferme',
     manage_requests: 'Gestisci Richieste',
-    canceled: 'Annullato',
-    awaiting: 'In attesa',
 
     // Settings
     system_settings: 'Impostazioni di Sistema',
@@ -509,6 +533,7 @@ export const translations = {
     bot_reminder_multi: (name: string, count: number, tenant: string) => 
       `Ciao ${name}, hai *${count} appuntamenti* programmati domani in _${tenant}_:\n\n`,
     bot_reminder_confirm_all: '\nConfermi la tua presenza? Rispondi SI per confermare.',
+    reminder_immediate: 'Per favore, conferma rispondendo *SÌ* o annulla con *NO*.',
     
     bot_new_title: '✅ <b>NUOVO APPUNTAMENTO PROGRAMMATO</b>',
     bot_new_desc: (name: string, svc: string, prof: string, date: string) => 
@@ -591,7 +616,6 @@ export const translations = {
     },
 
     // Dashboard Extras
-    sign_out: 'Esci',
     weekly_activity: 'Attività Settimanale',
     appointments: 'Appuntamenti',
     appointments_volume: 'Volume appuntamenti per giorno',

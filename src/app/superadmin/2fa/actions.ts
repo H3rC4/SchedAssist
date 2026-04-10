@@ -5,7 +5,7 @@ import { cookies } from 'next/headers'
 import * as otplib from 'otplib'
 
 // Robust authenticator instance selection
-const auth: any = otplib.authenticator || (otplib as any).default?.authenticator || otplib;
+const auth: any = (otplib as any).authenticator || (otplib as any).default?.authenticator || otplib;
 
 const ISSUER = 'SchedAssist'
 
