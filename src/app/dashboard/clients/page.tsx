@@ -1,65 +1,30 @@
 "use client"
 
 import { useEffect, useState, useCallback } from 'react'
-import { Search, User, Phone, Calendar, X, ChevronRight, Edit2 } from 'lucide-react'
+import { Search, User, Phone, Calendar, X, ChevronRight, Edit2, ArrowLeft } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
+import { translations } from '@/lib/i18n'
 import { format, parseISO } from 'date-fns'
 import { es } from 'date-fns/locale/es'
 import { it } from 'date-fns/locale/it'
 import { enUS } from 'date-fns/locale/en-US'
 
-// ── i18n strings ──────────────────────────────────────────────────────────────
-const i18n = {
-  es: {
-    title: 'Gestión de Pacientes', subtitle: 'Consulta las fichas de tus pacientes y su historial de citas.',
-    searchPlaceholder: 'Buscar por nombre o teléfono...', noClients: 'No se encontraron pacientes.',
-    editPatient: 'Editar paciente', editData: 'Editar Datos del Paciente',
-    name: 'Nombre', lastName: 'Apellido', optional: 'Opcional', phone: 'Teléfono',
-    save: 'Guardar Cambios', cancel: 'Cancelar', history: 'Historial de Citas',
-    noApps: 'Este paciente no tiene citas registradas.', noService: 'Sin servicio',
-    status: {
-      confirmed: { text: 'Confirmada', cls: 'bg-emerald-100 text-emerald-700' },
-      cancelled: { text: 'Cancelada', cls: 'bg-red-100 text-red-700' },
-      completed: { text: 'Completada', cls: 'bg-blue-100 text-blue-700' },
-      pending: { text: 'Pendiente', cls: 'bg-yellow-100 text-yellow-700' }
-    },
-    errorSave: 'Error al guardar: '
-  },
-  it: {
-    title: 'Gestione Pazienti', subtitle: 'Consulta le schede dei tuoi pazienti e la loro cronologia appuntamenti.',
-    searchPlaceholder: 'Cerca per nome o telefono...', noClients: 'Nessun paziente trovato.',
-    editPatient: 'Modifica paziente', editData: 'Modifica Dati Paziente',
-    name: 'Nome', lastName: 'Cognome', optional: 'Opzionale', phone: 'Telefono',
-    save: 'Salva Modifiche', cancel: 'Annulla', history: 'Cronologia Appuntamenti',
-    noApps: 'Questo paziente non ha appuntamenti registrati.', noService: 'Senza servizio',
-    status: {
-      confirmed: { text: 'Confermata', cls: 'bg-emerald-100 text-emerald-700' },
-      cancelled: { text: 'Annullata', cls: 'bg-red-100 text-red-700' },
-      completed: { text: 'Completata', cls: 'bg-blue-100 text-blue-700' },
-      pending: { text: 'In attesa', cls: 'bg-yellow-100 text-yellow-700' }
-    },
-    errorSave: 'Errore durante il salvataggio: '
-  },
-  en: {
-    title: 'Patient Management', subtitle: 'View patient files and their appointment history.',
-    searchPlaceholder: 'Search by name or phone...', noClients: 'No patients found.',
-    editPatient: 'Edit patient', editData: 'Edit Patient Data',
-    name: 'First Name', lastName: 'Last Name', optional: 'Optional', phone: 'Phone',
-    save: 'Save Changes', cancel: 'Cancel', history: 'Appointment History',
-    noApps: 'This patient has no registered appointments.', noService: 'No service',
-    status: {
-      confirmed: { text: 'Confirmed', cls: 'bg-emerald-100 text-emerald-700' },
-      cancelled: { text: 'Cancelled', cls: 'bg-red-100 text-red-700' },
-      completed: { text: 'Completed', cls: 'bg-blue-100 text-blue-700' },
-      pending: { text: 'Pending', cls: 'bg-yellow-100 text-yellow-700' }
-    },
-    errorSave: 'Error saving: '
-  }
+// Removed local i18n object to use global translations
+
+interface MedicalEntry {
+  id: string;
+  date: string;
+  content: string;
+}
+
+interface MedicalNotes {
+  summary: string;
+  logs: MedicalEntry[];
 }
 
 interface Client {
   id: string; first_name: string; last_name: string; phone: string;
-  created_at: string; appointments?: any[];
+  notes: string | null; created_at: string; appointments?: any[];
 }
 
 export default function ClientsPage() {
@@ -72,7 +37,12 @@ export default function ClientsPage() {
   const [tenantId, setTenantId] = useState('')
   const [lang, setLang] = useState<'en' | 'es' | 'it'>('es')
   const [isEditing, setIsEditing] = useState(false)
-  const [editData, setEditData] = useState({ first_name: '', last_name: '', phone: '' })
+  const [editData, setEditData] = useState({ first_name: '', last_name: '', phone: '', notes: '' })
+  const [editingAppId, setEditingAppId] = useState<string | null>(null)
+  const [editingPostId, setEditingPostId] = useState<string | null>(null)
+  const [appNoteEdit, setAppNoteEdit] = useState('')
+  const [postNoteEdit, setPostNoteEdit] = useState('')
+  const [isSavingAppNote, setIsSavingAppNote] = useState(false)
 
   const initTenant = useCallback(async () => {
     const { data: { user } } = await supabase.auth.getUser()
@@ -95,7 +65,7 @@ export default function ClientsPage() {
     if (!tenantId) return
     const { data } = await supabase
       .from('clients')
-      .select('id, first_name, last_name, phone, created_at')
+      .select('id, first_name, last_name, phone, notes, created_at')
       .eq('tenant_id', tenantId)
       .order('first_name')
     if (data) {
@@ -126,64 +96,263 @@ export default function ClientsPage() {
   async function openClientDetail(client: Client) {
     setSelectedClient(client)
     setIsEditing(false)
-    setEditData({ first_name: client.first_name || '', last_name: client.last_name || '', phone: client.phone || '' })
+    setEditingAppId(null)
+    const medical = parseMedicalNotes(client.notes)
+    setEditData({ 
+      first_name: client.first_name || '', 
+      last_name: client.last_name || '', 
+      phone: client.phone || '',
+      notes: medical.summary // Global edit only edits the fixed summary
+    })
     const { data } = await supabase.from('appointments').select(`id, status, start_at, end_at, notes, services(name), professionals(full_name)`).eq('client_id', client.id).order('start_at', { ascending: false })
     setClientApps(data || [])
   }
 
-  async function handleSaveEdit() {
+  // Helper to parse complex medical notes (summary + logs)
+  const parseMedicalNotes = (notesStr: string | null): MedicalNotes => {
+    const defaultVal: MedicalNotes = { summary: '', logs: [] }
+    if (!notesStr) return defaultVal
+    try {
+      const parsed = JSON.parse(notesStr)
+      if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+        return { 
+          summary: parsed.summary || '', 
+          logs: Array.isArray(parsed.logs) ? parsed.logs : [] 
+        }
+      }
+      if (Array.isArray(parsed)) {
+        return { summary: '', logs: parsed }
+      }
+      return { summary: notesStr, logs: [] }
+    } catch (e) {
+      return { summary: notesStr, logs: [] }
+    }
+  }
+
+  async function handleUpdateSummary(newSummary: string) {
     if (!selectedClient) return
+    const current = parseMedicalNotes(selectedClient.notes)
+    const updatedNotes = JSON.stringify({ ...current, summary: newSummary })
+
     const res = await fetch('/api/clients', {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         id: selectedClient.id,
         tenant_id: tenantId,
-        data: editData
+        data: { ...selectedClient, notes: updatedNotes }
       })
     })
 
     if (res.ok) {
-      setSelectedClient({ ...selectedClient, ...editData, last_name: editData.last_name || '' })
+      setSelectedClient({ ...selectedClient, notes: updatedNotes })
+      fetchClients()
+    }
+  }
+
+  // Helper for appointment entries (posts)
+  const parseAppEntries = (notesStr: string | null): MedicalEntry[] => {
+    if (!notesStr) return []
+    try {
+      const parsed = JSON.parse(notesStr)
+      if (Array.isArray(parsed)) return parsed
+      return [{ id: 'legacy', date: new Date().toISOString(), content: notesStr }]
+    } catch (e) {
+      return [{ id: 'legacy', date: new Date().toISOString(), content: notesStr }]
+    }
+  }
+
+  async function handleAddAppPost(appId: string) {
+    if (!appNoteEdit.trim()) return
+    setIsSavingAppNote(true)
+    
+    const app = clientApps.find(a => a.id === appId)
+    const currentEntries = parseAppEntries(app?.notes || null)
+    const newEntry: MedicalEntry = {
+      id: crypto.randomUUID(),
+      date: new Date().toISOString(),
+      content: appNoteEdit.trim()
+    }
+    
+    // Most recent at the bottom or top? User said "abajo me aparesca otro recuadro". 
+    // Usually posts go Chronological (Oldest top, Newest bottom) in medical logs.
+    const updatedEntries = [...currentEntries, newEntry]
+    const updatedNotesStr = JSON.stringify(updatedEntries)
+
+    const res = await fetch('/api/appointments', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: appId, tenant_id: tenantId, notes: updatedNotesStr })
+    })
+
+    if (res.ok) {
+      setClientApps(clientApps.map(a => a.id === appId ? { ...a, notes: updatedNotesStr } : a))
+      setAppNoteEdit('') // Clear for next post
+    }
+    setIsSavingAppNote(false)
+  }
+
+  async function handleDeleteAppPost(appId: string, entryId: string) {
+    if (!confirm(translations[lang].confirm_delete_note || '¿Borrar comentario?')) return
+    const app = clientApps.find(a => a.id === appId)
+    const currentEntries = parseAppEntries(app?.notes || null)
+    const updatedEntries = currentEntries.filter(e => e.id !== entryId)
+    const updatedNotesStr = JSON.stringify(updatedEntries)
+
+    const res = await fetch('/api/appointments', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: appId, tenant_id: tenantId, notes: updatedNotesStr })
+    })
+
+    if (res.ok) {
+      setClientApps(clientApps.map(a => a.id === appId ? { ...a, notes: updatedNotesStr } : a))
+    }
+  }
+
+  async function handleSavePostEdit(appId: string, entryId: string) {
+    const app = clientApps.find(a => a.id === appId)
+    const currentEntries = parseAppEntries(app?.notes || null)
+    const updatedEntries = currentEntries.map(e => e.id === entryId ? { ...e, content: postNoteEdit } : e)
+    const updatedNotesStr = JSON.stringify(updatedEntries)
+
+    const res = await fetch('/api/appointments', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: appId, tenant_id: tenantId, notes: updatedNotesStr })
+    })
+
+    if (res.ok) {
+      setClientApps(clientApps.map(a => a.id === appId ? { ...a, notes: updatedNotesStr } : a))
+      setEditingPostId(null)
+    }
+  }
+
+  async function handleSaveEdit() {
+    if (!selectedClient) return
+    const currentMedical = parseMedicalNotes(selectedClient.notes)
+    const updatedNotesStr = JSON.stringify({ 
+      ...currentMedical, 
+      summary: editData.notes // The 'notes' field in editData is the summary
+    })
+
+    const res = await fetch('/api/clients', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        id: selectedClient.id,
+        tenant_id: tenantId,
+        data: { 
+          first_name: editData.first_name,
+          last_name: editData.last_name,
+          phone: editData.phone,
+          notes: updatedNotesStr
+        }
+      })
+    })
+
+    if (res.ok) {
+      setSelectedClient({ 
+        ...selectedClient, 
+        ...editData, 
+        last_name: editData.last_name || '',
+        notes: updatedNotesStr
+      })
       setIsEditing(false)
       fetchClients()
     } else {
       const resp = await res.json()
-      alert((i18n[lang] || i18n['en']).errorSave + (resp.error || 'Unknown error'))
+      alert((translations[lang] || translations['en']).error_save + ': ' + (resp.error || 'Unknown error'))
     }
   }
 
-  const T = i18n[lang] || i18n['en']
+  const exportPatientHistory = () => {
+    if (!selectedClient || clientApps.length === 0) {
+      alert(t.no_activity_today || 'No hay datos para exportar');
+      return;
+    }
+
+    let textContent = `CLINICAL HISTORY - ${selectedClient.first_name.toUpperCase()} ${selectedClient.last_name?.toUpperCase()}\n`;
+    textContent += `Phone: ${selectedClient.phone}\n`;
+    textContent += `Generated on: ${format(new Date(), 'yyyy-MM-dd HH:mm')}\n`;
+    textContent += `--------------------------------------------------\n\n`;
+
+    clientApps.forEach((app, index) => {
+      const entries = parseAppEntries(app.notes);
+      textContent += `APPOINTMENT #${clientApps.length - index}\n`;
+      textContent += `Date: ${format(parseISO(app.start_at), 'yyyy-MM-dd HH:mm')}\n`;
+      textContent += `Service: ${app.services?.name || 'N/A'}\n`;
+      textContent += `Professional: ${app.professionals?.full_name || 'N/A'}\n`;
+      textContent += `Status: ${app.status.toUpperCase()}\n`;
+      
+      if (entries.length > 0) {
+        textContent += `Medical Notes:\n`;
+        entries.forEach(e => {
+          textContent += `  - [${format(parseISO(e.date), 'HH:mm')}] ${e.content}\n`;
+        });
+      }
+      textContent += `\n--------------------------------------------------\n\n`;
+    });
+
+    const blob = new Blob([textContent], { type: 'text/plain;charset=utf-8;' });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    link.setAttribute("download", `historial_${selectedClient.first_name}_${selectedClient.last_name}.txt`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const t = translations[lang] || translations['en']
   const dateLocale = lang === 'it' ? it : (lang === 'es' ? es : enUS)
-  const statusLabel = (s: string) => T.status[s as keyof typeof T.status] || T.status.pending
+  
+  const statusLabel = (s: string) => {
+    switch(s) {
+      case 'pending': return { text: t.pending, cls: 'bg-amber-500/10 text-amber-600 border-amber-500/20' };
+      case 'awaiting_confirmation': return { text: t.awaiting, cls: 'bg-indigo-500/10 text-indigo-500 border-indigo-500/20' };
+      case 'confirmed': return { text: t.confirmed, cls: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' };
+      case 'cancelled': return { text: t.canceled, cls: 'bg-red-500/10 text-red-500 border-red-500/20' };
+      case 'completed': return { text: t.confirmed, cls: 'bg-indigo-500/10 text-indigo-500 border-indigo-500/20' };
+      default: return { text: s, cls: 'bg-slate-500/10 text-slate-400 border-slate-500/20' };
+    }
+  }
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 tracking-tight">{T.title}</h1>
-        <p className="text-sm text-gray-500">{T.subtitle}</p>
+        <h1 className="text-2xl font-bold text-gray-900 tracking-tight">{t.patient_management}</h1>
+        <p className="text-sm text-gray-500">{t.patient_management_subtitle}</p>
       </div>
 
       <div className="relative max-w-md">
         <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
           <Search className="h-5 w-5 text-gray-400" />
         </div>
-        <input type="text" value={searchTerm} onChange={e => setSearchTerm(e.target.value)}
+        <input 
+          type="text" 
+          value={searchTerm} 
+          onChange={e => setSearchTerm(e.target.value)}
           className="block w-full rounded-xl border border-gray-200 bg-white py-2.5 pl-10 pr-3 text-sm text-gray-900 placeholder-gray-400 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 shadow-sm"
-          placeholder={T.searchPlaceholder} />
+          placeholder={t.search_patients_placeholder} 
+        />
       </div>
 
       <div className="rounded-xl bg-white shadow-sm border border-gray-200 overflow-hidden">
         {filteredClients.length === 0 ? (
           <div className="text-center py-12 text-gray-400">
             <User className="mx-auto h-12 w-12 mb-3 opacity-50" />
-            <p className="text-sm">{T.noClients}</p>
+            <p className="text-sm">{t.no_patients_found}</p>
           </div>
         ) : (
           <div className="divide-y divide-gray-100">
             {filteredClients.map(c => (
-              <button key={c.id} onClick={() => openClientDetail(c)}
-                className="w-full flex items-center gap-4 px-5 py-4 hover:bg-primary-50/40 transition-colors text-left group">
+              <button 
+                key={c.id} 
+                onClick={() => openClientDetail(c)}
+                className="w-full flex items-center gap-4 px-5 py-4 hover:bg-primary-50/40 transition-colors text-left group"
+              >
                 <div className="flex-shrink-0 h-10 w-10 rounded-full bg-primary-100 flex items-center justify-center text-primary-700 font-bold text-sm">
                   {c.first_name.charAt(0)}{c.last_name?.charAt(0) || ''}
                 </div>
@@ -199,86 +368,237 @@ export default function ClientsPage() {
       </div>
 
       {selectedClient && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm" onClick={() => setSelectedClient(null)}>
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-4 max-h-[85vh] overflow-hidden flex flex-col" onClick={e => e.stopPropagation()}>
-            <div className="bg-gradient-to-r from-primary-600 to-primary-700 px-6 py-5 text-white">
-              <div className="flex items-center justify-between">
+        <div className="fixed inset-0 z-50 flex flex-col bg-slate-50 animate-in slide-in-from-right duration-300" onClick={e => e.stopPropagation()}>
+          {/* Header Full-width */}
+          <div className="bg-gradient-to-r from-slate-800 to-slate-900 px-6 py-4 text-white shadow-lg sticky top-0 z-10">
+            <div className="max-w-7xl mx-auto flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <button 
+                  onClick={() => { setSelectedClient(null); setIsEditing(false); }}
+                  className="p-2 rounded-xl bg-white/10 hover:bg-white/20 transition-all flex items-center gap-2 text-sm font-bold"
+                >
+                  <ArrowLeft className="h-5 w-5" /> 
+                  <span className="hidden sm:inline">{t.back}</span>
+                </button>
+                <div className="h-8 w-px bg-white/10 mx-1 hidden sm:block" />
                 <div className="flex items-center gap-3">
-                  <div className="h-12 w-12 rounded-full bg-white/20 flex items-center justify-center text-lg font-bold">
+                  <div className="h-10 w-10 rounded-full bg-white/20 flex items-center justify-center text-md font-bold shadow-inner">
                     {selectedClient.first_name.charAt(0)}{selectedClient.last_name?.charAt(0) || ''}
                   </div>
                   <div>
-                    <h3 className="text-lg font-bold">{selectedClient.first_name} {selectedClient.last_name}</h3>
-                    <p className="text-primary-100 text-sm flex items-center gap-1"><Phone className="h-3 w-3" /> {selectedClient.phone}</p>
+                    <h3 className="text-lg font-bold leading-none">{selectedClient.first_name} {selectedClient.last_name}</h3>
+                    <p className="text-primary-200 text-xs flex items-center gap-1 mt-1 font-medium opacity-80">
+                      <Phone className="h-3 w-3" /> {selectedClient.phone}
+                    </p>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  {!isEditing && (
-                    <button onClick={() => setIsEditing(true)} className="p-1.5 rounded-full hover:bg-white/20 transition-colors" title={T.editPatient}>
-                      <Edit2 className="h-4 w-4" />
+              </div>
+              <div className="flex items-center gap-3">
+                {!isEditing ? (
+                  <div className="flex items-center gap-3">
+                    <button 
+                      onClick={exportPatientHistory} 
+                      className="bg-white/10 hover:bg-white/20 px-4 py-2 rounded-xl text-sm font-bold transition-all flex items-center gap-2 border border-white/10"
+                    >
+                      {t.export_report}
                     </button>
-                  )}
-                  <button onClick={() => setSelectedClient(null)} className="p-1 rounded-full hover:bg-white/20 transition-colors">
-                    <X className="h-5 w-5" />
-                  </button>
-                </div>
+                    <button 
+                      onClick={() => setIsEditing(true)} 
+                      className="flex items-center gap-2 bg-white/10 hover:bg-white/20 px-4 py-2 rounded-xl text-sm font-bold transition-all"
+                    >
+                      <Edit2 className="h-4 w-4" /> {t.edit}
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex gap-2">
+                     <button onClick={handleSaveEdit} className="bg-emerald-500 hover:bg-emerald-400 text-white px-5 py-2 rounded-xl text-sm font-bold shadow-lg shadow-emerald-500/20">{t.save}</button>
+                     <button onClick={() => setIsEditing(false)} className="bg-white/10 hover:bg-white/20 text-white px-5 py-2 rounded-xl text-sm font-bold">{t.cancel}</button>
+                  </div>
+                )}
+                <button onClick={() => setSelectedClient(null)} className="p-2 rounded-full hover:bg-white/10 transition-colors">
+                  <X className="h-6 w-6 opacity-60 hover:opacity-100" />
+                </button>
               </div>
             </div>
+          </div>
 
-            <div className="flex-1 overflow-y-auto p-6">
+          {/* Main Content Area */}
+          <div className="flex-1 overflow-y-auto bg-slate-50">
+            <div className="max-w-7xl mx-auto p-6">
               {isEditing ? (
-                <div className="space-y-4">
-                   <h4 className="text-sm font-semibold text-gray-900 border-b border-gray-100 pb-2">{T.editData}</h4>
-                   <div>
-                     <label className="block text-xs font-semibold text-gray-700 mb-1">{T.name}</label>
-                     <input type="text" value={editData.first_name} onChange={e => setEditData({...editData, first_name: e.target.value})} className="block w-full rounded-xl border-gray-200 bg-gray-50/50 py-2.5 px-3 text-sm text-gray-900 border focus:border-primary-500 focus:bg-white focus:ring-1 focus:ring-primary-500 transition-all"/>
-                   </div>
-                   <div>
-                     <label className="block text-xs font-semibold text-gray-700 mb-1">{T.lastName} <span className="text-gray-400 font-normal">({T.optional})</span></label>
-                     <input type="text" value={editData.last_name} onChange={e => setEditData({...editData, last_name: e.target.value})} className="block w-full rounded-xl border-gray-200 bg-gray-50/50 py-2.5 px-3 text-sm text-gray-900 border focus:border-primary-500 focus:bg-white focus:ring-1 focus:ring-primary-500 transition-all"/>
-                   </div>
-                   <div>
-                     <label className="block text-xs font-semibold text-gray-700 mb-1">{T.phone}</label>
-                     <input type="text" value={editData.phone} onChange={e => setEditData({...editData, phone: e.target.value})} className="block w-full rounded-xl border-gray-200 bg-gray-50/50 py-2.5 px-3 text-sm text-gray-900 border focus:border-primary-500 focus:bg-white focus:ring-1 focus:ring-primary-500 transition-all"/>
-                   </div>
-                   <div className="pt-4 flex gap-3">
-                     <button onClick={handleSaveEdit} className="bg-primary-600 hover:bg-primary-700 transition-colors text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-sm flex-1">{T.save}</button>
-                     <button onClick={() => setIsEditing(false)} className="bg-gray-100 hover:bg-gray-200 transition-colors text-gray-700 px-5 py-2.5 rounded-xl text-sm font-bold">{T.cancel}</button>
+                <div className="max-w-2xl mx-auto bg-white rounded-3xl p-8 shadow-sm border border-gray-100">
+                   <h4 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+                     <Edit2 className="h-5 w-5 text-primary-600" /> {t.edit_patient_data}
+                   </h4>
+                   <div className="space-y-5">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">{t.name}</label>
+                          <input type="text" value={editData.first_name} onChange={e => setEditData({...editData, first_name: e.target.value})} className="block w-full rounded-2xl border-gray-200 bg-gray-50 py-3 px-4 text-sm text-gray-900 focus:bg-white focus:ring-2 focus:ring-primary-500/10 focus:border-primary-500 transition-all outline-none"/>
+                        </div>
+                        <div>
+                          <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">{t.last_name}</label>
+                          <input type="text" value={editData.last_name} onChange={e => setEditData({...editData, last_name: e.target.value})} className="block w-full rounded-2xl border-gray-200 bg-gray-50 py-3 px-4 text-sm text-gray-900 focus:bg-white focus:ring-2 focus:ring-primary-500/10 focus:border-primary-500 transition-all outline-none"/>
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">{t.phone}</label>
+                        <input type="text" value={editData.phone} onChange={e => setEditData({...editData, phone: e.target.value})} className="block w-full rounded-2xl border-gray-200 bg-gray-50 py-3 px-4 text-sm text-gray-900 focus:bg-white focus:ring-2 focus:ring-primary-500/10 focus:border-primary-500 transition-all outline-none"/>
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">{translations[lang].general_observations}</label>
+                        <textarea value={editData.notes} onChange={e => setEditData({...editData, notes: e.target.value})} rows={6} className="block w-full rounded-2xl border-gray-200 bg-gray-50 py-3 px-4 text-sm text-gray-900 focus:bg-white focus:ring-2 focus:ring-primary-500/10 focus:border-primary-500 transition-all outline-none resize-none" placeholder="Alergias, condiciones previas, antecedentes..."/>
+                      </div>
                    </div>
                 </div>
               ) : (
-                <>
-                  <div className="grid grid-cols-2 gap-4 mb-6">
-                    <div className="bg-emerald-50 rounded-2xl p-4 flex flex-col justify-center border border-emerald-100">
-                       <span className="text-2xl font-black text-emerald-700">{clientApps.filter(a => a.status === 'completed' || a.status === 'confirmed').length}</span>
-                       <span className="text-[10px] uppercase tracking-widest text-emerald-600 font-bold mt-1">Citas Exitosas</span>
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                  {/* Left Column: Summary Info */}
+                  <div className="lg:col-span-12 xl:col-span-4 space-y-6">
+                    {/* General Remarks (Allergies, History) - READ ONLY IN VIEW MODE */}
+                    <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100">
+                      <h4 className="text-sm font-bold text-gray-900 mb-4 flex items-center gap-2">
+                        <User className="h-4 w-4 text-primary-600" /> {translations[lang].general_observations}
+                      </h4>
+                      <div className="w-full bg-slate-50/50 rounded-2xl p-4 text-sm text-gray-700 min-h-[100px] leading-relaxed">
+                        {parseMedicalNotes(selectedClient.notes).summary || (
+                          <span className="text-gray-400 italic">{translations[lang].no_remarks_yet}</span>
+                        )}
+                      </div>
                     </div>
-                    <div className="bg-red-50 rounded-2xl p-4 flex flex-col justify-center border border-red-100">
-                       <span className="text-2xl font-black text-red-700">{clientApps.filter(a => a.status === 'cancelled').length}</span>
-                       <span className="text-[10px] uppercase tracking-widest text-red-600 font-bold mt-1">Cancelaciones</span>
+
+                    {/* Quick Stats Card */}
+                    <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100">
+                      <h4 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-4">{translations[lang].visit_summary}</h4>
+                      <div className="grid grid-cols-1 gap-3">
+                        <div className="bg-emerald-50 rounded-2xl p-4 border border-emerald-100 flex items-center justify-between">
+                           <p className="text-[10px] uppercase tracking-widest text-emerald-600 font-bold">{t.successful_appointments}</p>
+                           <p className="text-xl font-black text-emerald-700 leading-none">{clientApps.filter(a => a.status === 'completed' || a.status === 'confirmed').length}</p>
+                        </div>
+                        <div className="bg-red-50 rounded-2xl p-4 border border-red-100 flex items-center justify-between">
+                           <p className="text-[10px] uppercase tracking-widest text-red-600 font-bold">{t.cancellations}</p>
+                           <p className="text-xl font-black text-red-700 leading-none">{clientApps.filter(a => a.status === 'cancelled').length} </p>
+                        </div>
+                      </div>
                     </div>
                   </div>
-                  <h4 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2"><Calendar className="h-4 w-4" /> {T.history} ({clientApps.length})</h4>
-                  {clientApps.length === 0 ? (
-                    <p className="text-sm text-gray-400 text-center py-6">{T.noApps}</p>
-                  ) : (
-                    <div className="space-y-2">
-                       {clientApps.map(app => {
-                         const st = statusLabel(app.status)
-                         return (
-                           <div key={app.id} className="border border-gray-100 rounded-xl p-3 bg-white hover:border-primary-100 hover:shadow-sm transition-all group">
-                             <div className="flex items-center justify-between">
-                               <p className="text-sm font-semibold text-gray-900">{app.services?.name || T.noService}</p>
-                               <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-bold ${st.cls}`}>{st.text}</span>
-                             </div>
-                             <p className="text-xs text-gray-500 mt-1 font-medium">{format(parseISO(app.start_at), "d MMM yyyy 'HH:mm'", { locale: dateLocale })} · {app.professionals?.full_name}</p>
-                             {app.notes && <p className="text-xs text-gray-400 mt-2 bg-gray-50 p-2 rounded-lg italic">💬 {app.notes}</p>}
-                           </div>
-                         )
-                       })}
+
+                  {/* Right Column: Visit History */}
+                  <div className="lg:col-span-12 xl:col-span-8 space-y-6">
+                    <div className="bg-white rounded-3xl p-8 shadow-sm border border-gray-100 min-h-[60vh]">
+                      <h4 className="text-lg font-bold text-gray-900 mb-8 flex items-center gap-2">
+                        <Calendar className="h-5 w-5 text-primary-600" /> {translations[lang].clinic_history || 'Historial de Consultas'} ({clientApps.length})
+                      </h4>
+                      
+                      {clientApps.length === 0 ? (
+                        <div className="text-center py-20 bg-gray-50 rounded-3xl border border-dashed border-gray-200">
+                          <p className="text-sm text-gray-400 font-medium">{translations[lang].noApps}</p>
+                        </div>
+                      ) : (
+                        <div className="space-y-6 relative before:absolute before:left-3 before:top-2 before:bottom-0 before:w-0.5 before:bg-gray-100">
+                           {clientApps.map(app => {
+                             const st = statusLabel(app.status)
+                             return (
+                               <div key={app.id} className="relative pl-10 animate-in fade-in slide-in-from-left-4 duration-500">
+                                 <div className="absolute left-0 top-1.5 h-6 w-6 rounded-full bg-white border-4 border-primary-100 shadow-sm z-10" />
+                                 <div className="bg-gray-50/50 rounded-2xl p-5 border border-gray-100 hover:border-primary-100 hover:bg-white transition-all group">
+                                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+                                     <div>
+                                       <p className="text-md font-bold text-gray-900">{app.services?.name || translations[lang].noService}</p>
+                                       <p className="text-xs text-gray-500 font-medium mt-1">
+                                         {format(parseISO(app.start_at), "d MMMM yyyy · HH:mm'h'", { locale: dateLocale })}
+                                       </p>
+                                     </div>
+                                     <div className="flex items-center gap-3">
+                                       <span className={`inline-flex rounded-lg px-3 py-1 text-[10px] font-black uppercase tracking-widest border ${st.cls}`}>{st.text}</span>
+                                       <div className="text-right hidden sm:block">
+                                         <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none">{translations[lang].role_professional}</p>
+                                         <p className="text-xs font-bold text-gray-700 mt-1">{app.professionals?.full_name}</p>
+                                       </div>
+                                     </div>
+                                   </div>
+                                   <div className="space-y-4">
+                                     {/* Post List */}
+                                     <div className="space-y-3">
+                                       {parseAppEntries(app.notes).map((entry) => (
+                                         <div key={entry.id} className="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm group/post">
+                                           <div className="flex items-center justify-between mb-2">
+                                             <div className="flex items-center gap-2">
+                                               <span className="text-[10px] font-bold text-amber-600 uppercase tracking-widest">{translations[lang].medical_record}</span>
+                                               <span className="text-[10px] text-gray-400 font-bold">
+                                                 {format(parseISO(entry.date), "HH:mm'h'", { locale: dateLocale })}
+                                               </span>
+                                             </div>
+                                             <div className="flex items-center gap-1 opacity-0 group-hover/post:opacity-100 transition-opacity">
+                                               <button 
+                                                 onClick={() => { setEditingPostId(entry.id); setPostNoteEdit(entry.content); }}
+                                                 className="p-1 hover:bg-gray-100 rounded-md text-gray-400 hover:text-primary-600"
+                                               >
+                                                 <Edit2 className="h-3 w-3" />
+                                               </button>
+                                               <button 
+                                                 onClick={() => handleDeleteAppPost(app.id, entry.id)}
+                                                 className="p-1 hover:bg-red-50 rounded-md text-gray-300 hover:text-red-500"
+                                               >
+                                                 <X className="h-3 w-3" />
+                                               </button>
+                                             </div>
+                                           </div>
+                                           
+                                           {editingPostId === entry.id ? (
+                                             <div className="space-y-3">
+                                               <textarea 
+                                                 autoFocus
+                                                 value={postNoteEdit} 
+                                                 onChange={e => setPostNoteEdit(e.target.value)}
+                                                 className="w-full text-sm p-3 bg-slate-50 border border-primary-200 rounded-xl outline-none text-gray-900 resize-none"
+                                                 rows={2}
+                                               />
+                                               <div className="flex gap-2">
+                                                 <button onClick={() => handleSavePostEdit(app.id, entry.id)} className="bg-primary-600 text-white px-3 py-1 rounded-lg text-[10px] font-bold">{translations[lang].save}</button>
+                                                 <button onClick={() => setEditingPostId(null)} className="bg-gray-200 text-gray-700 px-3 py-1 rounded-lg text-[10px] font-bold">{translations[lang].cancel}</button>
+                                               </div>
+                                             </div>
+                                           ) : (
+                                             <p className="text-sm text-gray-700 leading-relaxed">{entry.content}</p>
+                                           )}
+                                         </div>
+                                       ))}
+                                     </div>
+
+                                     {/* Add New Post Box */}
+                                     <div className="bg-white/40 rounded-2xl p-4 border border-dashed border-gray-200">
+                                       <textarea
+                                         value={editingAppId === app.id ? appNoteEdit : ''}
+                                         onFocus={() => setEditingAppId(app.id)}
+                                         onChange={e => setAppNoteEdit(e.target.value)}
+                                         placeholder={translations[lang].add_comment_placeholder}
+                                         className="w-full bg-transparent text-sm border-none focus:ring-0 resize-none placeholder-gray-400 min-h-[40px] leading-relaxed"
+                                         rows={editingAppId === app.id ? 3 : 1}
+                                       />
+                                       {editingAppId === app.id && (
+                                         <div className="flex justify-end mt-2 gap-2">
+                                           <button
+                                             onClick={() => handleAddAppPost(app.id)}
+                                             disabled={isSavingAppNote || !appNoteEdit.trim()}
+                                             className="bg-primary-600 hover:bg-primary-700 text-white px-4 py-1.5 rounded-xl text-xs font-bold transition-all disabled:opacity-50"
+                                           >
+                                             {isSavingAppNote ? '...' : translations[lang].save_note}
+                                           </button>
+                                           <button onClick={() => setEditingAppId(null)} className="text-gray-400 text-xs font-bold px-3">{translations[lang].cancel}</button>
+                                         </div>
+                                       )}
+                                     </div>
+                                   </div>
+                                 </div>
+                               </div>
+                             )
+                           })}
+                        </div>
+                      )}
                     </div>
-                  )}
-                </>
+                  </div>
+                </div>
               )}
             </div>
           </div>

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { toggleSuspendTenantAction, getTenantStats, deleteTenantAction } from './actions'
 import {
   PowerOff, Power, ExternalLink, Loader2, X, Users, CalendarCheck,
@@ -8,15 +8,8 @@ import {
   Save, Eye, EyeOff, CheckCircle2, Copy, Check, Link, Plus, Trash
 } from 'lucide-react'
 
-const PAYMENT_MOCKS: Record<string, { status: string; color: string; due?: string }> = {}
 function getPaymentMock(id: string) {
-  if (!PAYMENT_MOCKS[id]) {
-    const rand = Math.random()
-    if (rand < 0.6) PAYMENT_MOCKS[id] = { status: 'Al día', color: 'emerald' }
-    else if (rand < 0.85) PAYMENT_MOCKS[id] = { status: 'Vence pronto', color: 'amber', due: '15/04/2026' }
-    else PAYMENT_MOCKS[id] = { status: 'Vencido', color: 'red', due: '01/04/2026' }
-  }
-  return PAYMENT_MOCKS[id]
+  return { status: 'Al día', color: 'emerald' }
 }
 
 interface Tenant {
@@ -54,7 +47,11 @@ export function TenantActions({ tenant }: { tenant: Tenant }) {
 
   const isSuspended = tenant.settings?.suspended === true
   const payment = getPaymentMock(tenant.id)
-  const webhookUrl = typeof window !== 'undefined' ? `${window.location.origin}/api/webhooks/whatsapp` : ''
+  const [webhookUrl, setWebhookUrl] = useState('')
+  
+  useEffect(() => {
+    setWebhookUrl(`${window.location.origin}/api/webhooks/whatsapp`)
+  }, [])
 
   async function handleSuspend() {
     setLoading(true)
@@ -189,37 +186,129 @@ export function TenantActions({ tenant }: { tenant: Tenant }) {
 
             <div className="flex border-b border-[#222]">
               <button onClick={() => setActiveTab('overview')} className={`flex-1 py-3 text-xs font-black uppercase tracking-wider transition-colors ${activeTab === 'overview' ? 'text-amber-500 border-b-2 border-amber-500' : 'text-gray-500 hover:text-gray-300'}`}>
-                Resumen
+                Resumen y Diagnóstico
               </button>
               <button onClick={() => setActiveTab('whatsapp')} className={`flex-1 py-3 text-xs font-black uppercase tracking-wider transition-colors flex items-center justify-center gap-2 ${activeTab === 'whatsapp' ? 'text-amber-500 border-b-2 border-amber-500' : 'text-gray-500 hover:text-gray-300'}`}>
-                <Smartphone className="h-3.5 w-3.5" /> Whapi Multi-Canal [{waAccounts.length}]
+                <Smartphone className="h-3.5 w-3.5" /> WhatsApp [{waAccounts.length}]
               </button>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-8">
+            <div className="flex-1 overflow-y-auto p-8 custom-scrollbar">
               {activeTab === 'overview' && (
-                <div className="space-y-6">
-                  {stats && (
+                <div className="space-y-10 pb-10">
+                  {stats ? (
                     <>
-                      <div className="p-4 rounded-2xl bg-[#1a1a1a] border border-amber-500/20 space-y-2">
-                        <p className="text-[10px] font-black text-amber-500 uppercase tracking-widest mb-3">Credenciales de Acceso</p>
-                        <div className="flex items-center gap-3 text-sm">
-                          <Mail className="h-4 w-4 text-gray-500 shrink-0" /> <span className="text-white font-mono">{stats.adminEmail}</span>
+                      {/* Subscription & Access */}
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="p-5 rounded-3xl bg-[#1a1a1a] border border-[#222]">
+                          <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-3 flex items-center gap-2">
+                             <CreditCard className="h-3 w-3 text-amber-500" /> Suscripción
+                          </p>
+                          <div className="flex items-center gap-2">
+                            <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-tighter ${
+                              stats.tenant?.subscription_status === 'active' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-amber-500/10 text-amber-500'
+                            }`}>
+                              {stats.tenant?.subscription_status}
+                            </span>
+                            <span className="text-[10px] text-gray-500 font-mono">
+                              {stats.tenant?.trial_ends_at ? `Fin Trial: ${new Date(stats.tenant.trial_ends_at).toLocaleDateString()}` : 'Sin Trial'}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="p-5 rounded-3xl bg-[#1a1a1a] border border-[#222]">
+                          <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-3 flex items-center gap-2">
+                             <Mail className="h-3 w-3 text-blue-500" /> Admin Access
+                          </p>
+                          <p className="text-xs font-mono text-white truncate" title={stats.adminEmail}>{stats.adminEmail}</p>
                         </div>
                       </div>
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="p-5 rounded-2xl bg-[#1a1a1a] border border-[#333]">
-                          <Users className="h-5 w-5 text-blue-400 mb-3" />
-                          <div className="text-3xl font-black text-white">{stats.clientCount}</div>
-                          <div className="text-xs text-gray-500 uppercase tracking-wider mt-1">Pacientes</div>
+
+                      {/* Counters */}
+                      <div className="grid grid-cols-3 gap-4">
+                        <div className="p-5 rounded-3xl bg-[#1a1a1a] border border-[#222] text-center">
+                          <div className="text-2xl font-black text-white">{stats.clientCount}</div>
+                          <div className="text-[9px] text-gray-500 uppercase font-black mt-1">Pacientes</div>
                         </div>
-                        <div className="p-5 rounded-2xl bg-[#1a1a1a] border border-[#333]">
-                          <CalendarCheck className="h-5 w-5 text-emerald-400 mb-3" />
-                          <div className="text-3xl font-black text-white">{stats.appointmentCount}</div>
-                          <div className="text-xs text-gray-500 uppercase tracking-wider mt-1">Citas Totales</div>
+                        <div className="p-5 rounded-3xl bg-[#1a1a1a] border border-[#222] text-center">
+                          <div className="text-2xl font-black text-white">{stats.appointmentCount}</div>
+                          <div className="text-[9px] text-gray-500 uppercase font-black mt-1">Citas</div>
+                        </div>
+                        <div className="p-5 rounded-3xl bg-[#1a1a1a] border border-[#222] text-center">
+                          <div className="text-2xl font-black text-white">{stats.professionals.length}</div>
+                          <div className="text-[9px] text-gray-500 uppercase font-black mt-1">Drs</div>
+                        </div>
+                      </div>
+
+                      {/* Recent Appointments */}
+                      <div className="space-y-4">
+                        <h4 className="text-[10px] font-black text-gray-600 uppercase tracking-[0.2em] border-l-2 border-emerald-500 pl-3">Últimas Citas</h4>
+                        <div className="space-y-2">
+                          {stats.lastAppointments.length > 0 ? stats.lastAppointments.map((app: any) => (
+                            <div key={app.id} className="flex items-center justify-between p-3 rounded-xl bg-black/40 border border-[#222] text-xs">
+                              <div className="flex flex-col">
+                                <span className="text-white font-bold">{app.clients?.first_name} {app.clients?.last_name}</span>
+                                <span className="text-[10px] text-gray-600">{new Date(app.start_at).toLocaleString()}</span>
+                              </div>
+                              <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-lg ${
+                                app.status === 'confirmed' ? 'text-emerald-500 bg-emerald-500/10' : 'text-gray-500 bg-gray-500/10'
+                              }`}>{app.status}</span>
+                            </div>
+                          )) : <p className="text-[10px] text-gray-600 italic">No hay citas registradas</p>}
+                        </div>
+                      </div>
+
+                      {/* Recent Clients */}
+                      <div className="space-y-4">
+                        <h4 className="text-[10px] font-black text-gray-600 uppercase tracking-[0.2em] border-l-2 border-blue-500 pl-3">Pacientes Recientes</h4>
+                        <div className="space-y-2">
+                          {stats.lastClients.length > 0 ? stats.lastClients.map((client: any) => (
+                            <div key={client.id} className="flex items-center justify-between p-3 rounded-xl bg-black/40 border border-[#222] text-xs">
+                              <span className="text-white font-bold">{client.first_name} {client.last_name}</span>
+                              <span className="text-[10px] text-gray-600 font-mono">{client.phone || 'Sin tel'}</span>
+                            </div>
+                          )) : <p className="text-[10px] text-gray-600 italic">No hay pacientes registrados</p>}
+                        </div>
+                      </div>
+
+                      {/* Services & Professionals Summary */}
+                      <div className="grid grid-cols-2 gap-8 pt-4">
+                        <div className="space-y-3">
+                           <h4 className="text-[10px] font-black text-gray-600 uppercase tracking-[0.2em]">Servicios</h4>
+                           <div className="space-y-1">
+                              {stats.services.map((s: any) => (
+                                <div key={s.id} className="text-[10px] text-gray-400 flex items-center gap-2">
+                                  <div className="h-1 w-1 rounded-full bg-gray-700" /> {s.name}
+                                </div>
+                              ))}
+                           </div>
+                        </div>
+                        <div className="space-y-3">
+                           <h4 className="text-[10px] font-black text-gray-600 uppercase tracking-[0.2em]">Profesionales</h4>
+                           <div className="space-y-1">
+                              {stats.professionals.map((p: any) => (
+                                <div key={p.id} className="text-[10px] text-gray-400 flex items-center gap-2">
+                                  <div className="h-1 w-1 rounded-full bg-gray-700" /> {p.full_name}
+                                </div>
+                              ))}
+                           </div>
+                        </div>
+                      </div>
+
+                      {/* Debug: Raw Settings JSON */}
+                      <div className="pt-8 border-t border-[#222]">
+                        <div className="flex items-center justify-between mb-4">
+                          <h4 className="text-[10px] font-black text-red-500 uppercase tracking-[0.2em]">Debug: Raw Settings JSON</h4>
+                        </div>
+                        <div className="p-4 rounded-2xl bg-black border border-red-500/10 font-mono text-[10px] text-gray-500 overflow-x-auto">
+                          <pre>{JSON.stringify(stats.tenant?.settings, null, 2)}</pre>
                         </div>
                       </div>
                     </>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center py-20 gap-4">
+                       <Loader2 className="h-8 w-8 text-amber-500 animate-spin" />
+                       <span className="text-xs font-black text-gray-600 uppercase tracking-widest">Compilando datos de diagnóstico...</span>
+                    </div>
                   )}
                 </div>
               )}

@@ -12,6 +12,8 @@ export async function createClinicAction(formData: FormData) {
   }
 
   const clinicName = formData.get('clinicName') as string;
+  const language = formData.get('language') as string || 'es';
+  const contactPhone = formData.get('contactPhone') as string || '';
 
   if (!clinicName) {
     return { error: 'El nombre de la clínica es obligatorio.' };
@@ -29,7 +31,8 @@ export async function createClinicAction(formData: FormData) {
         name: clinicName,
         slug: `${clinicName.toLowerCase().replace(/[^a-z0-9]/g, '-')}-${Math.random().toString(36).substring(2, 6)}`,
         subscription_status: 'trialing',
-        trial_ends_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
+        trial_ends_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+        settings: { language, contact_phone: contactPhone }
       })
       .select('id')
       .single();

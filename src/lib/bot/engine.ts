@@ -776,6 +776,20 @@ export const StateHandlers: Record<string, (ctx: BotContext) => Promise<boolean>
           text: t('appointmentConfirmed', lang, { name: `${cleanName} ${cleanLastName}`, date: botState.displayDate, time: botState.time }),
           removeKeyboard: true,
         });
+
+        // Immediate confirmation request if it's today or tomorrow
+        const today = new Date().toISOString().split('T')[0];
+        const tomorrow = new Date(new Date().getTime() + 86400000).toISOString().split('T')[0];
+        if (botState.date === today || botState.date === tomorrow) {
+          await MessageService.sendMessage({
+            channel,
+            tenant_id: tenant.id,
+            sender_phone_id,
+            chat_id: chatId,
+            text: t('reminderImmediate', lang),
+          });
+        }
+
         await updateClientState(supabase, client.id, { step: 'INITIAL' });
 
       } catch (err: any) {
@@ -829,8 +843,52 @@ export async function executeStateMachine(ctx: BotContext): Promise<boolean> {
     }
   }
 
-  // Global reset on any greeting word
+  // 1. Check for Appointment Confirmations (SI/NO out of band)
+  if (ctx.botState.step === 'INITIAL' || !StateHandlers[ctx.botState.step]) {
+    const { data: awaitingApps } = await ctx.supabase
+      .from('appointments')
+      .select('id, status')
+      .eq('tenant_id', ctx.tenant.id)
+      .eq('client_id', ctx.client.id)
+      .in('status', ['awaiting_confirmation', 'pending'])
+      .gte('start_at', new Date().toISOString())
+      .limit(5);
+
+    if (awaitingApps && awaitingApps.length > 0) {
+      const keywordsYes = translations[lang].keywordsYes;
+      const keywordsNo = translations[lang].keywordsNo;
+
+      if (keywordsYes.some(k => msgLower === k)) {
+        await ctx.supabase.from('appointments').update({ status: 'confirmed' }).in('id', awaitingApps.map(a => a.id));
+        await MessageService.sendMessage({
+          channel: ctx.channel,
+          tenant_id: ctx.tenant.id,
+          sender_phone_id: ctx.sender_phone_id,
+          chat_id: ctx.chatId,
+          text: t('confirmationSuccess', lang),
+        });
+        await showMainMenu(ctx.supabase, ctx.tenant, ctx.client.id, ctx.chatId, ctx.client.first_name, ctx.channel, ctx.sender_phone_id);
+        return true;
+      }
+
+      if (keywordsNo.some(k => msgLower === k)) {
+        await ctx.supabase.from('appointments').update({ status: 'cancelled' }).in('id', awaitingApps.map(a => a.id));
+        await MessageService.sendMessage({
+          channel: ctx.channel,
+          tenant_id: ctx.tenant.id,
+          sender_phone_id: ctx.sender_phone_id,
+          chat_id: ctx.chatId,
+          text: t('cancellationSuccess', lang),
+        });
+        await showMainMenu(ctx.supabase, ctx.tenant, ctx.client.id, ctx.chatId, ctx.client.first_name, ctx.channel, ctx.sender_phone_id);
+        return true;
+      }
+    }
+  }
+
+  // 2. Global reset on any greeting word
   if (greetWords.some((word: string) => msgLower.includes(word))) {
+    await updateClientState(ctx.supabase, ctx.client.id, { step: 'INITIAL' });
     await showMainMenu(ctx.supabase, ctx.tenant, ctx.client.id, ctx.chatId, ctx.client.first_name, ctx.channel, ctx.sender_phone_id);
     return true;
   }
@@ -840,6 +898,7 @@ export async function executeStateMachine(ctx: BotContext): Promise<boolean> {
     return await handler(ctx);
   }
 
+  await updateClientState(ctx.supabase, ctx.client.id, { step: 'INITIAL' });
   await showMainMenu(ctx.supabase, ctx.tenant, ctx.client.id, ctx.chatId, ctx.client.first_name, ctx.channel, ctx.sender_phone_id);
   return true;
 }

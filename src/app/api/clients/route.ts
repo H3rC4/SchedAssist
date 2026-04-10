@@ -21,6 +21,7 @@ export async function PATCH(req: NextRequest) {
         first_name: data.first_name,
         last_name: data.last_name || null,
         phone: data.phone,
+        notes: data.notes || null,
       })
       .eq('id', id)
       .eq('tenant_id', tenant_id)

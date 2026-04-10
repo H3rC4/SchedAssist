@@ -19,6 +19,27 @@ export const translations = {
     create: 'Create',
     error: 'Error',
     success: 'Success',
+    medical_record: 'Medical Record',
+    general_observations: 'General Remarks (Allergies, History)',
+    visit_observations: 'Visit Observations',
+    save_note: 'Save Medical Note',
+    clinical_history: 'Clinical History',
+    patient_management: 'Patient Management',
+    patient_management_subtitle: 'View patient files and their appointment history.',
+    search_patients_placeholder: 'Search by name or phone...',
+    no_patients_found: 'No patients found.',
+    edit_patient_data: 'Edit Patient Data',
+    successful_appointments: 'Successful Apps',
+    cancellations: 'Cancellations',
+    back: 'Back',
+    visit_summary: 'Visit Summary',
+    no_remarks_yet: 'No records found.',
+    add_comment_placeholder: 'Add a comment to this visit...',
+    confirm_delete_note: 'Delete this comment?',
+    role_professional: 'Professional',
+    clinic_settings_title: 'Clinic Configuration',
+    contact_phone_label: 'Public Contact Phone',
+    contact_phone_desc: 'The number patients will use to call the clinic for inquiries.',
     
     // Sidebar
     nav_home: 'Dashboard',
@@ -27,6 +48,16 @@ export const translations = {
     nav_staff: 'Staff',
     nav_services: 'Services',
     nav_settings: 'Settings',
+    nav_support: 'Technical Support',
+    sign_out: 'Sign Out',
+    support_title: 'Technical Support',
+    support_description: 'If you need help with the platform or have any technical questions, please contact us.',
+    support_email: 'support@schedassist.com',
+    support_hours: 'Hours: 09:00 - 18:00 (Italy Time, Mon-Fri)',
+    manage_services_title: 'Service Management',
+    manage_services_desc: 'Manage the services offered by your clinic.',
+    manage_services_btn: 'Manage Services',
+    account_administration: 'Account Administration',
 
     // Dashboard Hero & Metrics
     system_active: 'System Online',
@@ -37,6 +68,8 @@ export const translations = {
     active_patients: 'Active Patients',
     confirmed: 'Confirmed',
     pending: 'Pending',
+    canceled: 'Canceled',
+    awaiting: 'Waiting Confirmation',
     upcoming_appointments: 'Upcoming Appointments',
     see_full_calendar: 'View Full Calendar',
     no_activity_today: 'No activity today',
@@ -146,6 +179,33 @@ export const translations = {
       no_client_yet: 'Not a client yet?',
       contact_sales: 'Contact Sales',
       back_home: 'Back to Home',
+    },
+
+    // Tutorial
+    tutorial: {
+      step1_title: 'This is your Base!',
+      step1_content: 'In this tab you can see the daily appointments, check doctor availability and schedule appointments manually.',
+      step2_title: 'The Super Power 🤖',
+      step2_content: 'This is where you connect your WhatsApp number so our AI agent can book appointments for you 24/7.',
+      next: 'Next',
+      finish: 'Got it',
+      step_x_of_y: (current: number, total: number) => `Step ${current} of ${total}`
+    },
+
+    // Dashboard Extras
+    sign_out: 'Sign Out',
+    weekly_activity: 'Weekly Activity',
+    appointments: 'Appointments',
+    appointments_volume: 'Appointment volume per day',
+    distribution: 'Distribution',
+    estimated_revenue: 'Estimated Revenue',
+    appointments_completed: 'Completed appointments',
+    activity_progress: 'Activity Progress',
+    activity_desc: (p: number) => p > 0 ? `${p}% of active appointments have been completed.` : 'No activity to show today.',
+    whatsapp_banner: {
+      title: 'WhatsApp Bot API',
+      desc: 'Automate your clinic 24/7. Connect your number and reduce no-shows.',
+      cta: 'Get Access'
     }
   },
   es: {
@@ -158,6 +218,27 @@ export const translations = {
     create: 'Crear',
     error: 'Error',
     success: 'Éxito',
+    medical_record: 'Ficha Médica',
+    general_observations: 'Observaciones Generales (Alergias, Antecedentes)',
+    visit_observations: 'Observaciones de la Visita',
+    save_note: 'Guardar Ficha Médica',
+    clinical_history: 'Historial Clínico',
+    patient_management: 'Gestión de Pacientes',
+    patient_management_subtitle: 'Consulta las fichas de tus pacientes y su historial de citas.',
+    search_patients_placeholder: 'Buscar por nombre o teléfono...',
+    no_patients_found: 'No se encontraron pacientes.',
+    edit_patient_data: 'Editar Datos del Paciente',
+    successful_appointments: 'Citas Exitosas',
+    cancellations: 'Cancelaciones',
+    back: 'Volver',
+    visit_summary: 'Resumen de Visitas',
+    no_remarks_yet: 'No hay registros.',
+    add_comment_placeholder: 'Añadir un comentario a esta consulta...',
+    confirm_delete_note: '¿Borrar este comentario?',
+    role_professional: 'Profesional',
+    clinic_settings_title: 'Configuración de Local',
+    contact_phone_label: 'Teléfono Público de Contacto',
+    contact_phone_desc: 'El número que los pacientes usarán para llamar a la clínica por consultas.',
 
     // Sidebar
     nav_home: 'Inicio',
@@ -166,6 +247,16 @@ export const translations = {
     nav_staff: 'Especialistas',
     nav_services: 'Servicios',
     nav_settings: 'Ajustes',
+    nav_support: 'Soporte Técnico',
+    sign_out: 'Cerrar Sesión',
+    support_title: 'Soporte Técnico',
+    support_description: 'Si necesitas ayuda con la plataforma o tienes alguna duda técnica, contáctanos.',
+    support_email: 'support@schedassist.com',
+    support_hours: 'Atención: 09:00 - 18:00 (Hora Italia, Lun-Vie)',
+    manage_services_title: 'Gestión de Servicios',
+    manage_services_desc: 'Administra los servicios que ofrece tu clínica.',
+    manage_services_btn: 'Manejar Servicios',
+    account_administration: 'Administración de la Cuenta',
 
     // Dashboard Hero & Metrics
     system_active: 'Sistema Online',
@@ -174,8 +265,10 @@ export const translations = {
     new_appointment: 'Nueva Cita',
     total_appointments: 'Citas Totales',
     active_patients: 'Pacientes Activos',
-    confirmed: 'Confirmadas',
-    pending: 'En Cola',
+    confirmed: 'Confirmada',
+    pending: 'En Espera',
+    canceled: 'Cancelada',
+    awaiting: 'Por Confirmar',
     upcoming_appointments: 'Próximas Citas',
     see_full_calendar: 'Ver Agenda Completa',
     no_activity_today: 'Sin actividad hoy',
@@ -285,6 +378,33 @@ export const translations = {
       no_client_yet: '¿Aún no eres cliente?',
       contact_sales: 'Contacta con Ventas',
       back_home: 'Volver al inicio',
+    },
+
+    // Tutorial
+    tutorial: {
+      step1_title: '¡Aquí es tu Base!',
+      step1_content: 'En esta pestaña podrás ver los turnos del día, revisar la disponibilidad de tus doctores y agendar citas manualmente.',
+      step2_title: 'El Súper Poder 🤖',
+      step2_content: 'Aquí es donde conectas tu número de WhatsApp para que nuestro agente de IA agende citas por ti 24/7 sin que muevas un dedo.',
+      next: 'Siguiente',
+      finish: 'Entendido',
+      step_x_of_y: (current: number, total: number) => `Paso ${current} de ${total}`
+    },
+
+    // Dashboard Extras
+    sign_out: 'Cerrar Sesión',
+    weekly_activity: 'Actividad Semanal',
+    appointments: 'Citas',
+    appointments_volume: 'Volumen de citas por día',
+    distribution: 'Distribución',
+    estimated_revenue: 'Ingresos Estimados',
+    appointments_completed: 'Citas completadas',
+    activity_progress: 'Progreso de Actividad',
+    activity_desc: (p: number) => p > 0 ? `Se ha completado el ${p}% de las citas activas.` : 'No hay actividad para mostrar hoy.',
+    whatsapp_banner: {
+      title: 'Bot de WhatsApp',
+      desc: 'Automatiza tu clínica 24/7. Conecta tu número y reduce ausencias.',
+      cta: 'Activar Bot'
     }
   },
   it: {
@@ -297,6 +417,27 @@ export const translations = {
     create: 'Crea',
     error: 'Errore',
     success: 'Successo',
+    medical_record: 'Cartella Clinica',
+    general_observations: 'Osservazioni Generali (Allergie, Anamnesi)',
+    visit_observations: 'Osservazioni della Visita',
+    save_note: 'Salva Cartella Medica',
+    clinical_history: 'Storia Clinica',
+    patient_management: 'Gestione Pazienti',
+    patient_management_subtitle: 'Consulta le schede dei tuoi pazienti e la loro cronologia appuntamenti.',
+    search_patients_placeholder: 'Cerca per nome o telefono...',
+    no_patients_found: 'Nessun paziente trovato.',
+    edit_patient_data: 'Modifica Dati Paziente',
+    successful_appointments: 'Appuntamenti Corretti',
+    cancellations: 'Cancellazioni',
+    back: 'Indietro',
+    visit_summary: 'Riepilogo Visite',
+    no_remarks_yet: 'Nessun record trovato.',
+    add_comment_placeholder: 'Aggiungi un commento a questa visita...',
+    confirm_delete_note: 'Eliminare questo commento?',
+    role_professional: 'Professionista',
+    clinic_settings_title: 'Configurazione Locale',
+    contact_phone_label: 'Telefono Pubblico di Contatto',
+    contact_phone_desc: 'Il numero che i pazienti useranno per chiamare la clinica per informazioni.',
 
     // Sidebar
     nav_home: 'Dashboard',
@@ -305,6 +446,16 @@ export const translations = {
     nav_staff: 'Specialisti',
     nav_services: 'Servizi',
     nav_settings: 'Impostazioni',
+    nav_support: 'Supporto Tecnico',
+    sign_out: 'Disconnetti',
+    support_title: 'Supporto Tecnico',
+    support_description: 'Se hai bisogno di aiuto con la piattaforma o hai domande tecniche, contattaci.',
+    support_email: 'support@schedassist.com',
+    support_hours: 'Orario: 09:00 - 18:00 (Ora Italiana, Lun-Ven)',
+    manage_services_title: 'Gestione Servizi',
+    manage_services_desc: 'Gestisci i servizi offerti dalla tua clinica.',
+    manage_services_btn: 'Gestisci Servizi',
+    account_administration: 'Amministrazione Account',
 
     // Dashboard Hero & Metrics
     system_active: 'Sistema Attivo',
@@ -313,8 +464,10 @@ export const translations = {
     new_appointment: 'Nuovo Appuntamento',
     total_appointments: 'Appuntamenti Totali',
     active_patients: 'Pazienti Attivi',
-    confirmed: 'Confermati',
-    pending: 'In Coda',
+    confirmed: 'Confermato',
+    pending: 'In Attesa',
+    canceled: 'Annullato',
+    awaiting: 'Da Confermare',
     upcoming_appointments: 'Prossimi Appuntamenti',
     see_full_calendar: 'Vedi Agenda Completa',
     no_activity_today: 'Nessuna attività oggi',
@@ -424,6 +577,33 @@ export const translations = {
       no_client_yet: 'Non sei ancora cliente?',
       contact_sales: 'Contatta il Reparto Vendite',
       back_home: 'Torna alla Home',
+    },
+
+    // Tutorial
+    tutorial: {
+      step1_title: 'Questa è la tua Base!',
+      step1_content: 'In questa scheda puoi vedere gli appuntamenti del giorno, controllare la disponibilità dei medici e fissare appuntamenti manualmente.',
+      step2_title: 'Il Super Potere 🤖',
+      step2_content: 'Qui è dove colleghi il tuo numero WhatsApp in modo che il nostro agente AI possa prenotare appuntamenti per te 24/7.',
+      next: 'Avanti',
+      finish: 'Capito',
+      step_x_of_y: (current: number, total: number) => `Passaggio ${current} di ${total}`
+    },
+
+    // Dashboard Extras
+    sign_out: 'Esci',
+    weekly_activity: 'Attività Settimanale',
+    appointments: 'Appuntamenti',
+    appointments_volume: 'Volume appuntamenti per giorno',
+    distribution: 'Distribuzione',
+    estimated_revenue: 'Ricavi Stimati',
+    appointments_completed: 'Appuntamenti completati',
+    activity_progress: 'Progresso Attività',
+    activity_desc: (p: number) => p > 0 ? `Il ${p}% degli appuntamenti attivi è stato completato.` : 'Nessuna attività da mostrare oggi.',
+    whatsapp_banner: {
+      title: 'Bot di WhatsApp',
+      desc: 'Automatizza la tua clinica 24/7. Collega il tuo numero e riduci le assenze.',
+      cta: 'Attiva Bot'
     }
   }
 };

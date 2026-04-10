@@ -3,39 +3,42 @@
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { CalendarDays, MessageSquareText, X, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { translations, Language } from '@/lib/i18n';
 
 interface TutorialProps {
   tenantId: string;
+  lang?: Language;
   onComplete: () => void;
 }
 
-const STEPS = [
-  {
-    id: 'tour-appointments',
-    title: '¡Aquí es tu Base!',
-    content: 'En esta pestaña podrás ver los turnos del día, revisar la disponibilidad de tus doctores y agendar citas manualmente.',
-    icon: CalendarDays,
-    color: 'text-amber-500',
-    bg: 'bg-amber-500'
-  },
-  {
-    id: 'tour-whatsapp',
-    title: 'El Súper Poder 🤖',
-    content: 'Aquí es donde conectas tu número de WhatsApp para que nuestro agente de IA agende citas por ti 24/7 sin que muevas un dedo.',
-    icon: MessageSquareText,
-    color: 'text-emerald-500',
-    bg: 'bg-emerald-500'
-  }
-];
-
-export function InteractiveTutorial({ tenantId, onComplete }: TutorialProps) {
+export function InteractiveTutorial({ tenantId, lang = 'es', onComplete }: TutorialProps) {
   const [currentStep, setCurrentStep] = useState(0);
   const [mounted, setMounted] = useState(false);
   const [targetRect, setTargetRect] = useState<DOMRect | null>(null);
 
+  const t = translations[lang] || translations['es'];
+  
+  const STEPS = [
+    {
+      id: 'tour-appointments',
+      title: t.tutorial.step1_title,
+      content: t.tutorial.step1_content,
+      icon: CalendarDays,
+      color: 'text-amber-500',
+      bg: 'bg-amber-500'
+    },
+    {
+      id: 'tour-whatsapp',
+      title: t.tutorial.step2_title,
+      content: t.tutorial.step2_content,
+      icon: MessageSquareText,
+      color: 'text-emerald-500',
+      bg: 'bg-emerald-500'
+    }
+  ];
+
   useEffect(() => {
     setMounted(true);
-    // Un pequeño retraso para asegurar que el sidebar esté renderizado
     const timeout = setTimeout(updatePosition, 500);
     window.addEventListener('resize', updatePosition);
     return () => {
@@ -52,7 +55,6 @@ export function InteractiveTutorial({ tenantId, onComplete }: TutorialProps) {
   }
 
   async function handleFinish() {
-    // API call para marcar tutorial como completado
     try {
       await fetch('/api/tenant/tutorial', {
         method: 'POST',
@@ -79,13 +81,8 @@ export function InteractiveTutorial({ tenantId, onComplete }: TutorialProps) {
 
   return (
     <div className="fixed inset-0 z-[150] pointer-events-auto">
-      
-      {/* Fondo oscuro general que ignora clicks */}
-      <div 
-        className="absolute inset-0 bg-slate-900/40 dark:bg-black/60 backdrop-blur-[2px] transition-all duration-500" 
-      />
+      <div className="absolute inset-0 bg-slate-900/40 dark:bg-black/60 backdrop-blur-[2px] transition-all duration-500" />
 
-      {/* Recorte (Spotlight) en el elemento objetivo */}
       <div 
         className="absolute bg-transparent ring-[100vw] ring-slate-900/40 dark:ring-black/60 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] pointer-events-none rounded-[1.5rem]"
         style={{
@@ -99,16 +96,14 @@ export function InteractiveTutorial({ tenantId, onComplete }: TutorialProps) {
         <div className="absolute inset-0 border-2 border-white/20 rounded-[1.5rem] animate-pulse" />
       </div>
 
-      {/* Caja del Tooltip */}
       <div 
         className="absolute z-[160] transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] w-[320px] bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200 dark:border-white/10 overflow-hidden"
         style={{
-          top: targetRect.top,
-          // Colocar el tooltip a la derecha del enlace del sidebar
+          top: targetRect.top > window.innerHeight / 2 ? undefined : targetRect.top,
+          bottom: targetRect.top > window.innerHeight / 2 ? (window.innerHeight - targetRect.bottom) : undefined,
           left: targetRect.right + 24
         }}
       >
-        {/* Progress Bar Top */}
         <div className="h-1 w-full bg-slate-100 dark:bg-slate-800">
           <div 
             className={`h-full ${stepInfo.bg} transition-all duration-500`}
@@ -138,22 +133,21 @@ export function InteractiveTutorial({ tenantId, onComplete }: TutorialProps) {
 
           <div className="flex items-center justify-between mt-auto">
             <span className="text-xs font-bold text-slate-400 tracking-widest uppercase">
-              Paso {currentStep + 1} de {STEPS.length}
+              {t.tutorial.step_x_of_y(currentStep + 1, STEPS.length)}
             </span>
             <button
               onClick={nextStep}
               className={`h-10 px-5 rounded-xl font-bold text-white shadow-lg transition-all active:scale-95 flex items-center gap-2 ${stepInfo.bg} hover:opacity-90`}
             >
               {currentStep < STEPS.length - 1 ? (
-                <>Siguiente <ArrowRight className="h-4 w-4" /></>
+                <>{t.tutorial.next} <ArrowRight className="h-4 w-4" /></>
               ) : (
-                <>Entendido <CheckCircle2 className="h-4 w-4" /></>
+                <>{t.tutorial.finish} <CheckCircle2 className="h-4 w-4" /></>
               )}
             </button>
           </div>
         </div>
       </div>
-
     </div>
   );
 }

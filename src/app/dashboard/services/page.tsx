@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { Briefcase, Clock, X, Plus, Trash2, Scissors, Stethoscope, Sparkles, DollarSign, Pencil, CheckCircle } from 'lucide-react'
+import { translations, Language } from '@/lib/i18n'
 import { createClient } from '@/lib/supabase/client'
 
 interface Service {
@@ -12,32 +13,7 @@ interface Service {
   active: boolean;
 }
 
-const i18n = {
-  es: {
-    title: 'Servicios y Tratamientos', subtitle: 'Configura los servicios que ofreces y su duración estimada.',
-    addBtn: 'Agregar Servicio', noServicesCreated: 'No has creado servicios aún.',
-    createFirst: 'Crea el primero ahora', delConfirm: '¿Seguro que deseas eliminar este servicio? Las citas existentes no se borrarán.',
-    newService: 'Nuevo Servicio', editService: 'Editar Servicio', serviceName: 'Nombre del Servicio',
-    serviceNamePH: 'Ej: Limpieza dental', duration: 'Duración (min)',
-    price: 'Precio (opcional)', saving: 'Guardando...', btnCreate: 'Crear Servicio', btnSave: 'Guardar Cambios'
-  },
-  it: {
-    title: 'Servizi e Trattamenti', subtitle: 'Configura i servizi che offri e la loro durata.',
-    addBtn: 'Aggiungi Servizio', noServicesCreated: 'Nessun servizio creato.',
-    createFirst: 'Crea il primo', delConfirm: 'Sei sicuro di voler eliminare questo servizio?',
-    newService: 'Nuovo Servizio', editService: 'Modifica Servizio', serviceName: 'Nome del Servizio',
-    serviceNamePH: 'Es: Pulizia dentale', duration: 'Durata (min)',
-    price: 'Prezzo', saving: 'Salvataggio...', btnCreate: 'Crea Servizio', btnSave: 'Salva Modifiche'
-  },
-  en: {
-    title: 'Services and Treatments', subtitle: 'Configure the services you offer and their estimated duration.',
-    addBtn: 'Add Service', noServicesCreated: 'No services created yet.',
-    createFirst: 'Create the first one now', delConfirm: 'Are you sure you want to delete this service? Existing appointments will not be deleted.',
-    newService: 'New Service', editService: 'Edit Service', serviceName: 'Service Name',
-    serviceNamePH: 'Ex: Dental Cleaning', duration: 'Duration (min)',
-    price: 'Price (optional)', saving: 'Saving...', btnCreate: 'Create Service', btnSave: 'Save Changes'
-  }
-}
+
 
 export default function ServicesPage() {
   const supabase = createClient()
@@ -47,8 +23,8 @@ export default function ServicesPage() {
   const [saving, setSaving] = useState(false)
   const [showAddForm, setShowAddForm] = useState(false)
   const [editService, setEditService] = useState<Service | null>(null)
+  const [lang, setLang] = useState<Language>('es')
   const [savedId, setSavedId] = useState<string | null>(null)
-  const [lang, setLang] = useState<'en' | 'es' | 'it'>('es')
 
   const [formData, setFormData] = useState({ name: '', duration_minutes: 30, price: 0 })
 
@@ -66,7 +42,7 @@ export default function ServicesPage() {
     if (tuData?.tenants) {
       const tenant = tuData.tenants as any
       setTenantId(tenant.id)
-      setLang((tenant.settings?.language as 'en' | 'es' | 'it') || 'es')
+      setLang((tenant.settings?.language as Language) || 'es')
     }
   }
 
@@ -127,7 +103,34 @@ export default function ServicesPage() {
     setEditService({ ...service })
   }
 
-  const T = i18n[lang]
+  const T_LEGACY = {
+    es: {
+      title: 'Servicios y Tratamientos', subtitle: 'Configura los servicios que ofreces y su duración estimada.',
+      addBtn: 'Agregar Servicio', noServicesCreated: 'No has creado servicios aún.',
+      createFirst: 'Crea el primero ahora', delConfirm: '¿Seguro que deseas eliminar este servicio? Las citas existentes no se borrarán.',
+      newService: 'Nuevo Servicio', editService: 'Editar Servicio', serviceName: 'Nombre del Servicio',
+      serviceNamePH: 'Ej: Limpieza dental', duration: 'Duración (min)',
+      price: 'Precio (opcional)', saving: 'Guardando...', btnCreate: 'Crear Servicio', btnSave: 'Guardar Cambios'
+    },
+    it: {
+      title: 'Servizi e Trattamenti', subtitle: 'Configura i servizi che offri e la loro durata.',
+      addBtn: 'Aggiungi Servizio', noServicesCreated: 'Nessun servizio creato.',
+      createFirst: 'Crea il primo', delConfirm: 'Sei sicuro di voler eliminare questo servizio?',
+      newService: 'Nuovo Servizio', editService: 'Modifica Servizio', serviceName: 'Nome del Servizio',
+      serviceNamePH: 'Es: Pulizia dentale', duration: 'Durata (min)',
+      price: 'Prezzo', saving: 'Salvataggio...', btnCreate: 'Crea Servizio', btnSave: 'Salva Modifiche'
+    },
+    en: {
+      title: 'Services and Treatments', subtitle: 'Configure the services you offer and their estimated duration.',
+      addBtn: 'Add Service', noServicesCreated: 'No services created yet.',
+      createFirst: 'Create the first one now', delConfirm: 'Are you sure you want to delete this service? Existing appointments will not be deleted.',
+      newService: 'New Service', editService: 'Edit Service', serviceName: 'Service Name',
+      serviceNamePH: 'Ex: Dental Cleaning', duration: 'Duration (min)',
+      price: 'Price (optional)', saving: 'Saving...', btnCreate: 'Create Service', btnSave: 'Save Changes'
+    }
+  }
+
+  const T = T_LEGACY[lang] || T_LEGACY['es']
 
   const serviceIcon = (name: string) => {
     const lower = name.toLowerCase()

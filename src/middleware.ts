@@ -38,8 +38,8 @@ export async function middleware(request: NextRequest) {
 
   const SUPERADMIN_EMAILS = ['hernanenriquecaballero@gmail.com']
 
-  // Protect /superadmin - only superadmins (except recovery pages)
-  const UNPROTECTED_SUPERADMIN = ['/superadmin/reset-password'];
+  // Protect /superadmin - only superadmins (except recovery pages and 2fa verification)
+  const UNPROTECTED_SUPERADMIN = ['/superadmin/reset-password', '/superadmin/2fa'];
   if (request.nextUrl.pathname.startsWith('/superadmin') && 
       !UNPROTECTED_SUPERADMIN.some(p => request.nextUrl.pathname.startsWith(p))) {
     if (!session) {
@@ -48,6 +48,12 @@ export async function middleware(request: NextRequest) {
     const userEmail = session.user.email || ''
     if (!SUPERADMIN_EMAILS.includes(userEmail)) {
       return NextResponse.redirect(new URL('/dashboard', request.url))
+    }
+
+    // Require 2FA verification for superadmin access
+    const is2faVerified = request.cookies.get('sa_2fa_verified')?.value === 'true'
+    if (!is2faVerified) {
+      return NextResponse.redirect(new URL('/superadmin/2fa', request.url))
     }
   }
 

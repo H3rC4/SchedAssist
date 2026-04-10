@@ -1,21 +1,21 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Language } from '@/lib/i18n'
-import { useTheme } from 'next-themes'
-import { Moon, Sun, LogOut } from 'lucide-react'
+import { Language, translations } from '@/lib/i18n'
+import { LogOut } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { Sidebar } from '@/components/dashboard/Sidebar'
 import { TrialBanner } from '@/components/dashboard/TrialBanner'
 import { OnboardingWizard } from '@/components/dashboard/OnboardingWizard'
 import { InteractiveTutorial } from '@/components/dashboard/InteractiveTutorial'
 
-function DashboardHeader() {
+function DashboardHeader({ lang = 'es' }: { lang?: Language }) {
   const supabase = createClient()
-  const { theme, setTheme } = useTheme()
   const [mounted, setMounted] = useState(false)
   const [tenantName, setTenantName] = useState('')
   const [tenantEmail, setTenantEmail] = useState('')
+
+  const t = translations[lang] || translations['es']
 
   useEffect(() => {
     setMounted(true)
@@ -59,19 +59,6 @@ function DashboardHeader() {
 
       {/* Right Actions */}
       <div className="flex items-center gap-3">
-        {/* Dark / Light Toggle */}
-        {mounted && (
-          <button
-            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-            className="h-10 w-10 rounded-2xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 flex items-center justify-center transition-all shadow-sm"
-            title="Toggle theme"
-          >
-            {theme === 'dark'
-              ? <Sun className="h-4.5 w-4.5 text-amber-400" />
-              : <Moon className="h-4.5 w-4.5 text-slate-600" />
-            }
-          </button>
-        )}
 
         {/* Sign Out */}
         <button
@@ -79,7 +66,7 @@ function DashboardHeader() {
           className="h-10 px-5 rounded-2xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 flex items-center gap-2 text-sm font-semibold text-slate-600 dark:text-slate-300 transition-all"
         >
           <LogOut className="h-4 w-4" />
-          <span className="hidden sm:inline">Cerrar Sesión</span>
+          <span className="hidden sm:inline">{t.sign_out}</span>
         </button>
       </div>
     </header>
@@ -152,13 +139,14 @@ export default function DashboardLayout({
       {tenantInfo && tenantInfo.settings?.onboarding_completed && !tenantInfo.settings?.tutorial_completed && (
         <InteractiveTutorial 
           tenantId={tenantInfo.id} 
+          lang={tenantInfo.lang}
           onComplete={handleTutorialComplete} 
         />
       )}
 
       {/* Sidebar Section */}
       <div className="hidden md:flex flex-shrink-0">
-        <Sidebar />
+        <Sidebar lang={tenantInfo?.lang} />
       </div>
 
       {/* Main Content Area - Floating Panel Concept */}
@@ -171,10 +159,11 @@ export default function DashboardLayout({
             <TrialBanner 
               status={tenantInfo.status} 
               trialEndsAt={tenantInfo.trial_ends_at} 
+              lang={tenantInfo.lang}
             />
           )}
 
-          <DashboardHeader />
+          <DashboardHeader lang={tenantInfo?.lang} />
 
           {/* Page Content */}
           <main className="flex-1 overflow-y-auto p-10 custom-scrollbar relative z-10">

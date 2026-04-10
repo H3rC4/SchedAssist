@@ -62,12 +62,19 @@ export async function showMainMenu(
   const lang = (tenant.settings?.language || 'es') as Language;
   await updateClientState(supabase, clientId, { step: 'INITIAL' });
 
+  const contactPhone = tenant.settings?.contact_phone;
+  const phoneText = contactPhone ? t('callUs', lang, { phone: contactPhone }) : '';
+
   await MessageService.sendMessage({
     channel,
     chat_id: chatId,
     tenant_id: tenant?.id,
     sender_phone_id: senderPhoneId, // <--- Passed through
-    text: t('mainMenu', lang, { name: firstName?.trim() ? `, ${firstName.trim()}` : '', tenant: tenant.name }),
+    text: t('mainMenu', lang, { 
+      name: firstName?.trim() ? `, ${firstName.trim()}` : '', 
+      tenant: tenant.name,
+      phone: phoneText
+    }),
     buttons: [
       `📅 ${t('bookAppointment', lang)}`,
       `❌ ${t('cancelAppointment', lang)}`,

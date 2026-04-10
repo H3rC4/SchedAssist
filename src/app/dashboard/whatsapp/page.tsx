@@ -1,16 +1,22 @@
 "use client"
 
 import { useEffect, useState } from 'react'
-import { Smartphone, Zap, Loader2, CheckCircle2, AlertCircle, Trash2, Plus, ArrowRight, ShieldCheck } from 'lucide-react'
+import { useSearchParams, useRouter } from 'next/navigation'
+import { Smartphone, Zap, Loader2, CheckCircle2, AlertCircle, Trash2, Plus, ArrowRight, ShieldCheck, Sparkles, PartyPopper } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { translations, Language } from '@/lib/i18n'
 
 export default function WhatsAppPage() {
+  const searchParams = useSearchParams()
+  const router = useRouter()
+  const successParam = searchParams.get('success')
+  
   const [loading, setLoading] = useState(true)
   const [tenant, setTenant] = useState<any>(null)
   const [accounts, setAccounts] = useState<any[]>([])
   const [lang, setLang] = useState<Language>('es')
   const [isProcessing, setIsProcessing] = useState(false)
+  const [forceSuccess, setForceSuccess] = useState(false)
   
   // Form state
   const [showAddForm, setShowAddForm] = useState(false)
@@ -37,7 +43,7 @@ export default function WhatsAppPage() {
         setLang((tuData.tenants.settings?.language as Language) || 'es')
         
         // Fetch WhatsApp accounts if active
-        if (tuData.tenants.subscription_status === 'active') {
+        if (tuData.tenants.subscription_status === 'active' || forceSuccess || successParam === 'true') {
           const res = await fetch(`/api/settings/whatsapp?tenant_id=${tuData.tenants.id}`)
           const data = await res.json()
           setAccounts(data)
@@ -52,7 +58,7 @@ export default function WhatsAppPage() {
 
   useEffect(() => {
     fetchData()
-  }, [])
+  }, [forceSuccess, successParam])
 
   const handleUpgrade = async () => {
     setIsProcessing(true)
@@ -119,8 +125,63 @@ export default function WhatsAppPage() {
     )
   }
 
+  // --- SUCCESS MOCKUP SCREEN ---
+  if (successParam === 'true' && !forceSuccess) {
+    return (
+      <div className="flex-1 p-8 md:p-12 min-h-[80vh] flex items-center justify-center animate-in zoom-in-95 duration-700">
+        <div className="max-w-xl w-full text-center space-y-8 bg-white dark:bg-slate-900 p-12 rounded-[3.5rem] border border-slate-100 dark:border-white/5 shadow-2xl relative overflow-hidden">
+          {/* Success Decoration */}
+          <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-emerald-400 via-amber-400 to-indigo-400" />
+          
+          <div className="relative">
+            <div className="inline-flex h-24 w-24 items-center justify-center rounded-[2rem] bg-emerald-500 text-white shadow-lg shadow-emerald-500/20 mb-6 animate-bounce">
+              <PartyPopper className="h-12 w-12" />
+            </div>
+            <Sparkles className="absolute -top-2 -right-2 h-8 w-8 text-amber-500 animate-pulse" />
+          </div>
+
+          <div className="space-y-4">
+            <h2 className="text-4xl font-black text-slate-900 dark:text-white uppercase tracking-tighter">
+              ¡Pago <span className="text-emerald-500">Exitoso</span>!
+            </h2>
+            <p className="text-slate-500 font-bold leading-relaxed">
+              Tu suscripción **SchedAssist Premium** está activa. Ahora puedes vincular tus números de WhatsApp y activar el asistente de IA.
+            </p>
+          </div>
+
+          <div className="p-6 rounded-3xl bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-white/5 text-left">
+            <div className="flex items-center gap-4 mb-4">
+                <div className="h-10 w-10 rounded-xl bg-emerald-500 flex items-center justify-center text-white">
+                    <CheckCircle2 className="h-6 w-6" />
+                </div>
+                <div>
+                    <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Plan</p>
+                    <p className="text-sm font-bold text-slate-900 dark:text-white">Mensual $70 (Acceso Ilimitado)</p>
+                </div>
+            </div>
+            <div className="h-px bg-slate-200 dark:bg-white/10 w-full my-4" />
+            <div className="flex items-center justify-between text-xs font-bold text-slate-400 uppercase tracking-widest">
+                <span>Próximo cobro</span>
+                <span className="text-slate-900 dark:text-white">{new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString()}</span>
+            </div>
+          </div>
+
+          <button 
+            onClick={() => {
+              setForceSuccess(true)
+              router.replace('/dashboard/whatsapp')
+            }}
+            className="w-full h-16 bg-slate-900 dark:bg-amber-500 text-white dark:text-slate-900 rounded-2xl font-black uppercase tracking-widest transition-all hover:scale-105 shadow-xl shadow-slate-900/20 active:scale-95 flex items-center justify-center gap-3"
+          >
+            Configurar WhatsApp Ahora <ArrowRight className="h-5 w-5" />
+          </button>
+        </div>
+      </div>
+    )
+  }
+
   // --- GATE SCREEN (NOT ACTIVE) ---
-  if (tenant?.subscription_status !== 'active') {
+  if (tenant?.subscription_status !== 'active' && !forceSuccess && successParam !== 'true') {
     return (
       <div className="flex-1 p-8 md:p-12 animate-in fade-in slide-in-from-bottom-4 duration-1000">
         <div className="max-w-4xl mx-auto">
@@ -141,14 +202,14 @@ export default function WhatsAppPage() {
               </h1>
               
               <p className="text-lg md:text-xl text-slate-400 font-medium max-w-2xl mx-auto mb-12 leading-relaxed">
-                Potencia tu clínica con notificaciones dinámicas, recordatorios automáticos y gestión de citas por WhatsApp. Todo integrado en un solo lugar.
+                {t.whatsapp_banner.desc}
               </p>
 
               <div className="grid md:grid-cols-3 gap-6 mb-12 text-left">
                 {[
-                  { title: 'IA Conversacional', desc: 'Bots inteligentes que agendan por ti.' },
-                  { title: 'Multicanal Real', desc: 'Usa múltiples números si lo necesitas.' },
-                  { title: 'Seguridad Total', desc: 'Tus datos y los de tus pacientes, protegidos.' }
+                  { title: t.bot_ai || 'IA Conversacional', desc: t.whatsapp_feature_1 || 'Bots inteligentes que agendan por ti.' },
+                  { title: t.multichannel || 'Multicanal Real', desc: t.whatsapp_feature_2 || 'Usa múltiples números si lo necesitas.' },
+                  { title: t.security || 'Seguridad Total', desc: t.whatsapp_feature_3 || 'Tus datos y los de tus pacientes, protegidos.' }
                 ].map((feature, idx) => (
                   <div key={idx} className="p-6 rounded-2xl bg-white/5 border border-white/5 backdrop-blur-sm">
                     <CheckCircle2 className="h-5 w-5 text-amber-500 mb-3" />
@@ -164,10 +225,10 @@ export default function WhatsAppPage() {
                   disabled={isProcessing}
                   className="w-full md:w-auto px-10 py-5 bg-amber-500 hover:bg-amber-400 text-slate-900 rounded-3xl font-black text-lg uppercase tracking-wider transition-all hover:scale-105 active:scale-95 disabled:opacity-50 disabled:scale-100 shadow-xl shadow-amber-500/20 flex items-center justify-center gap-3"
                 >
-                  {isProcessing ? <Loader2 className="h-6 w-6 animate-spin" /> : <>Activar por $70/mes <ArrowRight className="h-5 w-5" /></>}
+                  {isProcessing ? <Loader2 className="h-6 w-6 animate-spin" /> : <>{t.whatsapp_banner.cta} por $70/mes <ArrowRight className="h-5 w-5" /></>}
                 </button>
                 <div className="flex items-center gap-2 text-slate-500 text-sm font-bold uppercase tracking-widest">
-                  <ShieldCheck className="h-4 w-4" /> Pago Seguro vía Stripe
+                  <ShieldCheck className="h-4 w-4" /> {t.secure_payment || 'Pago Seguro vía Stripe'}
                 </div>
               </div>
             </div>
@@ -188,7 +249,7 @@ export default function WhatsAppPage() {
             </div>
           </div>
           <h1 className="text-5xl font-black text-slate-900 dark:text-white uppercase tracking-tighter leading-none">
-            Configuración <span className="text-amber-500">WhatsApp</span>
+            {t.whatsapp_config || 'Configuración'} <span className="text-amber-500">WhatsApp</span>
           </h1>
         </div>
         
@@ -196,7 +257,7 @@ export default function WhatsAppPage() {
           onClick={() => setShowAddForm(!showAddForm)}
           className="px-6 py-4 bg-slate-900 dark:bg-white dark:text-slate-900 text-white rounded-[1.5rem] font-black text-xs uppercase tracking-widest transition-all hover:scale-105 flex items-center gap-2"
         >
-          {showAddForm ? 'Cerrar' : <><Plus className="h-4 w-4" /> Vincular Nuevo Número</>}
+          {showAddForm ? t.cancel : <><Plus className="h-4 w-4" /> {t.link_new_number || 'Vincular Nuevo Número'}</>}
         </button>
       </div>
 
@@ -251,7 +312,7 @@ export default function WhatsAppPage() {
               disabled={isProcessing}
               className="h-16 w-full bg-amber-500 hover:bg-amber-400 text-slate-900 rounded-2xl font-black uppercase tracking-widest transition-all disabled:opacity-50 flex items-center justify-center gap-3"
             >
-              {isProcessing ? <Loader2 className="h-5 w-5 animate-spin" /> : 'Guardar Configuración'}
+              {isProcessing ? <Loader2 className="h-5 w-5 animate-spin" /> : t.btnSave || 'Guardar Configuración'}
             </button>
           </form>
         </div>

@@ -7,10 +7,12 @@ import { StatCard } from '@/components/dashboard/StatCard'
 import { createClient } from '@/lib/supabase/client'
 import { format, parseISO } from 'date-fns'
 import { translations, dateLocales, Language } from '@/lib/i18n'
+import { DashboardCharts } from '@/components/dashboard/DashboardCharts'
 
 export default function DashboardPage() {
   const [appointments, setAppointments] = useState<any[]>([])
-  const [stats, setStats] = useState({ total: 0, pending: 0, completed: 0, clients: 0 })
+  const [allAppsForExport, setAllAppsForExport] = useState<any[]>([])
+  const [stats, setStats] = useState<any>({ total: 0, pending: 0, completed: 0, clients: 0, chartData: [], statusData: [], revenue: 0 })
   const [loading, setLoading] = useState(true)
   const [tenantName, setTenantName] = useState('Admin')
   const [lang, setLang] = useState<Language>('es')
@@ -20,7 +22,6 @@ export default function DashboardPage() {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
 
-    // Get tenant scoped to this user
     const { data: tuData } = await supabase
       .from('tenant_users')
       .select('tenant_id, tenants(id, name, settings)')
@@ -35,24 +36,54 @@ export default function DashboardPage() {
 
     const { data: apps } = await supabase.from('appointments').select(`
         id, status, start_at, 
-        clients(first_name, last_name, phone),
-        services(name),
+        clients(id, first_name, last_name, phone),
+        services(name, price),
         professionals(full_name)
-      `).eq('tenant_id', tenantId).gte('start_at', new Date().toISOString()).order('start_at', { ascending: true }).limit(6)
+      `).eq('tenant_id', tenantId).order('start_at', { ascending: false })
 
-    if (apps) setAppointments(apps)
+    if (apps) {
+      setAllAppsForExport(apps)
+      // For the UI list, we still show only upcoming 6
+      const upcoming = apps
+        .filter(a => new Date(a.start_at) >= new Date())
+        .sort((a,b) => new Date(a.start_at).getTime() - new Date(b.start_at).getTime())
+        .slice(0, 6)
+      
+      setAppointments(upcoming)
+      
+      const last7Days = Array.from({ length: 7 }, (_, i) => {
+        const d = new Date()
+        d.setDate(d.getDate() - (6 - i))
+        return format(d, 'yyyy-MM-dd')
+      })
 
-    const { count: totalApps } = await supabase.from('appointments').select('*', { count: 'exact', head: true }).eq('tenant_id', tenantId)
-    const { count: pendingApps } = await supabase.from('appointments').select('*', { count: 'exact', head: true }).eq('tenant_id', tenantId).eq('status', 'pending')
-    const { count: completedApps } = await supabase.from('appointments').select('*', { count: 'exact', head: true }).eq('tenant_id', tenantId).eq('status', 'completed')
-    const { count: totalClients } = await supabase.from('clients').select('*', { count: 'exact', head: true }).eq('tenant_id', tenantId)
+      const chartData = last7Days.map(date => ({
+        date,
+        count: apps.filter(a => format(parseISO(a.start_at), 'yyyy-MM-dd') === date).length
+      }))
 
-    setStats({
-      total: totalApps || 0,
-      pending: pendingApps || 0,
-      completed: completedApps || 0,
-      clients: totalClients || 0
-    })
+      const statusData = [
+        { name: 'Completadas', value: apps.filter(a => a.status === 'completed').length },
+        { name: 'Pendientes', value: apps.filter(a => a.status === 'pending' || a.status === 'awaiting_confirmation').length },
+        { name: 'Canceladas', value: apps.filter(a => a.status === 'cancelled').length },
+      ]
+
+      const totalRevenue = apps
+        .filter(a => a.status === 'completed')
+        .reduce((sum, a) => sum + (a.services?.price || 0), 0)
+
+      const { count: totalClients } = await supabase.from('clients').select('*', { count: 'exact', head: true }).eq('tenant_id', tenantId)
+
+      setStats({
+        total: apps.length,
+        pending: apps.filter(a => a.status === 'pending' || a.status === 'awaiting_confirmation').length,
+        completed: apps.filter(a => a.status === 'completed').length,
+        clients: totalClients || 0,
+        chartData,
+        statusData,
+        revenue: totalRevenue
+      })
+    }
     setLoading(false)
   }, [supabase]);
 
@@ -67,6 +98,44 @@ export default function DashboardPage() {
 
   const t = translations[lang] || translations['en']
   const dateLocale = dateLocales[lang] || dateLocales['en']
+
+  const exportToCSV = () => {
+    // Filter apps from last 30 days
+    const thirtyDaysAgo = new Date()
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
+
+    const appsToExport = allAppsForExport.filter(app => {
+      const appDate = new Date(app.start_at)
+      return appDate >= thirtyDaysAgo
+    })
+
+    if (appsToExport.length === 0) {
+      alert(lang === 'es' ? 'No hay citas en los últimos 30 días para exportar' : 'No appointments in the last 30 days to export');
+      return;
+    }
+    
+    const headers = ["Fecha", "Cliente", "Telefono", "Servicio", "Profesional", "Precio", "Estado"];
+    const rows = appsToExport.map(app => [
+      format(parseISO(app.start_at), 'yyyy-MM-dd HH:mm'),
+      `"${app.clients?.first_name} ${app.clients?.last_name}"`,
+      `"${app.clients?.phone}"`,
+      `"${app.services?.name}"`,
+      `"${app.professionals?.full_name}"`,
+      app.services?.price || 0,
+      app.status
+    ]);
+
+    const csvContent = "\ufeff" + [headers, ...rows].map(e => e.join(",")).join("\n");
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    link.setAttribute("download", `reporte_mensual_${format(new Date(), 'yyyyMMdd')}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   return (
     <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-700 max-w-[1400px] mx-auto pb-12">
@@ -88,7 +157,7 @@ export default function DashboardPage() {
         </div>
         <div className="flex gap-3">
             <button className="px-6 py-3.5 rounded-2xl bg-white border border-gray-100 text-[10px] font-black uppercase tracking-widest text-gray-500 hover:bg-gray-50 transition-all shadow-sm active:scale-95"
-               onClick={() => alert('Generating report...')}>
+               onClick={exportToCSV}>
                 {t.export_report}
             </button>
             <Link href="/dashboard/appointments?new=true" 
@@ -105,6 +174,14 @@ export default function DashboardPage() {
         <StatCard name={t.confirmed} value={stats.completed.toString()} icon={CheckCircle} change="-2%" changeType="decrease" />
         <StatCard name={t.pending} value={stats.pending.toString()} icon={Clock} change="+8%" changeType="increase" />
       </div>
+
+      {/* Analytics Section */}
+      <DashboardCharts 
+        chartData={stats.chartData} 
+        statusData={stats.statusData} 
+        revenue={stats.revenue} 
+        lang={lang} 
+      />
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
         {/* Real-time Appointments Feed */}
@@ -186,10 +263,10 @@ export default function DashboardPage() {
                        <Target className="h-10 w-10 text-indigo-500" />
                     </div>
                     <h4 className="text-2xl font-black text-slate-800 dark:text-white tracking-tighter mb-2">
-                      {t.activity_progress || "Progreso de Actividad"}
+                      {t.activity_progress}
                     </h4>
                     <p className="text-slate-500 text-sm font-semibold leading-relaxed mb-8">
-                      {stats.total > 0 ? `Se ha completado el ${Math.round((stats.completed / stats.total) * 100)}% de los turnos activos.` : 'No hay actividad para mostrar hoy.'}
+                      {t.activity_desc(stats.total > 0 ? Math.round((stats.completed / stats.total) * 100) : 0)}
                     </p>
                     
                     {/* Ring Visualizer */}

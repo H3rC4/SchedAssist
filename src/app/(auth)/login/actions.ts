@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
+import { cookies } from 'next/headers'
 
 export async function signIn(formData: FormData) {
   const email = formData.get('email') as string
@@ -46,5 +47,6 @@ export async function signIn(formData: FormData) {
 export async function signOut() {
   const supabase = createClient()
   await supabase.auth.signOut()
+  cookies().delete('sa_2fa_verified')
   return redirect('/')
 }

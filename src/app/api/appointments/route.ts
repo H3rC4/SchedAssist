@@ -138,3 +138,30 @@ export async function DELETE(req: NextRequest) {
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 }
+// PATCH: Update appointment notes (Medical Record Observations)
+export async function PATCH(req: NextRequest) {
+  try {
+    const { id, tenant_id, notes } = await req.json();
+
+    if (!id || !tenant_id) {
+      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+    }
+
+    const supabase = createClient();
+    
+    const { data: appointment, error } = await supabase
+      .from('appointments')
+      .update({ notes: notes || null })
+      .eq('id', id)
+      .eq('tenant_id', tenant_id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    return NextResponse.json({ success: true, appointment });
+  } catch (error: any) {
+    console.error('Error updating appointment notes:', error);
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+}

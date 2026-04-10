@@ -7,6 +7,8 @@ import { ShieldCheck, ArrowLeft, Mail, Lock, AlertCircle, CalendarCheck } from '
 import { useLandingTranslation } from '@/components/LanguageContext';
 import { GoogleAuthButton } from '@/components/auth/GoogleAuthButton';
 
+import { Logo } from '@/components/Logo';
+
 
 export default function LoginPage({
   searchParams,
@@ -40,16 +42,10 @@ export default function LoginPage({
           <span>{t.back_home}</span>
         </Link>
 
-        {/* Login Card */}
         <div className="bg-white dark:bg-slate-900 rounded-[3rem] shadow-2xl shadow-indigo-900/10 dark:shadow-black/50 border border-slate-200/50 dark:border-slate-800/50 p-8 md:p-12">
-          <div className="flex flex-col items-center text-center mb-10">
-            <div className="h-16 w-16 bg-slate-900 dark:bg-amber-500 rounded-2xl flex items-center justify-center shadow-xl shadow-indigo-900/10 mb-6">
-              <CalendarCheck className="h-8 w-8 text-amber-400 dark:text-slate-900" />
-            </div>
-            <h1 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight leading-none uppercase mb-2">
-              Sched<span className="text-amber-500">Assist</span>
-            </h1>
-            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-2">
+          <div className="flex flex-col items-center text-center mb-10 scale-110">
+            <Logo />
+            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-6">
               {t.login_card_title}
             </p>
           </div>

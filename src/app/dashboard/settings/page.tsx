@@ -9,6 +9,7 @@ export default function SettingsPage() {
   const [lang, setLang] = useState<Language>('es')
   const [tenantId, setTenantId] = useState('')
   const [tenantSettings, setTenantSettings] = useState<any>({})
+  const [isGoogleUser, setIsGoogleUser] = useState(false)
 
   // Password change state
   const [password, setPassword] = useState('')
@@ -22,6 +23,11 @@ export default function SettingsPage() {
   const [isSavingLang, setIsSavingLang] = useState(false)
   const [langMessage, setLangMessage] = useState<{ text: string, type: 'success' | 'error' } | null>(null)
 
+  // Clinic info state
+  const [contactPhone, setContactPhone] = useState('')
+  const [isSavingClinic, setIsSavingClinic] = useState(false)
+  const [clinicMessage, setClinicMessage] = useState<{ text: string, type: 'success' | 'error' } | null>(null)
+
   const t = translations[lang] || translations['en']
 
   useEffect(() => {
@@ -30,6 +36,12 @@ export default function SettingsPage() {
       try {
         const { data: { user } } = await supabase.auth.getUser()
         if (!user) return
+
+        // Check for Google provider
+        const isGoogle = user.app_metadata.provider === 'google' || 
+                         user.identities?.some(id => id.provider === 'google')
+        setIsGoogleUser(!!isGoogle)
+
         const { data: tuData } = await supabase
           .from('tenant_users')
           .select('tenant_id, tenants(id, settings)')
@@ -41,6 +53,7 @@ export default function SettingsPage() {
         setLang(loadedLang)
         setSelectedLang(loadedLang)
         setTenantSettings(tenant.settings || {})
+        setContactPhone(tenant.settings?.contact_phone || '')
         setTenantId(tenant.id)
       } catch (error) {
         console.error('Error fetching settings', error)
@@ -93,6 +106,25 @@ export default function SettingsPage() {
     setIsSavingLang(false)
   }
 
+  const handleSaveClinic = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsSavingClinic(true)
+    setClinicMessage(null)
+    const supabase = createClient()
+    const newSettings = { ...tenantSettings, contact_phone: contactPhone }
+    const { error } = await supabase
+      .from('tenants')
+      .update({ settings: newSettings })
+      .eq('id', tenantId)
+    if (error) {
+      setClinicMessage({ text: error.message || t.error, type: 'error' })
+    } else {
+      setTenantSettings(newSettings)
+      setClinicMessage({ text: t.config_saved, type: 'success' })
+    }
+    setIsSavingClinic(false)
+  }
+
   return (
     <div className="flex-1 space-y-12 p-8 md:p-12 animate-in fade-in duration-700">
       <div>
@@ -100,7 +132,7 @@ export default function SettingsPage() {
           {t.system_settings}
         </h2>
         <p className="text-sm font-bold text-slate-400 mt-2 uppercase tracking-[0.2em]">
-          Administración de la Cuenta
+          {t.account_administration || 'Administración de la Cuenta'}
         </p>
       </div>
 
@@ -113,15 +145,56 @@ export default function SettingsPage() {
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-emerald-500"><rect width="20" height="14" x="2" y="7" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
             </div>
             <h3 className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight">
-              Gestión de Servicios
+              {t.manage_services_title}
             </h3>
           </div>
           <p className="text-sm font-medium text-slate-500 mb-6 uppercase tracking-widest pl-1">
-            Administra los servicios que ofrece tu clínica.
+            {t.manage_services_desc}
           </p>
           <a href="/dashboard/services" className="w-full flex items-center justify-center bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 transition-all text-slate-700 dark:text-slate-300 py-4 px-6 rounded-[1.5rem] text-sm font-black uppercase tracking-widest shadow-sm active:scale-95 text-center">
-            Manejar Servicios
+            {t.manage_services_btn}
           </a>
+        </div>
+
+        {/* Clinic Configuration */}
+        <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 shadow-xl shadow-indigo-900/5 p-10 transition-all hover:shadow-indigo-900/10">
+          <div className="flex items-center gap-4 mb-8">
+            <div className="h-12 w-12 rounded-xl bg-amber-50 dark:bg-amber-500/10 flex items-center justify-center">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-amber-500"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+            </div>
+            <h3 className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight">
+              {t.clinic_settings_title}
+            </h3>
+          </div>
+          <form onSubmit={handleSaveClinic} className="space-y-6">
+            <p className="text-xs font-semibold text-slate-400 leading-relaxed uppercase tracking-wider">
+              {t.contact_phone_desc}
+            </p>
+            <div>
+              <label className="block text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1 mb-2">
+                {lang === 'es' ? 'Editar Número de Contacto' : (lang === 'it' ? 'Modifica Numero di Contatto' : 'Edit Contact Number')}
+              </label>
+              <input
+                type="text"
+                value={contactPhone}
+                onChange={(e) => setContactPhone(e.target.value)}
+                placeholder="+54 9 11 ..."
+                className="block w-full rounded-2xl border-none ring-1 ring-slate-200 dark:ring-slate-800 bg-slate-50/50 dark:bg-slate-800/30 py-4 px-5 text-sm font-bold text-slate-900 dark:text-white focus:ring-2 focus:ring-amber-500 transition-all appearance-none outline-none"
+              />
+            </div>
+            {clinicMessage && (
+              <div className={`p-4 rounded-xl text-xs font-bold border ${clinicMessage.type === 'error' ? 'bg-red-50 text-red-600 border-red-100' : 'bg-emerald-50 text-emerald-600 border-emerald-100'}`}>
+                {clinicMessage.text}
+              </div>
+            )}
+            <button
+              type="submit"
+              disabled={isSavingClinic}
+              className="w-full bg-slate-900 dark:bg-amber-500 hover:bg-slate-800 dark:hover:bg-amber-400 disabled:opacity-50 transition-all text-white dark:text-slate-900 py-4 rounded-[1.5rem] text-sm font-black uppercase tracking-widest shadow-lg active:scale-95"
+            >
+              {isSavingClinic ? '...' : t.save_config}
+            </button>
+          </form>
         </div>
 
         {/* Language Settings */}
@@ -167,60 +240,62 @@ export default function SettingsPage() {
           </form>
         </div>
 
-        {/* Change Password */}
-        <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 shadow-xl shadow-indigo-900/5 p-10 transition-all hover:shadow-indigo-900/10">
-          <div className="flex items-center gap-4 mb-8">
-            <div className="h-12 w-12 rounded-xl bg-violet-50 dark:bg-violet-500/10 flex items-center justify-center">
-              <KeyRound className="h-6 w-6 text-violet-500" />
+        {/* Change Password - Only for non-Google users */}
+        {!isGoogleUser && (
+          <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 shadow-xl shadow-indigo-900/5 p-10 transition-all hover:shadow-indigo-900/10">
+            <div className="flex items-center gap-4 mb-8">
+              <div className="h-12 w-12 rounded-xl bg-violet-50 dark:bg-violet-500/10 flex items-center justify-center">
+                <KeyRound className="h-6 w-6 text-violet-500" />
+              </div>
+              <h3 className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight">
+                {t.change_password}
+              </h3>
             </div>
-            <h3 className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight">
-              {t.change_password}
-            </h3>
-          </div>
-          <form onSubmit={handleUpdatePassword} className="space-y-6">
-            <div className="space-y-2">
-              <label className="block text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">
-                {t.new_password}
-              </label>
-              <div className="relative">
+            <form onSubmit={handleUpdatePassword} className="space-y-6">
+              <div className="space-y-2">
+                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">
+                  {t.new_password}
+                </label>
+                <div className="relative">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="block w-full rounded-2xl border-none ring-1 ring-slate-200 dark:ring-slate-800 bg-slate-50/50 dark:bg-slate-800/30 py-4 px-5 text-sm font-bold text-slate-900 dark:text-white focus:ring-2 focus:ring-violet-500 transition-all pr-12"
+                    required
+                  />
+                  <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-violet-500 transition-colors p-2">
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">
+                  {t.confirm_password}
+                </label>
                 <input
                   type={showPassword ? "text" : "password"}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="block w-full rounded-2xl border-none ring-1 ring-slate-200 dark:ring-slate-800 bg-slate-50/50 dark:bg-slate-800/30 py-4 px-5 text-sm font-bold text-slate-900 dark:text-white focus:ring-2 focus:ring-violet-500 transition-all pr-12"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  className="block w-full rounded-2xl border-none ring-1 ring-slate-200 dark:ring-slate-800 bg-slate-50/50 dark:bg-slate-800/30 py-4 px-5 text-sm font-bold text-slate-900 dark:text-white focus:ring-2 focus:ring-violet-500 transition-all"
                   required
                 />
-                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-violet-500 transition-colors p-2">
-                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </button>
               </div>
-            </div>
-            <div className="space-y-2">
-              <label className="block text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">
-                {t.confirm_password}
-              </label>
-              <input
-                type={showPassword ? "text" : "password"}
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                className="block w-full rounded-2xl border-none ring-1 ring-slate-200 dark:ring-slate-800 bg-slate-50/50 dark:bg-slate-800/30 py-4 px-5 text-sm font-bold text-slate-900 dark:text-white focus:ring-2 focus:ring-violet-500 transition-all"
-                required
-              />
-            </div>
-            {passwordMessage && (
-              <div className={`p-4 rounded-xl text-xs font-bold border ${passwordMessage.type === 'error' ? 'bg-red-50 text-red-600 border-red-100' : 'bg-emerald-50 text-emerald-600 border-emerald-100'}`}>
-                {passwordMessage.text}
-              </div>
-            )}
-            <button
-              type="submit"
-              disabled={isUpdatingPassword || !password || !confirmPassword}
-              className="w-full bg-slate-900 dark:bg-amber-500 hover:bg-slate-800 dark:hover:bg-amber-400 disabled:opacity-50 transition-all text-white dark:text-slate-900 py-4 rounded-[1.5rem] text-sm font-black uppercase tracking-widest shadow-lg active:scale-95"
-            >
-              {isUpdatingPassword ? '...' : t.update}
-            </button>
-          </form>
-        </div>
+              {passwordMessage && (
+                <div className={`p-4 rounded-xl text-xs font-bold border ${passwordMessage.type === 'error' ? 'bg-red-50 text-red-600 border-red-100' : 'bg-emerald-50 text-emerald-600 border-emerald-100'}`}>
+                  {passwordMessage.text}
+                </div>
+              )}
+              <button
+                type="submit"
+                disabled={isUpdatingPassword || !password || !confirmPassword}
+                className="w-full bg-slate-900 dark:bg-amber-500 hover:bg-slate-800 dark:hover:bg-amber-400 disabled:opacity-50 transition-all text-white dark:text-slate-900 py-4 rounded-[1.5rem] text-sm font-black uppercase tracking-widest shadow-lg active:scale-95"
+              >
+                {isUpdatingPassword ? '...' : t.update}
+              </button>
+            </form>
+          </div>
+        )}
 
       </div>
     </div>

@@ -1,18 +1,13 @@
 'use client';
 
-import { ShieldCheck, LogOut, Activity, Database, KeyRound } from 'lucide-react'
+import { ShieldCheck, LogOut, Activity, Database } from 'lucide-react'
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import { signOut } from '@/app/(auth)/login/actions'
 import { createClient } from '@/lib/supabase/client'
 
 export default function SuperAdminLayout({ children }: { children: React.ReactNode }) {
-  async function handleResetPassword() {
-    const supabase = createClient();
-    await supabase.auth.resetPasswordForEmail('hernanenriquecaballero@gmail.com', {
-      redirectTo: `${window.location.origin}/auth/callback?next=/superadmin/reset-password`
-    });
-    alert('Link de recuperación enviado a tu correo.');
-  }
+  const pathname = usePathname()
 
   return (
     <div className="flex h-screen w-full bg-[#0a0a0a] font-sans overflow-hidden text-gray-200">
@@ -32,18 +27,12 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
         </div>
 
         <nav className="flex-1 p-4 space-y-2 mt-4">
-          <Link href="/superadmin" className="flex items-center gap-3 px-4 py-3 bg-[#1a1a1a] border border-[#333] rounded-xl text-white font-semibold transition-all">
-            <Database className="h-4 w-4 text-amber-400" /> Control de Clínicas
+          <Link href="/superadmin" className={`flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition-all ${pathname === '/superadmin' ? 'bg-[#1a1a1a] border border-[#333] text-white' : 'text-gray-400 hover:bg-[#1a1a1a] hover:text-white border border-transparent'}`}>
+            <Database className={`h-4 w-4 ${pathname === '/superadmin' ? 'text-amber-400' : 'text-gray-500'}`} /> Control de Clínicas
           </Link>
-          <button className="flex w-full items-center gap-3 px-4 py-3 text-gray-500 hover:bg-[#1a1a1a] hover:text-gray-300 rounded-xl font-semibold transition-all cursor-not-allowed">
-            <Activity className="h-4 w-4" /> Métricas (Próximamente)
-          </button>
-          <button
-            onClick={handleResetPassword}
-            className="flex w-full items-center gap-3 px-4 py-3 text-gray-500 hover:bg-[#1a1a1a] hover:text-amber-400 rounded-xl font-semibold transition-all"
-          >
-            <KeyRound className="h-4 w-4" /> Cambiar Contraseña
-          </button>
+          <Link href="/superadmin/metrics" className={`flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition-all ${pathname === '/superadmin/metrics' ? 'bg-[#1a1a1a] border border-[#333] text-white' : 'text-gray-400 hover:bg-[#1a1a1a] hover:text-white border border-transparent'}`}>
+            <Activity className={`h-4 w-4 ${pathname === '/superadmin/metrics' ? 'text-amber-400' : 'text-gray-500'}`} /> Monitoreo y Métricas
+          </Link>
         </nav>
 
         <div className="p-4 border-t border-[#222]">

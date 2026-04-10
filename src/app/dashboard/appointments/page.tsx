@@ -222,7 +222,8 @@ function AppointmentsContent() {
     const dateStr = format(selectedDate, 'yyyy-MM-dd')
     const { data } = await supabase.from('appointments')
       .select('id, status, start_at, end_at, notes, clients(id, first_name, last_name, phone), services(name), professionals(id, full_name)')
-      .eq('tenant_id', tenantId).neq('status', 'cancelled')
+      .eq('tenant_id', tenantId)
+      .not('status', 'in', '("cancelled","rescheduled")')
       .gte('start_at', `${dateStr}T00:00:00Z`).lte('start_at', `${dateStr}T23:59:59Z`)
       .order('start_at', { ascending: true })
     if (data) setAppointments(data as any[])
@@ -430,14 +431,25 @@ function AppointmentsContent() {
               {appointments.map(app => (
                 <button key={app.id} onClick={() => setSelectedApp(app)}
                   className="flex flex-col p-8 rounded-[2rem] border border-gray-100 bg-white/50 hover:bg-white hover:border-primary-100 hover:shadow-[0_20px_40px_rgba(0,0,0,0.04)] hover:-translate-y-1 transition-all duration-500 text-left group relative backdrop-blur-md">
-                  <div className={`absolute left-0 top-10 bottom-10 w-2 rounded-r-3xl ${app.status === 'confirmed' ? 'bg-emerald-500' : app.status === 'awaiting_confirmation' ? 'bg-orange-500 animate-pulse' : 'bg-amber-400'}`} />
+                  <div className={`absolute left-0 top-10 bottom-10 w-2 rounded-r-3xl ${
+                    app.status === 'needs_rescheduling' ? 'bg-red-500 animate-pulse' :
+                    app.status === 'confirmed' ? 'bg-emerald-500' : 
+                    app.status === 'awaiting_confirmation' ? 'bg-orange-500 animate-pulse' : 
+                    'bg-amber-400'
+                  }`} />
                   <div className="flex items-center justify-between mb-6">
                     <div className="flex items-center gap-3">
                       <div className="h-10 w-10 rounded-xl bg-gray-900 flex items-center justify-center text-white text-xs font-black">{format(parseISO(app.start_at.slice(0, 19)), 'HH:mm')}</div>
                       <span className="text-[10px] font-black text-gray-300 uppercase tracking-widest">{format(parseISO(app.end_at.slice(0, 19)), 'HH:mm')}hs</span>
                     </div>
-                    <span className={`text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-xl ${app.status === 'awaiting_confirmation' ? 'bg-orange-100 text-orange-600' : 'bg-emerald-100 text-emerald-600'}`}>
-                      {app.status === 'awaiting_confirmation' ? T.reminder : T.confirmed}
+                    <span className={`text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-xl ${
+                      app.status === 'needs_rescheduling' ? 'bg-red-100 text-red-600 animate-pulse' :
+                      app.status === 'awaiting_confirmation' ? 'bg-orange-100 text-orange-600' : 
+                      'bg-emerald-100 text-emerald-600'
+                    }`}>
+                      {app.status === 'needs_rescheduling' 
+                        ? (lang === 'es' ? '⚠️ Reprogramar' : lang === 'it' ? '⚠️ Riprogrammare' : '⚠️ Reschedule') 
+                        : app.status === 'awaiting_confirmation' ? T.reminder : T.confirmed}
                     </span>
                   </div>
                   <p className="text-xl font-black text-gray-900 truncate mb-1 group-hover:text-primary-600 transition-colors">{app.clients?.first_name} {app.clients?.last_name}</p>

@@ -69,7 +69,7 @@ export class AppointmentService {
         source: params.source,
         notes: params.notes,
         created_by_user_id: params.created_by_user_id,
-        status: 'confirmed'
+        status: 'pending'
       }])
       .select('*')
       .single();
@@ -208,15 +208,44 @@ export class AppointmentService {
   }) {
     const dayOfWeek = parseISO(params.date).getDay()
 
-    // 1. Get availability rules and service duration
-    const { data: rules } = await supabase
-      .from('availability_rules')
+    // 0. Check for a date-specific override FIRST
+    const { data: override } = await supabase
+      .from('professional_availability_overrides')
       .select('*')
       .eq('tenant_id', params.tenant_id)
       .eq('professional_id', params.professional_id)
-      .eq('day_of_week', dayOfWeek)
-      .eq('active', true)
+      .eq('override_date', params.date)
+      .maybeSingle()
 
+    // If explicitly blocked → no slots
+    if (override?.override_type === 'block') return []
+
+    // Build the effective rules: either from override or from weekly config
+    let effectiveRules: any[] = []
+
+    if (override?.override_type === 'open') {
+      // Use the override's custom hours for this specific date
+      effectiveRules = [{ 
+        start_time: override.start_time, 
+        end_time: override.end_time,
+        lunch_break_start: null,
+        lunch_break_end: null
+      }]
+    } else {
+      // Fall back to normal weekly availability rules
+      const { data: rules } = await supabase
+        .from('availability_rules')
+        .select('*')
+        .eq('tenant_id', params.tenant_id)
+        .eq('professional_id', params.professional_id)
+        .eq('day_of_week', dayOfWeek)
+        .eq('active', true)
+
+      if (!rules || rules.length === 0) return []
+      effectiveRules = rules
+    }
+
+    // 1. Get service duration
     let durationMinutes = 30; // Default fallback
     if (params.service_id) {
       const { data: service } = await supabase
@@ -226,8 +255,6 @@ export class AppointmentService {
         .single();
       if (service) durationMinutes = service.duration_minutes;
     }
-
-    if (!rules || rules.length === 0) return []
 
     // 2. Get existing (non-cancelled) appointments for this day
     const startOfDay = `${params.date}T00:00:00Z`
@@ -242,13 +269,15 @@ export class AppointmentService {
       .gte('start_at', startOfDay)
       .lte('start_at', endOfDay)
 
-    // 3. Generate slots
+    // 3. Generate slots from effective rules
     const slotSet = new Set<string>()
     const now = new Date()
 
-    for (const rule of rules) {
+    for (const rule of effectiveRules) {
       let current = parseISO(`${params.date}T${rule.start_time}`)
       const endRule = parseISO(`${params.date}T${rule.end_time}`)
+      const lunchStart = rule.lunch_break_start ? parseISO(`${params.date}T${rule.lunch_break_start}`) : null
+      const lunchEnd = rule.lunch_break_end ? parseISO(`${params.date}T${rule.lunch_break_end}`) : null
 
       while (current < endRule) {
         const slotStart = current;
@@ -263,8 +292,13 @@ export class AppointmentService {
             continue;
         }
 
-        // Check 3: Does not overlap with existing appointments
-        // A slot is free if NO appointment starts before slotEnd AND ends after slotStart
+        // Check 3: Not during lunch break
+        if (lunchStart && lunchEnd && slotStart < lunchEnd && slotEnd > lunchStart) {
+          current = new Date(current.getTime() + 30 * 60000);
+          continue;
+        }
+
+        // Check 4: Does not overlap with existing appointments
         const isOccupied = appointments?.some((app: any) => {
             const appStart = parseISO(app.start_at);
             const appEnd = parseISO(app.end_at);
@@ -276,14 +310,13 @@ export class AppointmentService {
           slotSet.add(timeLabel)
         }
 
-        // We jump 30 minutes for the next "start" possibility, 
-        // but we ensure the FULL duration is free for each start.
         current = new Date(current.getTime() + 30 * 60000);
       }
     }
 
     return Array.from(slotSet).sort()
   }
+
 
   /**
    * Get upcoming appointments for a client.
@@ -301,7 +334,7 @@ export class AppointmentService {
       `)
       .eq('tenant_id', params.tenant_id)
       .eq('client_id', params.client_id)
-      .eq('status', 'confirmed')
+      .in('status', ['pending', 'confirmed', 'awaiting_confirmation'])
       .gte('start_at', new Date().toISOString())
       .order('start_at', { ascending: true })
 

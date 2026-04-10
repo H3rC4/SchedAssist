@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
-import { addHours, format, parseISO } from 'date-fns';
+import { addDays, format, parseISO, startOfDay, endOfDay } from 'date-fns';
 import { translations, dateLocales } from '@/lib/i18n';
 import { MessageService } from '@/services/message.service';
 
 /**
- * Vercel Cron Job: Envía recordatorios de citas próximas (24hs antes).
- * Se ejecuta diariamente según la configuración de vercel.json.
+ * Vercel Cron Job: Envía recordatorios de citas próximas.
+ * Se ejecuta para cada clínica a las 9:00 AM de su zona horaria local.
  */
 export async function GET(req: NextRequest) {
   // ─── 0. Verificación de Seguridad para Vercel Cron ──────────────────────────
@@ -15,130 +15,130 @@ export async function GET(req: NextRequest) {
     return new NextResponse('Unauthorized', { status: 401 });
   }
 
-  console.log('--- [CRON] BUSCANDO CITAS PARA RECORDATORIOS (24hs) ---');
+  console.log('--- [CRON] INICIANDO ESCANEO DE RECORDATORIOS ---');
 
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   );
 
-  const now = new Date();
-  const rangeStart = addHours(now, 23).toISOString();
-  const rangeEnd = addHours(now, 26).toISOString();
+  // 1. Obtener todos los tenants para verificar sus horarios locales
+  const { data: tenants, error: tenantErr } = await supabase
+    .from('tenants')
+    .select('id, name, timezone, settings');
 
-  const { data: appointments, error } = await supabase
-    .from('appointments')
-    .select(`
-      id,
-      status,
-      start_at,
-      tenant_id,
-      tenants (id, name, settings),
-      clients (id, first_name, phone, notes),
-      services (name)
-    `)
-    .eq('status', 'confirmed')
-    .gte('start_at', rangeStart)
-    .lte('start_at', rangeEnd);
-
-  if (error) {
-    console.error('Error al consultar citas:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  if (tenantErr || !tenants) {
+    console.error('Error al obtener tenants:', tenantErr);
+    return NextResponse.json({ error: 'Failed to fetch tenants' }, { status: 500 });
   }
 
-  if (!appointments || appointments.length === 0) {
-    console.log('No se encontraron citas confirmadas en este rango.');
-    return NextResponse.json({ ok: true, count: 0 });
-  }
+  let totalSent = 0;
 
-  console.log(`Se encontraron ${appointments.length} citas.`);
-
-  // Group by client to send a single consolidated message per person
-  const groupedApps = new Map<string, typeof appointments>();
-  for (const app of appointments) {
-    const client: any = app.clients;
-    if (!client) continue;
-    
-    const key = `${app.tenant_id}_${client.id}`;
-    if (!groupedApps.has(key)) groupedApps.set(key, []);
-    groupedApps.get(key)!.push(app);
-  }
-
-  let sentCount = 0;
-
-  for (const [_, apps] of Array.from(groupedApps.entries())) {
+  for (const tenant of tenants) {
     try {
-      const client: any = apps[0].clients;
-      const tenant: any = apps[0].tenants;
-      const tenantId = apps[0].tenant_id;
+      // ─── Lógica de Zona Horaria ─────────────────────────────────────────────
+      const tz = tenant.timezone || 'UTC';
+      const now = new Date();
+      
+      // Obtener la hora actual en la zona horaria del tenant
+      const localHourStr = now.toLocaleTimeString('en-US', { hour: 'numeric', hour12: false, timeZone: tz });
+      const localHour = parseInt(localHourStr);
+
+      // SOLO procesamos si son las 9 AM en la clínica (o si estamos forzando vía query param para test)
+      const forceAll = req.nextUrl.searchParams.get('force') === 'true';
+      if (localHour !== 9 && !forceAll) {
+        continue;
+      }
+
+      console.log(`[CRON] Procesando Tenant: ${tenant.name} (${tz}) - Hora local: ${localHour}:00`);
+
+      // Definir "Mañana" relativo a la zona horaria del tenant
+      // Nota: Usamos la fecha actual +/- el desfase si quisiéramos ser exactos, 
+      // pero para simplificar, "mañana" es el día calendario siguiente al día actual en esa zona.
+      const localDateStr = now.toLocaleDateString('en-CA', { timeZone: tz }); // YYYY-MM-DD
+      const todayLocal = parseISO(localDateStr);
+      const tomorrowLocal = addDays(todayLocal, 1);
+      
+      const rangeStart = startOfDay(tomorrowLocal).toISOString();
+      const rangeEnd = endOfDay(tomorrowLocal).toISOString();
+
+      // 2. Buscar citas PENDIENTES para mañana en esta clínica
+      const { data: appointments, error: appErr } = await supabase
+        .from('appointments')
+        .select(`
+          id,
+          status,
+          start_at,
+          clients (id, first_name, phone, notes),
+          services (name)
+        `)
+        .eq('tenant_id', tenant.id)
+        .eq('status', 'pending')
+        .gte('start_at', rangeStart)
+        .lte('start_at', rangeEnd);
+
+      if (appErr || !appointments || appointments.length === 0) {
+        continue;
+      }
+
+      // Group by client
+      const groupedApps = new Map<string, any[]>();
+      for (const app of appointments) {
+        const client: any = app.clients;
+        if (!client) continue;
+        if (!groupedApps.has(client.id)) groupedApps.set(client.id, []);
+        groupedApps.get(client.id)!.push(app);
+      }
+
       const lang = (tenant.settings?.language as 'en'|'es'|'it') || 'es';
       const t = translations[lang] || translations['en'];
       const dateLocale = dateLocales[lang] || dateLocales['en'];
 
-      // ── Determine channel ─────────────────────────────────────────────────
-      let channel = 'whatsapp';
-      let chatId: string | number = client.phone; 
+      for (const [_, clientApps] of Array.from(groupedApps.entries())) {
+        const client = clientApps[0].clients;
+        
+        let msgText = '';
+        if (clientApps.length === 1) {
+          const dateStr = format(parseISO(clientApps[0].start_at), "EEEE d 'HH:mm'", { locale: dateLocale });
+          const svc = clientApps[0].services.name;
+          msgText = `${t.bot_reminder_title}\n\n${t.bot_reminder_single(client.first_name, svc, dateStr, tenant.name)}`;
+        } else {
+          msgText = `${t.bot_reminder_title}\n\n${t.bot_reminder_multi(client.first_name, clientApps.length, tenant.name)}`;
+          clientApps.forEach((app: any, i: number) => {
+            const dateStr = format(parseISO(app.start_at), "EEEE d 'HH:mm'", { locale: dateLocale });
+            msgText += `${i + 1}. *${app.services.name}* - *${dateStr}*\n`;
+          });
+        }
+        
+        // Añadir instrucción de confirmación
+        msgText += `\n${t.reminder_immediate || 'Por favor, confirma respondiendo *SÍ* o cancela con *NO*.'}`;
 
-      if (client.phone.startsWith('tg_')) {
-        channel = 'telegram_gastro'; // TODO: dinamizar si hay más tenants de TG
-        chatId = client.phone.replace('tg_', '');
-      } else if (client.notes) {
-        try {
-          const parsed = JSON.parse(client.notes);
-          if (parsed.telegram_chat_id) {
-            channel = 'telegram_gastro';
-            chatId = parsed.telegram_chat_id;
-          }
-        } catch (_) {}
-      }
+        // Determinar canal
+        const channel = client.phone.startsWith('tg_') ? 'telegram_gastro' : 'whatsapp';
+        const chatId = client.phone.replace('tg_', '');
 
-      // ── Build message text ────────────────────────────────────────────────
-      let msgText = '';
-
-      if (apps.length === 1) {
-        const dateStr = format(parseISO(apps[0].start_at), "EEEE d 'HH:mm'", { locale: dateLocale });
-        const svc = (apps[0].services as any).name;
-        msgText = `${t.bot_reminder_title}\n\n${t.bot_reminder_single(client.first_name, svc, dateStr, tenant.name)}`;
-      } else {
-        msgText = `${t.bot_reminder_title}\n\n${t.bot_reminder_multi(client.first_name, apps.length, tenant.name)}`;
-        apps.forEach((app: any, i: number) => {
-          const dateStr = format(parseISO(app.start_at), "EEEE d 'HH:mm'", { locale: dateLocale });
-          const svc = (app.services as any).name;
-          msgText += `${i + 1}. *${svc}* - *${dateStr}*\n`;
+        await MessageService.sendMessage({
+          channel,
+          tenant_id: tenant.id,
+          chat_id: chatId,
+          text: msgText,
+          buttons: ['✅ SI', '❌ NO'],
         });
-        msgText += t.bot_reminder_confirm_all;
-      }
 
-      // Cleanup formatting for Telegram if needed (Telegram uses <b> instead of *)
-      if (channel.startsWith('telegram')) {
-        msgText = msgText.replace(/\*/g, '<b>').replace(/_/g, '<i>');
-      }
-
-      // ── Send via MessageService ───────────────────────────────────────────
-      await MessageService.sendMessage({
-        channel,
-        tenant_id: tenantId,
-        chat_id: chatId,
-        text: msgText,
-        buttons: ['✅', '❌'], // Optional: bot can handle confirmations with buttons
-      });
-
-      // ── Update status to awaiting_confirmation ────────────────────────────
-      for (const app of apps) {
+        // Actualizar a awaiting_confirmation
         await supabase
           .from('appointments')
           .update({ status: 'awaiting_confirmation' })
-          .eq('id', app.id);
+          .in('id', clientApps.map(a => a.id));
+
+        totalSent++;
       }
 
-      sentCount++;
-      console.log(`✅ [CRON] Recordatorio (${channel}) enviado a ${client.first_name}`);
-
     } catch (err) {
-      console.error(`❌ Error procesando recordatorio:`, err);
+      console.error(`❌ Error procesando tenant ${tenant.id}:`, err);
     }
   }
 
-  console.log(`--- [CRON] FINALIZADO. Mensajes enviados: ${sentCount} ---`);
-  return NextResponse.json({ ok: true, sent: sentCount });
+  console.log(`--- [CRON] FINALIZADO. Mensajes enviados: ${totalSent} ---`);
+  return NextResponse.json({ ok: true, sent: totalSent });
 }
