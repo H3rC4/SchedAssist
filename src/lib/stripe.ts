@@ -1,10 +1,12 @@
 import Stripe from 'stripe';
 
-if (!process.env.STRIPE_SECRET_KEY) {
-  throw new Error('STRIPE_SECRET_KEY no está configurada en el archivo .env');
+const stripeKey = process.env.STRIPE_SECRET_KEY || '';
+
+if (!stripeKey && process.env.NODE_ENV === 'production' && typeof window === 'undefined') {
+  console.warn('⚠️ STRIPE_SECRET_KEY no está configurada. Esto causará errores en las rutas de pago.');
 }
 
-export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+export const stripe = new Stripe(stripeKey, {
   // @ts-ignore
   apiVersion: null, 
   appInfo: {
