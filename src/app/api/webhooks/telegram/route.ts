@@ -4,8 +4,8 @@ import { AppointmentService } from '@/services/appointment.service';
 import { MessageService } from '@/services/message.service';
 import { updateClientState, showMainMenu } from '@/lib/bot/utils';
 import { executeStateMachine } from '@/lib/bot/engine';
+import { t, Language } from '@/lib/bot/translations';
 
-// The channel identifier for this bot instance.
 const CHANNEL = 'telegram';
 
 export async function POST(req: NextRequest) {
@@ -22,6 +22,7 @@ export async function POST(req: NextRequest) {
   const chatId: number = message.chat.id;
   const text: string = message.text || '';
   const phone = `tg_${message.from.id}`;
+  const msgLower = text.toLowerCase().trim();
 
   // ── Resolve Tenant by Telegram token stored in settings ─────────────────────
   const token = process.env.TELEGRAM_BOT_TOKEN;
@@ -32,9 +33,11 @@ export async function POST(req: NextRequest) {
     .single();
 
   if (!tenant) {
-    console.error('[TELEGRAM BOT] Tenant not found. Verifique el token en la BD y las variables de entorno.');
+    console.error('[TELEGRAM BOT] Tenant not found for token');
     return NextResponse.json({ ok: true });
   }
+
+  const lang = (tenant.settings?.language || 'es') as Language;
 
   // ── Resolve or Create Client ─────────────────────────────────────────────────
   let { data: clients } = await supabase
@@ -72,7 +75,6 @@ export async function POST(req: NextRequest) {
   try { botState = client.notes ? JSON.parse(client.notes) : { step: 'INITIAL' }; } catch (_) {}
 
   const step = botState.step;
-  const msgLower = text.toLowerCase().trim();
 
   // ── Special case: contact shared during onboarding ──────────────────────────
   if (message.contact && step === 'WAIT_PHONE') {
@@ -84,15 +86,17 @@ export async function POST(req: NextRequest) {
 
   const isProfileIncomplete = isNewClient || client.first_name === 'Usuario' || !client.first_name || !client.last_name || client.last_name === 'Telegram';
 
-  // ── /start and greeting commands ─────────────────────────────────────────────
-  if (msgLower === '/start' || msgLower === 'hola' || msgLower === 'reset' || step === 'STARTING') {
+  const greetWords = [t('greetWords', lang)].flat();
+  const isGreeting = msgLower === '/start' || greetWords.includes(msgLower);
+
+  if (isGreeting || step === 'STARTING') {
     if (isProfileIncomplete) {
       await updateClientState(supabase, client.id, { step: 'WAIT_FIRST_NAME' });
       await MessageService.sendMessage({
         channel: CHANNEL,
         chat_id: chatId,
         tenant_id: tenant.id,
-        text: `🏥 ¡Bienvenido a <b>${tenant.name}</b>!\nSoy tu asistente virtual para agendar consultas y estudios.\n\nPara comenzar, necesito registrar tus datos. ¿Cuál es tu <b>Nombre</b>?`,
+        text: t('askPatientName', lang),
         removeKeyboard: true,
       });
     } else {
@@ -102,21 +106,23 @@ export async function POST(req: NextRequest) {
   }
 
   // ── Redirect to onboarding if profile is still incomplete ───────────────────
-  const isOnboardingStep = step === 'WAIT_FIRST_NAME' || step === 'WAIT_LAST_NAME' || step === 'WAIT_PHONE';
-  if (isProfileIncomplete && !isOnboardingStep) {
+  if (isProfileIncomplete && step === 'INITIAL') {
     await updateClientState(supabase, client.id, { step: 'WAIT_FIRST_NAME' });
     await MessageService.sendMessage({
       channel: CHANNEL,
       chat_id: chatId,
       tenant_id: tenant.id,
-      text: `Hola! Antes de continuar necesito registrar tus datos.\n\n¿Cuál es tu <b>Nombre</b>?`,
+      text: t('askPatientName', lang),
       removeKeyboard: true,
     });
     return NextResponse.json({ ok: true });
   }
 
+  const keywordsYes = [t('keywordsYes', lang)].flat();
+  const keywordsNo = [t('keywordsNo', lang)].flat();
+
   // ── Appointment reminder: confirm attendance ─────────────────────────────────
-  if (msgLower === '✅ confirmar asistencia') {
+  if (keywordsYes.includes(msgLower)) {
     const { data: appToConfirm } = await supabase
       .from('appointments')
       .select('id, start_at, services(name)')
@@ -133,16 +139,16 @@ export async function POST(req: NextRequest) {
         channel: CHANNEL,
         chat_id: chatId,
         tenant_id: tenant.id,
-        text: `✅ ¡Gracias! Tu cita de <b>${(appToConfirm.services as any)?.name}</b> ha sido re-confirmada con éxito.`,
+        text: t('confirmationSuccess', lang),
         removeKeyboard: true,
       });
       await showMainMenu(supabase, tenant, client.id, chatId, client.first_name, CHANNEL);
+      return NextResponse.json({ ok: true });
     }
-    return NextResponse.json({ ok: true });
   }
 
   // ── Appointment reminder: cancel ─────────────────────────────────────────────
-  if (msgLower === '❌ no podré asistir') {
+  if (keywordsNo.includes(msgLower)) {
     const { data: appToCancel } = await supabase
       .from('appointments')
       .select('id, start_at, services(name)')
@@ -155,18 +161,17 @@ export async function POST(req: NextRequest) {
       .single();
 
     if (appToCancel) {
-      await updateClientState(supabase, client.id, { step: 'WAIT_CANCEL_SELECTION' });
       try {
         await AppointmentService.cancelAppointment(supabase, {
           appointment_id: appToCancel.id,
           tenant_id: tenant.id,
-          reason: 'Cancelado por usuario vía Recordatorio 24h',
+          reason: 'Cancelado por usuario vía Telegram',
         });
         await MessageService.sendMessage({
           channel: CHANNEL,
           chat_id: chatId,
           tenant_id: tenant.id,
-          text: `✅ Entendido. Hemos liberado tu turno de <b>${(appToCancel.services as any)?.name}</b>. Esperamos verte pronto.`,
+          text: t('cancellationSuccess', lang),
           removeKeyboard: true,
         });
       } catch (err: any) {
@@ -174,12 +179,12 @@ export async function POST(req: NextRequest) {
           channel: CHANNEL,
           chat_id: chatId,
           tenant_id: tenant.id,
-          text: `❌ <b>Error:</b> ${err.message}`,
+          text: `❌ Error: ${err.message}`,
         });
       }
       await showMainMenu(supabase, tenant, client.id, chatId, client.first_name, CHANNEL);
+      return NextResponse.json({ ok: true });
     }
-    return NextResponse.json({ ok: true });
   }
 
   // ── Main state machine (shared with all tenants and channels) ────────────────
