@@ -215,6 +215,16 @@ export const translations = {
       enter_dashboard: 'Enter Dashboard',
       select_language: 'Select Language'
     },
+    registration: {
+      title: 'Almost ready!',
+      subtitle: 'Configure your basic clinical data to get started.',
+      name_label: 'Your Clinic Name',
+      name_ph: 'e.g. Odontosmile',
+      phone_label: 'Contact Phone (Public)',
+      phone_ph: '+34 600 000 000',
+      finish_btn: 'Create My Clinic',
+      skip_btn: 'Complete later'
+    },
     // Common UI
     done: 'DONE!',
     created: 'CREATED!',
@@ -451,6 +461,16 @@ export const translations = {
       enter_dashboard: 'Entrar al Dashboard',
       select_language: 'Seleccionar Idioma'
     },
+    registration: {
+      title: '¡Casi listo!',
+      subtitle: 'Configura los datos básicos de tu clínica para comenzar.',
+      name_label: 'Nombre de tu Clínica',
+      name_ph: 'Ej: Odontosmile',
+      phone_label: 'Teléfono de Contacto (Público)',
+      phone_ph: '+34 600 000 000',
+      finish_btn: 'Crear Mi Clínica',
+      skip_btn: 'Completar más tarde'
+    },
     // Common UI
     done: '¡LISTO!',
     created: '¡CREADO!',
@@ -686,6 +706,16 @@ export const translations = {
       finish_desc: 'La tua clinica è configurata. Ora puoi gestire gli appuntamenti, invitare altri medici o regolare i tuoi orari.',
       enter_dashboard: 'Entra nella Dashboard',
       select_language: 'Seleziona Lingua'
+    },
+    registration: {
+      title: 'Quasi pronto!',
+      subtitle: 'Configura i dati di base della tua clinica per iniziare.',
+      name_label: 'Nome della tua Clinica',
+      name_ph: 'Es: Odontosmile',
+      phone_label: 'Telefono di Contatto (Pubblico)',
+      phone_ph: '+39 300 000 000',
+      finish_btn: 'Crea La Mia Clinica',
+      skip_btn: 'Completa più tardi'
     },
     // Common UI
     done: 'FATTO!',
