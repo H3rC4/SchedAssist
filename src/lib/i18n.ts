@@ -202,6 +202,19 @@ export const translations = {
       finish: 'Got it',
       step_x_of_y: (current: number, total: number) => `Step ${current} of ${total}`
     },
+    onboarding: {
+      team_title: 'Your Team',
+      team_desc: 'Create the first professional who will attend appointments in your clinic.',
+      services_title: 'Your Services',
+      services_desc: 'What services do you offer to your patients?',
+      service_name: 'Service Name',
+      duration: 'Duration (Minutes)',
+      price: 'Price (Amount)',
+      all_done: 'All Set!',
+      finish_desc: 'Your clinic is configured. Now you can manage appointments, invite more doctors, or adjust your schedules.',
+      enter_dashboard: 'Enter Dashboard',
+      select_language: 'Select Language'
+    },
     // Common UI
     done: 'DONE!',
     created: 'CREATED!',
@@ -425,6 +438,19 @@ export const translations = {
       finish: 'Entendido',
       step_x_of_y: (current: number, total: number) => `Paso ${current} de ${total}`
     },
+    onboarding: {
+      team_title: 'Tu Equipo',
+      team_desc: 'Crea al primer profesional que atenderá citas en tu clínica.',
+      services_title: 'Tus Servicios',
+      services_desc: '¿Qué servicios ofreces a tus pacientes?',
+      service_name: 'Nombre del Servicio',
+      duration: 'Duración (Minutos)',
+      price: 'Precio (Monto)',
+      all_done: '¡Todo Listo!',
+      finish_desc: 'Tu clínica está configurada. Ahora puedes gestionar citas, invitar más doctores o ajustar tus horarios.',
+      enter_dashboard: 'Entrar al Dashboard',
+      select_language: 'Seleccionar Idioma'
+    },
     // Common UI
     done: '¡LISTO!',
     created: '¡CREADO!',
@@ -647,6 +673,19 @@ export const translations = {
       next: 'Avanti',
       finish: 'Capito',
       step_x_of_y: (current: number, total: number) => `Passaggio ${current} di ${total}`
+    },
+    onboarding: {
+      team_title: 'Il tuo Team',
+      team_desc: 'Crea il primo professionista che riceverà appuntamenti nella tua clinica.',
+      services_title: 'I tuoi Servizi',
+      services_desc: 'Quali servizi offri ai tuoi pazienti?',
+      service_name: 'Nome del Servizio',
+      duration: 'Durata (Minuti)',
+      price: 'Prezzo (Importo)',
+      all_done: 'Tutto Pronto!',
+      finish_desc: 'La tua clinica è configurata. Ora puoi gestire gli appuntamenti, invitare altri medici o regolare i tuoi orari.',
+      enter_dashboard: 'Entra nella Dashboard',
+      select_language: 'Seleziona Lingua'
     },
     // Common UI
     done: 'FATTO!',

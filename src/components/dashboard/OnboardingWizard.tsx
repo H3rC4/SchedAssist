@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Loader2, ArrowRight, UserPlus, Sparkles, CheckCircle2 } from 'lucide-react';
+import { Loader2, ArrowRight, UserPlus, Sparkles, CheckCircle2, Globe } from 'lucide-react';
 import { translations, Language } from '@/lib/i18n';
 
 interface OnboardingWizardProps {
@@ -11,8 +11,9 @@ interface OnboardingWizardProps {
 }
 
 export function OnboardingWizard({ tenantId, lang, onComplete }: OnboardingWizardProps) {
-  const [step, setStep] = useState(1);
+  const [step, setStep] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [currentLang, setCurrentLang] = useState<Language>(lang || 'es');
   const [error, setError] = useState<string | null>(null);
 
   // Formularios
@@ -23,8 +24,28 @@ export function OnboardingWizard({ tenantId, lang, onComplete }: OnboardingWizar
   const [serviceDuration, setServiceDuration] = useState('30');
   const [servicePrice, setServicePrice] = useState('0');
 
-  // Traducción base o fallo a inglés
-  const t = translations[lang] || translations['en'];
+  // Traducción base
+  const t = translations[currentLang] || translations['es'];
+
+  async function handleLanguageSubmit(selected: Language) {
+    setLoading(true);
+    setCurrentLang(selected);
+    try {
+      await fetch('/api/tenant/settings', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          tenant_id: tenantId,
+          settings: { language: selected }
+        })
+      });
+      setStep(1);
+    } catch (err) {
+      setStep(1); // Continuar de todos modos
+    } finally {
+      setLoading(false);
+    }
+  }
 
   async function handleProfessionalSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -131,7 +152,7 @@ export function OnboardingWizard({ tenantId, lang, onComplete }: OnboardingWizar
         <div className="relative z-10 p-10">
           {/* Progress Indicators */}
           <div className="flex justify-center gap-2 mb-10">
-            {[1, 2, 3].map((s) => (
+            {[0, 1, 2, 3].map((s) => (
               <div 
                 key={s} 
                 className={`h-2 rounded-full transition-all duration-500 ${
@@ -142,16 +163,53 @@ export function OnboardingWizard({ tenantId, lang, onComplete }: OnboardingWizar
             ))}
           </div>
 
+          {step === 0 && (
+            <div className="animate-in fade-in duration-500 text-center">
+              <div className="h-16 w-16 bg-blue-500/10 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                <Globe className="h-8 w-8 text-blue-500" />
+              </div>
+              <h2 className="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tight mb-2">
+                {t.onboarding.select_language}
+              </h2>
+              <p className="text-sm text-slate-500 dark:text-slate-400 mb-8 font-medium">
+                Choose your preferred language for the interface.
+              </p>
+
+              <div className="grid gap-3">
+                {[
+                  { id: 'es', name: 'Español', flag: '🇪🇸' },
+                  { id: 'en', name: 'English', flag: '🇺🇸' },
+                  { id: 'it', name: 'Italiano', flag: '🇮🇹' },
+                ].map((l) => (
+                  <button
+                    key={l.id}
+                    onClick={() => handleLanguageSubmit(l.id as Language)}
+                    disabled={loading}
+                    className="flex items-center justify-between p-5 rounded-2xl bg-slate-50 dark:bg-black/40 border border-slate-100 dark:border-white/5 hover:border-amber-500 transition-all group"
+                  >
+                    <div className="flex items-center gap-4">
+                      <span className="text-2xl">{l.flag}</span>
+                      <span className="font-bold text-slate-700 dark:text-white uppercase tracking-wider text-xs">
+                        {l.name}
+                      </span>
+                    </div>
+                    <ArrowRight className="h-4 w-4 text-slate-300 group-hover:text-amber-500 transition-colors" />
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
           {step === 1 && (
             <div className="animate-in slide-in-from-right-4 duration-500">
               <div className="h-16 w-16 bg-amber-500/10 rounded-2xl flex items-center justify-center mx-auto mb-6">
                 <UserPlus className="h-8 w-8 text-amber-500" />
               </div>
               <h2 className="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tight text-center mb-2">
-                Tu Equipo
+                {t.onboarding.team_title}
               </h2>
               <p className="text-sm text-slate-500 dark:text-slate-400 text-center mb-8 font-medium">
-                Crea al primer profesional que atenderá citas en tu clínica.
+                {t.onboarding.team_desc}
               </p>
 
               <form onSubmit={handleProfessionalSubmit} className="space-y-5">
@@ -187,7 +245,7 @@ export function OnboardingWizard({ tenantId, lang, onComplete }: OnboardingWizar
                   disabled={loading || !profName || !profSpecialty}
                   className="w-full h-14 mt-4 bg-slate-900 dark:bg-amber-500 hover:bg-slate-800 dark:hover:bg-amber-400 text-white dark:text-slate-900 rounded-2xl font-black uppercase tracking-widest transition-all disabled:opacity-50 flex items-center justify-center gap-2 !mt-8 shadow-xl"
                 >
-                  {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : <>Siguiente <ArrowRight className="h-4 w-4" /></>}
+                  {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : <>{t.tutorial.next} <ArrowRight className="h-4 w-4" /></>}
                 </button>
               </form>
             </div>
@@ -199,16 +257,16 @@ export function OnboardingWizard({ tenantId, lang, onComplete }: OnboardingWizar
                 <Sparkles className="h-8 w-8 text-indigo-500" />
               </div>
               <h2 className="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tight text-center mb-2">
-                Tus Servicios
+                {t.onboarding.services_title}
               </h2>
               <p className="text-sm text-slate-500 dark:text-slate-400 text-center mb-8 font-medium">
-                ¿Qué servicios ofreces a tus pacientes?
+                {t.onboarding.services_desc}
               </p>
 
               <form onSubmit={handleServiceSubmit} className="space-y-5">
                 <div>
                   <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest px-1 mb-2">
-                    Nombre del Servicio
+                    {t.onboarding.service_name}
                   </label>
                   <input
                     required
@@ -222,7 +280,7 @@ export function OnboardingWizard({ tenantId, lang, onComplete }: OnboardingWizar
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1 mb-2">
-                      Duración (Minutos)
+                      {t.onboarding.duration}
                     </label>
                     <input
                       required
@@ -234,7 +292,7 @@ export function OnboardingWizard({ tenantId, lang, onComplete }: OnboardingWizar
                   </div>
                   <div>
                     <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1 mb-2">
-                      Precio (Monto)
+                      {t.onboarding.price}
                     </label>
                     <input
                       required
@@ -252,7 +310,7 @@ export function OnboardingWizard({ tenantId, lang, onComplete }: OnboardingWizar
                   disabled={loading || !serviceName}
                   className="w-full h-14 mt-4 bg-slate-900 dark:bg-indigo-500 hover:bg-slate-800 dark:hover:bg-indigo-400 text-white dark:text-slate-900 rounded-2xl font-black uppercase tracking-widest transition-all disabled:opacity-50 flex items-center justify-center gap-2 !mt-8 shadow-xl"
                 >
-                  {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : <>Siguiente <ArrowRight className="h-4 w-4" /></>}
+                  {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : <>{t.tutorial.next} <ArrowRight className="h-4 w-4" /></>}
                 </button>
               </form>
             </div>
@@ -264,10 +322,10 @@ export function OnboardingWizard({ tenantId, lang, onComplete }: OnboardingWizar
                 <CheckCircle2 className="h-12 w-12 text-emerald-500" />
               </div>
               <h2 className="text-3xl font-black text-slate-900 dark:text-white uppercase tracking-tight mb-4">
-                ¡Todo Listo!
+                {t.onboarding.all_done}
               </h2>
               <p className="text-sm text-slate-500 dark:text-slate-400 font-medium mb-10 max-w-[250px] mx-auto leading-relaxed">
-                Tu clínica está configurada. Ahora puedes gestionar citas, invitar más doctores o ajustar tus horarios.
+                {t.onboarding.finish_desc}
               </p>
               
               <button
@@ -275,7 +333,7 @@ export function OnboardingWizard({ tenantId, lang, onComplete }: OnboardingWizar
                 disabled={loading}
                 className="w-full h-14 bg-emerald-500 hover:bg-emerald-400 text-slate-900 rounded-2xl font-black uppercase tracking-widest transition-all hover:scale-105 active:scale-95 disabled:opacity-50 shadow-xl shadow-emerald-500/20"
               >
-                {loading ? <Loader2 className="h-5 w-5 animate-spin mx-auto" /> : 'Entrar al Dashboard'}
+                {loading ? <Loader2 className="h-5 w-5 animate-spin mx-auto" /> : t.onboarding.enter_dashboard}
               </button>
             </div>
           )}
