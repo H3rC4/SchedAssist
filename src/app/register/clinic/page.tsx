@@ -1,3 +1,5 @@
+'use client';
+
 import { useState, useRef } from 'react';
 import { createClinicAction } from './actions';
 import { Building, ShieldCheck, Loader2, ArrowRight, Phone, Globe } from 'lucide-react';
