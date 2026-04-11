@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { CalendarDays, MessageSquareText, X, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { CalendarDays, MessageSquareText, X, ArrowRight, CheckCircle2, Briefcase } from 'lucide-react';
 import { translations, Language } from '@/lib/i18n';
 
 interface TutorialProps {
@@ -34,6 +34,14 @@ export function InteractiveTutorial({ tenantId, lang = 'es', onComplete }: Tutor
       icon: MessageSquareText,
       color: 'text-emerald-500',
       bg: 'bg-emerald-500'
+    },
+    {
+      id: 'tour-professionals',
+      title: t.tutorial.step3_title,
+      content: t.tutorial.step3_content,
+      icon: Briefcase,
+      color: 'text-indigo-500',
+      bg: 'bg-indigo-500'
     }
   ];
 

@@ -32,6 +32,7 @@ const i18n = {
     noPatients: 'Sin pacientes registrados.', saved: '¡Horarios Guardados!',
     processing: 'Procesando...', confirmSave: 'Confirmar Cambios',
     lunchBreak: 'Pausa para comer', lunchFrom: 'Desde', lunchTo: 'Hasta',
+    created: '¡Creado!', done: '¡Hecho!',
     days: ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado']
   },
   it: {
@@ -46,6 +47,7 @@ const i18n = {
     noPatients: 'Nessun paziente registrato.', saved: 'Orari Salvati!',
     processing: 'Elaborazione...', confirmSave: 'Conferma Modifiche',
     lunchBreak: 'Pausa pranzo', lunchFrom: 'Dalle', lunchTo: 'Alle',
+    created: 'Creato!', done: 'Fatto!',
     days: ['Domenica', 'Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Sabato']
   },
   en: {
@@ -60,6 +62,7 @@ const i18n = {
     noPatients: 'No patients registered.', saved: 'Schedule Saved!',
     processing: 'Processing...', confirmSave: 'Confirm Changes',
     lunchBreak: 'Lunch break', lunchFrom: 'From', lunchTo: 'To',
+    created: 'Created!', done: 'Done!',
     days: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
   }
 }
@@ -93,6 +96,8 @@ export default function ProfessionalsPage() {
   const [overrideForm, setOverrideForm] = useState({ type: 'block', start_time: '09:00', end_time: '18:00', note: '' })
   const [overrideConflicts, setOverrideConflicts] = useState<any[]>([])
   const [savingOverride, setSavingOverride] = useState(false)
+  const [addSuccess, setAddSuccess] = useState(false)
+  const [overrideSuccess, setOverrideSuccess] = useState(false)
 
   useEffect(() => { initTenant() }, [])
   useEffect(() => { if (tenantId) fetchProfessionals() }, [tenantId])
@@ -191,9 +196,13 @@ export default function ProfessionalsPage() {
     if (data.conflicts_found > 0) {
       setOverrideConflicts(data.conflicts)
     } else {
-      setOverrideModal(null)
+      setOverrideSuccess(true)
+      await loadOverrides(selectedProf.id)
+      setTimeout(() => {
+        setOverrideModal(null)
+        setOverrideSuccess(false)
+      }, 800)
     }
-    await loadOverrides(selectedProf.id)
   }
 
   async function deleteOverride(id: string) {
@@ -241,9 +250,13 @@ export default function ProfessionalsPage() {
       body: JSON.stringify({ tenant_id: tenantId, ...newProfData })
     })
     if (res.ok) {
-      setShowAddForm(false)
-      setNewProfData({ full_name: '', specialty: '' })
+      setAddSuccess(true)
       fetchProfessionals()
+      setTimeout(() => {
+        setShowAddForm(false)
+        setAddSuccess(false)
+        setNewProfData({ full_name: '', specialty: '' })
+      }, 800)
     }
     setSaving(false)
   }
@@ -335,9 +348,12 @@ export default function ProfessionalsPage() {
                   <input value={newProfData.specialty} onChange={e => setNewProfData({ ...newProfData, specialty: e.target.value })}
                     className="w-full rounded-xl border border-gray-200 px-4 py-3 text-gray-900 focus:ring-2 focus:ring-primary-500 outline-none transition-all" placeholder={T_ui.specialtyPH} />
                 </div>
-                <button onClick={handleAddProfessional} disabled={saving || !newProfData.full_name}
-                  className="w-full py-4 rounded-2xl bg-primary-600 text-white font-bold hover:bg-primary-700 shadow-lg shadow-primary-200 transition-all disabled:opacity-50 mt-4">
-                  {saving ? T_ui.saving : T_ui.createBtn}
+                <button onClick={handleAddProfessional} disabled={saving || addSuccess || !newProfData.full_name}
+                  className={`w-full py-4 rounded-2xl font-bold shadow-lg transition-all disabled:opacity-50 mt-4 flex items-center justify-center gap-2
+                    ${addSuccess ? 'bg-emerald-500 text-white shadow-emerald-200' : 'bg-primary-600 text-white shadow-primary-200 hover:bg-primary-700'}`}>
+                  {addSuccess ? (
+                    <><CheckCircle className="h-5 w-5" /> {T_ui.created}</>
+                  ) : saving ? T_ui.saving : T_ui.createBtn}
                 </button>
               </div>
             </div>
@@ -625,12 +641,15 @@ export default function ProfessionalsPage() {
                   </div>
                 )}
 
-                <button onClick={saveOverride} disabled={savingOverride}
-                  className={`w-full py-3.5 rounded-2xl font-bold text-sm uppercase tracking-widest transition-all disabled:opacity-50 ${
+                <button onClick={saveOverride} disabled={savingOverride || overrideSuccess}
+                  className={`w-full py-3.5 rounded-2xl font-bold text-sm uppercase tracking-widest transition-all disabled:opacity-50 flex items-center justify-center gap-2 ${
+                    overrideSuccess ? 'bg-emerald-500 text-white' :
                     overrideForm.type === 'block' ? 'bg-red-500 hover:bg-red-600 text-white' : 'bg-emerald-500 hover:bg-emerald-600 text-white'
                   }`}
                 >
-                  {savingOverride ? '...' : (lang === 'es' ? 'Guardar excepción' : 'Save exception')}
+                  {overrideSuccess ? (
+                    <><CheckCircle className="h-4 w-4" /> {T_ui.done}</>
+                  ) : savingOverride ? '...' : (lang === 'es' ? 'Guardar excepción' : 'Save exception')}
                 </button>
               </div>
             </div>

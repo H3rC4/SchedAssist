@@ -110,11 +110,19 @@ export default function DashboardPage() {
     })
 
     if (appsToExport.length === 0) {
-      alert(lang === 'es' ? 'No hay citas en los últimos 30 días para exportar' : 'No appointments in the last 30 days to export');
+      alert(t.no_data_to_export);
       return;
     }
     
-    const headers = ["Fecha", "Cliente", "Telefono", "Servicio", "Profesional", "Precio", "Estado"];
+    const headers = [
+      t.csv_headers.date, 
+      t.csv_headers.client, 
+      t.csv_headers.phone, 
+      t.csv_headers.service, 
+      t.csv_headers.professional, 
+      t.csv_headers.price, 
+      t.csv_headers.status
+    ];
     const rows = appsToExport.map(app => [
       format(parseISO(app.start_at), 'yyyy-MM-dd HH:mm'),
       `"${app.clients?.first_name} ${app.clients?.last_name}"`,

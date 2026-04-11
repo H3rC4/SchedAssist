@@ -196,10 +196,16 @@ export const translations = {
       step1_content: 'In this tab you can see the daily appointments, check doctor availability and schedule appointments manually.',
       step2_title: 'The Super Power 🤖',
       step2_content: 'This is where you connect your WhatsApp number so our AI agent can book appointments for you 24/7.',
+      step3_title: 'Configure your Staff',
+      step3_content: 'Manage your specialists here. Click on any doctor to set their working hours, lunch breaks, and vacation blockouts.',
       next: 'Next',
       finish: 'Got it',
       step_x_of_y: (current: number, total: number) => `Step ${current} of ${total}`
     },
+    // Common UI
+    done: 'DONE!',
+    created: 'CREATED!',
+    ready: 'READY!',
 
     // Dashboard Extras
     weekly_activity: 'Weekly Activity',
@@ -214,6 +220,16 @@ export const translations = {
       title: 'WhatsApp Bot API',
       desc: 'Automate your clinic 24/7. Connect your number and reduce no-shows.',
       cta: 'Get Access'
+    },
+    no_data_to_export: 'No appointments in the last 30 days to export',
+    csv_headers: {
+      date: 'Date',
+      client: 'Client',
+      phone: 'Phone',
+      service: 'Service',
+      professional: 'Professional',
+      price: 'Price',
+      status: 'Status'
     }
   },
   es: {
@@ -403,10 +419,16 @@ export const translations = {
       step1_content: 'En esta pestaña podrás ver los turnos del día, revisar la disponibilidad de tus doctores y agendar citas manualmente.',
       step2_title: 'El Súper Poder 🤖',
       step2_content: 'Aquí es donde conectas tu número de WhatsApp para que nuestro agente de IA agende citas por ti 24/7 sin que muevas un dedo.',
+      step3_title: 'Configura tu Staff',
+      step3_content: 'Administra a tus especialistas aquí. Haz clic en un doctor para definir sus horarios, pausas de almuerzo y bloqueos de vacaciones.',
       next: 'Siguiente',
       finish: 'Entendido',
       step_x_of_y: (current: number, total: number) => `Paso ${current} de ${total}`
     },
+    // Common UI
+    done: '¡LISTO!',
+    created: '¡CREADO!',
+    ready: '¡LISTO!',
 
     // Dashboard Extras
     weekly_activity: 'Actividad Semanal',
@@ -421,6 +443,16 @@ export const translations = {
       title: 'Bot de WhatsApp',
       desc: 'Automatiza tu clínica 24/7. Conecta tu número y reduce ausencias.',
       cta: 'Activar Bot'
+    },
+    no_data_to_export: 'No hay citas en los últimos 30 días para exportar',
+    csv_headers: {
+      date: 'Fecha',
+      client: 'Cliente',
+      phone: 'Teléfono',
+      service: 'Servicio',
+      professional: 'Profesional',
+      price: 'Precio',
+      status: 'Estado'
     }
   },
   it: {
@@ -610,10 +642,16 @@ export const translations = {
       step1_content: 'In questa scheda puoi vedere gli appuntamenti del giorno, controllare la disponibilità dei medici e fissare appuntamenti manualmente.',
       step2_title: 'Il Super Potere 🤖',
       step2_content: 'Qui è dove colleghi il tuo numero WhatsApp in modo che il nostro agente AI possa prenotare appuntamenti per te 24/7.',
+      step3_title: 'Configura il tuo Staff',
+      step3_content: 'Gestisci i tuoi specialisti qui. Clicca su un medico per impostare orari di lavoro, pause pranzo e blocchi vacanze.',
       next: 'Avanti',
       finish: 'Capito',
       step_x_of_y: (current: number, total: number) => `Passaggio ${current} di ${total}`
     },
+    // Common UI
+    done: 'FATTO!',
+    created: 'CREATO!',
+    ready: 'PRONTO!',
 
     // Dashboard Extras
     weekly_activity: 'Attività Settimanale',
@@ -628,6 +666,16 @@ export const translations = {
       title: 'Bot di WhatsApp',
       desc: 'Automatizza la tua clinica 24/7. Collega il tuo numero e riduci le assenze.',
       cta: 'Attiva Bot'
+    },
+    no_data_to_export: 'Nessun appuntamento negli ultimi 30 giorni da esportare',
+    csv_headers: {
+      date: 'Data',
+      client: 'Cliente',
+      phone: 'Telefono',
+      service: 'Servizio',
+      professional: 'Professionista',
+      price: 'Prezzo',
+      status: 'Stato'
     }
   }
 };

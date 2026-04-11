@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback, useRef, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
-import { ChevronLeft, ChevronRight, Plus, Clock, User, Phone, Stethoscope, MessageSquare, X, Trash2, Calendar, LayoutDashboard, Check, Briefcase, Search } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Plus, Clock, User, Phone, Stethoscope, MessageSquare, X, Trash2, Calendar, LayoutDashboard, Check, Briefcase, Search, CheckCircle } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { format, parseISO, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isSameMonth, addMonths, subMonths, isToday } from 'date-fns'
 import { es } from 'date-fns/locale/es'
@@ -29,6 +29,7 @@ const i18n = {
     errOccupied: 'El profesional ya tiene una cita reservada para ese horario.',
     errNotWorking: 'El profesional no atiende en el horario seleccionado.',
     errGeneric: 'Error al crear el turno.',
+    ready: '¡LISTO!',
   },
   it: {
     title: 'Agenda Virtuale', subtitle: 'Controllo totale appuntamenti e disponibilità',
@@ -48,6 +49,7 @@ const i18n = {
     errOccupied: 'Il professionista ha già una visita prenotata in quell\'orario.',
     errNotWorking: 'Il professionista non è disponibile nell\'orario selezionato.',
     errGeneric: 'Errore durante la creazione dell\'appuntamento.',
+    ready: 'FATTO!',
   },
   en: {
     title: 'Virtual Calendar', subtitle: 'Total control of appointments and availability',
@@ -67,6 +69,7 @@ const i18n = {
     errOccupied: 'The professional already has an appointment booked for that time.',
     errNotWorking: 'The professional is not available at the selected time.',
     errGeneric: 'Error creating the appointment.',
+    ready: 'READY!',
   }
 }
 
@@ -180,6 +183,7 @@ function AppointmentsContent() {
   const [slotLoading, setSlotLoading] = useState(false)
   const [lang, setLang] = useState<'en' | 'es' | 'it'>('es')
   const [toast, setToast] = useState<{ message: string; type: 'error' | 'success' } | null>(null)
+  const [saveSuccess, setSaveSuccess] = useState(false)
 
   const T = i18n[lang] || i18n['en']
   const dateLocale = lang === 'it' ? it : (lang === 'es' ? es : enUS)
@@ -315,12 +319,18 @@ function AppointmentsContent() {
     })
 
     if (res.ok) {
-      setShowNewForm(false)
-      setFormData({ first_name: '', last_name: '', phone: '', service_id: '', professional_id: '', date: format(selectedDate, 'yyyy-MM-dd'), time: '', notes: '' })
+      setSaveSuccess(true)
+      // Refresh data
       fetchDayAppointments(); fetchMonthAppointments()
-      // Refresh slots to reflect the newly created appointment
       if (formData.professional_id) fetchSlots(formData.professional_id, date)
-      setToast({ message: lang === 'it' ? 'Appuntamento creato con successo!' : '¡Turno creado exitosamente!', type: 'success' })
+      
+      // Delay before closing for feedback
+      setTimeout(() => {
+        setShowNewForm(false)
+        setSaveSuccess(false)
+        setFormData({ first_name: '', last_name: '', phone: '', service_id: '', professional_id: '', date: format(selectedDate, 'yyyy-MM-dd'), time: '', notes: '' })
+        setToast({ message: lang === 'it' ? 'Appuntamento creato con successo!' : '¡Turno creado exitosamente!', type: 'success' })
+      }, 1000)
     } else {
       const err = await res.json()
       const errMsg = err.error || ''
@@ -634,9 +644,12 @@ function AppointmentsContent() {
                   )}
 
                   <button onClick={handleCreateAppointment}
-                    disabled={loading || !formData.first_name || !formData.professional_id || !formData.time}
-                    className="w-full py-6 rounded-[2rem] bg-gray-900 text-white font-black text-lg hover:bg-primary-600 shadow-2xl hover:shadow-primary-300 transition-all duration-500 mt-4 uppercase tracking-[0.3em] flex items-center justify-center gap-3 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">
-                    {loading ? T.reserving : T.confirm}
+                    disabled={loading || saveSuccess || !formData.first_name || !formData.professional_id || !formData.time}
+                    className={`w-full py-6 rounded-[2rem] font-black text-lg shadow-2xl transition-all duration-500 mt-4 uppercase tracking-[0.3em] flex items-center justify-center gap-3 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed
+                      ${saveSuccess ? 'bg-emerald-500 text-white shadow-emerald-200' : 'bg-gray-900 text-white hover:bg-primary-600 shadow-primary-300'}`}>
+                    {saveSuccess ? (
+                      <><CheckCircle className="h-6 w-6" /> {T.ready || 'DONE!'}</>
+                    ) : loading ? T.reserving : T.confirm}
                   </button>
                 </div>
               </div>

@@ -24,18 +24,25 @@ export async function POST(req: NextRequest) {
 
     const tenantId = tenantUser.tenant_id;
 
+    const origin = req.headers.get('origin') || process.env.NEXT_PUBLIC_SITE_URL || '';
+    
+    if (!origin || !origin.startsWith('http')) {
+      console.error('Invalid origin for Stripe checkout:', origin);
+      return NextResponse.json({ error: 'Configuración de URL del sitio inválida' }, { status: 500 });
+    }
+
     // Crear la sesión de checkout de Stripe
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: [
         {
-          price: process.env.STRIPE_PRICE_ID || 'price_placeholder', // Reemplazar con ID real
+          price: process.env.STRIPE_PRICE_ID || 'price_placeholder', 
           quantity: 1,
         },
       ],
       mode: 'subscription',
-      success_url: `${process.env.NEXT_PUBLIC_SITE_URL}/dashboard/whatsapp?success=true`,
-      cancel_url: `${process.env.NEXT_PUBLIC_SITE_URL}/dashboard/whatsapp?canceled=true`,
+      success_url: `${origin}/dashboard/whatsapp?success=true`,
+      cancel_url: `${origin}/dashboard/whatsapp?canceled=true`,
       metadata: {
         tenant_id: tenantId,
       },
