@@ -361,25 +361,25 @@ function AppointmentsContent() {
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
 
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-white/70 backdrop-blur-xl p-10 rounded-[2.5rem] border border-white shadow-[0_32px_64px_-16px_rgba(0,0,0,0.05)] relative overflow-hidden group">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-white/70 backdrop-blur-xl p-6 md:p-10 rounded-[2rem] md:rounded-[2.5rem] border border-white shadow-[0_32px_64px_-16px_rgba(0,0,0,0.05)] relative overflow-hidden group">
         <div className="absolute top-0 right-0 p-4 opacity-[0.03] pointer-events-none">
-          <LayoutDashboard className="h-48 w-48 rotate-12" />
+          <LayoutDashboard className="h-32 md:h-48 w-32 md:w-48 rotate-12" />
         </div>
         <div className="relative z-10">
-          <h1 className="text-4xl font-black text-gray-900 tracking-[-0.04em] flex items-center gap-4">
-            {T.title} <span className="px-3 py-1 bg-primary-100 text-primary-700 text-xs font-black rounded-xl tracking-widest uppercase">Pro</span>
+          <h1 className="text-2xl md:text-4xl font-black text-gray-900 tracking-[-0.04em] flex items-center gap-3 md:gap-4">
+            {T.title} <span className="px-2 md:px-3 py-1 bg-primary-100 text-primary-700 text-[10px] md:text-xs font-black rounded-lg md:rounded-xl tracking-widest uppercase">Pro</span>
           </h1>
-          <p className="text-base font-bold text-gray-400 mt-2 uppercase tracking-[0.2em]">{T.subtitle}</p>
+          <p className="text-xs md:text-base font-bold text-gray-400 mt-1 md:mt-2 uppercase tracking-[0.2em]">{T.subtitle}</p>
         </div>
         <button onClick={() => { setFormData(prev => ({ ...prev, date: format(selectedDate, 'yyyy-MM-dd') })); setShowNewForm(true) }}
-          className="relative z-10 inline-flex items-center rounded-3xl bg-gray-900 px-8 py-5 text-sm font-black text-white shadow-2xl hover:bg-primary-600 hover:scale-[1.05] active:scale-95 transition-all duration-300">
-          <Plus className="-ml-1 mr-3 h-6 w-6" /> {T.newBtn}
+          className="relative z-10 flex items-center justify-center rounded-2xl md:rounded-3xl bg-gray-900 px-6 md:px-8 py-4 md:py-5 text-sm font-black text-white shadow-2xl hover:bg-primary-600 hover:scale-[1.05] active:scale-95 transition-all duration-300 w-full md:w-auto">
+          <Plus className="-ml-1 mr-2 md:mr-3 h-5 md:h-6 w-5 md:w-6" /> {T.newBtn}
         </button>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-10">
         {/* Mini Calendar */}
-        <div className="lg:col-span-4 bg-white/70 backdrop-blur-xl rounded-[2.5rem] border border-white p-10 shadow-lg h-fit">
+        <div className="lg:col-span-4 bg-white/70 backdrop-blur-xl rounded-[2rem] md:rounded-[2.5rem] border border-white p-6 md:p-10 shadow-lg h-fit">
           <div className="flex items-center justify-between mb-10">
             <button onClick={() => setCurrentMonth(subMonths(currentMonth, 1))} className="p-4 rounded-2xl bg-gray-50 hover:bg-white border border-transparent hover:border-gray-100 transition-all shadow-sm">
               <ChevronLeft className="h-5 w-5 text-gray-600" />
@@ -413,15 +413,15 @@ function AppointmentsContent() {
         </div>
 
         {/* Day Feed */}
-        <div className="lg:col-span-8 bg-white/70 backdrop-blur-xl rounded-[2.5rem] border border-white p-10 shadow-lg min-h-[600px]">
-          <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4">
+        <div className="lg:col-span-8 bg-white/70 backdrop-blur-xl rounded-[2rem] md:rounded-[2.5rem] border border-white p-6 md:p-10 shadow-lg min-h-[400px] md:min-h-[600px]">
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 md:mb-12 gap-4">
             <div>
-              <p className="text-xs font-black text-primary-600 uppercase tracking-[0.3em] mb-2">{T.dailyView}</p>
-              <h2 className="text-4xl font-black text-gray-900 tracking-tight capitalize">
+              <p className="text-[10px] md:text-xs font-black text-primary-600 uppercase tracking-[0.3em] mb-1 md:mb-2">{T.dailyView}</p>
+              <h2 className="text-2xl md:text-4xl font-black text-gray-900 tracking-tight capitalize">
                 {format(selectedDate, "EEEE d 'di' MMMM", { locale: dateLocale })}
               </h2>
             </div>
-            <div className="bg-gray-900 text-white px-6 py-3 rounded-2xl text-xs font-black tracking-widest uppercase shadow-lg">
+            <div className="bg-gray-900 text-white px-4 md:px-6 py-2 md:py-3 rounded-xl md:rounded-2xl text-[10px] md:text-xs font-black tracking-widest uppercase shadow-lg self-start md:self-auto">
               {appointments.length} {T.appointments}
             </div>
           </div>
@@ -475,9 +475,9 @@ function AppointmentsContent() {
 
       {/* Modal: Detail */}
       {selectedApp && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/40 backdrop-blur-2xl animate-in fade-in duration-300" onClick={() => setSelectedApp(null)}>
-          <div className="bg-white rounded-[3rem] shadow-2xl w-full max-w-md mx-4 overflow-hidden border border-white" onClick={e => e.stopPropagation()}>
-            <div className="p-12">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/40 backdrop-blur-2xl animate-in fade-in duration-300 p-4" onClick={() => setSelectedApp(null)}>
+          <div className="bg-white rounded-[2.5rem] md:rounded-[3rem] shadow-2xl w-full max-w-md overflow-hidden border border-white max-h-[95vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+            <div className="p-8 md:p-12">
               <div className="flex items-center justify-between mb-10">
                 <div className="h-20 w-20 rounded-[2rem] bg-primary-600 shadow-2xl shadow-primary-200 flex items-center justify-center">
                   <User className="h-10 w-10 text-white" />
@@ -568,7 +568,7 @@ function AppointmentsContent() {
                   </div>
 
                   {/* Name + Last name */}
-                  <div className="grid grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
                     <div className="space-y-2">
                       <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-2">{T.nameLabel}</label>
                       <div className="relative">
@@ -580,9 +580,11 @@ function AppointmentsContent() {
                     </div>
                     <div className="space-y-2">
                       <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-2">{T.lastNameLabel}</label>
-                      <input value={formData.last_name} onChange={e => setFormData({ ...formData, last_name: e.target.value })}
-                        className="w-full rounded-2xl bg-gray-50 border border-gray-100 px-6 py-4 text-sm font-black text-gray-900 focus:bg-white focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 transition-all outline-none"
-                        placeholder={lang === 'it' ? 'Rossi' : 'Castro'} />
+                      <div className="relative">
+                        <input value={formData.last_name} onChange={e => setFormData({ ...formData, last_name: e.target.value })}
+                          className="w-full rounded-2xl bg-gray-50 border border-gray-100 px-6 py-4 text-sm font-black text-gray-900 focus:bg-white focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 transition-all outline-none"
+                          placeholder={lang === 'it' ? 'Rossi' : 'Castro'} />
+                      </div>
                     </div>
                   </div>
 
@@ -598,7 +600,7 @@ function AppointmentsContent() {
                   </div>
 
                   {/* Service + Professional */}
-                  <div className="grid grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
                     {[
                       { label: T.serviceLabel, icon: Stethoscope, value: formData.service_id, key: 'service_id', options: services, optLabel: 'name' },
                       { label: T.profLabel, icon: Briefcase, value: formData.professional_id, key: 'professional_id', options: professionals, optLabel: 'full_name' },
@@ -620,7 +622,7 @@ function AppointmentsContent() {
 
                   {/* Slots */}
                   {formData.professional_id && (
-                    <div className="animate-in slide-in-from-bottom-4 duration-500 bg-primary-50/20 p-8 rounded-[2.5rem] border border-primary-100/50">
+                    <div className="animate-in slide-in-from-bottom-4 duration-500 bg-primary-50/20 p-4 md:p-8 rounded-[2rem] md:rounded-[2.5rem] border border-primary-100/50">
                       <div className="flex items-center justify-between mb-4">
                         <label className="text-[10px] font-black text-primary-600 uppercase tracking-[0.3em]">{T.slotsLabel}</label>
                         {slotLoading && <div className="h-4 w-4 border-2 border-primary-600 border-t-transparent animate-spin rounded-full" />}
@@ -630,10 +632,10 @@ function AppointmentsContent() {
                           <p className="text-xs font-bold text-orange-500">{T.noSlots}</p>
                         </div>
                       ) : (
-                        <div className="grid grid-cols-4 gap-2 max-h-[140px] overflow-y-auto pr-2">
+                        <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 max-h-[140px] overflow-y-auto pr-2 custom-scrollbar">
                           {availableSlots.map(slot => (
                             <button key={slot} onClick={() => setFormData({ ...formData, time: slot })}
-                              className={`px-4 py-3 rounded-xl text-[10px] font-black transition-all border
+                              className={`px-3 md:px-4 py-3 rounded-xl text-[10px] font-black transition-all border
                                 ${formData.time === slot ? 'bg-primary-600 text-white border-primary-600 shadow-xl shadow-primary-200' : 'bg-white border-gray-100 text-gray-600 hover:border-primary-300'}`}>
                               {slot}
                             </button>

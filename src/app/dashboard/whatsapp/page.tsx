@@ -129,8 +129,8 @@ export default function WhatsAppPage() {
   // --- SUCCESS MOCKUP SCREEN ---
   if (successParam === 'true' && !forceSuccess) {
     return (
-      <div className="flex-1 p-8 md:p-12 min-h-[80vh] flex items-center justify-center animate-in zoom-in-95 duration-700">
-        <div className="max-w-xl w-full text-center space-y-8 bg-white dark:bg-slate-900 p-12 rounded-[3.5rem] border border-slate-100 dark:border-white/5 shadow-2xl relative overflow-hidden">
+      <div className="flex-1 p-4 md:p-12 min-h-[80vh] flex items-center justify-center animate-in zoom-in-95 duration-700">
+        <div className="max-w-xl w-full text-center space-y-6 md:space-y-8 bg-white dark:bg-slate-900 p-6 md:p-12 rounded-[2.5rem] md:rounded-[3.5rem] border border-slate-100 dark:border-white/5 shadow-2xl relative overflow-hidden">
           {/* Success Decoration */}
           <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-emerald-400 via-amber-400 to-indigo-400" />
           
@@ -141,11 +141,11 @@ export default function WhatsAppPage() {
             <Sparkles className="absolute -top-2 -right-2 h-8 w-8 text-amber-500 animate-pulse" />
           </div>
 
-          <div className="space-y-4">
-            <h2 className="text-4xl font-black text-slate-900 dark:text-white uppercase tracking-tighter">
+          <div className="space-y-3 md:space-y-4">
+            <h2 className="text-2xl md:text-4xl font-black text-slate-900 dark:text-white uppercase tracking-tighter">
               ¡Pago <span className="text-emerald-500">Exitoso</span>!
             </h2>
-            <p className="text-slate-500 font-bold leading-relaxed">
+            <p className="text-sm md:text-base text-slate-500 font-bold leading-relaxed">
               Tu suscripción **SchedAssist Premium** está activa. Ahora puedes vincular tus números de WhatsApp y activar el asistente de IA.
             </p>
           </div>
@@ -184,25 +184,25 @@ export default function WhatsAppPage() {
   // --- GATE SCREEN (NOT ACTIVE) ---
   if (tenant?.subscription_status !== 'active' && !forceSuccess && successParam !== 'true') {
     return (
-      <div className="flex-1 p-8 md:p-12 animate-in fade-in slide-in-from-bottom-4 duration-1000">
+      <div className="flex-1 p-4 md:p-12 animate-in fade-in slide-in-from-bottom-4 duration-1000">
         <div className="max-w-4xl mx-auto">
-          <div className="relative overflow-hidden rounded-[3rem] bg-slate-900 border border-white/10 shadow-2xl">
+          <div className="relative overflow-hidden rounded-[2.5rem] md:rounded-[3rem] bg-slate-900 border border-white/10 shadow-2xl">
             {/* Background Magic */}
             <div className="absolute top-0 left-0 w-full h-full pointer-events-none opacity-50">
               <div className="absolute top-[-20%] right-[-10%] w-[60%] h-[60%] bg-amber-500/20 rounded-full blur-[120px] animate-pulse" />
               <div className="absolute bottom-[-20%] left-[-10%] w-[60%] h-[60%] bg-indigo-500/20 rounded-full blur-[120px]" />
             </div>
 
-            <div className="relative z-10 p-12 md:p-20 text-center">
+            <div className="relative z-10 p-8 md:p-20 text-center">
               <div className="inline-flex items-center justify-center h-20 w-20 rounded-3xl bg-amber-500 mb-8 shadow-xl shadow-amber-500/20">
                 <Zap className="h-10 w-10 text-slate-900 fill-slate-900/50" />
               </div>
               
-              <h1 className="text-4xl md:text-6xl font-black text-white tracking-tighter uppercase mb-6 leading-none">
+              <h1 className="text-3xl md:text-6xl font-black text-white tracking-tighter uppercase mb-4 md:mb-6 leading-none">
                 WhatsApp <span className="text-amber-500">Premium</span>
               </h1>
               
-              <p className="text-lg md:text-xl text-slate-400 font-medium max-w-2xl mx-auto mb-12 leading-relaxed">
+              <p className="text-base md:text-xl text-slate-400 font-medium max-w-2xl mx-auto mb-8 md:mb-12 leading-relaxed">
                 {t.whatsapp_banner.desc}
               </p>
 
@@ -241,61 +241,61 @@ export default function WhatsAppPage() {
 
   // --- ACTIVE CONFIGURATION ---
   return (
-    <div className="flex-1 p-8 md:p-12 space-y-12 animate-in fade-in duration-700">
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 px-4">
+    <div className="flex-1 p-4 md:p-12 space-y-8 md:space-y-12 animate-in fade-in duration-700">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 px-2">
         <div>
-          <div className="flex items-center gap-3 mb-4">
-            <div className="px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 text-[10px] font-black uppercase tracking-[0.2em]">
+          <div className="flex items-center gap-3 mb-2 md:mb-4">
+            <div className="px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em]">
               Suscripción Activa
             </div>
           </div>
-          <h1 className="text-5xl font-black text-slate-900 dark:text-white uppercase tracking-tighter leading-none">
+          <h1 className="text-3xl md:text-5xl font-black text-slate-900 dark:text-white uppercase tracking-tighter leading-none">
             {t.whatsapp_config || 'Configuración'} <span className="text-amber-500">WhatsApp</span>
           </h1>
         </div>
         
         <button 
           onClick={() => setShowAddForm(!showAddForm)}
-          className="px-6 py-4 bg-slate-900 dark:bg-white dark:text-slate-900 text-white rounded-[1.5rem] font-black text-xs uppercase tracking-widest transition-all hover:scale-105 flex items-center gap-2"
+          className="w-full md:w-auto px-6 py-4 bg-slate-900 dark:bg-white dark:text-slate-900 text-white rounded-[1.25rem] md:rounded-[1.5rem] font-black text-[10px] md:text-xs uppercase tracking-widest transition-all hover:scale-105 flex items-center justify-center gap-2"
         >
           {showAddForm ? t.cancel : <><Plus className="h-4 w-4" /> {t.link_new_number || 'Vincular Nuevo Número'}</>}
         </button>
       </div>
 
       {showAddForm && (
-        <div className="bg-slate-100 dark:bg-slate-900/50 border border-slate-200 dark:border-white/5 rounded-[2.5rem] p-8 md:p-12 animate-in zoom-in-95 duration-300">
-          <form onSubmit={handleAddAccount} className="max-w-xl space-y-8">
-            <div className="space-y-6">
+        <div className="bg-slate-100 dark:bg-slate-900/50 border border-slate-200 dark:border-white/5 rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-12 animate-in zoom-in-95 duration-300">
+          <form onSubmit={handleAddAccount} className="max-w-xl space-y-6 md:space-y-8">
+            <div className="space-y-4 md:space-y-6">
               <div>
-                <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3 px-1">Etiqueta (Ej: Recepción)</label>
+                <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 md:mb-3 px-1">Etiqueta (Ej: Recepción)</label>
                 <input 
                   type="text" 
                   value={newAccount.label}
                   onChange={e => setNewAccount({...newAccount, label: e.target.value})}
-                  className="w-full h-14 bg-white dark:bg-black rounded-2xl border border-slate-200 dark:border-white/10 px-6 font-bold text-slate-900 dark:text-white transition-all focus:border-amber-500 outline-none"
+                  className="w-full h-12 md:h-14 bg-white dark:bg-black rounded-xl md:rounded-2xl border border-slate-200 dark:border-white/10 px-4 md:px-6 font-bold text-slate-900 dark:text-white transition-all focus:border-amber-500 outline-none text-sm md:text-base"
                   placeholder="Nombre del canal..." 
                 />
               </div>
-              <div className="grid md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                 <div>
-                  <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3 px-1">Channel ID (Whapi)</label>
+                  <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 md:mb-3 px-1">Channel ID (Whapi)</label>
                   <input 
                     type="text" 
                     required
                     value={newAccount.phone_number_id}
                     onChange={e => setNewAccount({...newAccount, phone_number_id: e.target.value})}
-                    className="w-full h-14 bg-white dark:bg-black rounded-2xl border border-slate-200 dark:border-white/10 px-6 font-bold text-slate-900 dark:text-white transition-all focus:border-amber-500 outline-none"
+                    className="w-full h-12 md:h-14 bg-white dark:bg-black rounded-xl md:rounded-2xl border border-slate-200 dark:border-white/10 px-4 md:px-6 font-bold text-slate-900 dark:text-white transition-all focus:border-amber-500 outline-none text-sm md:text-base"
                     placeholder="THOROD-..." 
                   />
                 </div>
                 <div>
-                  <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3 px-1">API Token</label>
+                  <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 md:mb-3 px-1">API Token</label>
                   <input 
                     type="password" 
                     required
                     value={newAccount.access_token}
                     onChange={e => setNewAccount({...newAccount, access_token: e.target.value})}
-                    className="w-full h-14 bg-white dark:bg-black rounded-2xl border border-slate-200 dark:border-white/10 px-6 font-bold text-slate-900 dark:text-white transition-all focus:border-amber-500 outline-none"
+                    className="w-full h-12 md:h-14 bg-white dark:bg-black rounded-xl md:rounded-2xl border border-slate-200 dark:border-white/10 px-4 md:px-6 font-bold text-slate-900 dark:text-white transition-all focus:border-amber-500 outline-none text-sm md:text-base"
                     placeholder="••••••••" 
                   />
                 </div>
@@ -327,17 +327,19 @@ export default function WhatsAppPage() {
           </div>
         ) : (
           accounts.map(acc => (
-            <div key={acc.id} className="group p-8 rounded-[2.5rem] bg-white dark:bg-black border border-slate-200 dark:border-white/10 hover:border-amber-500/30 transition-all duration-300 flex flex-col md:flex-row md:items-center justify-between gap-6 shadow-sm hover:shadow-xl hover:shadow-amber-500/5">
-              <div className="flex items-center gap-6">
-                <div className="h-16 w-16 rounded-2xl bg-slate-100 dark:bg-white/5 flex items-center justify-center group-hover:bg-amber-500 transition-colors duration-300 shadow-inner">
-                  <Smartphone className="h-8 w-8 text-slate-400 dark:text-white/40 group-hover:text-slate-900 transition-colors duration-300" />
+            <div key={acc.id} className="group p-6 md:p-8 rounded-[2rem] md:rounded-[2.5rem] bg-white dark:bg-black border border-slate-200 dark:border-white/10 hover:border-amber-500/30 transition-all duration-300 flex flex-col md:flex-row md:items-center justify-between gap-6 shadow-sm hover:shadow-xl hover:shadow-amber-500/5">
+              <div className="flex items-center gap-4 md:gap-6">
+                <div className="h-14 w-14 md:h-16 md:w-16 rounded-xl md:rounded-2xl bg-slate-100 dark:bg-white/5 flex items-center justify-center group-hover:bg-amber-500 transition-colors duration-300 shadow-inner flex-shrink-0">
+                  <Smartphone className="h-7 w-7 md:h-8 md:w-8 text-slate-400 dark:text-white/40 group-hover:text-slate-900 transition-colors duration-300" />
                 </div>
-                <div>
-                  <h3 className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight">{acc.label}</h3>
-                  <div className="flex items-center gap-3 mt-1">
-                    <span className="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-widest px-2 py-0.5 rounded bg-slate-100 dark:bg-white/5">ID: {acc.phone_number_id}</span>
-                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                    <span className="text-[10px] font-black text-emerald-500 uppercase tracking-[0.2em]">Conectado</span>
+                <div className="min-w-0">
+                  <h3 className="text-lg md:text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight truncate">{acc.label}</h3>
+                  <div className="flex flex-wrap items-center gap-2 md:gap-3 mt-1">
+                    <span className="text-[9px] md:text-[10px] font-mono font-bold text-slate-400 uppercase tracking-widest px-2 py-0.5 rounded bg-slate-100 dark:bg-white/5 truncate max-w-[120px]">ID: {acc.phone_number_id}</span>
+                    <div className="flex items-center gap-1.5">
+                      <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                      <span className="text-[9px] md:text-[10px] font-black text-emerald-500 uppercase tracking-[0.2em]">Conectado</span>
+                    </div>
                   </div>
                 </div>
               </div>

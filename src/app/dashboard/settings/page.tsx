@@ -126,20 +126,20 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="flex-1 space-y-12 p-8 md:p-12 animate-in fade-in duration-700">
+    <div className="flex-1 space-y-8 md:space-y-12 p-4 md:p-12 animate-in fade-in duration-700">
       <div>
-        <h2 className="text-4xl font-black tracking-tight text-slate-900 dark:text-white uppercase leading-none">
+        <h2 className="text-2xl md:text-4xl font-black tracking-tight text-slate-900 dark:text-white uppercase leading-none">
           {t.system_settings}
         </h2>
-        <p className="text-sm font-bold text-slate-400 mt-2 uppercase tracking-[0.2em]">
+        <p className="text-[10px] md:text-sm font-bold text-slate-400 mt-2 uppercase tracking-[0.2em]">
           {t.account_administration || 'Administración de la Cuenta'}
         </p>
       </div>
 
-      <div className="grid gap-10 max-w-xl">
+      <div className="grid gap-6 md:gap-10 max-w-xl">
 
         {/* Services Navigation Link */}
-        <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 shadow-xl shadow-indigo-900/5 p-10 transition-all hover:shadow-indigo-900/10">
+        <div className="bg-white dark:bg-slate-900 rounded-[2rem] md:rounded-[2.5rem] border border-slate-200 dark:border-slate-800 shadow-xl shadow-indigo-900/5 p-6 md:p-10 transition-all hover:shadow-indigo-900/10">
           <div className="flex items-center gap-4 mb-4">
             <div className="h-12 w-12 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center">
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-emerald-500"><rect width="20" height="14" x="2" y="7" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
@@ -157,7 +157,7 @@ export default function SettingsPage() {
         </div>
 
         {/* Clinic Configuration */}
-        <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 shadow-xl shadow-indigo-900/5 p-10 transition-all hover:shadow-indigo-900/10">
+        <div className="bg-white dark:bg-slate-900 rounded-[2rem] md:rounded-[2.5rem] border border-slate-200 dark:border-slate-800 shadow-xl shadow-indigo-900/5 p-6 md:p-10 transition-all hover:shadow-indigo-900/10">
           <div className="flex items-center gap-4 mb-8">
             <div className="h-12 w-12 rounded-xl bg-amber-50 dark:bg-amber-500/10 flex items-center justify-center">
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-amber-500"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
@@ -198,7 +198,7 @@ export default function SettingsPage() {
         </div>
 
         {/* Language Settings */}
-        <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 shadow-xl shadow-indigo-900/5 p-10 transition-all hover:shadow-indigo-900/10">
+        <div className="bg-white dark:bg-slate-900 rounded-[2rem] md:rounded-[2.5rem] border border-slate-200 dark:border-slate-800 shadow-xl shadow-indigo-900/5 p-6 md:p-10 transition-all hover:shadow-indigo-900/10">
           <div className="flex items-center gap-4 mb-8">
             <div className="h-12 w-12 rounded-xl bg-indigo-50 dark:bg-indigo-500/10 flex items-center justify-center">
               <Languages className="h-6 w-6 text-indigo-500" />
@@ -242,7 +242,7 @@ export default function SettingsPage() {
 
         {/* Change Password - Only for non-Google users */}
         {!isGoogleUser && (
-          <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 shadow-xl shadow-indigo-900/5 p-10 transition-all hover:shadow-indigo-900/10">
+          <div className="bg-white dark:bg-slate-900 rounded-[2rem] md:rounded-[2.5rem] border border-slate-200 dark:border-slate-800 shadow-xl shadow-indigo-900/5 p-6 md:p-10 transition-all hover:shadow-indigo-900/10">
             <div className="flex items-center gap-4 mb-8">
               <div className="h-12 w-12 rounded-xl bg-violet-50 dark:bg-violet-500/10 flex items-center justify-center">
                 <KeyRound className="h-6 w-6 text-violet-500" />
