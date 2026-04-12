@@ -68,6 +68,11 @@ export const translations = {
     manage_services_desc: 'Manage the services offered by your clinic.',
     manage_services_btn: 'Manage Services',
     account_administration: 'Account Administration',
+    staff_title: 'Professional Staff',
+    staff_subtitle: 'Manage doctors and their available hours.',
+    add_professional_btn: 'Add Professional',
+    new_professional: 'New Professional',
+    delConfirm: 'Delete this professional?',
 
     // Dashboard Hero & Metrics
     system_active: 'System Online',
@@ -198,6 +203,8 @@ export const translations = {
       step2_content: 'This is where you connect your WhatsApp number so our AI agent can book appointments for you 24/7.',
       step3_title: 'Configure your Staff',
       step3_content: 'Manage your specialists here. Click on any doctor to set their working hours, lunch breaks, and vacation blockouts.',
+      step4_title: 'Configure Schedules',
+      step4_content: 'Inside each professional, you can define specific work days and time slots. The AI bot will only offer these times to your patients.',
       next: 'Next',
       finish: 'Got it',
       step_x_of_y: (current: number, total: number) => `Step ${current} of ${total}`
@@ -213,7 +220,8 @@ export const translations = {
       all_done: 'All Set!',
       finish_desc: 'Your clinic is configured. Now you can manage appointments, invite more doctors, or adjust your schedules.',
       enter_dashboard: 'Enter Dashboard',
-      select_language: 'Select Language'
+      select_language: 'Select Language',
+      restart_tutorial: 'Restart Interactive Tutorial'
     },
     registration: {
       title: 'Almost ready!',
@@ -314,6 +322,11 @@ export const translations = {
     manage_services_desc: 'Administra los servicios que ofrece tu clínica.',
     manage_services_btn: 'Manejar Servicios',
     account_administration: 'Administración de la Cuenta',
+    staff_title: 'Staff de Profesionales',
+    staff_subtitle: 'Gestiona los doctores y sus horarios de atención disponibles.',
+    add_professional_btn: 'Agregar Profesional',
+    new_professional: 'Nuevo Profesional',
+    delConfirm: '¿Eliminar este profesional?',
 
     // Dashboard Hero & Metrics
     system_active: 'Sistema Online',
@@ -443,14 +456,16 @@ export const translations = {
       step2_title: 'El Súper Poder 🤖',
       step2_content: 'Aquí es donde conectas tu número de WhatsApp para que nuestro agente de IA agende citas por ti 24/7 sin que muevas un dedo.',
       step3_title: 'Configura tu Staff',
-      step3_content: 'Administra a tus especialistas aquí. Haz clic en un doctor para definir sus horarios, pausas de almuerzo y bloqueos de vacaciones.',
+      step3_content: 'Administra tus especialistas aquí. Haz clic en cualquier doctor para configurar sus horas de trabajo, descansos y vacaciones.',
+      step4_title: 'Configura los Horarios',
+      step4_content: 'Dentro de cada profesional, podrás definir qué días y en qué horas atiende. El bot solo ofrecerá estos horarios a tus pacientes.',
       next: 'Siguiente',
       finish: 'Entendido',
       step_x_of_y: (current: number, total: number) => `Paso ${current} de ${total}`
     },
     onboarding: {
       team_title: 'Tu Equipo',
-      team_desc: 'Crea al primer profesional que atenderá citas en tu clínica.',
+      team_desc: 'Crea el primer profesional que atenderá citas en tu clínica.',
       services_title: 'Tus Servicios',
       services_desc: '¿Qué servicios ofreces a tus pacientes?',
       service_name: 'Nombre del Servicio',
@@ -459,7 +474,8 @@ export const translations = {
       all_done: '¡Todo Listo!',
       finish_desc: 'Tu clínica está configurada. Ahora puedes gestionar citas, invitar más doctores o ajustar tus horarios.',
       enter_dashboard: 'Entrar al Dashboard',
-      select_language: 'Seleccionar Idioma'
+      select_language: 'Seleccionar Idioma',
+      restart_tutorial: 'Reiniciar Tutorial Interactivo'
     },
     registration: {
       title: '¡Casi listo!',
@@ -514,7 +530,7 @@ export const translations = {
     success: 'Successo',
     medical_record: 'Cartella Clinica',
     general_observations: 'Osservazioni Generali (Allergie, Anamnesi)',
-    visit_observations: 'Osservazioni della Visita',
+    visit_observations: 'Osservazioni della della Visita',
     save_note: 'Salva Cartella Medica',
     clinical_history: 'Storia Clinica',
     patient_management: 'Gestione Pazienti',
@@ -560,6 +576,11 @@ export const translations = {
     manage_services_desc: 'Gestisci i servizi offerti dalla tua clinica.',
     manage_services_btn: 'Gestisci Servizi',
     account_administration: 'Amministrazione Account',
+    staff_title: 'Staff Professionale',
+    staff_subtitle: 'Gestisci i medici e i loro orari di disponibilità.',
+    add_professional_btn: 'Aggiungi Professionista',
+    new_professional: 'Nuovo Professionista',
+    delConfirm: 'Eliminare questo professionista?',
 
     // Dashboard Hero & Metrics
     system_active: 'Sistema Attivo',
@@ -689,9 +710,11 @@ export const translations = {
       step2_title: 'Il Super Potere 🤖',
       step2_content: 'Qui è dove colleghi il tuo numero WhatsApp in modo che il nostro agente AI possa prenotare appuntamenti per te 24/7.',
       step3_title: 'Configura il tuo Staff',
-      step3_content: 'Gestisci i tuoi specialisti qui. Clicca su un medico per impostare orari di lavoro, pause pranzo e blocchi vacanze.',
+      step3_content: 'Gestisci i tuoi specialisti qui. Clicca su qualsiasi medico per impostare orari di lavoro, pause pranzo e ferie.',
+      step4_title: 'Configura gli Orari',
+      step4_content: 'Dentro ogni professionista, potrai definire quali giorni e in quali orari riceve. Il bot offrirà solo questi orari ai tuoi pazienti.',
       next: 'Avanti',
-      finish: 'Capito',
+      finish: 'Fatto',
       step_x_of_y: (current: number, total: number) => `Passaggio ${current} di ${total}`
     },
     onboarding: {
@@ -705,7 +728,8 @@ export const translations = {
       all_done: 'Tutto Pronto!',
       finish_desc: 'La tua clinica è configurata. Ora puoi gestire gli appuntamenti, invitare altri medici o regolare i tuoi orari.',
       enter_dashboard: 'Entra nella Dashboard',
-      select_language: 'Seleziona Lingua'
+      select_language: 'Seleziona Lingua',
+      restart_tutorial: 'Riavvia Tutorial Interattivo'
     },
     registration: {
       title: 'Quasi pronto!',

@@ -13,11 +13,33 @@ export async function GET(req: NextRequest) {
 
   if (!tenantId) return NextResponse.json({ error: 'tenant_id required' }, { status: 400 })
 
-  const { data, error } = await supabase
+  // GET THE CALLER TO RESTRICT IF PROFESSIONAL
+  const { createClient: createServerClient } = await import('@/lib/supabase/server');
+  const authClient = createServerClient();
+  const { data: { user } } = await authClient.auth.getUser();
+
+  let isProfessional = false;
+  let callerProfId = null;
+
+  if (user) {
+    const { data: tuData } = await authClient.from('tenant_users').select('role').eq('user_id', user.id).single();
+    if (tuData?.role === 'professional') {
+      isProfessional = true;
+      const { data: profData } = await authClient.from('professionals').select('id').eq('user_id', user.id).single();
+      if (profData) callerProfId = profData.id;
+    }
+  }
+
+  let query = supabase
     .from('professionals')
     .select(`*, availability_rules(*)`)
     .eq('tenant_id', tenantId)
-    .order('full_name')
+
+  if (isProfessional && callerProfId) {
+    query = query.eq('id', callerProfId);
+  }
+
+  const { data, error } = await query.order('full_name')
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
   return NextResponse.json(data)
@@ -32,13 +54,57 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'tenant_id and full_name required' }, { status: 400 })
   }
 
+  // Generate auth credentials
+  const randomSuffix = Math.random().toString(36).substring(2, 8);
+  const normalizedName = full_name.toLowerCase().replace(/[^a-z0-9]/g, '');
+  const auth_email = `dr.${normalizedName}.${randomSuffix}@schedassist.com`;
+  // Generate an 8 char alphanumeric password with a symbol to meet complexity
+  const auth_password_hint = Math.random().toString(36).substring(2, 8) + 'X!';
+
+  // Create user in Supabase Auth
+  const { data: authData, error: authError } = await supabase.auth.admin.createUser({
+    email: auth_email,
+    password: auth_password_hint,
+    email_confirm: true,
+  });
+
+  if (authError) {
+    return NextResponse.json({ error: `Auth Error: ${authError.message}` }, { status: 500 })
+  }
+
+  const userId = authData.user.id;
+
+  // Insert into tenant_users
+  const { error: tuError } = await supabase.from('tenant_users').insert({
+    tenant_id,
+    user_id: userId,
+    role: 'professional'
+  });
+
+  if (tuError) {
+    await supabase.auth.admin.deleteUser(userId);
+    return NextResponse.json({ error: `Tenant User Error: ${tuError.message}` }, { status: 500 })
+  }
+
   const { data, error } = await supabase
     .from('professionals')
-    .insert([{ tenant_id, full_name, specialty, active: active ?? true }])
+    .insert([{ 
+      tenant_id, 
+      full_name, 
+      specialty, 
+      active: active ?? true,
+      user_id: userId,
+      auth_email,
+      auth_password_hint
+    }])
     .select()
     .single()
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) {
+    await supabase.auth.admin.deleteUser(userId); // rollback
+    return NextResponse.json({ error: error.message }, { status: 500 })
+  }
+
   return NextResponse.json(data, { status: 201 })
 }
 
@@ -49,6 +115,21 @@ export async function PATCH(req: NextRequest) {
 
   if (!professional_id || !tenant_id || !rules) {
     return NextResponse.json({ error: 'professional_id, tenant_id, and rules required' }, { status: 400 })
+  }
+
+  // Auth Check
+  const { createClient: createServerClient } = await import('@/lib/supabase/server');
+  const authClient = createServerClient();
+  const { data: { user } } = await authClient.auth.getUser();
+
+  if (user) {
+    const { data: tuData } = await authClient.from('tenant_users').select('role').eq('user_id', user.id).single();
+    if (tuData?.role === 'professional') {
+      const { data: profData } = await authClient.from('professionals').select('id').eq('user_id', user.id).single();
+      if (!profData || profData.id !== professional_id) {
+        return NextResponse.json({ error: 'Unauthorized: Can only edit your own rules' }, { status: 403 });
+      }
+    }
   }
 
   // Delete old rules

@@ -23,9 +23,18 @@ function getServerClient() {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        get(name: string) { return cookieStore.get(name)?.value },
-        set(name: string, value: string, options: CookieOptions) { cookieStore.set({ name, value, ...options }) },
-        remove(name: string, options: CookieOptions) { cookieStore.set({ name, value: '', ...options }) },
+        getAll() {
+          return cookieStore.getAll()
+        },
+        setAll(cookiesToSet: any[]) {
+          try {
+            cookiesToSet.forEach(({ name, value, options }) =>
+              cookieStore.set({ name, value, ...options })
+            )
+          } catch (error) {
+            // Se puede ignorar en Server Actions
+          }
+        },
       },
     }
   )
@@ -76,11 +85,13 @@ export async function enroll2faAction(secret: string, code: string) {
 
   if (error) return { error: error.message }
 
-  // Set verification cookie
+  // Set verification cookie - persist for 24 hours
   cookies().set('sa_2fa_verified', 'true', {
     httpOnly: true,
     secure: true,
-    sameSite: 'lax'
+    sameSite: 'lax',
+    path: '/',
+    maxAge: 60 * 60 * 24 // 24 hours
   })
 
   return { success: true }
@@ -101,11 +112,13 @@ export async function verify2faAction(code: string) {
   const result = auth.verifySync ? auth.verifySync({ token: code, secret }) : { valid: false }
   if (!result.valid) return { error: 'Código incorrecto' }
 
-  // Set verification cookie
+  // Set verification cookie - persist for 24 hours
   cookies().set('sa_2fa_verified', 'true', {
     httpOnly: true,
     secure: true,
-    sameSite: 'lax'
+    sameSite: 'lax',
+    path: '/',
+    maxAge: 60 * 60 * 24 // 24 hours
   })
 
   return { success: true }

@@ -32,6 +32,8 @@ export interface Professional {
   full_name: string;
   specialty?: string;
   active: boolean;
+  auth_email?: string;
+  auth_password_hint?: string;
   created_at: string;
   updated_at: string;
 }

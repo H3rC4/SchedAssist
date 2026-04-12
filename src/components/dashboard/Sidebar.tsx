@@ -41,6 +41,7 @@ export function Sidebar({ lang = 'es' }: SidebarProps) {
   const pathname = usePathname()
   const supabase = createClient()
   const [activeTenant, setActiveTenant] = useState<any>(null)
+  const [userRole, setUserRole] = useState<string | null>(null)
   const [showSupportModal, setShowSupportModal] = useState(false)
 
   useEffect(() => {
@@ -49,11 +50,14 @@ export function Sidebar({ lang = 'es' }: SidebarProps) {
       if (!user) return
       const { data: tuData } = await supabase
         .from('tenant_users')
-        .select('tenant_id, tenants(id, name, slug, settings)')
+        .select('tenant_id, role, tenants(id, name, slug, settings)')
         .eq('user_id', user.id)
         .limit(1).single()
-      if (tuData?.tenants) {
-        setActiveTenant(tuData.tenants)
+      if (tuData) {
+        setUserRole(tuData.role)
+        if (tuData.tenants) {
+          setActiveTenant(tuData.tenants)
+        }
       }
     }
     fetchData()
@@ -61,8 +65,15 @@ export function Sidebar({ lang = 'es' }: SidebarProps) {
 
   const t = translations[lang] || translations['es']
 
+  const filteredNavItems = navItemsBase.filter(item => {
+    if (userRole === 'professional') {
+      return ['dashboard', 'appointments', 'professionals', 'support'].includes(item.id);
+    }
+    return true;
+  });
+
   return (
-    <div className="flex h-screen w-72 flex-col bg-slate-900 dark:bg-black border-r border-slate-800 dark:border-white/10 relative overflow-hidden transition-colors duration-300">
+    <div className="flex h-full w-72 flex-col bg-slate-950/80 dark:bg-black/40 backdrop-blur-2xl border border-white/10 rounded-[2.5rem] relative overflow-hidden transition-all duration-500 shadow-2xl shadow-black/20">
       
       {/* Background Glow */}
       <div className="absolute top-0 left-0 w-full h-full pointer-events-none overflow-hidden z-0 opacity-40">
@@ -94,7 +105,7 @@ export function Sidebar({ lang = 'es' }: SidebarProps) {
               <p className="px-5 text-[10px] font-black text-slate-500 uppercase tracking-[0.25em] mb-4">
                 {category[lang]}
               </p>
-              {navItemsBase.filter(i => i.category === catKey).map(item => {
+              {filteredNavItems.filter(i => i.category === catKey).map(item => {
                 const active = pathname === item.href
                 return (
                   <Link

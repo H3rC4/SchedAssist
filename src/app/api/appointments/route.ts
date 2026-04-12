@@ -14,12 +14,29 @@ export async function GET(req: NextRequest) {
 
   if (!tenantId) return NextResponse.json({ error: 'tenant_id required' }, { status: 400 })
 
+  const { data: { user } } = await supabase.auth.getUser();
+  let callerProfId = null;
+  let isProfessional = false;
+
+  if (user) {
+    const { data: tuData } = await supabase.from('tenant_users').select('role').eq('user_id', user.id).single();
+    if (tuData?.role === 'professional') {
+      isProfessional = true;
+      const { data: profData } = await supabase.from('professionals').select('id').eq('user_id', user.id).single();
+      if (profData) callerProfId = profData.id;
+    }
+  }
+
   let query = supabase
     .from('appointments')
     .select(`*, clients(id, first_name, last_name, phone), services(name), professionals(id, full_name)`)
     .eq('tenant_id', tenantId)
     .neq('status', 'cancelled')
     .order('start_at', { ascending: true })
+
+  if (isProfessional && callerProfId) {
+    query = query.eq('professional_id', callerProfId);
+  }
 
   if (date) {
     query = query
@@ -51,6 +68,16 @@ export async function POST(req: NextRequest) {
   const cleanLastName = capitalize(last_name)
 
   try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      const { data: tuData } = await supabase.from('tenant_users').select('role').eq('user_id', user.id).single();
+      if (tuData?.role === 'professional') {
+        const { data: profData } = await supabase.from('professionals').select('id').eq('user_id', user.id).single();
+        if (!profData || profData.id !== professional_id) {
+          return NextResponse.json({ error: 'Unauthorized: Can only create appointments for yourself' }, { status: 403 });
+        }
+      }
+    }
     // 1. Find or create client
     let { data: client } = await supabaseAdmin
       .from('clients')
@@ -126,6 +153,18 @@ export async function DELETE(req: NextRequest) {
   const supabase = createClient()
 
   try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      const { data: tuData } = await supabase.from('tenant_users').select('role').eq('user_id', user.id).single();
+      if (tuData?.role === 'professional') {
+        const { data: profData } = await supabase.from('professionals').select('id').eq('user_id', user.id).single();
+        const { data: targetApt } = await supabase.from('appointments').select('professional_id').eq('id', id).single();
+        if (!profData || !targetApt || profData.id !== targetApt.professional_id) {
+          return NextResponse.json({ error: 'Unauthorized: Can only cancel your own appointments' }, { status: 403 });
+        }
+      }
+    }
+
     const data = await AppointmentService.cancelAppointment(supabase, {
       appointment_id: id,
       tenant_id: tenantId || 'any', // If tenantId not provided, search by id only might fail depending on Service implementation
@@ -149,6 +188,18 @@ export async function PATCH(req: NextRequest) {
 
     const supabase = createClient();
     
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      const { data: tuData } = await supabase.from('tenant_users').select('role').eq('user_id', user.id).single();
+      if (tuData?.role === 'professional') {
+        const { data: profData } = await supabase.from('professionals').select('id').eq('user_id', user.id).single();
+        const { data: targetApt } = await supabase.from('appointments').select('professional_id').eq('id', id).single();
+        if (!profData || !targetApt || profData.id !== targetApt.professional_id) {
+          return NextResponse.json({ error: 'Unauthorized: Can only update your own appointments' }, { status: 403 });
+        }
+      }
+    }
+
     const { data: appointment, error } = await supabase
       .from('appointments')
       .update({ notes: notes || null })

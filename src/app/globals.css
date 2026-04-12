@@ -32,6 +32,11 @@
   /* Animation */
   --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out-circ: cubic-bezier(0.85, 0, 0.15, 1);
+
+  /* Spatial Shadows */
+  --shadow-weightless: 0 32px 64px -16px rgba(15, 23, 42, 0.08);
+  --shadow-spatial: 0 50px 100px -20px rgba(15, 23, 42, 0.12), 0 30px 60px -30px rgba(0, 0, 0, 0.15);
 }
 
 .dark {
@@ -51,6 +56,11 @@ html {
   -moz-osx-font-smoothing: grayscale;
   scroll-behavior: smooth;
   color: var(--foreground);
+}
+
+::selection {
+  background: rgba(234, 179, 8, 0.2);
+  color: #eab308;
 }
 
 body {
@@ -137,6 +147,15 @@ body {
 @keyframes count-up {
   from { opacity: 0; transform: scale(0.8); }
   to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes orbit {
+  from { transform: rotate(0deg) translateX(10px) rotate(0deg); }
+  to { transform: rotate(360deg) translateX(10px) rotate(-360deg); }
+}
+
+@keyframes draw {
+  to { stroke-dashoffset: 0; }
 }
 
 /* === ANIMATION CLASSES === */

@@ -146,37 +146,40 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-700 max-w-[1400px] mx-auto pb-12">
+    <div className="space-y-12 animate-in fade-in slide-in-from-bottom-8 duration-1000 ease-out-expo max-w-[1400px] mx-auto pb-12">
       {/* Header / Welcome Section */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-        <div>
-            <div className="flex items-center gap-3 mb-2">
-                <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_12px_rgba(16,185,129,0.5)]" />
-                <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 stagger-children">
+        <div className="relative">
+            <div className="flex items-center gap-3 mb-4">
+                <div className="status-dot-active" />
+                <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] leading-none">
                   {t.system_active}
                 </span>
             </div>
-            <h1 className="text-4xl font-black text-slate-900 dark:text-white tracking-[-0.04em] leading-tight flex items-center gap-4">
-               {t.welcome} <span className="text-amber-500">{tenantName}</span> <Zap className="h-8 w-8 text-amber-400 fill-amber-100" />
+            <h1 className="text-5xl md:text-6xl font-black text-slate-900 dark:text-white tracking-[-0.06em] leading-[0.9] flex items-wrap items-center gap-x-6">
+               {t.welcome} <span className="gradient-text">{tenantName}</span> 
+               <div className="inline-flex h-16 w-16 bg-amber-500 rounded-[1.5rem] items-center justify-center shadow-2xl shadow-amber-500/20 animate-float-subtle">
+                 <Zap className="h-8 w-8 text-slate-950 fill-slate-950" />
+               </div>
             </h1>
-            <p className="text-sm font-bold text-gray-400 mt-1 uppercase tracking-[0.2em]">
+            <p className="text-sm font-bold text-slate-400 mt-4 uppercase tracking-[0.3em] pl-1">
               {format(new Date(), "EEEE d 'di' MMMM", { locale: dateLocale })}
             </p>
         </div>
-        <div className="flex gap-3">
-            <button className="px-6 py-3.5 rounded-2xl bg-white border border-gray-100 text-[10px] font-black uppercase tracking-widest text-gray-500 hover:bg-gray-50 transition-all shadow-sm active:scale-95"
+        <div className="flex gap-4">
+            <button className="h-14 px-8 rounded-2xl bg-white dark:bg-slate-900 border border-slate-100 dark:border-white/5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 hover:text-slate-900 dark:hover:text-white transition-all shadow-sm hover:shadow-xl active:scale-95 flex items-center gap-2"
                onClick={exportToCSV}>
                 {t.export_report}
             </button>
             <Link href="/dashboard/appointments?new=true" 
-              className="px-6 py-3.5 rounded-2xl bg-slate-900 dark:bg-amber-500 text-[10px] font-black uppercase tracking-widest text-white dark:text-slate-900 shadow-xl hover:bg-slate-800 dark:hover:bg-amber-400 transition-all hover:scale-105 active:scale-95 flex items-center gap-2">
-                <Plus className="h-4 w-4" /> {t.new_appointment}
+              className="h-14 px-8 rounded-2xl bg-slate-900 dark:bg-amber-500 text-[10px] font-black uppercase tracking-[0.2em] text-white dark:text-slate-900 shadow-2xl shadow-amber-500/10 hover:shadow-amber-500/30 transition-all hover:scale-105 active:scale-95 flex items-center gap-3 group">
+                <Plus className="h-5 w-5 group-hover:rotate-90 transition-transform duration-500" /> {t.new_appointment}
             </Link>
         </div>
       </div>
 
       {/* Hero Stats */}
-      <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4 stagger-children">
         <StatCard name={t.total_appointments} value={stats.total.toString()} icon={Calendar} change="+12%" changeType="increase" />
         <StatCard name={t.active_patients} value={stats.clients.toString()} icon={Users} change="+5%" changeType="increase" />
         <StatCard name={t.confirmed} value={stats.completed.toString()} icon={CheckCircle} change="-2%" changeType="decrease" />

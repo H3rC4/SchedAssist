@@ -185,7 +185,7 @@ export default function DashboardLayout({
       )}
 
       {/* Desktop Sidebar Section */}
-      <div className="hidden md:flex flex-shrink-0">
+      <div className="hidden md:flex flex-shrink-0 p-4 md:p-6 pr-0">
         <Sidebar lang={tenantInfo?.lang} />
       </div>
 

@@ -11,7 +11,7 @@ interface OnboardingWizardProps {
 }
 
 export function OnboardingWizard({ tenantId, lang, onComplete }: OnboardingWizardProps) {
-  const [step, setStep] = useState(0);
+  const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [currentLang, setCurrentLang] = useState<Language>(lang || 'es');
   const [error, setError] = useState<string | null>(null);
@@ -27,25 +27,6 @@ export function OnboardingWizard({ tenantId, lang, onComplete }: OnboardingWizar
   // Traducción base
   const t = translations[currentLang] || translations['es'];
 
-  async function handleLanguageSubmit(selected: Language) {
-    setLoading(true);
-    setCurrentLang(selected);
-    try {
-      await fetch('/api/tenant/settings', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          tenant_id: tenantId,
-          settings: { language: selected }
-        })
-      });
-      setStep(1);
-    } catch (err) {
-      setStep(1); // Continuar de todos modos
-    } finally {
-      setLoading(false);
-    }
-  }
 
   async function handleProfessionalSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -152,7 +133,7 @@ export function OnboardingWizard({ tenantId, lang, onComplete }: OnboardingWizar
         <div className="relative z-10 p-10">
           {/* Progress Indicators */}
           <div className="flex justify-center gap-2 mb-10">
-            {[0, 1, 2, 3].map((s) => (
+            {[1, 2, 3].map((s) => (
               <div 
                 key={s} 
                 className={`h-2 rounded-full transition-all duration-500 ${
@@ -163,42 +144,7 @@ export function OnboardingWizard({ tenantId, lang, onComplete }: OnboardingWizar
             ))}
           </div>
 
-          {step === 0 && (
-            <div className="animate-in fade-in duration-500 text-center">
-              <div className="h-16 w-16 bg-blue-500/10 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                <Globe className="h-8 w-8 text-blue-500" />
-              </div>
-              <h2 className="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tight mb-2">
-                {t.onboarding.select_language}
-              </h2>
-              <p className="text-sm text-slate-500 dark:text-slate-400 mb-8 font-medium">
-                Choose your preferred language for the interface.
-              </p>
 
-              <div className="grid gap-3">
-                {[
-                  { id: 'es', name: 'Español', flag: '🇪🇸' },
-                  { id: 'en', name: 'English', flag: '🇺🇸' },
-                  { id: 'it', name: 'Italiano', flag: '🇮🇹' },
-                ].map((l) => (
-                  <button
-                    key={l.id}
-                    onClick={() => handleLanguageSubmit(l.id as Language)}
-                    disabled={loading}
-                    className="flex items-center justify-between p-5 rounded-2xl bg-slate-50 dark:bg-black/40 border border-slate-100 dark:border-white/5 hover:border-amber-500 transition-all group"
-                  >
-                    <div className="flex items-center gap-4">
-                      <span className="text-2xl">{l.flag}</span>
-                      <span className="font-bold text-slate-700 dark:text-white uppercase tracking-wider text-xs">
-                        {l.name}
-                      </span>
-                    </div>
-                    <ArrowRight className="h-4 w-4 text-slate-300 group-hover:text-amber-500 transition-colors" />
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
 
           {step === 1 && (
             <div className="animate-in slide-in-from-right-4 duration-500">

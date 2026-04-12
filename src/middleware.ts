@@ -13,66 +13,60 @@ export async function middleware(request: NextRequest) {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        get(name: string) {
-          return request.cookies.get(name)?.value
+        getAll() {
+          return request.cookies.getAll()
         },
-        set(name: string, value: string, options: CookieOptions) {
-          request.cookies.set({ name, value, ...options })
+        setAll(cookiesToSet: any[]) {
+          cookiesToSet.forEach(({ name, value, options }) => request.cookies.set(name, value))
           response = NextResponse.next({
-            request: { headers: request.headers },
+            request,
           })
-          response.cookies.set({ name, value, ...options })
-        },
-        remove(name: string, options: CookieOptions) {
-          request.cookies.set({ name, value: '', ...options })
-          response = NextResponse.next({
-            request: { headers: request.headers },
-          })
-          response.cookies.set({ name, value: '', ...options })
+          cookiesToSet.forEach(({ name, value, options }) =>
+            response.cookies.set(name, value, options)
+          )
         },
       },
     }
   )
 
-  const { data: { session } } = await supabase.auth.getSession()
+  // Use getUser() instead of getSession() for more robust auth state checking
+  const { data: { user } } = await supabase.auth.getUser()
 
   const SUPERADMIN_EMAILS = ['hernanenriquecaballero@gmail.com']
+  const userEmail = user?.email || ''
+  const isSuperAdmin = SUPERADMIN_EMAILS.includes(userEmail)
 
-  // Protect /superadmin - only superadmins (except recovery pages and 2fa verification)
+  // Protect /superadmin - only superadmins
   const UNPROTECTED_SUPERADMIN = ['/superadmin/reset-password', '/superadmin/2fa'];
   if (request.nextUrl.pathname.startsWith('/superadmin') && 
       !UNPROTECTED_SUPERADMIN.some(p => request.nextUrl.pathname.startsWith(p))) {
-    if (!session) {
+    if (!user) {
       return NextResponse.redirect(new URL('/login', request.url))
     }
-    const userEmail = session.user.email || ''
-    if (!SUPERADMIN_EMAILS.includes(userEmail)) {
+    if (!isSuperAdmin) {
       return NextResponse.redirect(new URL('/dashboard', request.url))
     }
 
-    // Require 2FA verification for superadmin access
     const is2faVerified = request.cookies.get('sa_2fa_verified')?.value === 'true'
     if (!is2faVerified) {
       return NextResponse.redirect(new URL('/superadmin/2fa', request.url))
     }
   }
 
-  // Protect /dashboard and /register/clinic routes
+  // Protect /dashboard and /register/clinic
   if (request.nextUrl.pathname.startsWith('/dashboard') || request.nextUrl.pathname.startsWith('/register/clinic')) {
-    if (!session) {
+    if (!user) {
       return NextResponse.redirect(new URL('/login', request.url))
     }
-    const userEmail = session.user.email || ''
-    if (SUPERADMIN_EMAILS.includes(userEmail)) {
+    if (isSuperAdmin && !request.nextUrl.pathname.startsWith('/dashboard/pay')) {
       return NextResponse.redirect(new URL('/superadmin', request.url))
     }
   }
 
   // Redirect from public routes to dashboard if logged in
   if (request.nextUrl.pathname === '/' || request.nextUrl.pathname === '/login') {
-    if (session) {
-      const userEmail = session.user.email || ''
-      if (SUPERADMIN_EMAILS.includes(userEmail)) {
+    if (user) {
+      if (isSuperAdmin) {
         return NextResponse.redirect(new URL('/superadmin', request.url))
       }
       return NextResponse.redirect(new URL('/dashboard', request.url))
@@ -87,3 +81,4 @@ export const config = {
     '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 }
+

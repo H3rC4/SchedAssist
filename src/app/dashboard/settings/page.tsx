@@ -125,6 +125,21 @@ export default function SettingsPage() {
     setIsSavingClinic(false)
   }
 
+  const handleRestartTutorial = async () => {
+    setIsSavingLang(true) // Reuse simple loading state or add one
+    const supabase = createClient()
+    const newSettings = { ...tenantSettings, tutorial_completed: false }
+    const { error } = await supabase
+      .from('tenants')
+      .update({ settings: newSettings })
+      .eq('id', tenantId)
+    
+    if (!error) {
+      window.location.href = '/dashboard'
+    }
+    setIsSavingLang(false)
+  }
+
   return (
     <div className="flex-1 space-y-8 md:space-y-12 p-4 md:p-12 animate-in fade-in duration-700">
       <div>
@@ -296,6 +311,31 @@ export default function SettingsPage() {
             </form>
           </div>
         )}
+
+        {/* Guides & Support */}
+        <div className="bg-white dark:bg-slate-900 rounded-[2rem] md:rounded-[2.5rem] border border-slate-200 dark:border-slate-800 shadow-xl shadow-indigo-900/5 p-6 md:p-10 transition-all hover:shadow-indigo-900/10">
+          <div className="flex items-center gap-4 mb-8">
+            <div className="h-12 w-12 rounded-xl bg-orange-50 dark:bg-orange-500/10 flex items-center justify-center">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-orange-500"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M12 7v5"/><path d="M12 16h.01"/></svg>
+            </div>
+            <h3 className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight">
+              {lang === 'es' ? 'Ayuda y Tutoriales' : (lang === 'it' ? 'Aiuto e Tutorial' : 'Help & Tutorials')}
+            </h3>
+          </div>
+          <div className="space-y-6">
+            <p className="text-xs font-semibold text-slate-400 leading-relaxed uppercase tracking-wider">
+              {lang === 'es' ? 'Si necesitas repasar el funcionamiento de la plataforma, puedes reiniciar el tour interactivo.' : 
+               (lang === 'it' ? 'Se hai bisogno di ripassare il funzionamento della piattaforma, puoi riavviare il tour interattivo.' : 
+               'If you need to review how the platform works, you can restart the interactive tour.')}
+            </p>
+            <button
+              onClick={handleRestartTutorial}
+              className="w-full bg-slate-100 hover:bg-orange-500 hover:text-white dark:bg-slate-800 dark:hover:bg-orange-500 transition-all text-slate-700 dark:text-slate-300 py-4 rounded-[1.5rem] text-xs font-black uppercase tracking-[0.2em] shadow-sm active:scale-95"
+            >
+              {t.onboarding.restart_tutorial}
+            </button>
+          </div>
+        </div>
 
       </div>
     </div>
