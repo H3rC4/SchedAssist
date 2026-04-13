@@ -188,6 +188,7 @@ export default function DashboardLayout({
         <InteractiveTutorial 
           tenantId={tenantInfo.id} 
           lang={tenantInfo.lang}
+          onComplete={handleTutorialComplete}
         />
       )}
 
