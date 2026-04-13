@@ -438,12 +438,12 @@ export const translations = {
       final_cta: '¿Listo para automatizar tu clínica?',
       
       // Login Form Specific
-      login_card_title: 'Acceder',
+      login_card_title: 'Iniciar Sesión',
       email_label: 'Correo electrónico',
       password_label: 'Contraseña',
       forgot_password: '¿Olvidaste tu contraseña?',
       remember_me: 'Mantener sesión iniciada',
-      login_button: 'Ingresar',
+      login_button: 'Iniciar Sesión',
       no_client_yet: '¿Aún no eres cliente?',
       contact_sales: 'Contacta con Ventas',
       back_home: 'Volver al inicio',
