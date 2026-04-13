@@ -129,7 +129,7 @@ export function useProfessionals() {
 
   const deleteProfessional = async (id: string) => {
     if (!confirm('Confirm delete?')) return
-    await supabase.from('professionals').delete().eq('id', id)
+    await fetch(`/api/professionals?id=${id}&tenant_id=${tenantId}`, { method: 'DELETE' })
     selectProfessional(null)
     await fetchProfessionals()
   }

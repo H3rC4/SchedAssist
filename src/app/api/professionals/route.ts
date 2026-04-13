@@ -165,10 +165,18 @@ export async function DELETE(req: NextRequest) {
 
   if (!id || !tenantId) return NextResponse.json({ error: 'id and tenant_id required' }, { status: 400 })
 
-  // Note: Availability rules and appointments should ideally be handled via DB CASCADE.
-  // But manual deletion for safety here:
+  // 1. Obtener la data del profesional a eliminar
+  const { data: profData } = await supabase
+    .from('professionals')
+    .select('user_id')
+    .eq('id', id)
+    .eq('tenant_id', tenantId)
+    .single()
+
+  // 2. Eliminar reglas de disponibilidad
   await supabase.from('availability_rules').delete().eq('professional_id', id).eq('tenant_id', tenantId)
   
+  // 3. Eliminar el registro en professionals
   const { data, error } = await supabase
     .from('professionals')
     .delete()
@@ -178,5 +186,14 @@ export async function DELETE(req: NextRequest) {
     .single()
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+
+  // 4. Si el profesional tenía una cuenta de usuario, la limpiamos completamente
+  if (profData?.user_id) {
+    // Eliminar de tenant_users
+    await supabase.from('tenant_users').delete().eq('user_id', profData.user_id).eq('tenant_id', tenantId)
+    // Eliminar en Auth
+    await supabase.auth.admin.deleteUser(profData.user_id)
+  }
+
   return NextResponse.json(data)
 }
