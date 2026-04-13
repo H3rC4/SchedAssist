@@ -9,6 +9,7 @@ import { TrialBanner } from '@/components/dashboard/TrialBanner'
 import { OnboardingWizard } from '@/components/dashboard/OnboardingWizard'
 import { InteractiveTutorial } from '@/components/dashboard/InteractiveTutorial'
 import { motion, AnimatePresence } from 'framer-motion'
+import { ForcePasswordChangeGate } from '@/components/dashboard/ForcePasswordChangeGate'
 
 function DashboardHeader({ lang = 'es', onMenuClick }: { lang?: Language; onMenuClick: () => void }) {
   const supabase = createClient()
@@ -90,6 +91,7 @@ export default function DashboardLayout({
 }) {
   const [tenantInfo, setTenantInfo] = useState<{ id: string; status: string; trial_ends_at: string | null; settings: any; lang: Language } | null>(null)
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
+  const [forcePasswordChange, setForcePasswordChange] = useState(false)
 
   useEffect(() => {
     const supabase = createClient()
@@ -99,7 +101,7 @@ export default function DashboardLayout({
       
       const { data } = await supabase
         .from('tenant_users')
-        .select('tenant_id, tenants(id, subscription_status, trial_ends_at, settings)')
+        .select('tenant_id, role, tenants(id, subscription_status, trial_ends_at, settings)')
         .eq('user_id', user.id)
         .limit(1).single()
       
@@ -112,6 +114,12 @@ export default function DashboardLayout({
           settings: t.settings || {},
           lang: (t.settings?.language as Language) || 'es'
         })
+        if (data.role === 'professional') {
+          const { data: profData } = await supabase.from('professionals').select('auth_password_hint').eq('user_id', user.id).single()
+          if (profData?.auth_password_hint) {
+            setForcePasswordChange(true)
+          }
+        }
       } else {
         window.location.href = '/register/clinic'
       }
@@ -180,7 +188,14 @@ export default function DashboardLayout({
         <InteractiveTutorial 
           tenantId={tenantInfo.id} 
           lang={tenantInfo.lang}
-          onComplete={handleTutorialComplete} 
+        />
+      )}
+
+      {/* Force Password Change Modal */}
+      {forcePasswordChange && (
+        <ForcePasswordChangeGate 
+          lang={tenantInfo?.lang} 
+          onSuccess={() => setForcePasswordChange(false)} 
         />
       )}
 

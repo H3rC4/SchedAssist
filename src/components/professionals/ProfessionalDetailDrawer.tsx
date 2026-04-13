@@ -1,6 +1,7 @@
 "use client"
 
-import { Clock, Save, X, Trash2, Coffee, CalendarX, CheckCircle } from 'lucide-react'
+import { useState } from 'react'
+import { Clock, Save, X, Trash2, Coffee, CalendarX, CheckCircle, RefreshCcw, Loader2 } from 'lucide-react'
 import { Professional, AvailabilityRule, Override } from '@/hooks/useProfessionals'
 
 interface ProfessionalDetailDrawerProps {
@@ -34,6 +35,29 @@ export function ProfessionalDetailDrawer({
 }: ProfessionalDetailDrawerProps) {
   
   const days = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado']
+  
+  const [localHint, setLocalHint] = useState(professional.auth_password_hint)
+  const [resettingPassword, setResettingPassword] = useState(false)
+
+  async function handleResetPassword() {
+    if (!confirm('¿Seguro que deseas restablecer la contraseña temporal? El profesional deberá cambiarla al iniciar sesión.')) return;
+    setResettingPassword(true)
+    try {
+      const res = await fetch('/api/professionals/reset-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ professional_id: professional.id, tenant_id: professional.tenant_id })
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Error resetting password')
+      setLocalHint(data.new_password)
+      alert('Contraseña restablecida: ' + data.new_password)
+    } catch (err: any) {
+      alert(err.message)
+    } finally {
+      setResettingPassword(false)
+    }
+  }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-md p-2 md:p-4" onClick={onClose}>
@@ -84,17 +108,27 @@ export function ProfessionalDetailDrawer({
               <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Usuario / Email</h4>
               <p className="text-sm font-bold text-slate-700 break-all">{professional.auth_email}</p>
             </div>
-            <div className="flex-1">
+            <div className="flex-1 flex flex-col items-start gap-2">
               <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Contraseña Temporal</h4>
-              <div className="inline-block bg-white border border-slate-200 px-3 py-1.5 rounded-lg">
-                <span className="text-sm font-mono font-bold text-slate-700 tracking-wide">{professional.auth_password_hint}</span>
+              <div className="flex items-center gap-3">
+                <div className="inline-block bg-white border border-slate-200 px-3 py-1.5 rounded-lg">
+                  <span className="text-sm font-mono font-bold text-slate-700 tracking-wide">{localHint ? localHint : 'Ya cambiada'}</span>
+                </div>
+                <button 
+                  onClick={handleResetPassword}
+                  disabled={resettingPassword}
+                  className="flex flex-col items-center justify-center p-1.5 text-xs text-amber-600 hover:bg-amber-50 rounded-lg border border-amber-200/50 transition-colors disabled:opacity-50"
+                  title="Restablecer contraseña a este profesional"
+                >
+                  {resettingPassword ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCcw className="h-4 w-4" />}
+                </button>
               </div>
             </div>
           </div>
         )}
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto p-4 md:p-8 space-y-6 md:space-y-8 custom-scrollbar">
+        <div className="flex-1 min-h-0 overflow-y-auto p-4 md:p-8 space-y-6 md:space-y-8 custom-scrollbar">
           {activeTab === 'schedule' ? (
             <div className="space-y-6">
                 <h4 className="text-sm font-black text-gray-400 uppercase tracking-widest flex items-center gap-2">
