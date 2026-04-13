@@ -16,6 +16,7 @@ export interface AvailabilityRule {
 
 export interface Professional {
   id: string;
+  tenant_id: string;
   full_name: string;
   specialty: string | null;
   active: boolean;
