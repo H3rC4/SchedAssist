@@ -39,7 +39,7 @@ export function StatCard({ name, value, icon: Icon, change, changeType }: StatCa
 
       {/* Spatial Mesh Texture (Subtle grid icon) */}
       <div className="absolute bottom-6 right-6 opacity-[0.03] group-hover:opacity-[0.08] transition-opacity duration-700 pointer-events-none -rotate-12 translate-x-4 translate-y-4 group-hover:translate-x-0 group-hover:translate-y-0 transition-transform duration-1000">
-        <Icon size={120} weight="fill" />
+        <Icon size={120} className="fill-current" />
       </div>
 
       <div className="absolute inset-0 noise opacity-40 pointer-events-none" />
