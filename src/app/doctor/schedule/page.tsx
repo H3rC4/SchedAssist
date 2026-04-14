@@ -22,6 +22,7 @@ interface Override {
   override_type: 'block' | 'open'
   start_time: string | null
   end_time: string | null
+  note?: string | null
 }
 
 export default function DoctorSchedulePage() {
@@ -53,7 +54,7 @@ export default function DoctorSchedulePage() {
     const { data: prof } = await supabase
       .from('professionals')
       .select('id, tenant_id')
-      .eq('auth_user_id', user.id)
+      .eq('user_id', user.id) // Cambiado a user_id que es la FK correcta
       .single()
 
     if (prof) {
@@ -70,11 +71,10 @@ export default function DoctorSchedulePage() {
         .from('professional_overrides')
         .select('*')
         .eq('professional_id', prof.id)
-        .gte('override_date', format(new Date(), 'yyyy-MM-dd'))
-        .order('override_date')
+        .order('override_date', { ascending: true })
 
       setRules(rulesData || [])
-      setOverrides(overridesData || [])
+      setOverrides((overridesData || []) as Override[])
     }
     setLoading(false)
   }, [supabase])
@@ -163,11 +163,14 @@ export default function DoctorSchedulePage() {
         note: overrideForm.note
       })
 
+      // Refresh data
       const { data: ov } = await supabase.from('professional_overrides').select('*').eq('professional_id', profId).order('override_date')
       setOverrides((ov || []) as Override[])
       setOverrideModal(null)
       setSaved(true)
       setTimeout(() => setSaved(false), 3000)
+    } catch (err) {
+      console.error(err)
     } finally {
       setSaving(false)
     }
@@ -289,13 +292,13 @@ export default function DoctorSchedulePage() {
 
                 return (
                   <button key={i} onClick={() => inMonth && handleOpenOverrideModal(dateStr)} disabled={!inMonth}
-                    className={`aspect-square flex flex-col items-center justify-center rounded-2xl text-xs font-black transition-all relative
-                      ${!inMonth ? 'opacity-0 cursor-default' : 'hover:bg-primary-50'}
-                      ${isToday ? 'text-primary-600 bg-primary-50' : 'text-slate-600'}`}>
+                    className={`aspect-square flex flex-col items-center justify-center rounded-[1.2rem] text-[11px] font-black transition-all relative border-2
+                      ${!inMonth ? 'opacity-0 cursor-default pointer-events-none' : ''}
+                      ${hasOverride?.override_type === 'block' ? 'bg-red-50 border-red-100 text-red-600 shadow-sm' : 
+                        hasOverride?.override_type === 'open' ? 'bg-emerald-50 border-emerald-100 text-emerald-700 shadow-sm' :
+                        isToday ? 'bg-primary-50 border-primary-100 text-primary-700' : 'bg-white border-transparent text-slate-600 hover:bg-slate-50'}
+                    `}>
                     {format(day, 'd')}
-                    {hasOverride && (
-                      <div className={`absolute bottom-3 w-1.5 h-1.5 rounded-full ${hasOverride.override_type === 'block' ? 'bg-red-500' : 'bg-emerald-500'} shadow-sm`} />
-                    )}
                   </button>
                 )
               })}
@@ -304,7 +307,10 @@ export default function DoctorSchedulePage() {
 
           {/* Exceptions List */}
           <div className="space-y-4">
-            <h5 className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Próximos días bloqueados</h5>
+            <div className="flex items-center justify-between px-1">
+              <h5 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Próximos días bloqueados</h5>
+              <span className="text-[10px] font-black text-primary-500 bg-primary-50 px-2 py-0.5 rounded-full">{overrides.length} total</span>
+            </div>
             {overrides.length === 0 ? (
               <div className="text-center py-12 text-slate-300 italic text-sm bg-slate-50/50 rounded-[2rem] border-2 border-dashed border-slate-100">
                 No tienes excepciones programadas

@@ -343,7 +343,7 @@ export const translations = {
     new_professional: 'Nuevo Profesional',
     delConfirm: '¿Eliminar este profesional?',
     tab_weekly_config: 'CONFIGURACIÓN SEMANAL',
-    tab_exceptions: 'EXCEPTIONS',
+    tab_exceptions: 'EXCEPCIONES',
     tab_access: 'ACCESO',
     access_title: 'Credenciales de Acceso',
     access_email: 'Email de Usuario',

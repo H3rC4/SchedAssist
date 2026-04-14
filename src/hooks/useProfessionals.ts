@@ -162,6 +162,15 @@ export function useProfessionals() {
       if (!res.ok) throw new Error('API Error')
       setSaved(true)
       await fetchProfessionals()
+      // Sincronizar profesional seleccionado para reflejar cambios (ej: auth_email)
+      if (profId) {
+        const { data: updatedProf } = await supabase
+          .from('professionals')
+          .select('*, availability_rules(*)')
+          .eq('id', profId)
+          .single()
+        if (updatedProf) setSelectedProf(updatedProf)
+      }
     } catch (err) {
       console.error('Save error:', err)
     } finally {

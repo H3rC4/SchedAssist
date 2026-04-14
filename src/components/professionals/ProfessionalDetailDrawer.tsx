@@ -107,18 +107,10 @@ export function ProfessionalDetailDrawer({
          }
       }
 
-      await supabase.from('professional_overrides').insert({
-        professional_id: professional.id,
-        tenant_id: professional.tenant_id,
-        override_date: overrideModal.date,
-        override_type: overrideForm.type,
-        start_time: overrideForm.type === 'open' ? overrideForm.start_time + ':00' : null,
-        end_time: overrideForm.type === 'open' ? overrideForm.end_time + ':00' : null,
-        note: overrideForm.note
-      })
-
+      // IMPORTANTE: Usamos la prop addOverride para que el estado se sincronice correctamente
+      await addOverride(overrideModal.date, overrideForm.type)
+      
       setOverrideModal(null)
-      onSave() // Refresh
     } catch (err) {
       console.error(err)
     } finally {
@@ -127,8 +119,6 @@ export function ProfessionalDetailDrawer({
   }
 
   const handleDeleteOverride = async (id: string) => {
-    const supabase = createClient()
-    await supabase.from('professional_overrides').delete().eq('id', id)
     deleteOverride(id)
   }
 
@@ -167,7 +157,7 @@ export function ProfessionalDetailDrawer({
       
       setLocalHint(data.auth_password_hint)
       alert(`${t.success}!\n${t.access_email}: ${data.auth_email}\nPass: ${data.auth_password_hint}`)
-      onSave() // Refresh rules/drawer data
+      onSave() // Esto refrescará el selectedProf gracias al fix del hook
       setActiveTab('access')
     } catch (err: any) {
       alert(err.message)
@@ -325,23 +315,25 @@ export function ProfessionalDetailDrawer({
                             key={i}
                             onClick={() => inMonth && handleOpenOverrideModal(dateStr)}
                             disabled={!inMonth}
-                            className={`aspect-square flex flex-col items-center justify-center rounded-2xl text-xs font-bold transition-all relative
-                              ${!inMonth ? 'opacity-0 cursor-default' : 'hover:bg-amber-50'}
-                              ${isToday ? 'text-primary-600 bg-primary-50' : 'text-slate-600'}
+                            className={`aspect-square flex flex-col items-center justify-center rounded-2xl text-[11px] font-black transition-all relative border-2
+                              ${!inMonth ? 'opacity-0 cursor-default pointer-events-none' : ''}
+                              ${hasOverride?.override_type === 'block' ? 'bg-red-50 border-red-100 text-red-600 shadow-sm' : 
+                                hasOverride?.override_type === 'open' ? 'bg-emerald-50 border-emerald-100 text-emerald-700 shadow-sm' :
+                                isToday ? 'bg-primary-50 border-primary-100 text-primary-700' : 'bg-white border-transparent text-slate-600 hover:bg-slate-50'}
                             `}
                           >
                             {format(day, 'd')}
-                            {hasOverride && (
-                              <div className={`absolute bottom-2 w-1.5 h-1.5 rounded-full ${hasOverride.override_type === 'block' ? 'bg-red-500' : 'bg-emerald-500'} shadow-sm`} />
-                            )}
                           </button>
                         )
                       })}
                     </div>
                 </div>
 
-                <div className="space-y-4">
-                  <h5 className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Excepciones Activas</h5>
+                <div className="space-y-4 py-4">
+                  <div className="flex items-center justify-between px-1">
+                    <h5 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Excepciones Activas</h5>
+                    <span className="text-[10px] font-black text-primary-500 bg-primary-50 px-2 py-0.5 rounded-full">{overrides.length} total</span>
+                  </div>
                   {overrides.length === 0 ? (
                     <div className="text-center py-12 text-gray-300 italic text-sm border-2 border-dashed border-gray-100 rounded-3xl">No hay excepciones guardadas.</div>
                   ) : (
