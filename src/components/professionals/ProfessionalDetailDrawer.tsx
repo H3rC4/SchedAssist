@@ -110,7 +110,8 @@ export function ProfessionalDetailDrawer({
          }
       }
 
-      await addOverride(overrideModal.date, overrideForm.type)
+      // Importante: pasar el objeto entero con nota
+      await (addOverride as any)(overrideModal.date, overrideForm)
       setOverrideModal(null)
     } catch (err) {
       console.error(err)

@@ -52,6 +52,7 @@ export default function DoctorLayout({ children }: { children: React.ReactNode }
   const navItems = [
     { label: 'Mis Citas', href: '/doctor', icon: Calendar },
     { label: 'Mi Horario', href: '/doctor/schedule', icon: Clock },
+    { label: 'Mis Pacientes', href: '/doctor/patients', icon: User },
   ]
 
   return (

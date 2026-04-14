@@ -186,9 +186,12 @@ export function useProfessionals() {
       override_date: data.date,
       override_type: data.type,
       start_time: data.type === 'open' ? '09:00:00' : null,
-      end_time: data.type === 'open' ? '18:00:00' : null
+      end_time: data.type === 'open' ? '18:00:00' : null,
+      note: (data as any).note || null
     })
-    if (!error) await fetchOverrides(profId)
+    if (!error) {
+      await fetchOverrides(profId)
+    }
   }
 
   const deleteOverride = async (profId: string, overrideId: string) => {
