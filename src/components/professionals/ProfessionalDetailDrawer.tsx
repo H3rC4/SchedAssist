@@ -18,12 +18,13 @@ import {
   parseISO
 } from 'date-fns'
 import { es } from 'date-fns/locale'
+import { useLandingTranslation } from '@/components/LanguageContext'
 
 interface ProfessionalDetailDrawerProps {
   professional: Professional;
   onClose: () => void;
-  activeTab: 'schedule' | 'exceptions';
-  setActiveTab: (tab: 'schedule' | 'exceptions') => void;
+  activeTab: 'schedule' | 'exceptions' | 'access';
+  setActiveTab: (tab: 'schedule' | 'exceptions' | 'access') => void;
   editRules: AvailabilityRule[];
   updateRule: (day: number, field: string, value: any) => void;
   toggleLunchBreak: (day: number, active: boolean) => void;
@@ -52,14 +53,13 @@ export function ProfessionalDetailDrawer({
   saving,
   saved
 }: ProfessionalDetailDrawerProps) {
-  
+  const { t } = useLandingTranslation()
   const days = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado']
   
   const [localHint, setLocalHint] = useState(professional.auth_password_hint)
   const [resettingPassword, setResettingPassword] = useState(false)
   const [internalSaving, setInternalSaving] = useState(false)
   
-  // States from 4 days ago (deb0110)
   const [calendarMonth, setCalendarMonth] = useState(new Date())
   const [overrideModal, setOverrideModal] = useState<{ date: string } | null>(null)
   const [overrideForm, setOverrideForm] = useState({
@@ -133,7 +133,7 @@ export function ProfessionalDetailDrawer({
   }
 
   async function handleResetPassword() {
-    if (!confirm('¿Seguro que deseas restablecer la contraseña temporal? El profesional deberá cambiarla al iniciar sesión.')) return;
+    if (!confirm(t.confirm_reset_pass)) return;
     setResettingPassword(true)
     try {
       const res = await fetch('/api/professionals/reset-password', {
@@ -144,7 +144,7 @@ export function ProfessionalDetailDrawer({
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'Error resetting password')
       setLocalHint(data.new_password)
-      alert('Contraseña restablecida: ' + data.new_password)
+      alert(t.success + ': ' + data.new_password)
     } catch (err: any) {
       alert(err.message)
     } finally {
@@ -166,13 +166,20 @@ export function ProfessionalDetailDrawer({
       if (!res.ok) throw new Error(data.error || 'Error creating account')
       
       setLocalHint(data.auth_password_hint)
-      alert(`¡Cuenta creada!\nUsuario: ${data.auth_email}\nPass: ${data.auth_password_hint}`)
+      alert(`${t.success}!\n${t.access_email}: ${data.auth_email}\nPass: ${data.auth_password_hint}`)
       onSave() // Refresh rules/drawer data
+      setActiveTab('access')
     } catch (err: any) {
       alert(err.message)
     } finally {
       setCreatingAccount(false)
     }
+  }
+
+  const handleConfirmDelete = () => {
+     if (confirm(t.confirm_delete_prof)) {
+        onDelete()
+     }
   }
 
   return (
@@ -202,7 +209,7 @@ export function ProfessionalDetailDrawer({
               activeTab === 'schedule' ? 'border-primary-500 text-primary-600' : 'border-transparent text-gray-400 hover:text-gray-500'
             }`}
           >
-            <Clock className="h-4 w-4" /> CONFIGURACIÓN SEMANAL
+            <Clock className="h-4 w-4" /> {t.tab_weekly_config}
           </button>
           <button
             onClick={() => setActiveTab('exceptions')}
@@ -210,70 +217,83 @@ export function ProfessionalDetailDrawer({
               activeTab === 'exceptions' ? 'border-primary-500 text-primary-600' : 'border-transparent text-gray-400 hover:text-gray-500'
             }`}
           >
-            <CalendarX className="h-4 w-4" /> EXCEPCIONES
+            <CalendarX className="h-4 w-4" /> {t.tab_exceptions}
             {overrides.length > 0 && (
               <span className="bg-amber-100 text-amber-700 text-[10px] font-black px-1.5 py-0.5 rounded-full ml-1">{overrides.length}</span>
             )}
+          </button>
+          <button
+            onClick={() => setActiveTab('access')}
+            className={`flex items-center gap-2 px-6 py-4 text-xs md:text-sm font-black border-b-2 transition-colors whitespace-nowrap ${
+              activeTab === 'access' ? 'border-primary-500 text-primary-600' : 'border-transparent text-gray-400 hover:text-gray-500'
+            }`}
+          >
+            <ShieldCheck className="h-4 w-4" /> {t.tab_access}
           </button>
         </div>
 
         {/* Content */}
         <div className="flex-1 min-h-0 overflow-y-auto p-4 md:p-8 space-y-6 md:space-y-8 custom-scrollbar">
           
-          {/* Credentials Status & Actions */}
-          <div className="animate-in fade-in slide-in-from-top-4 duration-700">
-            {professional.auth_email ? (
-              <div className="bg-slate-900 rounded-[2rem] p-6 shadow-xl shadow-slate-900/10 border border-slate-800">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="h-8 w-8 bg-amber-500 rounded-lg flex items-center justify-center">
-                    <ShieldCheck className="h-5 w-5 text-slate-900" />
-                  </div>
-                  <h4 className="text-[10px] font-black text-slate-300 uppercase tracking-widest">Credenciales de Acceso</h4>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  <div className="bg-white/5 rounded-2xl p-3.5 border border-white/5">
-                    <span className="text-[9px] font-black text-slate-500 uppercase block mb-1">Email de Usuario</span>
-                    <span className="text-xs font-bold text-white break-all">{professional.auth_email}</span>
-                  </div>
-                  <div className="bg-white/5 rounded-2xl p-3.5 border border-white/5 flex items-center justify-between">
-                    <div>
-                      <span className="text-[9px] font-black text-slate-500 uppercase block mb-1">Pass Temporal</span>
-                      <span className="text-xs font-mono font-bold text-amber-400">{localHint ? localHint : 'Ya cambiada'}</span>
+          {activeTab === 'access' && (
+            <div className="animate-in fade-in slide-in-from-top-4 duration-700">
+               {professional.auth_email ? (
+                <div className="bg-slate-900 rounded-[2.5rem] p-8 shadow-xl shadow-slate-900/10 border border-slate-800">
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="h-10 w-10 bg-amber-500 rounded-xl flex items-center justify-center">
+                      <ShieldCheck className="h-6 w-6 text-slate-900" />
                     </div>
-                    <button 
-                      onClick={handleResetPassword} 
-                      disabled={resettingPassword} 
-                      className="p-2 hover:bg-white/10 rounded-xl text-amber-500 transition-all hover:scale-110 active:scale-95"
-                      title="Restablecer contraseña"
-                    >
-                      {resettingPassword ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCcw className="h-4 w-4" />}
-                    </button>
+                    <div>
+                      <h4 className="text-xs font-black text-white uppercase tracking-widest">{t.access_title}</h4>
+                      <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Portal del Profesional Activo</p>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 gap-4">
+                    <div className="bg-white/5 rounded-2xl p-5 border border-white/5 group hover:border-white/10 transition-colors">
+                      <span className="text-[9px] font-black text-slate-500 uppercase block mb-1">{t.access_email}</span>
+                      <span className="text-sm font-bold text-white break-all">{professional.auth_email}</span>
+                    </div>
+                    <div className="bg-white/5 rounded-2xl p-5 border border-white/5 flex items-center justify-between group hover:border-white/10 transition-colors">
+                      <div>
+                        <span className="text-[9px] font-black text-slate-500 uppercase block mb-1">{t.access_pass}</span>
+                        <span className="text-sm font-mono font-bold text-amber-400">{localHint ? localHint : t.access_pass_hint}</span>
+                      </div>
+                      <button 
+                        onClick={handleResetPassword} 
+                        disabled={resettingPassword} 
+                        className="p-3 bg-white/5 hover:bg-white/10 rounded-2xl text-amber-500 transition-all hover:scale-110 active:scale-95 border border-white/5"
+                        title={t.access_reset_btn}
+                      >
+                        {resettingPassword ? <Loader2 className="h-5 w-5 animate-spin" /> : <RefreshCcw className="h-5 w-5" />}
+                      </button>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ) : (
-              <div className="bg-gradient-to-br from-indigo-50 to-white border-2 border-dashed border-indigo-100 rounded-[2rem] p-10 text-center group">
-                <div className="h-16 w-16 bg-white rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-xl shadow-indigo-100/50 group-hover:scale-110 transition-transform duration-500">
-                  <ShieldCheck className="h-8 w-8 text-indigo-400" />
+               ) : (
+                <div className="bg-gradient-to-br from-indigo-50 to-white border-2 border-dashed border-indigo-100 rounded-[3rem] p-12 text-center group">
+                  <div className="h-20 w-20 bg-white rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-xl shadow-indigo-100/50 group-hover:scale-110 transition-transform duration-500">
+                    <ShieldCheck className="h-10 w-10 text-indigo-400" />
+                  </div>
+                  <h4 className="text-lg font-black text-indigo-900 mb-2">{t.access_no_account}</h4>
+                  <p className="text-xs font-bold text-indigo-400 uppercase tracking-wider mb-8 max-w-xs mx-auto">{t.access_no_account_desc}</p>
+                  <button 
+                    onClick={handleCreateAccount}
+                    disabled={creatingAccount}
+                    className="bg-indigo-600 text-white text-xs font-black uppercase tracking-[0.2em] px-10 py-5 rounded-2xl hover:bg-indigo-700 shadow-xl shadow-indigo-200 transition-all active:scale-95 disabled:opacity-50"
+                  >
+                    {creatingAccount ? <Loader2 className="h-5 w-5 animate-spin mx-auto text-white" /> : t.access_generate_btn}
+                  </button>
                 </div>
-                <h4 className="text-sm font-black text-indigo-900 mb-2">Sin cuenta de acceso</h4>
-                <p className="text-[11px] font-bold text-indigo-400 uppercase tracking-wider mb-6">Genera credenciales para que el profesional gestione su agenda</p>
-                <button 
-                  onClick={handleCreateAccount}
-                  disabled={creatingAccount}
-                  className="bg-indigo-600 text-white text-[10px] font-black uppercase tracking-[0.2em] px-8 py-4 rounded-xl hover:bg-indigo-700 shadow-xl shadow-indigo-200 transition-all active:scale-95 disabled:opacity-50"
-                >
-                  {creatingAccount ? <Loader2 className="h-4 w-4 animate-spin mx-auto text-white" /> : 'Activar Acceso Médico'}
-                </button>
-              </div>
-            )}
-          </div>
-          {activeTab === 'exceptions' ? (
+               )}
+            </div>
+          )}
+
+          {activeTab === 'exceptions' && (
             <div className="space-y-6">
                 <div className="bg-white rounded-3xl border border-gray-100 p-6 shadow-sm overflow-hidden">
                     <div className="flex items-center justify-between mb-6">
                       <h4 className="text-xs font-black text-gray-400 uppercase tracking-widest flex items-center gap-2">
-                        <CalendarX className="h-4 w-4" /> CALENDARIO DE EXCEPCIONES
+                        <CalendarX className="h-4 w-4" /> {t.tab_exceptions}
                       </h4>
                       <div className="flex items-center gap-2">
                         <button onClick={() => setCalendarMonth(new Date(calendarMonth.getFullYear(), calendarMonth.getMonth() - 1))} className="p-2 rounded-xl hover:bg-gray-100 transition-colors">
@@ -348,11 +368,13 @@ export function ProfessionalDetailDrawer({
                   )}
                 </div>
             </div>
-          ) : (
+          )}
+
+          {activeTab === 'schedule' && (
             <div className="space-y-8">
                 <div className="space-y-6">
-                <h4 className="text-sm font-black text-gray-400 uppercase tracking-widest flex items-center gap-2">
-                  <Clock className="h-4 w-4" /> CONFIGURACIÓN SEMANAL
+                <h4 className="text-xs font-black text-gray-400 uppercase tracking-widest flex items-center gap-2">
+                  <Clock className="h-4 w-4" /> {t.tab_weekly_config}
                 </h4>
                 <div className="grid gap-3 md:gap-4">
                   {editRules.map((rule) => (
@@ -431,15 +453,15 @@ export function ProfessionalDetailDrawer({
 
         {/* Footer */}
         <div className="px-6 md:px-8 py-6 border-t border-gray-100 flex gap-4 md:gap-6 flex-shrink-0 bg-white">
-          <button onClick={onDelete} className="p-4 rounded-2xl border border-red-100 text-red-500 hover:bg-red-50 transition-all active:scale-95 shadow-sm">
+          <button onClick={handleConfirmDelete} className="p-4 rounded-2xl border border-red-100 text-red-500 hover:bg-red-50 transition-all active:scale-95 shadow-sm">
             <Trash2 className="h-6 w-6" />
           </button>
           <button onClick={onSave} disabled={saving} className="flex-1 flex items-center justify-center gap-3 py-4 rounded-2xl bg-slate-900 text-white font-black uppercase tracking-widest hover:bg-slate-800 shadow-xl shadow-slate-900/10 disabled:opacity-50 transition-all active:scale-95">
-            {saved ? (<><CheckCircle className="h-6 w-6" /> ¡Guardado!</>) : saving ? <Loader2 className="h-6 w-6 animate-spin" /> : (<><Save className="h-6 w-6" /> Guardar Cambios</>)}
+            {saved ? (<><CheckCircle className="h-6 w-6" /> {t.saved_success}</>) : saving ? <Loader2 className="h-6 w-6 animate-spin" /> : (<><Save className="h-6 w-6" /> {t.save_changes}</>)}
           </button>
         </div>
 
-        {/* Override Modal (STEP 2: Original 4 days ago logic) */}
+        {/* Override Modal */}
         {overrideModal && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-md px-4" onClick={() => setOverrideModal(null)}>
             <div className="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-sm overflow-hidden animate-in zoom-in-95 duration-300" onClick={e => e.stopPropagation()}>

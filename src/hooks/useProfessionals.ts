@@ -42,7 +42,7 @@ export function useProfessionals() {
   const [loading, setLoading] = useState(true)
   const [selectedProf, setSelectedProf] = useState<Professional | null>(null)
   const [overrides, setOverrides] = useState<Override[]>([])
-  const [activeTab, setActiveTab] = useState<'schedule' | 'exceptions'>('schedule')
+  const [activeTab, setActiveTab] = useState<'schedule' | 'exceptions' | 'access'>('schedule')
   
   // CRUD Status
   const [saving, setSaving] = useState(false)
