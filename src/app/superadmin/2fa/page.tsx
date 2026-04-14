@@ -45,8 +45,7 @@ export default function TwoFactorPage() {
       }
 
       if (res.success) {
-        router.push('/superadmin')
-        router.refresh()
+        window.location.href = '/superadmin'
       } else {
         setError(res.error || 'Error de verificación')
         setVerifying(false)

@@ -151,7 +151,7 @@ export default function SettingsPage() {
         </p>
       </div>
 
-      <div className="grid gap-6 md:gap-10 max-w-xl">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
 
         {/* Services Navigation Link */}
         <div className="bg-white dark:bg-slate-900 rounded-[2rem] md:rounded-[2.5rem] border border-slate-200 dark:border-slate-800 shadow-xl shadow-indigo-900/5 p-6 md:p-10 transition-all hover:shadow-indigo-900/10">

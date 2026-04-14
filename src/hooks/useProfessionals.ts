@@ -89,11 +89,27 @@ export function useProfessionals() {
   }
 
   const selectProfessional = (prof: Professional | null) => {
-    setSelectedProf(prof)
     if (prof) {
+      // Repair if rules are missing
+      const rules = [...(prof.availability_rules || [])];
+      for (let i = 0; i < 7; i++) {
+        if (!rules.find(r => r.day_of_week === i)) {
+          rules.push({
+            day_of_week: i,
+            start_time: '09:00:00',
+            end_time: '18:00:00',
+            active: i > 0 && i < 6
+          });
+        }
+      }
+      prof.availability_rules = rules.sort((a,b) => a.day_of_week - b.day_of_week);
+      
+      setSelectedProf(prof)
       fetchOverrides(prof.id)
       setActiveTab('schedule')
       setSaved(false)
+    } else {
+      setSelectedProf(null)
     }
   }
 
@@ -137,17 +153,21 @@ export function useProfessionals() {
 
   const updateAvailability = async (profId: string, rules: AvailabilityRule[]) => {
     setSaving(true)
-    for (const rule of rules) {
-      if (rule.id) {
-        await supabase.from('availability_rules').update(rule).eq('id', rule.id)
-      } else {
-        await supabase.from('availability_rules').insert({ ...rule, professional_id: profId })
-      }
+    try {
+      const res = await fetch('/api/professionals', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ professional_id: profId, tenant_id: tenantId, rules })
+      })
+      if (!res.ok) throw new Error('API Error')
+      setSaved(true)
+      await fetchProfessionals()
+    } catch (err) {
+      console.error('Save error:', err)
+    } finally {
+      setSaving(false)
+      setTimeout(() => setSaved(false), 3000)
     }
-    setSaved(true)
-    setSaving(false)
-    await fetchProfessionals()
-    setTimeout(() => setSaved(false), 3000)
   }
 
   return {
