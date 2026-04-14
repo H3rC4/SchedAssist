@@ -28,8 +28,8 @@ export async function GET(request: Request) {
         return NextResponse.redirect(`${requestUrl.origin}${next}`)
       }
       
-      const cookieStore = cookies()
-      const allCookies = cookieStore.getAll()
+      const loggerStore = cookies()
+      const allCookies = loggerStore.getAll()
       const cookieNames = allCookies.map(c => c.name).join(', ')
       console.error('OAuth Exchange Error:', error.message, 'ProjectRef:', projectRef, 'Cookie Names:', cookieNames);
       
