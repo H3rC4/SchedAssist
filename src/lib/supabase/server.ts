@@ -19,10 +19,13 @@ export function createClient() {
             )
           } catch (error) {
             // The `setAll` method was called from a Server Component.
-            // This can be ignored if you have middleware refreshing
-            // user sessions.
           }
         },
+      },
+      cookieOptions: {
+        path: '/',
+        sameSite: 'lax',
+        secure: true,
       },
     }
   )

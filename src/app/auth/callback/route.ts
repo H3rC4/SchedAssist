@@ -21,9 +21,10 @@ export async function GET(request: Request) {
         return NextResponse.redirect(`${requestUrl.origin}${next}`)
       }
       
-      console.error('OAuth Exchange Error:', error)
-      // PKCE errors usually mean the storage is missing the verifier
-      return NextResponse.redirect(`${requestUrl.origin}/login?error=${encodeURIComponent(error.message)}`)
+      const cookieHeader = request.headers.get('cookie') || '';
+      console.error('OAuth Exchange Error:', error.message, 'Cookies present:', cookieHeader.includes('auth-token-code-verifier'));
+      
+      return NextResponse.redirect(`${requestUrl.origin}/login?error=${encodeURIComponent(error.message + ' (v:' + cookieHeader.includes('auth-token-code-verifier') + ')')}`)
     } catch (e) {
       console.error('Unexpected Auth Error:', e)
       return NextResponse.redirect(`${requestUrl.origin}/login?error=Unexpected_Auth_Error`)
