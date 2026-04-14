@@ -28,6 +28,11 @@ export async function middleware(request: NextRequest) {
       },
     }
   )
+  
+  // Skip auth check for the callback route to avoid interfering with PKCE flow
+  if (request.nextUrl.pathname.startsWith('/auth/callback')) {
+    return response
+  }
 
   // Use getUser() instead of getSession() for more robust auth state checking
   const { data: { user } } = await supabase.auth.getUser()
