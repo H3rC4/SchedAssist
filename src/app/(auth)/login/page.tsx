@@ -3,12 +3,10 @@
 import { Suspense, useState, useEffect } from 'react';
 import Link from 'next/link';
 import { signIn } from './actions';
-import { ShieldCheck, ArrowLeft, Mail, Lock, AlertCircle, CalendarCheck } from 'lucide-react';
+import { ShieldCheck, ArrowLeft, Mail, Lock, AlertCircle, CalendarCheck, Loader2 } from 'lucide-react';
 import { useLandingTranslation } from '@/components/LanguageContext';
 import { GoogleAuthButton } from '@/components/auth/GoogleAuthButton';
-
 import { Logo } from '@/components/Logo';
-
 
 export default function LoginPage({
   searchParams,
@@ -19,6 +17,7 @@ export default function LoginPage({
   const error = searchParams?.error;
   const confirmed = searchParams?.confirmed === 'true';
   const [mounted, setMounted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -26,11 +25,39 @@ export default function LoginPage({
 
   if (!mounted) return null;
 
+  const handleSubmit = async (formData: FormData) => {
+    setIsSubmitting(true);
+    try {
+      await signIn(formData);
+    } catch (e) {
+      console.error(e);
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-slate-50 dark:bg-slate-950 p-6 relative overflow-hidden">
       {/* Abstract Background Orbs */}
       <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-indigo-500/5 blur-[120px] dark:bg-indigo-500/10" />
       <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-amber-500/5 blur-[120px] dark:bg-amber-500/10" />
+
+      {/* Full Page Loader Overlay */}
+      {isSubmitting && (
+        <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-white/60 dark:bg-slate-950/60 backdrop-blur-xl animate-in fade-in duration-500">
+           <div className="relative">
+              <div className="h-24 w-24 rounded-3xl border-4 border-indigo-500/20 border-t-indigo-600 animate-spin" />
+              <div className="absolute inset-0 flex items-center justify-center">
+                 <CalendarCheck className="h-8 w-8 text-indigo-600 animate-pulse" />
+              </div>
+           </div>
+           <p className="mt-8 text-sm font-black text-slate-900 dark:text-white uppercase tracking-[0.3em] animate-pulse">
+             Verificando cuenta...
+           </p>
+           <p className="mt-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+             Un momento por favor
+           </p>
+        </div>
+      )}
 
       <div className="max-w-md w-full relative z-10">
         {/* Back Link */}
@@ -72,7 +99,7 @@ export default function LoginPage({
             </div>
           )}
 
-          <div className="mb-8">
+          <div className="mb-8" onClick={() => setIsSubmitting(true)}>
             <GoogleAuthButton actionText="Continuar con Google" />
           </div>
 
@@ -82,13 +109,12 @@ export default function LoginPage({
             <div className="h-px flex-1 bg-slate-200 dark:bg-slate-800" />
           </div>
 
-          <form action={signIn} method="POST" className="space-y-6">
+          <form action={handleSubmit} method="POST" className="space-y-6">
             <div>
               <label
                 htmlFor="email"
                 className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 ml-1 uppercase tracking-wider"
               >
-
                 {t.email_label}
               </label>
               <div className="relative group">
@@ -153,12 +179,7 @@ export default function LoginPage({
               </label>
             </div>
 
-            <button
-              type="submit"
-              className="w-full py-5 rounded-[2rem] bg-slate-900 dark:bg-amber-500 hover:bg-slate-800 dark:hover:bg-amber-400 text-white dark:text-slate-900 text-base font-black uppercase tracking-widest transition-all shadow-xl shadow-indigo-900/10 dark:shadow-black/20 hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-3 mt-4"
-            >
-              {t.login_button} <ShieldCheck className="h-5 w-5" />
-            </button>
+            <SubmitButton t={t} />
           </form>
 
           <div className="mt-12 pt-8 border-t border-slate-100 dark:border-slate-800 text-center">
@@ -172,5 +193,29 @@ export default function LoginPage({
         </div>
       </div>
     </div>
+  );
+}
+
+function SubmitButton({ t }: { t: any }) {
+  // Use useFormStatus to detect server action pending state
+  const { pending } = (require('react-dom') as any).useFormStatus();
+
+  return (
+    <button
+      type="submit"
+      disabled={pending}
+      className="w-full py-5 rounded-[2rem] bg-slate-900 dark:bg-amber-500 hover:bg-slate-800 dark:hover:bg-amber-400 text-white dark:text-slate-900 text-base font-black uppercase tracking-widest transition-all shadow-xl shadow-indigo-900/10 dark:shadow-black/20 hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-3 mt-4 disabled:opacity-70 disabled:hover:scale-100"
+    >
+      {pending ? (
+        <>
+          <Loader2 className="h-5 w-5 animate-spin" />
+          {t.login_button_loading || 'Cargando...'}
+        </>
+      ) : (
+        <>
+          {t.login_button} <ShieldCheck className="h-5 w-5" />
+        </>
+      )}
+    </button>
   );
 }
