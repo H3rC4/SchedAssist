@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Clock, Save, Coffee, ChevronLeft, ChevronRight, CalendarX, X, Trash2, CheckCircle, AlertTriangle } from 'lucide-react'
+import { Clock, Save, Coffee, ChevronLeft, ChevronRight, CalendarX, X, Trash2, CheckCircle, AlertTriangle, Loader2 } from 'lucide-react'
 import { format, parseISO, startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval, isSameMonth, isSameDay, addMonths, subMonths } from 'date-fns'
 import { es } from 'date-fns/locale'
 
@@ -24,12 +24,16 @@ interface Override {
   end_time: string | null
 }
 
-interface AffectedAppointment {
-  id: string
-  start_at: string
-  clients: { first_name: string; last_name: string } | null
-}
-
+export default function DoctorSchedulePage() {
+  const supabase = createClient()
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
+  const [saved, setSaved] = useState(false)
+  const [profId, setProfId] = useState<string | null>(null)
+  const [tenantId, setTenantId] = useState<string | null>(null)
+  const [rules, setRules] = useState<AvailabilityRule[]>([])
+  const [overrides, setOverrides] = useState<Override[]>([])
+  
   const [calendarMonth, setCalendarMonth] = useState(new Date())
   const [overrideModal, setOverrideModal] = useState<{ date: string } | null>(null)
   const [overrideForm, setOverrideForm] = useState({
@@ -39,6 +43,87 @@ interface AffectedAppointment {
     note: ''
   })
   const [overrideConflicts, setOverrideConflicts] = useState<any[]>([])
+
+  const days = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado']
+
+  const fetchData = useCallback(async () => {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return
+
+    const { data: prof } = await supabase
+      .from('professionals')
+      .select('id, tenant_id')
+      .eq('auth_user_id', user.id)
+      .single()
+
+    if (prof) {
+      setProfId(prof.id)
+      setTenantId(prof.tenant_id)
+      
+      const { data: rulesData } = await supabase
+        .from('availability_rules')
+        .select('*')
+        .eq('professional_id', prof.id)
+        .order('day_of_week')
+      
+      const { data: overridesData } = await supabase
+        .from('professional_overrides')
+        .select('*')
+        .eq('professional_id', prof.id)
+        .gte('override_date', format(new Date(), 'yyyy-MM-dd'))
+        .order('override_date')
+
+      setRules(rulesData || [])
+      setOverrides(overridesData || [])
+    }
+    setLoading(false)
+  }, [supabase])
+
+  useEffect(() => {
+    fetchData()
+  }, [fetchData])
+
+  const updateRule = (day: number, field: string, value: any) => {
+    setRules(prev => prev.map(r => r.day_of_week === day ? { ...r, [field]: value } : r))
+  }
+
+  const toggleLunchBreak = (day: number, active: boolean) => {
+    setRules(prev => prev.map(r => r.day_of_week === day ? {
+      ...r,
+      lunch_break_start: active ? '13:00:00' : null,
+      lunch_break_end: active ? '14:00:00' : null
+    } : r))
+  }
+
+  const handleSaveRules = async () => {
+    if (!profId) return
+    setSaving(true)
+    try {
+      await Promise.all(rules.map(rule => 
+        supabase.from('availability_rules').upsert({
+          ...rule,
+          professional_id: profId,
+          tenant_id: tenantId
+        })
+      ))
+      setSaved(true)
+      setTimeout(() => setSaved(false), 3000)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const checkAffectedAppointments = async (date: string) => {
+    if (!profId) return []
+    const { data } = await supabase
+      .from('appointments')
+      .select('id, start_at, clients(first_name, last_name)')
+      .eq('professional_id', profId)
+      .eq('status', 'scheduled')
+      .gte('start_at', `${date}T00:00:00`)
+      .lte('start_at', `${date}T23:59:59`)
+    return data || []
+  }
 
   const getCalendarDays = (month: Date) => {
     const start = startOfWeek(startOfMonth(month))
@@ -59,7 +144,7 @@ interface AffectedAppointment {
   }
 
   const handleSaveOverride = async () => {
-    if (!overrideModal) return
+    if (!overrideModal || !profId || !tenantId) return
     setSaving(true)
     try {
       if (overrideForm.type === 'block') {
@@ -83,8 +168,6 @@ interface AffectedAppointment {
       setOverrideModal(null)
       setSaved(true)
       setTimeout(() => setSaved(false), 3000)
-    } catch (err) {
-      console.error(err)
     } finally {
       setSaving(false)
     }
@@ -104,7 +187,7 @@ interface AffectedAppointment {
   }
 
   return (
-    <div className="max-w-[1200px] mx-auto space-y-8 animate-in fade-in duration-700 pb-20">
+    <div className="max-w-[1200px] mx-auto space-y-8 animate-in fade-in duration-700 pb-20 px-4 md:px-0">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-black text-slate-900 tracking-tight">Mi Horario</h1>
