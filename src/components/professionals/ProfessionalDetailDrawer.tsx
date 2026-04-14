@@ -217,50 +217,57 @@ export function ProfessionalDetailDrawer({
           </button>
         </div>
 
-        {/* Credentials Info Box */}
-        <div className="mx-4 md:mx-8 mt-6">
-          {professional.auth_email ? (
-            <div className="bg-slate-900 rounded-2xl p-5 shadow-xl shadow-slate-900/20 border border-slate-800 animate-in fade-in zoom-in-95 duration-500">
-               <div className="flex items-center gap-3 mb-4">
-                 <div className="h-8 w-8 bg-amber-500 rounded-lg flex items-center justify-center">
-                   <ShieldCheck className="h-5 w-5 text-slate-900" />
-                 </div>
-                 <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Acceso al Portal Médico</h4>
-               </div>
-               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="bg-white/5 rounded-xl p-3 border border-white/10">
-                    <span className="text-[9px] font-bold text-slate-500 uppercase block mb-1">Email de Usuario</span>
+        {/* Content */}
+        <div className="flex-1 min-h-0 overflow-y-auto p-4 md:p-8 space-y-6 md:space-y-8 custom-scrollbar">
+          
+          {/* Credentials Status & Actions */}
+          <div className="animate-in fade-in slide-in-from-top-4 duration-700">
+            {professional.auth_email ? (
+              <div className="bg-slate-900 rounded-[2rem] p-6 shadow-xl shadow-slate-900/10 border border-slate-800">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="h-8 w-8 bg-amber-500 rounded-lg flex items-center justify-center">
+                    <ShieldCheck className="h-5 w-5 text-slate-900" />
+                  </div>
+                  <h4 className="text-[10px] font-black text-slate-300 uppercase tracking-widest">Credenciales de Acceso</h4>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div className="bg-white/5 rounded-2xl p-3.5 border border-white/5">
+                    <span className="text-[9px] font-black text-slate-500 uppercase block mb-1">Email de Usuario</span>
                     <span className="text-xs font-bold text-white break-all">{professional.auth_email}</span>
                   </div>
-                  <div className="bg-white/5 rounded-xl p-3 border border-white/10 flex items-center justify-between">
+                  <div className="bg-white/5 rounded-2xl p-3.5 border border-white/5 flex items-center justify-between">
                     <div>
-                      <span className="text-[9px] font-bold text-slate-500 uppercase block mb-1">Pass Temporal / Hint</span>
+                      <span className="text-[9px] font-black text-slate-500 uppercase block mb-1">Pass Temporal</span>
                       <span className="text-xs font-mono font-bold text-amber-400">{localHint ? localHint : 'Ya cambiada'}</span>
                     </div>
-                    <button onClick={handleResetPassword} disabled={resettingPassword} className="p-2 hover:bg-white/10 rounded-lg text-amber-500 transition-colors">
+                    <button 
+                      onClick={handleResetPassword} 
+                      disabled={resettingPassword} 
+                      className="p-2 hover:bg-white/10 rounded-xl text-amber-500 transition-all hover:scale-110 active:scale-95"
+                      title="Restablecer contraseña"
+                    >
                       {resettingPassword ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCcw className="h-4 w-4" />}
                     </button>
                   </div>
-               </div>
-            </div>
-          ) : (
-            <div className="bg-indigo-50 border border-dashed border-indigo-200 rounded-2xl p-8 text-center">
-               <ShieldCheck className="h-10 w-10 text-indigo-300 mx-auto mb-3" />
-               <p className="text-sm font-bold text-indigo-900 mb-4 tracking-tight">Este profesional no tiene cuenta de acceso creada.</p>
-               <button 
-                onClick={handleCreateAccount}
-                disabled={creatingAccount}
-                className="bg-primary-600 text-white text-xs font-black uppercase tracking-widest px-6 py-3 rounded-xl hover:bg-primary-700 shadow-lg shadow-primary-200 transition-all active:scale-95 disabled:opacity-50"
-               >
-                 {creatingAccount ? <Loader2 className="h-4 w-4 animate-spin mx-auto" /> : 'Generar Cuenta Médica'}
-               </button>
-            </div>
-          )}
-        </div>
-
-
-        {/* Content */}
-        <div className="flex-1 min-h-0 overflow-y-auto p-4 md:p-8 space-y-6 md:space-y-8 custom-scrollbar">
+                </div>
+              </div>
+            ) : (
+              <div className="bg-gradient-to-br from-indigo-50 to-white border-2 border-dashed border-indigo-100 rounded-[2rem] p-10 text-center group">
+                <div className="h-16 w-16 bg-white rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-xl shadow-indigo-100/50 group-hover:scale-110 transition-transform duration-500">
+                  <ShieldCheck className="h-8 w-8 text-indigo-400" />
+                </div>
+                <h4 className="text-sm font-black text-indigo-900 mb-2">Sin cuenta de acceso</h4>
+                <p className="text-[11px] font-bold text-indigo-400 uppercase tracking-wider mb-6">Genera credenciales para que el profesional gestione su agenda</p>
+                <button 
+                  onClick={handleCreateAccount}
+                  disabled={creatingAccount}
+                  className="bg-indigo-600 text-white text-[10px] font-black uppercase tracking-[0.2em] px-8 py-4 rounded-xl hover:bg-indigo-700 shadow-xl shadow-indigo-200 transition-all active:scale-95 disabled:opacity-50"
+                >
+                  {creatingAccount ? <Loader2 className="h-4 w-4 animate-spin mx-auto text-white" /> : 'Activar Acceso Médico'}
+                </button>
+              </div>
+            )}
+          </div>
           {activeTab === 'exceptions' ? (
             <div className="space-y-6">
                 <div className="bg-white rounded-3xl border border-gray-100 p-6 shadow-sm overflow-hidden">
