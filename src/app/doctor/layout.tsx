@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { LogOut, Calendar, Clock, Zap } from 'lucide-react'
+import { LogOut, Calendar, Clock, Zap, User } from 'lucide-react'
 import { ForcePasswordChangeGate } from '@/components/dashboard/ForcePasswordChangeGate'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
