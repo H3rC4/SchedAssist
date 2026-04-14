@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from 'react'
-import { Clock, Save, X, Trash2, Coffee, CalendarX, CheckCircle, RefreshCcw, Loader2, ChevronLeft, ChevronRight as ChevronRightIcon, AlertTriangle } from 'lucide-react'
+import { Clock, Save, X, Trash2, Coffee, CalendarX, CheckCircle, RefreshCcw, Loader2, ChevronLeft, ChevronRight as ChevronRightIcon, AlertTriangle, Users, ShieldCheck } from 'lucide-react'
 import { Professional, AvailabilityRule, Override } from '@/hooks/useProfessionals'
 import { createClient } from '@/lib/supabase/client'
 import { 
@@ -57,6 +57,7 @@ export function ProfessionalDetailDrawer({
   
   const [localHint, setLocalHint] = useState(professional.auth_password_hint)
   const [resettingPassword, setResettingPassword] = useState(false)
+  const [internalSaving, setInternalSaving] = useState(false)
   
   // States from 4 days ago (deb0110)
   const [calendarMonth, setCalendarMonth] = useState(new Date())
@@ -97,7 +98,7 @@ export function ProfessionalDetailDrawer({
 
   const handleSaveOverride = async () => {
     if (!overrideModal) return
-    setSaving(true)
+    setInternalSaving(true)
     const supabase = createClient()
     try {
       if (overrideForm.type === 'block') {
@@ -121,7 +122,7 @@ export function ProfessionalDetailDrawer({
     } catch (err) {
       console.error(err)
     } finally {
-      setSaving(false)
+      setInternalSaving(false)
     }
   }
 
@@ -412,8 +413,8 @@ export function ProfessionalDetailDrawer({
                       <Users className="h-6 w-6" />
                     </div>
                     <div>
-                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Pacientes registrados</p>
-                      <p className="text-xl font-black text-slate-900">{profClients.length}</p>
+                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Información de Perfil</p>
+                      <p className="text-xl font-black text-slate-900">{professional.specialty || 'General'}</p>
                     </div>
                   </div>
                 </div>
@@ -492,12 +493,12 @@ export function ProfessionalDetailDrawer({
                     </div>
                   )}
 
-                  <button onClick={handleSaveOverride} disabled={saving}
+                  <button onClick={handleSaveOverride} disabled={internalSaving}
                     className={`w-full py-5 rounded-[2rem] font-black text-xs uppercase tracking-[0.2em] transition-all shadow-xl active:scale-95 disabled:opacity-50 ${
                       overrideForm.type === 'block' ? 'bg-red-500 hover:bg-red-600 text-white shadow-red-500/20' : 'bg-emerald-500 hover:bg-emerald-600 text-white shadow-emerald-500/20'
                     }`}
                   >
-                    {saving ? 'Guardando...' : 'Aplicar Excepción'}
+                    {internalSaving ? 'Guardando...' : 'Aplicar Excepción'}
                   </button>
                 </div>
               </div>
