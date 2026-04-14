@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Clock, Save, Coffee, ChevronLeft, ChevronRight, CalendarX, X, Trash2, CheckCircle, AlertTriangle } from 'lucide-react'
-import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval, isSameMonth, isSameDay, addMonths, subMonths } from 'date-fns'
+import { format, parseISO, startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval, isSameMonth, isSameDay, addMonths, subMonths } from 'date-fns'
 import { es } from 'date-fns/locale'
 
 interface AvailabilityRule {
@@ -116,7 +116,7 @@ export default function DoctorSchedulePage() {
       .lte('start_at', date + 'T23:59:59')
       .neq('status', 'cancelled')
 
-    return (data || []) as AffectedAppointment[]
+    return (data || []) as unknown as AffectedAppointment[]
   }
 
   const handleAddOverride = async (date: string, type: 'block' | 'open') => {
