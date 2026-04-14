@@ -15,8 +15,14 @@ export async function GET(request: Request) {
   }
 
   if (code) {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+    const projectRef = supabaseUrl.split('.')[0].split('//')[1] || 'unknown'
     const supabase = await createClient()
     try {
+      const cookieStore = cookies()
+      const verifier = cookieStore.get(`sb-${projectRef}-auth-token-code-verifier`)
+      console.log('Project Ref:', projectRef, 'Verifier Cookie Found:', !!verifier)
+      
       const { error } = await supabase.auth.exchangeCodeForSession(code)
       if (!error) {
         return NextResponse.redirect(`${requestUrl.origin}${next}`)
@@ -25,9 +31,9 @@ export async function GET(request: Request) {
       const cookieStore = cookies()
       const allCookies = cookieStore.getAll()
       const cookieNames = allCookies.map(c => c.name).join(', ')
-      console.error('OAuth Exchange Error:', error.message, 'Cookie Names:', cookieNames);
+      console.error('OAuth Exchange Error:', error.message, 'ProjectRef:', projectRef, 'Cookie Names:', cookieNames);
       
-      return NextResponse.redirect(`${requestUrl.origin}/login?error=${encodeURIComponent(error.message + ' (Cookies: ' + cookieNames + ')')}`)
+      return NextResponse.redirect(`${requestUrl.origin}/login?error=${encodeURIComponent(error.message + ' (Ref: ' + projectRef + ', Cookies: ' + cookieNames + ')')}`)
     } catch (e) {
       console.error('Unexpected Auth Error:', e)
       return NextResponse.redirect(`${requestUrl.origin}/login?error=Unexpected_Auth_Error`)
