@@ -18,8 +18,8 @@
   },
   "dependencies": {
     "@stripe/stripe-js": "^9.1.0",
-    "@supabase/ssr": "^0.3.0",
-    "@supabase/supabase-js": "^2.43.1",
+    "@supabase/ssr": "^0.10.2",
+    "@supabase/supabase-js": "^2.103.0",
     "body-parser": "^2.2.2",
     "date-fns": "^3.6.0",
     "express": "^5.2.1",

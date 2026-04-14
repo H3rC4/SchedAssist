@@ -16,7 +16,7 @@ export async function middleware(request: NextRequest) {
         getAll() {
           return request.cookies.getAll()
         },
-        setAll(cookiesToSet: any[]) {
+        setAll(cookiesToSet) {
           cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
           response = NextResponse.next({
             request,
@@ -25,11 +25,6 @@ export async function middleware(request: NextRequest) {
             response.cookies.set(name, value, options)
           )
         },
-      },
-      cookieOptions: {
-        path: '/',
-        sameSite: 'lax',
-        secure: true,
       },
     }
   )
