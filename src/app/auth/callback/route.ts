@@ -21,10 +21,12 @@ export async function GET(request: Request) {
         return NextResponse.redirect(`${requestUrl.origin}${next}`)
       }
       
-      const cookieHeader = request.headers.get('cookie') || '';
-      console.error('OAuth Exchange Error:', error.message, 'Cookies present:', cookieHeader.includes('auth-token-code-verifier'));
+      const cookieStore = cookies()
+      const allCookies = cookieStore.getAll()
+      const cookieNames = allCookies.map(c => c.name).join(', ')
+      console.error('OAuth Exchange Error:', error.message, 'Cookie Names:', cookieNames);
       
-      return NextResponse.redirect(`${requestUrl.origin}/login?error=${encodeURIComponent(error.message + ' (v:' + cookieHeader.includes('auth-token-code-verifier') + ')')}`)
+      return NextResponse.redirect(`${requestUrl.origin}/login?error=${encodeURIComponent(error.message + ' (Cookies: ' + cookieNames + ')')}`)
     } catch (e) {
       console.error('Unexpected Auth Error:', e)
       return NextResponse.redirect(`${requestUrl.origin}/login?error=Unexpected_Auth_Error`)
