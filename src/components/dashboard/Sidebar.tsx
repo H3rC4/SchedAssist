@@ -17,7 +17,6 @@ const navItemsBase = [
   { id: 'clients', es: 'Pacientes', it: 'Pazienti', en: 'Patients', href: '/dashboard/clients', icon: Users, category: 'Operativo' },
   { id: 'whatsapp', es: 'WhatsApp', it: 'WhatsApp', en: 'WhatsApp', href: '/dashboard/whatsapp', icon: Zap, category: 'Configuración' },
   { id: 'settings', es: 'Ajustes', it: 'Impostazioni', en: 'Settings', href: '/dashboard/settings', icon: Settings, category: 'Sistema' },
-  { id: 'support', es: 'Soporte', it: 'Supporto', en: 'Support', href: 'mailto:support@schedassist.com', icon: LifeBuoy, category: 'Sistema' },
 ]
 
 const categories = {

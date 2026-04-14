@@ -15,6 +15,8 @@ interface ProfessionalDetailDrawerProps {
   overrides: Override[];
   onDelete: () => void;
   onSave: () => void;
+  addOverride: (date: string, type: 'block' | 'open') => void;
+  deleteOverride: (id: string) => void;
   saving: boolean;
   saved: boolean;
 }
@@ -30,6 +32,8 @@ export function ProfessionalDetailDrawer({
   overrides,
   onDelete,
   onSave,
+  addOverride,
+  deleteOverride,
   saving,
   saved
 }: ProfessionalDetailDrawerProps) {
@@ -176,7 +180,7 @@ export function ProfessionalDetailDrawer({
                               </label>
                             </div>
                             {rule.lunch_break_start && (
-                              <div className="flex items-center gap-2 ml-0 md:ml-auto animate-in fade-in slide-in-from-right-2 duration-300 bg-white/50 p-2 md:p-0 rounded-xl">
+                               <div className="flex items-center gap-2 ml-0 md:ml-auto animate-in fade-in slide-in-from-right-2 duration-300 bg-white/50 p-2 md:p-0 rounded-xl">
                                 <span className="text-[10px] text-amber-600 font-bold uppercase">De</span>
                                 <input type="time" value={rule.lunch_break_start.slice(0, 5)}
                                   onChange={e => updateRule(rule.day_of_week, 'lunch_break_start', e.target.value + ':00')}
@@ -195,8 +199,63 @@ export function ProfessionalDetailDrawer({
                 </div>
             </div>
           ) : (
-            <div className="text-center py-12 text-gray-400">
-              <p>Próximamente: Calendario de excepciones avanzado.</p>
+            <div className="space-y-6">
+                <h4 className="text-sm font-black text-gray-400 uppercase tracking-widest flex items-center gap-2">
+                  <CalendarX className="h-4 w-4" /> DÍAS LIBRES Y EXCEPCIONES
+                </h4>
+                
+                <div className="bg-amber-50 border border-amber-100 rounded-2xl p-6">
+                  <h5 className="text-xs font-black text-amber-700 uppercase mb-4 tracking-wider">Agregar excepción</h5>
+                  <div className="flex flex-col sm:flex-row gap-4">
+                    <input 
+                      type="date" 
+                      id="new-override-date"
+                      className="flex-1 rounded-xl border border-amber-200 px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-amber-500 outline-none" 
+                    />
+                    <select id="new-override-type" className="rounded-xl border border-amber-200 px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-amber-500 outline-none">
+                      <option value="block">Día Bloqueado (Libre)</option>
+                      <option value="open">Horas Especiales (Abierto)</option>
+                    </select>
+                    <button 
+                      onClick={() => {
+                        const date = (document.getElementById('new-override-date') as HTMLInputElement).value;
+                        const type = (document.getElementById('new-override-type') as HTMLSelectElement).value as 'block' | 'open';
+                        if (date) addOverride(date, type);
+                      }}
+                      className="bg-amber-500 text-white font-black px-6 py-3 rounded-xl hover:bg-amber-600 transition-all text-xs uppercase tracking-widest active:scale-95"
+                    >
+                      Añadir
+                    </button>
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  {overrides.length === 0 ? (
+                    <div className="text-center py-10 text-gray-300 italic text-sm">No hay excepciones guardadas.</div>
+                  ) : (
+                    overrides.map(ov => (
+                      <div key={ov.id} className="flex items-center justify-between p-4 rounded-2xl border border-gray-100 bg-white shadow-sm transition-all hover:border-gray-200">
+                        <div className="flex items-center gap-4">
+                          <div className={`h-10 w-10 rounded-xl flex items-center justify-center ${ov.override_type === 'block' ? 'bg-red-50 text-red-500' : 'bg-emerald-50 text-emerald-500'}`}>
+                            {ov.override_type === 'block' ? <CalendarX className="h-5 w-5" /> : <Clock className="h-5 w-5" />}
+                          </div>
+                          <div>
+                            <p className="text-sm font-bold text-gray-900">{ov.override_date}</p>
+                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                              {ov.override_type === 'block' ? 'Bloqueado' : `${ov.start_time?.slice(0,5)} - ${ov.end_time?.slice(0,5)}`}
+                            </p>
+                          </div>
+                        </div>
+                        <button 
+                          onClick={() => deleteOverride(ov.id)}
+                          className="p-2 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
+                    ))
+                  )}
+                </div>
             </div>
           )}
         </div>
