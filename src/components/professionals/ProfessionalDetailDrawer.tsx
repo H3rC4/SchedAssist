@@ -1,8 +1,22 @@
 "use client"
 
 import { useState } from 'react'
-import { Clock, Save, X, Trash2, Coffee, CalendarX, CheckCircle, RefreshCcw, Loader2 } from 'lucide-react'
+import { Clock, Save, X, Trash2, Coffee, CalendarX, CheckCircle, RefreshCcw, Loader2, ChevronLeft, ChevronRight as ChevronRightIcon } from 'lucide-react'
 import { Professional, AvailabilityRule, Override } from '@/hooks/useProfessionals'
+import { 
+  format, 
+  startOfMonth, 
+  endOfMonth, 
+  startOfWeek, 
+  endOfWeek, 
+  eachDayOfInterval, 
+  isSameMonth, 
+  isSameDay, 
+  addMonths, 
+  subMonths,
+  parseISO
+} from 'date-fns'
+import { es } from 'date-fns/locale'
 
 interface ProfessionalDetailDrawerProps {
   professional: Professional;
@@ -42,6 +56,10 @@ export function ProfessionalDetailDrawer({
   
   const [localHint, setLocalHint] = useState(professional.auth_password_hint)
   const [resettingPassword, setResettingPassword] = useState(false)
+  
+  const [viewDate, setViewDate] = useState(new Date())
+  const [selectedDate, setSelectedDate] = useState<string>('')
+  const [selectedType, setSelectedType] = useState<'block' | 'open'>('block')
 
   async function handleResetPassword() {
     if (!confirm('¿Seguro que deseas restablecer la contraseña temporal? El profesional deberá cambiarla al iniciar sesión.')) return;
@@ -204,43 +222,101 @@ export function ProfessionalDetailDrawer({
                   <CalendarX className="h-4 w-4" /> DÍAS LIBRES Y EXCEPCIONES
                 </h4>
                 
-                <div className="bg-amber-50 border border-amber-100 rounded-2xl p-6">
-                  <h5 className="text-xs font-black text-amber-700 uppercase mb-4 tracking-wider">Agregar excepción</h5>
-                  <div className="flex flex-col sm:flex-row gap-4">
-                    <input 
-                      type="date" 
-                      id="new-override-date"
-                      className="flex-1 rounded-xl border border-amber-200 px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-amber-500 outline-none" 
-                    />
-                    <select id="new-override-type" className="rounded-xl border border-amber-200 px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-amber-500 outline-none">
-                      <option value="block">Día Bloqueado (Libre)</option>
-                      <option value="open">Horas Especiales (Abierto)</option>
-                    </select>
-                    <button 
-                      onClick={() => {
-                        const date = (document.getElementById('new-override-date') as HTMLInputElement).value;
-                        const type = (document.getElementById('new-override-type') as HTMLSelectElement).value as 'block' | 'open';
-                        if (date) addOverride(date, type);
-                      }}
-                      className="bg-amber-500 text-white font-black px-6 py-3 rounded-xl hover:bg-amber-600 transition-all text-xs uppercase tracking-widest active:scale-95"
-                    >
-                      Añadir
+                <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl overflow-hidden shadow-sm">
+                  {/* Calendar Header */}
+                  <div className="flex items-center justify-between p-4 bg-white dark:bg-slate-950 border-b border-slate-100 dark:border-slate-800">
+                    <button onClick={() => setViewDate(subMonths(viewDate, 1))} className="p-2 hover:bg-slate-50 dark:hover:bg-slate-900 rounded-xl transition-colors">
+                      <ChevronLeft className="h-4 w-4 text-slate-500" />
+                    </button>
+                    <h5 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-widest">
+                      {format(viewDate, 'MMMM yyyy', { locale: es })}
+                    </h5>
+                    <button onClick={() => setViewDate(addMonths(viewDate, 1))} className="p-2 hover:bg-slate-50 dark:hover:bg-slate-900 rounded-xl transition-colors">
+                      <ChevronRightIcon className="h-4 w-4 text-slate-500" />
                     </button>
                   </div>
+
+                  {/* Calendar Grid */}
+                  <div className="p-4">
+                    <div className="grid grid-cols-7 gap-1 mb-2">
+                      {['D', 'L', 'M', 'X', 'J', 'V', 'S'].map(d => (
+                        <div key={d} className="text-center text-[10px] font-black text-slate-400 uppercase py-2">{d}</div>
+                      ))}
+                    </div>
+                    <div className="grid grid-cols-7 gap-1">
+                      {eachDayOfInterval({
+                        start: startOfWeek(startOfMonth(viewDate)),
+                        end: endOfWeek(endOfMonth(viewDate))
+                      }).map((date, i) => {
+                        const dateStr = format(date, 'yyyy-MM-dd')
+                        const isToday = isSameDay(date, new Date())
+                        const isSelected = selectedDate === dateStr
+                        const hasOverride = overrides.find(ov => ov.override_date === dateStr)
+                        const inMonth = isSameMonth(date, viewDate)
+
+                        return (
+                          <button
+                            key={i}
+                            onClick={() => setSelectedDate(dateStr)}
+                            disabled={!inMonth}
+                            className={`aspect-square flex flex-col items-center justify-center rounded-xl text-xs font-bold transition-all relative
+                              ${!inMonth ? 'opacity-0 cursor-default' : 'hover:bg-amber-50 dark:hover:bg-amber-900/20'}
+                              ${isSelected ? 'bg-amber-500 text-white shadow-lg shadow-amber-500/20' : isToday ? 'text-amber-600' : 'text-slate-600 dark:text-slate-400'}
+                            `}
+                          >
+                            {format(date, 'd')}
+                            {hasOverride && !isSelected && (
+                              <div className={`absolute bottom-1 w-1 h-1 rounded-full ${hasOverride.override_type === 'block' ? 'bg-red-500' : 'bg-emerald-500'}`} />
+                            )}
+                          </button>
+                        )
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Selection Actions */}
+                  {selectedDate && (
+                    <div className="p-4 bg-amber-50 dark:bg-amber-500/5 border-t border-amber-100 dark:border-amber-500/10 animate-in slide-in-from-bottom-2 duration-300">
+                      <div className="flex items-center justify-between mb-4 px-1">
+                        <p className="text-[10px] font-black text-amber-600 uppercase tracking-widest">Añadir para: <span className="text-amber-800 dark:text-amber-400">{selectedDate}</span></p>
+                        <button onClick={() => setSelectedDate('')} className="text-amber-600 border border-amber-200 rounded-lg p-1 hover:bg-white transition-all"><X className="h-3 w-3" /></button>
+                      </div>
+                      <div className="flex gap-3">
+                        <select 
+                          value={selectedType}
+                          onChange={(e) => setSelectedType(e.target.value as 'block' | 'open')}
+                          className="flex-1 rounded-xl border border-amber-200 dark:border-amber-500/20 px-4 py-2.5 text-xs font-bold focus:ring-2 focus:ring-amber-500 outline-none bg-white dark:bg-slate-950"
+                        >
+                          <option value="block">Día Bloqueado (Libre)</option>
+                          <option value="open">Horas Especiales (Abierto)</option>
+                        </select>
+                        <button 
+                          onClick={() => {
+                            addOverride(selectedDate, selectedType);
+                            setSelectedDate('');
+                          }}
+                          className="bg-amber-500 text-white font-black px-6 py-2.5 rounded-xl hover:bg-amber-600 transition-all text-[10px] uppercase tracking-widest active:scale-95 shadow-md shadow-amber-500/10"
+                        >
+                          Añadir
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 <div className="space-y-3">
+                  <h5 className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Próximas excepciones</h5>
                   {overrides.length === 0 ? (
                     <div className="text-center py-10 text-gray-300 italic text-sm">No hay excepciones guardadas.</div>
                   ) : (
                     overrides.map(ov => (
-                      <div key={ov.id} className="flex items-center justify-between p-4 rounded-2xl border border-gray-100 bg-white shadow-sm transition-all hover:border-gray-200">
+                      <div key={ov.id} className="flex items-center justify-between p-4 rounded-2xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm transition-all hover:border-amber-100 dark:hover:border-amber-500/20 group">
                         <div className="flex items-center gap-4">
-                          <div className={`h-10 w-10 rounded-xl flex items-center justify-center ${ov.override_type === 'block' ? 'bg-red-50 text-red-500' : 'bg-emerald-50 text-emerald-500'}`}>
+                          <div className={`h-10 w-10 rotate-3 group-hover:rotate-0 rounded-xl flex items-center justify-center transition-all ${ov.override_type === 'block' ? 'bg-red-50 dark:bg-red-500/10 text-red-500' : 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-500'}`}>
                             {ov.override_type === 'block' ? <CalendarX className="h-5 w-5" /> : <Clock className="h-5 w-5" />}
                           </div>
                           <div>
-                            <p className="text-sm font-bold text-gray-900">{ov.override_date}</p>
+                            <p className="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-tight">{ov.override_date}</p>
                             <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
                               {ov.override_type === 'block' ? 'Bloqueado' : `${ov.start_time?.slice(0,5)} - ${ov.end_time?.slice(0,5)}`}
                             </p>
@@ -248,7 +324,7 @@ export function ProfessionalDetailDrawer({
                         </div>
                         <button 
                           onClick={() => deleteOverride(ov.id)}
-                          className="p-2 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
+                          className="p-3 text-gray-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-xl transition-all opacity-0 group-hover:opacity-100 translate-x-4 group-hover:translate-x-0"
                         >
                           <Trash2 className="h-4 w-4" />
                         </button>

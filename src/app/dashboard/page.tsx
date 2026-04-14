@@ -156,10 +156,10 @@ export default function DashboardPage() {
                   {t.system_active}
                 </span>
             </div>
-            <h1 className="text-5xl md:text-6xl font-black text-slate-900 dark:text-white tracking-[-0.06em] leading-[0.9] flex items-wrap items-center gap-x-6">
+            <h1 className="text-3xl md:text-4xl font-black text-slate-900 dark:text-white tracking-[-0.04em] leading-tight flex items-wrap items-center gap-x-4">
                {t.welcome} <span className="gradient-text">{tenantName}</span> 
-               <div className="inline-flex h-16 w-16 bg-amber-500 rounded-[1.5rem] items-center justify-center shadow-2xl shadow-amber-500/20 animate-float-subtle">
-                 <Zap className="h-8 w-8 text-slate-950 fill-slate-950" />
+               <div className="inline-flex h-12 w-12 bg-amber-500 rounded-xl items-center justify-center shadow-2xl shadow-amber-500/20 animate-float-subtle">
+                 <Zap className="h-6 w-6 text-slate-950 fill-slate-950" />
                </div>
             </h1>
             <p className="text-sm font-bold text-slate-400 mt-4 uppercase tracking-[0.3em] pl-1">

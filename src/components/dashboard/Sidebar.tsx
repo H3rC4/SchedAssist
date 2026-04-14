@@ -17,6 +17,7 @@ const navItemsBase = [
   { id: 'clients', es: 'Pacientes', it: 'Pazienti', en: 'Patients', href: '/dashboard/clients', icon: Users, category: 'Operativo' },
   { id: 'whatsapp', es: 'WhatsApp', it: 'WhatsApp', en: 'WhatsApp', href: '/dashboard/whatsapp', icon: Zap, category: 'Configuración' },
   { id: 'settings', es: 'Ajustes', it: 'Impostazioni', en: 'Settings', href: '/dashboard/settings', icon: Settings, category: 'Sistema' },
+  { id: 'support', es: 'Soporte', it: 'Supporto', en: 'Support', href: '#', icon: LifeBuoy, category: 'Sistema' },
 ]
 
 const categories = {
@@ -72,7 +73,8 @@ export function Sidebar({ lang = 'es' }: SidebarProps) {
   });
 
   return (
-    <div className="flex h-full w-72 flex-col bg-slate-950/80 dark:bg-black/40 backdrop-blur-2xl border border-white/10 rounded-[2.5rem] relative overflow-hidden transition-all duration-500 shadow-2xl shadow-black/20">
+    <>
+      <div className="flex h-full w-72 flex-col bg-slate-950/80 dark:bg-black/40 backdrop-blur-2xl border border-white/10 rounded-[2.5rem] relative overflow-hidden transition-all duration-500 shadow-2xl shadow-black/20">
       
       {/* Background Glow */}
       <div className="absolute top-0 left-0 w-full h-full pointer-events-none overflow-hidden z-0 opacity-40">
@@ -180,6 +182,6 @@ export function Sidebar({ lang = 'es' }: SidebarProps) {
           </div>
         </div>
       )}
-    </div>
+    </>
   )
 }
