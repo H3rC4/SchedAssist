@@ -7,6 +7,7 @@ type LanguageContextType = {
   language: Language;
   setLanguage: (lang: Language) => void;
   t: any;
+  fullT: any;
 };
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
