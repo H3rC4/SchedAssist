@@ -136,6 +136,7 @@ export function Sidebar({ lang = 'es' }: SidebarProps) {
           )
         })}
       </nav>
+      </div>
  
       {/* Support Modal */}
       {showSupportModal && (
