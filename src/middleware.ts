@@ -68,6 +68,13 @@ export async function middleware(request: NextRequest) {
     }
   }
 
+  // Protect /doctor routes - require login
+  if (request.nextUrl.pathname.startsWith('/doctor')) {
+    if (!user) {
+      return NextResponse.redirect(new URL('/login', request.url))
+    }
+  }
+
   // Redirect from public routes to dashboard if logged in
   if (request.nextUrl.pathname === '/' || request.nextUrl.pathname === '/login') {
     if (user) {

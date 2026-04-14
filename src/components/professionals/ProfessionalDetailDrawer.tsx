@@ -1,8 +1,9 @@
 "use client"
 
 import { useState } from 'react'
-import { Clock, Save, X, Trash2, Coffee, CalendarX, CheckCircle, RefreshCcw, Loader2, ChevronLeft, ChevronRight as ChevronRightIcon } from 'lucide-react'
+import { Clock, Save, X, Trash2, Coffee, CalendarX, CheckCircle, RefreshCcw, Loader2, ChevronLeft, ChevronRight as ChevronRightIcon, AlertTriangle } from 'lucide-react'
 import { Professional, AvailabilityRule, Override } from '@/hooks/useProfessionals'
+import { createClient } from '@/lib/supabase/client'
 import { 
   format, 
   startOfMonth, 
@@ -60,6 +61,44 @@ export function ProfessionalDetailDrawer({
   const [viewDate, setViewDate] = useState(new Date())
   const [selectedDate, setSelectedDate] = useState<string>('')
   const [selectedType, setSelectedType] = useState<'block' | 'open'>('block')
+
+  // Warning state for affected appointments
+  const [showWarning, setShowWarning] = useState(false)
+  const [affectedApps, setAffectedApps] = useState<any[]>([])
+  const [pendingBlock, setPendingBlock] = useState('')
+
+  const handleAddOverride = async (date: string, type: 'block' | 'open') => {
+    if (type === 'block') {
+      const supabase = createClient()
+      const { data } = await supabase
+        .from('appointments')
+        .select('id, start_at, clients(first_name, last_name)')
+        .eq('professional_id', professional.id)
+        .gte('start_at', date)
+        .lte('start_at', date + 'T23:59:59')
+        .neq('status', 'cancelled')
+      if (data && data.length > 0) {
+        setAffectedApps(data)
+        setPendingBlock(date)
+        setShowWarning(true)
+        return
+      }
+    }
+    addOverride(date, type)
+    setSelectedDate('')
+  }
+
+  const handleForceBlock = async () => {
+    const supabase = createClient()
+    for (const app of affectedApps) {
+      await supabase.from('appointments').update({ status: 'cancelled' }).eq('id', app.id)
+    }
+    addOverride(pendingBlock, 'block')
+    setShowWarning(false)
+    setPendingBlock('')
+    setAffectedApps([])
+    setSelectedDate('')
+  }
 
   async function handleResetPassword() {
     if (!confirm('¿Seguro que deseas restablecer la contraseña temporal? El profesional deberá cambiarla al iniciar sesión.')) return;
@@ -291,10 +330,7 @@ export function ProfessionalDetailDrawer({
                           <option value="open">Horas Especiales (Abierto)</option>
                         </select>
                         <button 
-                          onClick={() => {
-                            addOverride(selectedDate, selectedType);
-                            setSelectedDate('');
-                          }}
+                          onClick={() => handleAddOverride(selectedDate, selectedType)}
                           className="bg-amber-500 text-white font-black px-6 py-2.5 rounded-xl hover:bg-amber-600 transition-all text-[10px] uppercase tracking-widest active:scale-95 shadow-md shadow-amber-500/10"
                         >
                           Añadir
@@ -354,6 +390,47 @@ export function ProfessionalDetailDrawer({
           </button>
         </div>
       </div>
+
+      {/* Warning Modal */}
+      {showWarning && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-6 bg-black/50 backdrop-blur-sm" onClick={() => { setShowWarning(false); setPendingBlock('') }}>
+          <div className="bg-white rounded-3xl shadow-2xl max-w-md w-full overflow-hidden animate-in zoom-in-95 duration-300" onClick={e => e.stopPropagation()}>
+            <div className="h-2 bg-gradient-to-r from-red-400 to-orange-500" />
+            <div className="p-8">
+              <div className="flex items-center gap-4 mb-6">
+                <div className="h-14 w-14 bg-red-50 rounded-2xl flex items-center justify-center">
+                  <AlertTriangle className="h-7 w-7 text-red-500" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-black text-slate-900">¡Atención!</h3>
+                  <p className="text-xs text-slate-400 font-medium">Este día tiene citas programadas</p>
+                </div>
+              </div>
+              <div className="bg-red-50 rounded-2xl p-4 mb-6 space-y-2">
+                <p className="text-[10px] font-black text-red-600 uppercase tracking-widest mb-3">
+                  {affectedApps.length} cita{affectedApps.length !== 1 ? 's' : ''} afectada{affectedApps.length !== 1 ? 's' : ''}:
+                </p>
+                {affectedApps.map((app: any) => (
+                  <div key={app.id} className="flex items-center justify-between bg-white rounded-xl px-4 py-2.5 border border-red-100">
+                    <span className="text-sm font-bold text-slate-900">{app.clients?.first_name} {app.clients?.last_name}</span>
+                    <span className="text-xs font-bold text-slate-400">{format(parseISO(app.start_at), 'HH:mm')}</span>
+                  </div>
+                ))}
+              </div>
+              <div className="flex gap-3">
+                <button onClick={() => { setShowWarning(false); setPendingBlock('') }}
+                  className="flex-1 py-4 rounded-2xl border-2 border-slate-200 text-sm font-black text-slate-600 hover:bg-slate-50 transition-all">
+                  Cancelar
+                </button>
+                <button onClick={handleForceBlock}
+                  className="flex-1 py-4 rounded-2xl bg-red-500 text-white text-sm font-black hover:bg-red-600 shadow-xl shadow-red-500/20 transition-all">
+                  Bloquear y Cancelar Citas
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

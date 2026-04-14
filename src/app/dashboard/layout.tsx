@@ -225,7 +225,7 @@ export default function DashboardLayout({
           />
 
           {/* Page Content */}
-          <main className="flex-1 overflow-y-auto p-4 md:p-10 custom-scrollbar relative z-10">
+          <main className="flex-1 overflow-y-auto p-4 md:p-10 custom-scrollbar relative z-10" style={{ zoom: 0.9 }}>
             {children}
           </main>
 

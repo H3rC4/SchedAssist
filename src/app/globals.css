@@ -52,17 +52,10 @@
 html {
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
-  font-size: 14px; /* Global scale reduction */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   scroll-behavior: smooth;
   color: var(--foreground);
-}
-
-@media (min-width: 1024px) {
-  html {
-    font-size: 15px; /* Slightly larger on very big screens, but still compact */
-  }
 }
 
 ::selection {
