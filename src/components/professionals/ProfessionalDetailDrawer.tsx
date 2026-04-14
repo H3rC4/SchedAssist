@@ -199,7 +199,7 @@ export function ProfessionalDetailDrawer({
               activeTab === 'schedule' ? 'border-primary-500 text-primary-600' : 'border-transparent text-gray-400 hover:text-gray-500'
             }`}
           >
-            <Clock className="h-4 w-4" /> {t.tab_weekly_config}
+            {t.tab_weekly_config}
           </button>
           <button
             onClick={() => setActiveTab('exceptions')}
@@ -207,7 +207,7 @@ export function ProfessionalDetailDrawer({
               activeTab === 'exceptions' ? 'border-primary-500 text-primary-600' : 'border-transparent text-gray-400 hover:text-gray-500'
             }`}
           >
-            <CalendarX className="h-4 w-4" /> {t.tab_exceptions}
+            {t.tab_exceptions}
             {overrides.length > 0 && (
               <span className="bg-amber-100 text-amber-700 text-[10px] font-black px-1.5 py-0.5 rounded-full ml-1">{overrides.length}</span>
             )}
@@ -218,7 +218,7 @@ export function ProfessionalDetailDrawer({
               activeTab === 'access' ? 'border-primary-500 text-primary-600' : 'border-transparent text-gray-400 hover:text-gray-500'
             }`}
           >
-            <ShieldCheck className="h-4 w-4" /> {t.tab_access}
+            {t.tab_access}
           </button>
         </div>
 
