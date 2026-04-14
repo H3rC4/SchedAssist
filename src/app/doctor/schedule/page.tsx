@@ -185,42 +185,48 @@ export default function DoctorSchedulePage() {
           <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 mb-6">
             <Clock className="h-4 w-4" /> Horario Semanal
           </h3>
-          <div className="space-y-3">
+          <div className="grid gap-4">
             {rules.map(rule => (
-              <div key={rule.day_of_week} className={`rounded-2xl border p-4 transition-all ${rule.active ? 'border-amber-100 bg-amber-50/30' : 'border-slate-100 bg-slate-50/30 opacity-60'}`}>
-                <div className="flex items-center gap-4">
-                  <label className="flex items-center gap-3 cursor-pointer min-w-[130px]">
+              <div key={rule.day_of_week}
+                className={`rounded-2xl border transition-all ${rule.active ? 'border-amber-100 bg-white shadow-sm' : 'border-slate-100 bg-slate-50/30 opacity-60'}`}>
+                <div className="flex items-center gap-4 p-4">
+                  <label className="flex items-center gap-3 cursor-pointer min-w-[120px]">
                     <input type="checkbox" checked={rule.active} onChange={e => updateRule(rule.day_of_week, 'active', e.target.checked)}
                       className="w-5 h-5 rounded-lg border-slate-300 text-amber-500 focus:ring-amber-500" />
                     <span className={`text-sm font-bold ${rule.active ? 'text-slate-900' : 'text-slate-400'}`}>{days[rule.day_of_week]}</span>
                   </label>
+                  
                   {rule.active && (
-                    <div className="flex items-center gap-2 ml-auto">
+                    <div className="flex items-center gap-2 ml-auto animate-in fade-in slide-in-from-right-2 duration-300">
                       <input type="time" value={rule.start_time.slice(0, 5)} onChange={e => updateRule(rule.day_of_week, 'start_time', e.target.value + ':00')}
-                        className="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-bold focus:ring-2 focus:ring-amber-500 outline-none" />
+                        className="rounded-xl border border-slate-200 px-3 py-2 text-xs font-bold focus:ring-2 focus:ring-amber-500 outline-none bg-slate-50" />
                       <span className="text-slate-300 font-bold">→</span>
                       <input type="time" value={rule.end_time.slice(0, 5)} onChange={e => updateRule(rule.day_of_week, 'end_time', e.target.value + ':00')}
-                        className="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-bold focus:ring-2 focus:ring-amber-500 outline-none" />
+                        className="rounded-xl border border-slate-200 px-3 py-2 text-xs font-bold focus:ring-2 focus:ring-amber-500 outline-none bg-slate-50" />
                     </div>
                   )}
                 </div>
+
                 {rule.active && (
-                  <div className="mt-3 flex items-center gap-3 bg-amber-50 border border-amber-100 rounded-xl px-4 py-2">
-                    <Coffee className="h-4 w-4 text-amber-500 flex-shrink-0" />
-                    <label className="flex items-center gap-2 cursor-pointer text-xs text-amber-700 font-bold">
-                      <input type="checkbox" checked={!!rule.lunch_break_start} onChange={e => toggleLunchBreak(rule.day_of_week, e.target.checked)}
-                        className="w-4 h-4 rounded-md border-amber-300 text-amber-500 focus:ring-amber-400" />
-                      Pausa
-                    </label>
-                    {rule.lunch_break_start && (
-                      <div className="flex items-center gap-2 ml-auto">
-                        <input type="time" value={rule.lunch_break_start.slice(0, 5)} onChange={e => updateRule(rule.day_of_week, 'lunch_break_start', e.target.value + ':00')}
-                          className="rounded-lg border border-amber-200 px-2 py-1 text-[11px] font-bold focus:ring-2 focus:ring-amber-400 outline-none bg-white w-20" />
-                        <span className="text-amber-400">→</span>
-                        <input type="time" value={(rule.lunch_break_end || '14:00').slice(0, 5)} onChange={e => updateRule(rule.day_of_week, 'lunch_break_end', e.target.value + ':00')}
-                          className="rounded-lg border border-amber-200 px-2 py-1 text-[11px] font-bold focus:ring-2 focus:ring-amber-400 outline-none bg-white w-20" />
-                      </div>
-                    )}
+                  <div className="px-4 pb-4 animate-in fade-in duration-300">
+                    <div className="flex items-center gap-4 bg-amber-50/50 border border-amber-100/50 rounded-xl px-4 py-3">
+                      <label className="flex items-center gap-2 cursor-pointer text-[10px] text-amber-700 font-black uppercase tracking-widest whitespace-nowrap">
+                        <input type="checkbox" checked={!!rule.lunch_break_start} onChange={e => toggleLunchBreak(rule.day_of_week, e.target.checked)}
+                          className="w-4 h-4 rounded-md border-amber-300 text-amber-500 focus:ring-amber-400" />
+                        <Coffee className="h-3.5 w-3.5" /> Pausa
+                      </label>
+                      
+                      {rule.lunch_break_start && (
+                        <div className="flex items-center gap-2 ml-auto animate-in fade-in slide-in-from-right-2 duration-300">
+                          <span className="text-[10px] text-amber-600 font-black uppercase">De</span>
+                          <input type="time" value={rule.lunch_break_start.slice(0, 5)} onChange={e => updateRule(rule.day_of_week, 'lunch_break_start', e.target.value + ':00')}
+                            className="rounded-lg border border-amber-200 px-2 py-1.5 text-[11px] font-bold focus:ring-2 focus:ring-amber-400 outline-none bg-white w-20" />
+                          <span className="text-[10px] text-amber-600 font-black uppercase">A</span>
+                          <input type="time" value={(rule.lunch_break_end || '14:00').slice(0, 5)} onChange={e => updateRule(rule.day_of_week, 'lunch_break_end', e.target.value + ':00')}
+                            className="rounded-lg border border-amber-200 px-2 py-1.5 text-[11px] font-bold focus:ring-2 focus:ring-amber-400 outline-none bg-white w-20" />
+                        </div>
+                      )}
+                    </div>
                   </div>
                 )}
               </div>
