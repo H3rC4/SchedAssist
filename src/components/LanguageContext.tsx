@@ -58,10 +58,11 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem('landing_lang', lang);
   };
 
-  const t = translations[language].landing;
+  const fullT = translations[language];
+  const t = fullT.landing;
 
   return (
-    <LanguageContext.Provider value={{ language, setLanguage: handleSetLanguage, t }}>
+    <LanguageContext.Provider value={{ language, setLanguage: handleSetLanguage, t, fullT } as any}>
       <div className={!mounted ? 'invisible' : ''}>
         {children}
       </div>

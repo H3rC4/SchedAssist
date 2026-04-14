@@ -53,7 +53,10 @@ export function ProfessionalDetailDrawer({
   saving,
   saved
 }: ProfessionalDetailDrawerProps) {
-  const { t } = useLandingTranslation()
+  // fullT contiene las traducciones completas (root), t solo landing.
+  const { fullT } = useLandingTranslation()
+  const T = fullT // Alias corto para facilitar el código
+  
   const days = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado']
   
   const [localHint, setLocalHint] = useState(professional.auth_password_hint)
@@ -99,17 +102,15 @@ export function ProfessionalDetailDrawer({
   const handleSaveOverride = async () => {
     if (!overrideModal) return
     setInternalSaving(true)
-    const supabase = createClient()
     try {
       if (overrideForm.type === 'block') {
+         const supabase = createClient()
          for (const app of overrideConflicts) {
            await supabase.from('appointments').update({ status: 'cancelled' }).eq('id', app.id)
          }
       }
 
-      // IMPORTANTE: Usamos la prop addOverride para que el estado se sincronice correctamente
       await addOverride(overrideModal.date, overrideForm.type)
-      
       setOverrideModal(null)
     } catch (err) {
       console.error(err)
@@ -123,7 +124,7 @@ export function ProfessionalDetailDrawer({
   }
 
   async function handleResetPassword() {
-    if (!confirm(t.confirm_reset_pass)) return;
+    if (!confirm(T.confirm_reset_pass)) return;
     setResettingPassword(true)
     try {
       const res = await fetch('/api/professionals/reset-password', {
@@ -134,7 +135,7 @@ export function ProfessionalDetailDrawer({
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'Error resetting password')
       setLocalHint(data.new_password)
-      alert(t.success + ': ' + data.new_password)
+      alert(T.success + ': ' + data.new_password)
     } catch (err: any) {
       alert(err.message)
     } finally {
@@ -156,8 +157,8 @@ export function ProfessionalDetailDrawer({
       if (!res.ok) throw new Error(data.error || 'Error creating account')
       
       setLocalHint(data.auth_password_hint)
-      alert(`${t.success}!\n${t.access_email}: ${data.auth_email}\nPass: ${data.auth_password_hint}`)
-      onSave() // Esto refrescará el selectedProf gracias al fix del hook
+      alert(`${T.success}!\n${T.access_email}: ${data.auth_email}\nPass: ${data.auth_password_hint}`)
+      onSave() 
       setActiveTab('access')
     } catch (err: any) {
       alert(err.message)
@@ -167,7 +168,7 @@ export function ProfessionalDetailDrawer({
   }
 
   const handleConfirmDelete = () => {
-     if (confirm(t.confirm_delete_prof)) {
+     if (confirm(T.confirm_delete_prof)) {
         onDelete()
      }
   }
@@ -191,7 +192,7 @@ export function ProfessionalDetailDrawer({
           </button>
         </div>
 
-        {/* Tabs */}
+        {/* Tabs - Solo Texto por petición del usuario */}
         <div className="flex border-b border-gray-100 px-4 md:px-8 bg-white z-20 sticky top-0">
           <button
             onClick={() => setActiveTab('schedule')}
@@ -199,7 +200,7 @@ export function ProfessionalDetailDrawer({
               activeTab === 'schedule' ? 'border-primary-500 text-primary-600' : 'border-transparent text-gray-400 hover:text-gray-500'
             }`}
           >
-            {t.tab_weekly_config}
+            {T.tab_weekly_config}
           </button>
           <button
             onClick={() => setActiveTab('exceptions')}
@@ -207,7 +208,7 @@ export function ProfessionalDetailDrawer({
               activeTab === 'exceptions' ? 'border-primary-500 text-primary-600' : 'border-transparent text-gray-400 hover:text-gray-500'
             }`}
           >
-            {t.tab_exceptions}
+            {T.tab_exceptions}
             {overrides.length > 0 && (
               <span className="bg-amber-100 text-amber-700 text-[10px] font-black px-1.5 py-0.5 rounded-full ml-1">{overrides.length}</span>
             )}
@@ -218,7 +219,7 @@ export function ProfessionalDetailDrawer({
               activeTab === 'access' ? 'border-primary-500 text-primary-600' : 'border-transparent text-gray-400 hover:text-gray-500'
             }`}
           >
-            {t.tab_access}
+            {T.tab_access}
           </button>
         </div>
 
@@ -228,33 +229,33 @@ export function ProfessionalDetailDrawer({
           {activeTab === 'access' && (
             <div className="animate-in fade-in slide-in-from-top-4 duration-700">
                {professional.auth_email ? (
-                <div className="bg-slate-900 rounded-[2.5rem] p-8 shadow-xl shadow-slate-900/10 border border-slate-800">
-                  <div className="flex items-center gap-3 mb-6">
-                    <div className="h-10 w-10 bg-amber-500 rounded-xl flex items-center justify-center">
-                      <ShieldCheck className="h-6 w-6 text-slate-900" />
+                <div className="bg-gradient-to-br from-slate-50 to-white rounded-[2.5rem] p-8 shadow-sm border border-slate-100">
+                  <div className="flex items-center gap-3 mb-8">
+                    <div className="h-12 w-12 bg-white rounded-2xl flex items-center justify-center shadow-md shadow-slate-100 border border-slate-50">
+                      <ShieldCheck className="h-6 w-6 text-primary-500" />
                     </div>
                     <div>
-                      <h4 className="text-xs font-black text-white uppercase tracking-widest">{t.access_title}</h4>
-                      <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Portal del Profesional Activo</p>
+                      <h4 className="text-xs font-black text-slate-800 uppercase tracking-widest">{T.access_title}</h4>
+                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Portal del Profesional Activo</p>
                     </div>
                   </div>
                   <div className="grid grid-cols-1 gap-4">
-                    <div className="bg-white/5 rounded-2xl p-5 border border-white/5 group hover:border-white/10 transition-colors">
-                      <span className="text-[9px] font-black text-slate-500 uppercase block mb-1">{t.access_email}</span>
-                      <span className="text-sm font-bold text-white break-all">{professional.auth_email}</span>
+                    <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm transition-all hover:border-primary-100">
+                      <span className="text-[10px] font-black text-slate-400 uppercase block mb-2">{T.access_email}</span>
+                      <span className="text-base font-bold text-slate-900 break-all">{professional.auth_email}</span>
                     </div>
-                    <div className="bg-white/5 rounded-2xl p-5 border border-white/5 flex items-center justify-between group hover:border-white/10 transition-colors">
+                    <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm transition-all hover:border-primary-100 flex items-center justify-between">
                       <div>
-                        <span className="text-[9px] font-black text-slate-500 uppercase block mb-1">{t.access_pass}</span>
-                        <span className="text-sm font-mono font-bold text-amber-400">{localHint ? localHint : t.access_pass_hint}</span>
+                        <span className="text-[10px] font-black text-slate-400 uppercase block mb-2">{T.access_pass}</span>
+                        <span className="text-base font-mono font-black text-primary-600">{localHint ? localHint : T.access_pass_hint}</span>
                       </div>
                       <button 
                         onClick={handleResetPassword} 
                         disabled={resettingPassword} 
-                        className="p-3 bg-white/5 hover:bg-white/10 rounded-2xl text-amber-500 transition-all hover:scale-110 active:scale-95 border border-white/5"
-                        title={t.access_reset_btn}
+                        className="p-4 bg-slate-50 hover:bg-primary-50 rounded-2xl text-slate-400 hover:text-primary-600 transition-all active:scale-95 border border-slate-100 hover:border-primary-100"
+                        title={T.access_reset_btn}
                       >
-                        {resettingPassword ? <Loader2 className="h-5 w-5 animate-spin" /> : <RefreshCcw className="h-5 w-5" />}
+                        {resettingPassword ? <Loader2 className="h-6 w-6 animate-spin" /> : <RefreshCcw className="h-6 w-6" />}
                       </button>
                     </div>
                   </div>
@@ -264,14 +265,15 @@ export function ProfessionalDetailDrawer({
                   <div className="h-20 w-20 bg-white rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-xl shadow-indigo-100/50 group-hover:scale-110 transition-transform duration-500">
                     <ShieldCheck className="h-10 w-10 text-indigo-400" />
                   </div>
-                  <h4 className="text-lg font-black text-indigo-900 mb-2">{t.access_no_account}</h4>
-                  <p className="text-xs font-bold text-indigo-400 uppercase tracking-wider mb-8 max-w-xs mx-auto">{t.access_no_account_desc}</p>
+                  <h4 className="text-lg font-black text-indigo-900 mb-2">{T.access_no_account}</h4>
+                  <p className="text-xs font-bold text-indigo-400 uppercase tracking-wider mb-8 max-w-xs mx-auto">{T.access_no_account_desc}</p>
                   <button 
                     onClick={handleCreateAccount}
                     disabled={creatingAccount}
-                    className="bg-indigo-600 text-white text-xs font-black uppercase tracking-[0.2em] px-10 py-5 rounded-2xl hover:bg-indigo-700 shadow-xl shadow-indigo-200 transition-all active:scale-95 disabled:opacity-50"
+                    className="bg-indigo-600 inline-flex items-center gap-2 text-white text-xs font-black uppercase tracking-[0.2em] px-10 py-5 rounded-2xl hover:bg-indigo-700 shadow-xl shadow-indigo-200 transition-all active:scale-95 disabled:opacity-50"
                   >
-                    {creatingAccount ? <Loader2 className="h-5 w-5 animate-spin mx-auto text-white" /> : t.access_generate_btn}
+                    {creatingAccount ? <Loader2 className="h-5 w-5 animate-spin" /> : <ShieldCheck className="h-5 w-5" />}
+                    <span>{creatingAccount ? '...' : T.access_generate_btn}</span>
                   </button>
                 </div>
                )}
@@ -283,7 +285,7 @@ export function ProfessionalDetailDrawer({
                 <div className="bg-white rounded-3xl border border-gray-100 p-6 shadow-sm overflow-hidden">
                     <div className="flex items-center justify-between mb-6">
                       <h4 className="text-xs font-black text-gray-400 uppercase tracking-widest flex items-center gap-2">
-                        <CalendarX className="h-4 w-4" /> {t.tab_exceptions}
+                        {T.tab_exceptions}
                       </h4>
                       <div className="flex items-center gap-2">
                         <button onClick={() => setCalendarMonth(new Date(calendarMonth.getFullYear(), calendarMonth.getMonth() - 1))} className="p-2 rounded-xl hover:bg-gray-100 transition-colors">
@@ -365,8 +367,8 @@ export function ProfessionalDetailDrawer({
           {activeTab === 'schedule' && (
             <div className="space-y-8">
                 <div className="space-y-6">
-                <h4 className="text-xs font-black text-gray-400 uppercase tracking-widest flex items-center gap-2">
-                  <Clock className="h-4 w-4" /> {t.tab_weekly_config}
+                <h4 className="text-xs font-black text-gray-400 uppercase tracking-widest">
+                  {T.tab_weekly_config}
                 </h4>
                 <div className="grid gap-3 md:gap-4">
                   {editRules.map((rule) => (
@@ -376,7 +378,7 @@ export function ProfessionalDetailDrawer({
                         <label className="flex items-center gap-3 cursor-pointer min-w-[120px]">
                           <input type="checkbox" checked={rule.active}
                             onChange={e => updateRule(rule.day_of_week, 'active', e.target.checked)}
-                            className="w-5 h-5 rounded-lg border-gray-300 text-primary-600 focus:ring-primary-500" />
+                            className="w-4 h-4 rounded-lg border-gray-300 text-primary-600 focus:ring-primary-500" />
                           <span className={`text-sm font-bold ${rule.active ? 'text-gray-900' : 'text-gray-400'}`}>
                             {days[rule.day_of_week]}
                           </span>
@@ -445,11 +447,20 @@ export function ProfessionalDetailDrawer({
 
         {/* Footer */}
         <div className="px-6 md:px-8 py-6 border-t border-gray-100 flex gap-4 md:gap-6 flex-shrink-0 bg-white">
-          <button onClick={handleConfirmDelete} className="p-4 rounded-2xl border border-red-100 text-red-500 hover:bg-red-50 transition-all active:scale-95 shadow-sm">
+          <button 
+             onClick={handleConfirmDelete} 
+             className="p-4 rounded-2xl border border-red-100 text-red-500 hover:bg-red-50 transition-all active:scale-95 shadow-sm group"
+             title={T.delete}
+          >
             <Trash2 className="h-6 w-6" />
           </button>
-          <button onClick={onSave} disabled={saving} className="flex-1 flex items-center justify-center gap-3 py-4 rounded-2xl bg-slate-900 text-white font-black uppercase tracking-widest hover:bg-slate-800 shadow-xl shadow-slate-900/10 disabled:opacity-50 transition-all active:scale-95">
-            {saved ? (<><CheckCircle className="h-6 w-6" /> {t.saved_success}</>) : saving ? <Loader2 className="h-6 w-6 animate-spin" /> : (<><Save className="h-6 w-6" /> {t.save_changes}</>)}
+          
+          <button 
+            onClick={onSave} 
+            disabled={saving} 
+            className="flex-1 flex items-center justify-center gap-3 py-4 rounded-2xl bg-slate-900 text-white font-black uppercase tracking-widest hover:bg-slate-800 shadow-xl shadow-slate-900/10 disabled:opacity-50 transition-all active:scale-95 px-6"
+          >
+            {saved ? (<><CheckCircle className="h-6 w-6" /> <span>{T.saved_success}</span></>) : saving ? <Loader2 className="h-6 w-6 animate-spin" /> : (<><Save className="h-6 w-6" /> <span>{T.save_changes}</span></>)}
           </button>
         </div>
 
