@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Clock, Save, X, Trash2, Coffee, CalendarX, CheckCircle, RefreshCcw, Loader2, ChevronLeft, ChevronRight as ChevronRightIcon, AlertTriangle, Users, ShieldCheck } from 'lucide-react'
 import { Professional, AvailabilityRule, Override } from '@/hooks/useProfessionals'
 import { createClient } from '@/lib/supabase/client'
