@@ -23,7 +23,7 @@ export function LandingHero() {
         transition={{ duration: 0.6 }}
         className="inline-flex items-center gap-2 px-6 py-2 rounded-full border border-white/5 bg-slate-900/50 backdrop-blur-xl text-amber-500 text-[10px] font-black uppercase tracking-[0.2em] mb-10 shadow-2xl"
       >
-         <Zap className="h-3.5 w-3.5 fill-amber-500" /> {t.hero_badge || "SaaS de Próxima Generación"}
+         <Zap className="h-3.5 w-3.5 fill-amber-500" /> {t.hero_badge || "Next-Generation SaaS"}
       </motion.div>
 
       {/* Title */}
@@ -61,7 +61,7 @@ export function LandingHero() {
           {t.hero_cta} <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
         </Link>
         <button className="px-10 py-5 rounded-[2rem] bg-white/5 border border-white/10 text-white text-xs font-black uppercase tracking-[0.2em] hover:bg-white/10 transition-all">
-            Ver Video Demo
+            Watch Video Demo
         </button>
       </motion.div>
 

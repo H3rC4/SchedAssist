@@ -4,25 +4,31 @@ import { useEffect, useState, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Calendar, ChevronLeft, ChevronRight, Clock, User, Phone, Stethoscope } from 'lucide-react'
 import { format, parseISO, isSameDay, isToday, startOfMonth, endOfMonth, eachDayOfInterval, addMonths, subMonths } from 'date-fns'
-import { es } from 'date-fns/locale'
+import { dateLocales } from '@/lib/i18n'
+import { useLandingTranslation } from '@/components/LanguageContext'
 
 interface Appointment {
   id: string
   status: string
   start_at: string
+  cancellation_notified: boolean
   clients: { first_name: string; last_name: string; phone: string } | null
   services: { name: string } | null
 }
 
 export default function DoctorDashboard() {
+  const { fullT, language } = useLandingTranslation()
   const supabase = createClient()
   const [profId, setProfId] = useState('')
   const [tenantId, setTenantId] = useState('')
   const [appointments, setAppointments] = useState<Appointment[]>([])
   const [allMonthApps, setAllMonthApps] = useState<Appointment[]>([])
+  const [pendingCalls, setPendingCalls] = useState<Appointment[]>([])
   const [selectedDate, setSelectedDate] = useState(new Date())
   const [currentMonth, setCurrentMonth] = useState(new Date())
   const [loading, setLoading] = useState(true)
+  const [notifyingId, setNotifyingId] = useState<string | null>(null)
+  const [callNotes, setCallNotes] = useState<{[key: string]: string}>({})
 
   const fetchAppointments = useCallback(async (pId: string, tId: string, month: Date) => {
     const start = format(startOfMonth(month), 'yyyy-MM-dd')
@@ -39,8 +45,25 @@ export default function DoctorDashboard() {
 
     if (data) {
       setAllMonthApps(data as any)
+      // Actualizamos también la lista de avisos pendientes para este doctor
+      const pending = (data as any).filter((a: any) => a.status === 'cancelled' && !a.cancellation_notified)
+      setPendingCalls(pending)
     }
   }, [supabase])
+
+  const markAsNotified = async (id: string) => {
+    setNotifyingId(id)
+    const notes = callNotes[id] || ''
+    const { error } = await supabase.from('appointments').update({ 
+      cancellation_notified: true,
+      cancellation_notified_notes: notes 
+    }).eq('id', id)
+    if (!error) {
+      setPendingCalls(prev => prev.filter(c => c.id !== id))
+      setAllMonthApps(prev => prev.map(a => a.id === id ? { ...a, cancellation_notified: true } : a))
+    }
+    setNotifyingId(null)
+  };
 
   useEffect(() => {
     async function init() {
@@ -83,6 +106,8 @@ export default function DoctorDashboard() {
   const calendarDays = eachDayOfInterval({ start: startOfMonth(currentMonth), end: endOfMonth(currentMonth) })
   const startDayOfWeek = startOfMonth(currentMonth).getDay()
 
+  const locale = (dateLocales as any)[language]
+
   if (loading) {
     return (
       <div className="flex h-[60vh] items-center justify-center">
@@ -95,11 +120,67 @@ export default function DoctorDashboard() {
     <div className="max-w-[1200px] mx-auto space-y-8 animate-in fade-in duration-700">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-black text-slate-900 tracking-tight">Mis Citas</h1>
-        <p className="text-sm font-medium text-slate-400 mt-1">
-          {format(new Date(), "EEEE d 'de' MMMM, yyyy", { locale: es })}
+        <h1 className="text-3xl font-black text-slate-900 tracking-tight">{fullT.nav_calendar}</h1>
+        <p className="text-sm font-medium text-slate-400 mt-1 uppercase tracking-widest">
+          {format(new Date(), "EEEE d MMMM, yyyy", { locale })}
         </p>
       </div>
+
+      {/* Pending Calls Reminder (Doctor View) */}
+      {pendingCalls.length > 0 && (
+        <div className="bg-red-50 border border-red-100 rounded-[2rem] p-8 animate-in slide-in-from-top duration-700">
+           <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 bg-red-100 flex items-center justify-center rounded-xl text-red-600">
+                  <Phone className="h-5 w-5" />
+                </div>
+                <div>
+                   <h3 className="text-lg font-black text-red-900">{fullT.pending_notification_title}</h3>
+                   <p className="text-sm text-red-600 font-medium">{language === 'es' ? 'Pacientes que deben ser avisados de la cancelación de su cita.' : 'Patients that must be notified about their app cancellation.'}</p>
+                </div>
+              </div>
+              <span className="bg-red-600 text-white px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">{pendingCalls.length}</span>
+           </div>
+           
+           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {pendingCalls.map(call => (
+                <div key={call.id} className="bg-white p-6 rounded-2xl border border-red-200/50 shadow-sm flex flex-col justify-between group">
+                  <div className="flex items-center gap-4 mb-4">
+                    <div className="h-12 w-12 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 font-black text-xs">
+                      {call.clients?.first_name[0]}{call.clients?.last_name[0]}
+                    </div>
+                    <div>
+                      <p className="text-sm font-black text-slate-900 leading-none">{call.clients?.first_name} {call.clients?.last_name}</p>
+                      <p className="text-xs font-bold text-slate-400 mt-1">{call.clients?.phone}</p>
+                    </div>
+                  </div>
+
+                  <div className="mb-4">
+                    <input 
+                      type="text"
+                      placeholder={fullT.notification_notes_placeholder}
+                      value={callNotes[call.id] || ''}
+                      onChange={(e) => setCallNotes(prev => ({ ...prev, [call.id]: e.target.value }))}
+                      className="w-full bg-slate-50 border border-slate-100 rounded-xl px-4 py-2 text-[10px] font-bold text-slate-600 placeholder:text-slate-300 focus:ring-2 focus:ring-red-500/20 outline-none transition-all"
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                     <span className="text-[10px] font-bold text-slate-400 uppercase">{format(parseISO(call.start_at), "d MMM, HH:mm", { locale })}</span>
+                     <button 
+                        onClick={() => markAsNotified(call.id)}
+                        disabled={notifyingId === call.id}
+                        className="h-9 px-4 rounded-xl bg-slate-900 text-white text-[10px] font-black uppercase tracking-widest hover:bg-slate-800 transition-all flex items-center gap-2"
+                      >
+                        {notifyingId === call.id ? <Clock className="h-3 w-3 animate-spin" /> : <ChevronRight className="h-3 w-3" />}
+                        {fullT.mark_as_notified}
+                      </button>
+                  </div>
+                </div>
+              ))}
+           </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         {/* Calendar */}
@@ -110,7 +191,7 @@ export default function DoctorDashboard() {
                 <ChevronLeft className="h-5 w-5 text-slate-600" />
               </button>
               <h2 className="text-xl font-black text-slate-900 capitalize tracking-tight">
-                {format(currentMonth, 'MMMM yyyy', { locale: es })}
+                {format(currentMonth, 'MMMM yyyy', { locale })}
               </h2>
               <button onClick={() => setCurrentMonth(addMonths(currentMonth, 1))} className="p-3 rounded-xl bg-slate-50 hover:bg-slate-100 transition-colors">
                 <ChevronRight className="h-5 w-5 text-slate-600" />
@@ -147,18 +228,18 @@ export default function DoctorDashboard() {
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-black text-slate-900 flex items-center gap-2">
               <Calendar className="h-5 w-5 text-amber-500" />
-              {format(selectedDate, "EEEE d 'de' MMMM", { locale: es })}
+              {format(selectedDate, "EEEE d MMMM", { locale })}
             </h3>
             <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest bg-slate-100 px-3 py-1.5 rounded-lg">
-              {dayApps.length} cita{dayApps.length !== 1 ? 's' : ''}
+              {dayApps.length} {fullT.nav_calendar.toLowerCase()}
             </span>
           </div>
 
           {dayApps.length === 0 ? (
             <div className="bg-white rounded-3xl border border-slate-200 p-16 text-center">
               <Calendar className="h-12 w-12 text-slate-200 mx-auto mb-4" />
-              <p className="text-lg font-bold text-slate-300">Sin citas para este día</p>
-              <p className="text-sm text-slate-300 mt-1">Disfruta tu tiempo libre 🎉</p>
+              <p className="text-lg font-bold text-slate-300">{fullT.no_activity_today}</p>
+              <p className="text-sm text-slate-300 mt-1">{language === 'es' ? '¡Disfruta tu tiempo libre! 🎉' : 'Enjoy your free time! 🎉'}</p>
             </div>
           ) : (
             <div className="space-y-3">
@@ -197,8 +278,8 @@ export default function DoctorDashboard() {
                     <div className={`px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest
                       ${app.status === 'confirmed' || app.status === 'completed' ? 'bg-emerald-50 text-emerald-600' :
                         app.status === 'cancelled' ? 'bg-red-50 text-red-500' : 'bg-amber-50 text-amber-600'}`}>
-                      {app.status === 'confirmed' ? 'Confirmado' : app.status === 'completed' ? 'Completado' :
-                       app.status === 'cancelled' ? 'Cancelado' : 'Pendiente'}
+                      {app.status === 'confirmed' ? fullT.confirmed : app.status === 'completed' ? fullT.done :
+                       app.status === 'cancelled' ? fullT.canceled : fullT.pending}
                     </div>
                   </div>
                 </div>

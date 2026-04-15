@@ -74,6 +74,8 @@ export interface Appointment {
   end_at: string;
   notes?: string;
   cancellation_reason?: string;
+  cancellation_notified?: boolean;
+  cancellation_notified_notes?: string;
   rescheduled_from_appointment_id?: string;
   created_by_user_id?: string;
   created_at: string;

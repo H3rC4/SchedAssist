@@ -106,7 +106,7 @@ export function ProfessionalDetailDrawer({
       if (overrideForm.type === 'block') {
          const supabase = createClient()
          for (const app of overrideConflicts) {
-           await supabase.from('appointments').update({ status: 'cancelled' }).eq('id', app.id)
+           await supabase.from('appointments').update({ status: 'cancelled', cancellation_notified: false }).eq('id', app.id)
          }
       }
 

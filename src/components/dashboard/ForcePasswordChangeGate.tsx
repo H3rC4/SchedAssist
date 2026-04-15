@@ -64,10 +64,14 @@ export function ForcePasswordChangeGate({
         </div>
 
         <h2 className="text-xl md:text-2xl font-black text-slate-900 dark:text-white mb-2">
-          {t.change_password || 'Cambio de Contraseña Obligatorio'}
+          {t.change_password}
         </h2>
         <p className="text-sm text-slate-500 dark:text-slate-400 mb-8">
-          Por razones de seguridad, debes cambiar tu contraseña temporal antes de acceder al panel.
+          {lang === 'es' 
+            ? 'Por razones de seguridad, debes cambiar tu contraseña temporal antes de acceder al panel.' 
+            : lang === 'it'
+            ? 'Per motivi di sicurezza, devi cambiare la tua password temporanea prima di accedere al pannello.'
+            : 'For security reasons, you must change your temporary password before accessing the dashboard.'}
         </p>
 
         {error && (
@@ -80,7 +84,7 @@ export function ForcePasswordChangeGate({
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
-              {t.new_password || 'Nueva Contraseña'}
+              {t.new_password}
             </label>
             <input 
               type="password" 
@@ -94,7 +98,7 @@ export function ForcePasswordChangeGate({
 
           <div>
             <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
-              {t.confirm_password || 'Confirmar Contraseña'}
+              {t.confirm_password}
             </label>
             <input 
               type="password" 
@@ -111,7 +115,7 @@ export function ForcePasswordChangeGate({
             disabled={loading}
             className="w-full h-12 mt-4 bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold rounded-xl transition-colors flex items-center justify-center disabled:opacity-50"
           >
-            {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : 'Actualizar Contraseña'}
+            {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : t.update}
           </button>
         </form>
       </motion.div>

@@ -4,7 +4,8 @@ import { useEffect, useState, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Clock, Save, Coffee, ChevronLeft, ChevronRight, CalendarX, X, Trash2, CheckCircle, AlertTriangle, Loader2 } from 'lucide-react'
 import { format, parseISO, startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval, isSameMonth, isSameDay, addMonths, subMonths } from 'date-fns'
-import { es } from 'date-fns/locale'
+import { dateLocales } from '@/lib/i18n'
+import { useLandingTranslation } from '@/components/LanguageContext'
 
 interface AvailabilityRule {
   id?: string
@@ -26,6 +27,7 @@ interface Override {
 }
 
 export default function DoctorSchedulePage() {
+  const { fullT, language } = useLandingTranslation()
   const supabase = createClient()
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -45,7 +47,12 @@ export default function DoctorSchedulePage() {
   })
   const [overrideConflicts, setOverrideConflicts] = useState<any[]>([])
 
-  const days = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado']
+  const locale = (dateLocales as any)[language]
+  const weekDays = language === 'es' 
+    ? ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado']
+    : language === 'it'
+    ? ['Domenica', 'Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Sabato']
+    : ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
 
   const fetchData = useCallback(async () => {
     const { data: { user } } = await supabase.auth.getUser()
@@ -54,7 +61,7 @@ export default function DoctorSchedulePage() {
     const { data: prof } = await supabase
       .from('professionals')
       .select('id, tenant_id')
-      .eq('user_id', user.id) // Cambiado a user_id que es la FK correcta
+      .eq('user_id', user.id)
       .single()
 
     if (prof) {
@@ -149,7 +156,9 @@ export default function DoctorSchedulePage() {
     try {
       if (overrideForm.type === 'block') {
          for (const app of overrideConflicts) {
-           await supabase.from('appointments').update({ status: 'cancelled' }).eq('id', app.id)
+            await supabase.from('appointments')
+              .update({ status: 'cancelled', cancellation_notified: false })
+              .eq('id', app.id)
          }
       }
 
@@ -163,7 +172,6 @@ export default function DoctorSchedulePage() {
         note: overrideForm.note
       })
 
-      // Refresh data
       const { data: ov } = await supabase.from('professional_overrides').select('*').eq('professional_id', profId).order('override_date')
       setOverrides((ov || []) as Override[])
       setOverrideModal(null)
@@ -184,7 +192,7 @@ export default function DoctorSchedulePage() {
   if (loading) {
     return (
       <div className="flex h-[60vh] items-center justify-center">
-        <Loader2 className="h-10 w-10 text-primary-600 animate-spin" />
+        <Loader2 className="h-10 w-10 text-amber-600 animate-spin" />
       </div>
     )
   }
@@ -193,8 +201,8 @@ export default function DoctorSchedulePage() {
     <div className="max-w-[1200px] mx-auto space-y-8 animate-in fade-in duration-700 pb-20 px-4 md:px-0">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-black text-slate-900 tracking-tight">Mi Horario</h1>
-          <p className="text-sm font-bold text-slate-400 mt-1 uppercase tracking-widest">Gestión de disponibilidad y ausencias</p>
+          <h1 className="text-3xl font-black text-slate-900 tracking-tight">{fullT.nav_schedule}</h1>
+          <p className="text-sm font-bold text-slate-400 mt-1 uppercase tracking-widest">{language === 'es' ? 'Gestión de disponibilidad y ausencias' : 'Manage availability and absences'}</p>
         </div>
       </div>
 
@@ -202,26 +210,26 @@ export default function DoctorSchedulePage() {
         {/* Weekly Schedule */}
         <div className="bg-white rounded-[2.5rem] border border-slate-100 p-8 shadow-sm">
           <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 mb-8">
-            <Clock className="h-4 w-4" /> CONFIGURACIÓN SEMANAL
+            <Clock className="h-4 w-4" /> {language === 'es' ? 'CONFIGURACIÓN SEMANAL' : 'WEEKLY CONFIGURATION'}
           </h3>
           <div className="grid gap-4">
             {rules.map(rule => (
               <div key={rule.day_of_week}
-                className={`rounded-2xl border transition-all ${rule.active ? 'border-primary-100 bg-white shadow-sm' : 'border-slate-50 bg-slate-50/30 opacity-60'}`}>
+                className={`rounded-2xl border transition-all ${rule.active ? 'border-amber-100 bg-white shadow-sm' : 'border-slate-50 bg-slate-50/30 opacity-60'}`}>
                 <div className="flex items-center gap-4 p-5">
                   <label className="flex items-center gap-3 cursor-pointer min-w-[140px]">
                     <input type="checkbox" checked={rule.active} onChange={e => updateRule(rule.day_of_week, 'active', e.target.checked)}
-                      className="w-5 h-5 rounded-lg border-slate-300 text-primary-600 focus:ring-primary-500" />
-                    <span className={`text-sm font-black ${rule.active ? 'text-slate-900' : 'text-slate-400'}`}>{days[rule.day_of_week]}</span>
+                      className="w-5 h-5 rounded-lg border-slate-300 text-amber-600 focus:ring-amber-500" />
+                    <span className={`text-sm font-black ${rule.active ? 'text-slate-900' : 'text-slate-400'}`}>{weekDays[rule.day_of_week]}</span>
                   </label>
                   
                   {rule.active && (
                     <div className="flex items-center gap-3 ml-auto animate-in fade-in slide-in-from-right-2 duration-300">
                       <input type="time" value={rule.start_time.slice(0, 5)} onChange={e => updateRule(rule.day_of_week, 'start_time', e.target.value + ':00')}
-                        className="rounded-xl border border-slate-200 px-3 py-2 text-xs font-black focus:ring-2 focus:ring-primary-500 outline-none bg-slate-50" />
+                        className="rounded-xl border border-slate-200 px-3 py-2 text-xs font-black focus:ring-2 focus:ring-amber-500 outline-none bg-slate-50" />
                       <span className="text-slate-300 font-bold">→</span>
                       <input type="time" value={rule.end_time.slice(0, 5)} onChange={e => updateRule(rule.day_of_week, 'end_time', e.target.value + ':00')}
-                        className="rounded-xl border border-slate-200 px-3 py-2 text-xs font-black focus:ring-2 focus:ring-primary-500 outline-none bg-slate-50" />
+                        className="rounded-xl border border-slate-200 px-3 py-2 text-xs font-black focus:ring-2 focus:ring-amber-500 outline-none bg-slate-50" />
                     </div>
                   )}
                 </div>
@@ -232,15 +240,15 @@ export default function DoctorSchedulePage() {
                       <label className="flex items-center gap-2 cursor-pointer text-[10px] text-amber-700 font-black uppercase tracking-widest whitespace-nowrap">
                         <input type="checkbox" checked={!!rule.lunch_break_start} onChange={e => toggleLunchBreak(rule.day_of_week, e.target.checked)}
                           className="w-4 h-4 rounded-md border-amber-300 text-amber-500 focus:ring-amber-400" />
-                        <Coffee className="h-4 w-4" /> Pausa Almuerzo
+                        <Coffee className="h-4 w-4" /> {language === 'es' ? 'Pausa Almuerzo' : 'Lunch Break'}
                       </label>
                       
                       {rule.lunch_break_start && (
                         <div className="flex items-center gap-2 ml-auto animate-in fade-in slide-in-from-right-2 duration-300">
-                          <span className="text-[10px] text-amber-600 font-black">DESDE</span>
+                          <span className="text-[10px] text-amber-600 font-black">{language === 'es' ? 'DESDE' : 'FROM'}</span>
                           <input type="time" value={rule.lunch_break_start.slice(0, 5)} onChange={e => updateRule(rule.day_of_week, 'lunch_break_start', e.target.value + ':00')}
                             className="rounded-lg border border-amber-200 px-2 py-1.5 text-[11px] font-black focus:ring-2 focus:ring-amber-400 outline-none bg-white w-24" />
-                          <span className="text-[10px] text-amber-600 font-black">HASTA</span>
+                          <span className="text-[10px] text-amber-600 font-black">{language === 'es' ? 'HASTA' : 'UNTIL'}</span>
                           <input type="time" value={(rule.lunch_break_end || '14:00').slice(0, 5)} onChange={e => updateRule(rule.day_of_week, 'lunch_break_end', e.target.value + ':00')}
                             className="rounded-lg border border-amber-200 px-2 py-1.5 text-[11px] font-black focus:ring-2 focus:ring-amber-400 outline-none bg-white w-24" />
                         </div>
@@ -254,7 +262,7 @@ export default function DoctorSchedulePage() {
 
           <button onClick={handleSaveRules} disabled={saving}
             className="w-full mt-6 flex items-center justify-center gap-3 py-4 rounded-2xl bg-slate-900 text-white font-black uppercase tracking-widest hover:bg-slate-800 shadow-xl shadow-slate-900/10 disabled:opacity-50 transition-all active:scale-95">
-            {saved ? (<><CheckCircle className="h-6 w-6" /> ¡Horario Guardado!</>) : saving ? <Loader2 className="h-6 w-6 animate-spin" /> : (<><Save className="h-6 w-6" /> Guardar Cambios</>)}
+            {saved ? (<><CheckCircle className="h-6 w-6" /> {language === 'es' ? '¡Horario Guardado!' : 'Schedule Saved!'}</>) : saving ? <Loader2 className="h-6 w-6 animate-spin" /> : (<><Save className="h-6 w-6" /> {fullT.save}</>)}
           </button>
         </div>
 
@@ -263,14 +271,14 @@ export default function DoctorSchedulePage() {
           <div className="bg-white rounded-[2.5rem] border border-slate-100 shadow-sm overflow-hidden p-8">
             <div className="flex items-center justify-between mb-8">
                <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                 <CalendarX className="h-4 w-4" /> CALENDARIO DE EXCEPCIONES
+                 <CalendarX className="h-4 w-4" /> {language === 'es' ? 'CALENDARIO DE EXCEPCIONES' : 'EXCEPTIONS CALENDAR'}
                </h3>
               <div className="flex items-center gap-4">
                 <button onClick={() => setCalendarMonth(subMonths(calendarMonth, 1))} className="p-2 hover:bg-slate-50 rounded-xl transition-colors">
                   <ChevronLeft className="h-5 w-5 text-slate-400" />
                 </button>
                 <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest min-w-[140px] text-center">
-                  {format(calendarMonth, 'MMMM yyyy', { locale: es })}
+                  {format(calendarMonth, 'MMMM yyyy', { locale })}
                 </h3>
                 <button onClick={() => setCalendarMonth(addMonths(calendarMonth, 1))} className="p-2 hover:bg-slate-50 rounded-xl transition-colors">
                   <ChevronRight className="h-5 w-5 text-slate-400" />
@@ -279,7 +287,7 @@ export default function DoctorSchedulePage() {
             </div>
 
             <div className="grid grid-cols-7 gap-2 mb-4">
-              {['Dom', 'Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab'].map(d => (
+              {(language === 'es' ? ['Dom', 'Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab'] : ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']).map(d => (
                 <div key={d} className="text-center text-[10px] font-black text-slate-300 uppercase py-2 tracking-widest">{d}</div>
               ))}
             </div>
@@ -296,7 +304,7 @@ export default function DoctorSchedulePage() {
                       ${!inMonth ? 'opacity-0 cursor-default pointer-events-none' : ''}
                       ${hasOverride?.override_type === 'block' ? 'bg-red-50 border-red-100 text-red-600 shadow-sm' : 
                         hasOverride?.override_type === 'open' ? 'bg-emerald-50 border-emerald-100 text-emerald-700 shadow-sm' :
-                        isToday ? 'bg-primary-50 border-primary-100 text-primary-700' : 'bg-white border-transparent text-slate-600 hover:bg-slate-50'}
+                        isToday ? 'bg-amber-50 border-amber-100 text-amber-700' : 'bg-white border-transparent text-slate-600 hover:bg-slate-50'}
                     `}>
                     {format(day, 'd')}
                   </button>
@@ -308,25 +316,25 @@ export default function DoctorSchedulePage() {
           {/* Exceptions List */}
           <div className="space-y-4">
             <div className="flex items-center justify-between px-1">
-              <h5 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Próximos días bloqueados</h5>
-              <span className="text-[10px] font-black text-primary-500 bg-primary-50 px-2 py-0.5 rounded-full">{overrides.length} total</span>
+              <h5 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{language === 'es' ? 'Próximos días bloqueados' : 'Upcoming blocked days'}</h5>
+              <span className="text-[10px] font-black text-amber-500 bg-amber-50 px-2 py-0.5 rounded-full">{overrides.length} total</span>
             </div>
             {overrides.length === 0 ? (
               <div className="text-center py-12 text-slate-300 italic text-sm bg-slate-50/50 rounded-[2rem] border-2 border-dashed border-slate-100">
-                No tienes excepciones programadas
+                {language === 'es' ? 'No tienes excepciones programadas' : 'No scheduled exceptions'}
               </div>
             ) : (
               <div className="grid gap-3">
                 {overrides.map(ov => (
-                  <div key={ov.id} className="flex items-center justify-between p-5 rounded-3xl border border-slate-100 bg-white shadow-sm group hover:border-primary-100 transition-all hover:shadow-md">
+                  <div key={ov.id} className="flex items-center justify-between p-5 rounded-3xl border border-slate-100 bg-white shadow-sm group hover:border-amber-100 transition-all hover:shadow-md">
                     <div className="flex items-center gap-4">
                       <div className={`h-12 w-12 rounded-2xl flex items-center justify-center ${ov.override_type === 'block' ? 'bg-red-50 text-red-500' : 'bg-emerald-50 text-emerald-500 shadow-sm'}`}>
                         {ov.override_type === 'block' ? <CalendarX className="h-6 w-6" /> : <Clock className="h-6 w-6" />}
                       </div>
                       <div>
-                        <p className="text-sm font-black text-slate-900">{format(parseISO(ov.override_date), "d 'de' MMMM", { locale: es })}</p>
+                        <p className="text-sm font-black text-slate-900">{format(parseISO(ov.override_date), "d MMMM", { locale })}</p>
                         <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                          {ov.override_type === 'block' ? 'Bloqueado TOTAL' : `${ov.start_time?.slice(0, 5)} - ${ov.end_time?.slice(0, 5)}`}
+                          {ov.override_type === 'block' ? (language === 'es' ? 'Bloqueado TOTAL' : 'TOTAL Blocked') : `${ov.start_time?.slice(0, 5)} - ${ov.end_time?.slice(0, 5)}`}
                         </p>
                       </div>
                     </div>
@@ -349,7 +357,7 @@ export default function DoctorSchedulePage() {
             <div className="p-8">
               <div className="flex items-center justify-between mb-8">
                 <h3 className="text-xl font-black text-slate-900 tracking-tight">
-                  {format(parseISO(overrideModal.date), "d 'de' MMMM", { locale: es })}
+                  {format(parseISO(overrideModal.date), "d MMMM", { locale })}
                 </h3>
                 <button onClick={() => setOverrideModal(null)} className="p-2 rounded-full hover:bg-slate-50 transition-colors"><X className="h-5 w-5 text-slate-400" /></button>
               </div>
@@ -360,13 +368,13 @@ export default function DoctorSchedulePage() {
                     className={`flex items-center justify-center gap-2 p-4 rounded-2xl border-2 text-[10px] font-black uppercase tracking-widest transition-all ${
                       overrideForm.type === 'block' ? 'border-red-400 bg-red-50 text-red-600 shadow-lg shadow-red-500/10' : 'border-slate-50 text-slate-400 hover:border-slate-100'
                     }`}>
-                    <CalendarX className="h-4 w-4" /> Bloquear
+                    <CalendarX className="h-4 w-4" /> {language === 'es' ? 'Bloquear' : 'Block'}
                   </button>
                   <button onClick={() => setOverrideForm(f => ({ ...f, type: 'open' }))}
                     className={`flex items-center justify-center gap-2 p-4 rounded-2xl border-2 text-[10px] font-black uppercase tracking-widest transition-all ${
                       overrideForm.type === 'open' ? 'border-emerald-400 bg-emerald-50 text-emerald-700 shadow-lg shadow-emerald-500/10' : 'border-slate-50 text-slate-400 hover:border-slate-100'
                     }`}>
-                    <Clock className="h-4 w-4" /> Especial
+                    <Clock className="h-4 w-4" /> {language === 'es' ? 'Especial' : 'Special'}
                   </button>
                 </div>
 
@@ -381,16 +389,18 @@ export default function DoctorSchedulePage() {
                 )}
 
                 <div className="space-y-1">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Nota (Privada)</label>
-                  <input type="text" value={overrideForm.note} placeholder="Ej: Vacaciones o Trámite" onChange={e => setOverrideForm(f => ({...f, note: e.target.value}))}
-                    className="w-full rounded-2xl bg-slate-50 border-none ring-1 ring-slate-200 px-5 py-4 text-sm font-medium focus:ring-2 focus:ring-primary-500 outline-none transition-all" />
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{language === 'es' ? 'Nota (Privada)' : 'Note (Private)'}</label>
+                  <input type="text" value={overrideForm.note} placeholder={language === 'es' ? 'Ej: Vacaciones o Trámite' : 'e.g. Vacation or Personal'} onChange={e => setOverrideForm(f => ({...f, note: e.target.value}))}
+                    className="w-full rounded-2xl bg-slate-50 border-none ring-1 ring-slate-200 px-5 py-4 text-sm font-medium focus:ring-2 focus:ring-amber-500 outline-none transition-all" />
                 </div>
 
                 {overrideConflicts.length > 0 && (
-                  <div className="p-4 rounded-2xl bg-amber-50 border border-amber-100 flex gap-4 animate-in shake duration-500">
-                    <AlertTriangle className="h-6 w-6 text-amber-500 flex-shrink-0" />
-                    <div className="text-xs text-amber-700 font-bold">
-                      Tienes {overrideConflicts.length} cita(s) este día que serán canceladas automáticamente.
+                  <div className="p-4 rounded-2xl bg-red-50 border border-red-100 flex gap-4 animate-in shake duration-500">
+                    <AlertTriangle className="h-6 w-6 text-red-500 flex-shrink-0" />
+                    <div className="text-xs text-red-700 font-bold">
+                      {language === 'es' 
+                        ? `Tienes ${overrideConflicts.length} cita(s) este día que serán canceladas automáticamente.`
+                        : `You have ${overrideConflicts.length} appointment(s) this day that will be automatically cancelled.`}
                     </div>
                   </div>
                 )}
@@ -399,7 +409,7 @@ export default function DoctorSchedulePage() {
                   className={`w-full py-5 rounded-[2rem] font-black text-xs uppercase tracking-[0.2em] transition-all shadow-xl active:scale-95 disabled:opacity-50 ${
                     overrideForm.type === 'block' ? 'bg-red-500 hover:bg-red-600 text-white shadow-red-500/20' : 'bg-emerald-500 hover:bg-emerald-600 text-white shadow-emerald-500/20'
                   }`}>
-                  {saving ? 'Guardando...' : 'Aplicar Excepción'}
+                  {saving ? (language === 'es' ? 'Guardando...' : 'Saving...') : (language === 'es' ? 'Aplicar Excepción' : 'Apply Exception')}
                 </button>
               </div>
             </div>

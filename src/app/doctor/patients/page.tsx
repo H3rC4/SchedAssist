@@ -1,88 +1,154 @@
 "use client"
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Users, Search, Phone, Calendar, Loader2, ChevronRight } from 'lucide-react'
+import { Users, Search, Phone, Calendar, Loader2, ChevronRight, X, ChevronLeft, User } from 'lucide-react'
 import { format, parseISO } from 'date-fns'
-import { es } from 'date-fns/locale'
+import { dateLocales } from '@/lib/i18n'
+import { useLandingTranslation } from '@/components/LanguageContext'
 
-interface Patient {
-  id: string
-  first_name: string
-  last_name: string
-  phone: string
-  last_appointment?: string
-  total_appointments: number
+interface Client {
+  id: string; first_name: string; last_name: string; phone: string;
+  notes: string | null; created_at: string;
+}
+
+interface MedicalEntry {
+  id: string; date: string; content: string;
 }
 
 export default function DoctorPatientsPage() {
+  const { fullT, language } = useLandingTranslation()
   const supabase = createClient()
-  const [patients, setPatients] = useState<Patient[]>([])
+  const [clients, setClients] = useState<Client[]>([])
+  const [filteredClients, setFilteredClients] = useState<Client[]>([])
+  const [searchTerm, setSearchTerm] = useState('')
   const [loading, setLoading] = useState(true)
-  const [search, setSearch] = useState('')
+  const [profId, setProfId] = useState<string | null>(null)
+  const [tenantId, setTenantId] = useState<string | null>(null)
+
+  // Details
+  const [selectedClient, setSelectedClient] = useState<Client | null>(null)
+  const [clientApps, setClientApps] = useState<any[]>([])
+  const [isEditing, setIsEditing] = useState(false)
+  const [editData, setEditData] = useState({ notes: '' })
+  const [editingAppId, setEditingAppId] = useState<string | null>(null)
+  const [appNoteEdit, setAppNoteEdit] = useState('')
+  const [isSavingAppNote, setIsSavingAppNote] = useState(false)
+
+  const fetchDoctorPatients = useCallback(async () => {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return
+
+    const { data: prof } = await supabase
+      .from('professionals')
+      .select('id, tenant_id')
+      .eq('user_id', user.id)
+      .single()
+
+    if (prof) {
+      setProfId(prof.id)
+      setTenantId(prof.tenant_id)
+
+      // Get only clients that have appointments with THIS professional
+      const { data: appClients } = await supabase
+        .from('appointments')
+        .select(`client_id, clients(id, first_name, last_name, phone, notes, created_at)`)
+        .eq('professional_id', prof.id)
+        .order('created_at', { ascending: false })
+
+      if (appClients) {
+        const seen = new Set()
+        const uniqueClients: Client[] = []
+        appClients.forEach((ac: any) => {
+          if (ac.clients && !seen.has(ac.clients.id)) {
+            seen.add(ac.clients.id)
+            uniqueClients.push(ac.clients)
+          }
+        })
+        setClients(uniqueClients)
+        setFilteredClients(uniqueClients)
+      }
+    }
+    setLoading(false)
+  }, [supabase])
 
   useEffect(() => {
-    async function fetchPatients() {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return
+    fetchDoctorPatients()
+  }, [fetchDoctorPatients])
 
-      const { data: prof } = await supabase
-        .from('professionals')
-        .select('id')
-        .eq('user_id', user.id)
-        .single()
-
-      if (!prof) return
-
-      // Obtenemos los pacientes que tienen al menos una cita con este doctor
-      const { data, error } = await supabase
-        .from('appointments')
-        .select(`
-          client_id,
-          clients (
-            id,
-            first_name,
-            last_name,
-            phone
-          ),
-          start_at
-        `)
-        .eq('professional_id', prof.id)
-        .order('start_at', { ascending: false })
-
-      if (data) {
-        // Agrupar por paciente y obtener estadísticas
-        const patientMap = new Map<string, Patient>()
-        
-        data.forEach((row: any) => {
-          if (!row.clients) return
-          const cid = row.clients.id
-          if (!patientMap.has(cid)) {
-            patientMap.set(cid, {
-              id: cid,
-              first_name: row.clients.first_name,
-              last_name: row.clients.last_name,
-              phone: row.clients.phone,
-              last_appointment: row.start_at,
-              total_appointments: 0
-            })
-          }
-          const p = patientMap.get(cid)!
-          p.total_appointments++
-        })
-
-        setPatients(Array.from(patientMap.values()))
-      }
-      setLoading(false)
+  useEffect(() => {
+    if (!searchTerm.trim()) {
+      setFilteredClients(clients)
+    } else {
+      const term = searchTerm.toLowerCase()
+      setFilteredClients(clients.filter(c => 
+        c.first_name.toLowerCase().includes(term) || 
+        c.last_name.toLowerCase().includes(term) || 
+        c.phone.includes(term)
+      ))
     }
+  }, [searchTerm, clients])
 
-    fetchPatients()
-  }, [])
+  async function openClientDetail(client: Client) {
+    setSelectedClient(client)
+    setIsEditing(false)
+    const medical = parseMedicalNotes(client.notes)
+    setEditData({ notes: medical.summary })
+    
+    const { data } = await supabase
+      .from('appointments')
+      .select(`id, status, start_at, notes, services(name)`)
+      .eq('client_id', client.id)
+      .eq('professional_id', profId)
+      .order('start_at', { ascending: false })
+    
+    setClientApps(data || [])
+  }
 
-  const filteredPatients = patients.filter(p => 
-    `${p.first_name} ${p.last_name}`.toLowerCase().includes(search.toLowerCase()) ||
-    p.phone.includes(search)
-  )
+  const parseMedicalNotes = (notesStr: string | null) => {
+    const defaultVal = { summary: '', logs: [] }
+    if (!notesStr) return defaultVal
+    try {
+      const parsed = JSON.parse(notesStr)
+      if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) return { summary: parsed.summary || '', logs: parsed.logs || [] }
+      return { summary: notesStr, logs: [] }
+    } catch (e) {
+      return { summary: notesStr, logs: [] }
+    }
+  }
+
+  const parseAppEntries = (notesStr: string | null): MedicalEntry[] => {
+    if (!notesStr) return []
+    try {
+      const parsed = JSON.parse(notesStr)
+      if (Array.isArray(parsed)) return parsed
+      return [{ id: 'legacy', date: new Date().toISOString(), content: notesStr }]
+    } catch (e) {
+      return [{ id: 'legacy', date: new Date().toISOString(), content: notesStr }]
+    }
+  }
+
+  async function handleAddAppPost(appId: string) {
+    if (!appNoteEdit.trim()) return
+    setIsSavingAppNote(true)
+    const app = clientApps.find(a => a.id === appId)
+    const currentEntries = parseAppEntries(app?.notes || null)
+    const newEntry: MedicalEntry = { id: crypto.randomUUID(), date: new Date().toISOString(), content: appNoteEdit.trim() }
+    const updatedEntries = [...currentEntries, newEntry]
+    const updatedNotesStr = JSON.stringify(updatedEntries)
+
+    const res = await fetch('/api/appointments', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: appId, tenant_id: tenantId, notes: updatedNotesStr })
+    })
+
+    if (res.ok) {
+      setClientApps(clientApps.map(a => a.id === appId ? { ...a, notes: updatedNotesStr } : a))
+      setAppNoteEdit('')
+    }
+    setIsSavingAppNote(false)
+  }
 
   if (loading) {
     return (
@@ -92,71 +158,163 @@ export default function DoctorPatientsPage() {
     )
   }
 
+  const dateLocale = (dateLocales as any)[language]
+
   return (
-    <div className="max-w-[1000px] mx-auto space-y-8 animate-in fade-in duration-700">
+    <div className="max-w-[1200px] mx-auto space-y-8 animate-in fade-in duration-700">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-black text-slate-900 tracking-tight">Mis Pacientes</h1>
-          <p className="text-sm font-medium text-slate-400 mt-1 uppercase tracking-widest">Listado de pacientes que has atendido</p>
+          <h1 className="text-3xl font-black text-slate-900 tracking-tight">{fullT.nav_patients}</h1>
+          <p className="text-sm font-bold text-slate-400 mt-1 uppercase tracking-widest">{language === 'es' ? 'Tus pacientes asignados' : 'Your assigned patients'}</p>
         </div>
 
         <div className="relative group w-full md:w-80">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-300 group-focus-within:text-amber-500 transition-colors" />
           <input 
-            type="text"
-            placeholder="Buscar por nombre o teléfono..."
-            value={search}
-            onChange={e => setSearch(e.target.value)}
+            type="text" 
+            value={searchTerm}
+            onChange={e => setSearchTerm(e.target.value)}
+            placeholder={fullT.search_patients_placeholder}
             className="w-full pl-12 pr-6 py-4 rounded-2xl bg-white border border-slate-200 focus:ring-2 focus:ring-amber-500 outline-none transition-all shadow-sm"
           />
         </div>
       </div>
 
-      <div className="grid gap-4">
-        {filteredPatients.length === 0 ? (
-          <div className="bg-white rounded-[2.5rem] border border-slate-100 p-20 text-center">
-            <Users className="h-16 w-16 text-slate-100 mx-auto mb-4" />
-            <h3 className="text-xl font-black text-slate-300">No se encontraron pacientes</h3>
-          </div>
-        ) : (
-          filteredPatients.map(p => (
-            <div key={p.id} className="bg-white rounded-[2rem] border border-slate-100 p-6 flex flex-col md:flex-row md:items-center justify-between gap-6 hover:shadow-xl hover:shadow-slate-200/50 transition-all group">
+      {filteredClients.length === 0 ? (
+        <div className="bg-white rounded-[2.5rem] border border-slate-100 p-20 text-center">
+          <Users className="h-16 w-16 text-slate-100 mx-auto mb-6" />
+          <h3 className="text-xl font-black text-slate-300">
+            {searchTerm ? (language === 'es' ? 'No se encontraron resultados' : 'No results found') : (language === 'es' ? 'Aún no tienes pacientes asignados' : 'No patients assigned yet')}
+          </h3>
+        </div>
+      ) : (
+        <div className="grid gap-4">
+          {filteredClients.map(client => (
+            <button 
+              key={client.id}
+              onClick={() => openClientDetail(client)}
+              className="bg-white rounded-[2rem] border border-slate-100 p-6 flex flex-col md:flex-row md:items-center justify-between gap-6 hover:shadow-xl hover:shadow-slate-200/50 transition-all group text-left"
+            >
               <div className="flex items-center gap-5">
                 <div className="h-16 w-16 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-400 font-black text-xl border border-slate-100 group-hover:bg-amber-50 group-hover:text-amber-600 group-hover:border-amber-100 transition-colors">
-                  {p.first_name[0]}{p.last_name[0]}
+                  {client.first_name[0]}{client.last_name?.[0]}
                 </div>
                 <div>
-                  <h3 className="text-lg font-black text-slate-900 leading-tight">{p.first_name} {p.last_name}</h3>
-                  <div className="flex items-center gap-3 mt-1">
-                    <span className="flex items-center gap-1.5 text-xs font-bold text-slate-400">
-                      <Phone className="h-3.5 w-3.5" /> {p.phone}
-                    </span>
-                    <span className="h-1 w-1 rounded-full bg-slate-200" />
-                    <span className="text-[10px] font-black text-amber-500 bg-amber-50 px-2 py-0.5 rounded-full uppercase">
-                      {p.total_appointments} Citas
-                    </span>
+                  <h3 className="text-lg font-black text-slate-900 leading-tight">{client.first_name} {client.last_name}</h3>
+                  <div className="flex items-center gap-2 text-xs font-bold text-slate-400 mt-1">
+                    <Phone className="h-3.5 w-3.5" /> {client.phone}
+                  </div>
+                </div>
+              </div>
+              <ChevronRight className="h-6 w-6 text-slate-300 group-hover:text-amber-500 transition-colors" />
+            </button>
+          ))}
+        </div>
+      )}
+
+      {selectedClient && (
+        <div className="fixed inset-0 z-50 flex flex-col bg-slate-50 animate-in slide-in-from-right duration-300">
+          <div className="bg-slate-900 px-6 py-4 text-white shadow-lg sticky top-0 z-10">
+            <div className="max-w-7xl mx-auto flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <button onClick={() => setSelectedClient(null)} className="p-2 rounded-xl bg-white/10 hover:bg-white/20 transition-all flex items-center gap-2 text-sm font-bold">
+                  <ChevronLeft className="h-5 w-5" /> {language === 'es' ? 'Volver' : 'Back'}
+                </button>
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-full bg-amber-500/20 text-amber-500 flex items-center justify-center text-md font-black">
+                    {selectedClient.first_name[0]}{selectedClient.last_name?.[0]}
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-black leading-none">{selectedClient.first_name} {selectedClient.last_name}</h3>
+                    <p className="text-slate-400 text-xs mt-1 font-bold">{selectedClient.phone}</p>
+                  </div>
+                </div>
+              </div>
+              <button onClick={() => setSelectedClient(null)} className="p-2 rounded-full hover:bg-white/10 transition-colors">
+                <X className="h-6 w-6 opacity-60" />
+              </button>
+            </div>
+          </div>
+
+          <div className="flex-1 overflow-y-auto p-6">
+            <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8">
+              <div className="lg:col-span-4 space-y-6">
+                <div className="bg-white rounded-[2rem] p-8 shadow-sm border border-slate-100">
+                  <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-6 flex items-center gap-2">
+                    <Users className="h-4 w-4" /> {language === 'es' ? 'OBSERVACIONES GENERALES' : 'GENERAL OBSERVATIONS'}
+                  </h4>
+                  <div className="bg-slate-50 rounded-2xl p-5 text-sm font-medium text-slate-600 min-h-[120px] leading-relaxed">
+                    {parseMedicalNotes(selectedClient.notes).summary || (language === 'es' ? 'Sin observaciones previas' : 'No previous observations')}
                   </div>
                 </div>
               </div>
 
-              <div className="flex items-center gap-8">
-                {p.last_appointment && (
-                  <div className="text-right hidden sm:block">
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Última Visita</p>
-                    <p className="text-sm font-bold text-slate-700 flex items-center gap-2 justify-end">
-                      <Calendar className="h-3.5 w-3.5 text-slate-300" />
-                      {format(parseISO(p.last_appointment), "d 'de' MMM", { locale: es })}
-                    </p>
-                  </div>
-                )}
-                <button className="h-12 w-12 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-amber-500 group-hover:text-white transition-all">
-                  <ChevronRight className="h-6 w-6" />
-                </button>
+              <div className="lg:col-span-8 space-y-6">
+                <div className="bg-white rounded-[2rem] p-8 shadow-sm border border-slate-100 min-h-[50vh]">
+                  <h4 className="text-lg font-black text-slate-900 mb-8 flex items-center gap-2">
+                    <Calendar className="h-5 w-5 text-amber-500" /> {language === 'es' ? 'Historial con mis consultas' : 'History with my consultations'} ({clientApps.length})
+                  </h4>
+
+                  {clientApps.length === 0 ? (
+                    <div className="text-center py-20 bg-slate-50 rounded-[2rem] border-2 border-dashed border-slate-100 text-slate-300 font-bold">
+                      {language === 'es' ? 'No hay registros para tus consultas' : 'No records for your consultations'}
+                    </div>
+                  ) : (
+                    <div className="space-y-6">
+                      {clientApps.map(app => (
+                        <div key={app.id} className="bg-slate-50 rounded-[2rem] p-6 border border-slate-100 hover:bg-white hover:shadow-xl hover:shadow-slate-200/50 transition-all group">
+                          <div className="flex items-start justify-between mb-4">
+                            <div>
+                              <p className="text-md font-black text-slate-900">{app.services?.name || 'Consulta General'}</p>
+                              <p className="text-xs font-bold text-slate-400 mt-1">
+                                {format(parseISO(app.start_at), "d MMMM yyyy · HH:mm'h'", { locale: dateLocale })}
+                              </p>
+                            </div>
+                            <span className={`px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest ${app.status === 'confirmed' || app.status === 'completed' ? 'bg-emerald-50 text-emerald-600' : app.status === 'cancelled' ? 'bg-red-50 text-red-500' : 'bg-amber-50 text-amber-600'}`}>
+                              {app.status === 'confirmed' ? (language === 'es' ? 'Confirmado' : 'Confirmed') : app.status === 'completed' ? (language === 'es' ? 'Completado' : 'Completed') : app.status === 'cancelled' ? (language === 'es' ? 'Cancelado' : 'Cancelled') : (language === 'es' ? 'Pendiente' : 'Pending')}
+                            </span>
+                          </div>
+
+                          <div className="space-y-3">
+                            {parseAppEntries(app.notes).map(entry => (
+                              <div key={entry.id} className="bg-white border border-slate-100 rounded-2xl p-4 shadow-sm">
+                                <div className="flex items-center gap-2 mb-2">
+                                  <span className="text-[10px] font-black text-amber-600 uppercase tracking-widest">{language === 'es' ? 'REGISTRO MÉDICO' : 'MEDICAL RECORD'}</span>
+                                  <span className="text-[10px] text-slate-300 font-bold">{format(parseISO(entry.date), "HH:mm'h'", { locale: dateLocale })}</span>
+                                </div>
+                                <p className="text-sm font-medium text-slate-600 leading-relaxed">{entry.content}</p>
+                              </div>
+                            ))}
+
+                            <div className="bg-white/50 rounded-2xl p-4 border border-dashed border-slate-200">
+                              <textarea
+                                value={editingAppId === app.id ? appNoteEdit : ''}
+                                onFocus={() => setEditingAppId(app.id)}
+                                onChange={e => setAppNoteEdit(e.target.value)}
+                                placeholder={language === 'es' ? 'Escribe tus notas de la consulta...' : 'Write your consultation notes...'}
+                                className="w-full bg-transparent text-sm font-medium border-none focus:ring-0 resize-none placeholder-slate-300 min-h-[40px]"
+                                rows={editingAppId === app.id ? 3 : 1}
+                              />
+                              {editingAppId === app.id && (
+                                <div className="flex justify-end mt-2 gap-2">
+                                  <button onClick={() => handleAddAppPost(app.id)} disabled={isSavingAppNote || !appNoteEdit.trim()} className="bg-slate-900 text-white px-4 py-1.5 rounded-xl text-xs font-black disabled:opacity-50">
+                                    {isSavingAppNote ? '...' : (language === 'es' ? 'Guardar Nota' : 'Save Note')}
+                                  </button>
+                                  <button onClick={() => setEditingAppId(null)} className="text-slate-400 text-xs font-black px-3">{language === 'es' ? 'Cancelar' : 'Cancel'}</button>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
-          ))
-        )}
-      </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

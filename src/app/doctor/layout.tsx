@@ -7,7 +7,10 @@ import { ForcePasswordChangeGate } from '@/components/dashboard/ForcePasswordCha
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
+import { useLandingTranslation } from '@/components/LanguageContext'
+
 export default function DoctorLayout({ children }: { children: React.ReactNode }) {
+  const { fullT, language } = useLandingTranslation()
   const supabase = createClient()
   const pathname = usePathname()
   const [profName, setProfName] = useState('')
@@ -50,16 +53,16 @@ export default function DoctorLayout({ children }: { children: React.ReactNode }
   }
 
   const navItems = [
-    { label: 'Mis Citas', href: '/doctor', icon: Calendar },
-    { label: 'Mi Horario', href: '/doctor/schedule', icon: Clock },
-    { label: 'Mis Pacientes', href: '/doctor/patients', icon: User },
+    { label: fullT.nav_calendar, href: '/doctor', icon: Calendar },
+    { label: fullT.tab_weekly_config, href: '/doctor/schedule', icon: Clock },
+    { label: fullT.nav_patients, href: '/doctor/patients', icon: User },
   ]
 
   return (
     <div className="flex h-screen bg-slate-100 font-sans">
       {forcePassword && (
         <ForcePasswordChangeGate 
-          lang="es" 
+          lang={language} 
           onSuccess={() => setForcePassword(false)} 
         />
       )}
@@ -73,7 +76,7 @@ export default function DoctorLayout({ children }: { children: React.ReactNode }
           </div>
           <div>
             <span className="text-lg font-black tracking-tight">SCHED<span className="text-amber-500">ASSIST</span></span>
-            <span className="text-[9px] font-bold text-slate-500 uppercase tracking-[0.2em] block">Portal Médico</span>
+            <span className="text-[9px] font-bold text-slate-500 uppercase tracking-[0.2em] block">{fullT.role_professional}</span>
           </div>
         </div>
 
@@ -113,7 +116,7 @@ export default function DoctorLayout({ children }: { children: React.ReactNode }
           onClick={handleSignOut}
           className="flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-bold text-slate-500 hover:text-white hover:bg-white/5 transition-all"
         >
-          <LogOut className="h-4 w-4" /> Cerrar Sesión
+          <LogOut className="h-4 w-4" /> {fullT.sign_out}
         </button>
       </aside>
 

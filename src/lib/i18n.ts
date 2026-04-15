@@ -108,6 +108,12 @@ export const translations = {
     workload_desc: (count: number) => `You have ${count} pending requests. Approving them now helps maintain a high conversion rate.`,
     effectiveness: 'Effectiveness',
     manage_requests: 'Manage Requests',
+    pending_notification_title: 'Pending Cancellation Calls',
+    mark_as_notified: 'Mark as Called',
+    notified_success: 'Notified!',
+    total_pending_calls: 'Calls to make',
+    notification_notes_placeholder: 'Add a note about the call...',
+    call_summary: 'Call Summary',
 
     // Settings
     system_settings: 'System Settings',
@@ -377,6 +383,12 @@ export const translations = {
     workload_desc: (count: number) => `Tienes ${count} solicitudes pendientes. Revisar ahora ayudará a mantener un alto % de conversión.`,
     effectiveness: 'Efectividad Confirmadas',
     manage_requests: 'Gestionar Solicitudes',
+    pending_notification_title: 'Pendientes de Avisar (Canceladas)',
+    mark_as_notified: 'Marcar como Avisado',
+    notified_success: '¡Avisado!',
+    total_pending_calls: 'Llamadas pendientes',
+    notification_notes_placeholder: 'Nota sobre la llamada...',
+    call_summary: 'Resumen del contacto',
 
     // Settings
     system_settings: 'Ajustes del Sistema',
@@ -646,6 +658,12 @@ export const translations = {
     workload_desc: (count: number) => `Hai ${count} richieste in attesa. Controllare ora aiuterà a mantenere alta la conversione.`,
     effectiveness: 'Efficacia Conferme',
     manage_requests: 'Gestisci Richieste',
+    pending_notification_title: 'Chiamate di Cancellazione Pendenti',
+    mark_as_notified: 'Segna come Chiamato',
+    notified_success: 'Avvisato!',
+    total_pending_calls: 'Chiamate da fare',
+    notification_notes_placeholder: 'Nota sulla chiamata...',
+    call_summary: 'Riepilogo contatto',
 
     // Settings
     system_settings: 'Impostazioni di Sistema',

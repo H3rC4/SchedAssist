@@ -11,9 +11,12 @@ import { DashboardCharts } from '@/components/dashboard/DashboardCharts'
 
 export default function DashboardPage() {
   const [appointments, setAppointments] = useState<any[]>([])
+  const [pendingCalls, setPendingCalls] = useState<any[]>([])
   const [allAppsForExport, setAllAppsForExport] = useState<any[]>([])
   const [stats, setStats] = useState<any>({ total: 0, pending: 0, completed: 0, clients: 0, chartData: [], statusData: [], revenue: 0 })
   const [loading, setLoading] = useState(true)
+  const [notifyingId, setNotifyingId] = useState<string | null>(null)
+  const [callNotes, setCallNotes] = useState<{[key: string]: string}>({})
   const [tenantName, setTenantName] = useState('Admin')
   const [lang, setLang] = useState<Language>('es')
   const supabase = createClient()
@@ -35,7 +38,7 @@ export default function DashboardPage() {
     setLang((tenant.settings?.language as Language) || 'es')
 
     const { data: apps } = await supabase.from('appointments').select(`
-        id, status, start_at, 
+        id, status, start_at, cancellation_notified,
         clients(id, first_name, last_name, phone),
         services(name, price),
         professionals(full_name)
@@ -83,6 +86,9 @@ export default function DashboardPage() {
         statusData,
         revenue: totalRevenue
       })
+
+      // Fetch pending calls
+      setPendingCalls(apps.filter(a => a.status === 'cancelled' && !a.cancellation_notified))
     }
     setLoading(false)
   }, [supabase]);
@@ -145,6 +151,19 @@ export default function DashboardPage() {
     document.body.removeChild(link);
   };
 
+  const markAsNotified = async (id: string) => {
+    setNotifyingId(id)
+    const notes = callNotes[id] || ''
+    const { error } = await supabase.from('appointments').update({ 
+      cancellation_notified: true,
+      cancellation_notified_notes: notes 
+    }).eq('id', id)
+    if (!error) {
+      setPendingCalls(prev => prev.filter(c => c.id !== id))
+    }
+    setNotifyingId(null)
+  };
+
   return (
     <div className="space-y-12 animate-in fade-in slide-in-from-bottom-8 duration-1000 ease-out-expo max-w-[1400px] mx-auto pb-12">
       {/* Header / Welcome Section */}
@@ -196,7 +215,65 @@ export default function DashboardPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
         {/* Real-time Appointments Feed */}
-        <div className="lg:col-span-8 space-y-6">
+        <div className="lg:col-span-8 space-y-10">
+            {/* Pending Calls Alert Section */}
+            {pendingCalls.length > 0 && (
+              <div className="space-y-4 animate-in fade-in slide-in-from-top-4 duration-700">
+                <div className="flex items-center justify-between px-2">
+                  <h3 className="text-xl font-black text-red-600 dark:text-red-400 tracking-tight flex items-center gap-3">
+                    <Star className="h-6 w-6 fill-red-500 animate-pulse" /> {t.pending_notification_title}
+                  </h3>
+                  <span className="text-[10px] font-black bg-red-100 text-red-600 px-3 py-1 rounded-full uppercase tracking-widest leading-none">
+                    {pendingCalls.length} {t.total_pending_calls}
+                  </span>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {pendingCalls.map(call => (
+                    <div key={call.id} className="relative group bg-white dark:bg-slate-900 border-2 border-red-50 dark:border-red-900/30 rounded-[2rem] p-6 hover:shadow-2xl hover:shadow-red-500/10 transition-all">
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center gap-3">
+                          <div className="h-10 w-10 rounded-xl bg-red-50 dark:bg-red-500/10 flex items-center justify-center text-red-500">
+                            <Users className="h-5 w-5" />
+                          </div>
+                          <div>
+                            <p className="text-sm font-black text-slate-800 dark:text-white leading-none">
+                              {call.clients?.first_name} {call.clients?.last_name}
+                            </p>
+                            <p className="text-[10px] font-bold text-slate-400 mt-1 uppercase tracking-wider">{call.clients?.phone}</p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="mb-6">
+                        <input 
+                          type="text"
+                          placeholder={t.notification_notes_placeholder}
+                          value={callNotes[call.id] || ''}
+                          onChange={(e) => setCallNotes(prev => ({ ...prev, [call.id]: e.target.value }))}
+                          className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700/50 rounded-xl px-4 py-3 text-[11px] font-bold text-slate-600 dark:text-slate-300 placeholder:text-slate-300 dark:placeholder:text-slate-600 focus:ring-2 focus:ring-red-500/20 outline-none transition-all"
+                        />
+                      </div>
+                      
+                      <div className="flex items-center justify-between gap-4">
+                        <div className="text-[10px] font-bold text-slate-500 uppercase">
+                          {format(parseISO(call.start_at), 'd MMM · HH:mm', { locale: dateLocale })}
+                        </div>
+                        <button 
+                          onClick={() => markAsNotified(call.id)}
+                          disabled={notifyingId === call.id}
+                          className="h-10 px-5 rounded-xl bg-slate-900 dark:bg-red-500/20 text-white dark:text-red-400 text-[10px] font-black uppercase tracking-widest hover:bg-slate-800 dark:hover:bg-red-500/30 transition-all flex items-center gap-2"
+                        >
+                          {notifyingId === call.id ? <Clock className="h-3 w-3 animate-spin" /> : <CheckCircle className="h-3 w-3" />}
+                          {t.mark_as_notified}
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             <div className="flex items-center justify-between px-2">
                 <h3 className="text-xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-3">
                     <Target className="h-6 w-6 text-amber-500" /> {t.upcoming_appointments}

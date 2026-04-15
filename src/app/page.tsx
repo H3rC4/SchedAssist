@@ -34,7 +34,7 @@ export default function LandingPage() {
             <div className="flex flex-col items-center md:items-start gap-4 scale-110 md:origin-left">
                <Logo />
                <p className="text-slate-500 text-sm font-medium text-center md:text-left max-w-xs leading-relaxed">
-                  Llevando la automatización de citas al siguiente nivel con WhatsApp e Inteligencia Artificial.
+                  Taking appointment automation to the next level with WhatsApp and Artificial Intelligence.
                </p>
             </div>
 

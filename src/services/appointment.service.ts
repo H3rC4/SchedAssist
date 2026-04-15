@@ -121,6 +121,7 @@ export class AppointmentService {
       .update({
         status: 'cancelled',
         cancellation_reason: params.reason,
+        cancellation_notified: false,
         updated_at: new Date().toISOString()
       })
       .eq('id', params.appointment_id)

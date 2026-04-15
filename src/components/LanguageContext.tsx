@@ -13,7 +13,7 @@ type LanguageContextType = {
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
-  const [language, setLanguage] = useState<Language>('es');
+  const [language, setLanguage] = useState<Language>('en');
   const [mounted, setMounted] = useState(false);
 
   // Load from local storage or detect via IP
@@ -27,26 +27,29 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
       }
 
       try {
-        // Intentar detectar por configuración del navegador
+        // 1. Detectar por configuración del navegador (Prioridad)
         const browserLang = navigator.language.split('-')[0];
         if (['en', 'es', 'it'].includes(browserLang)) {
            setLanguage(browserLang as Language);
+           // Si detectamos por navegador, ya tenemos una buena base
         }
 
-        // Refinar por IP (GeoIP)
+        // 2. Refinar por IP (GeoIP) solo si es necesario o para ser más precisos
         const res = await fetch('https://ipapi.co/json/');
-        const data = await res.json();
-        const countryToLang: Record<string, Language> = {
-          'AR': 'es', 'ES': 'es', 'MX': 'es', 'CL': 'es', 'CO': 'es', 'UY': 'es',
-          'IT': 'it',
-          'US': 'en', 'GB': 'en', 'CA': 'en'
-        };
+        if (res.ok) {
+          const data = await res.json();
+          const countryToLang: Record<string, Language> = {
+            'AR': 'es', 'ES': 'es', 'MX': 'es', 'CL': 'es', 'CO': 'es', 'UY': 'es', 'PE': 'es', 'EC': 'es', 'VE': 'es',
+            'IT': 'it',
+            'US': 'en', 'GB': 'en', 'CA': 'en', 'AU': 'en'
+          };
 
-        if (data.country_code && countryToLang[data.country_code]) {
-          setLanguage(countryToLang[data.country_code]);
+          if (data.country_code && countryToLang[data.country_code]) {
+            setLanguage(countryToLang[data.country_code]);
+          }
         }
       } catch (e) {
-        console.log('Error detecting language by IP, falling back to browser defaults.');
+        console.log('Error detecting language by IP, falling back to browser/default.');
       }
       setMounted(true);
     };
