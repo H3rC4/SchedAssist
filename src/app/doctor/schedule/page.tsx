@@ -75,7 +75,7 @@ export default function DoctorSchedulePage() {
         .order('day_of_week')
       
       const { data: overridesData } = await supabase
-        .from('professional_overrides')
+        .from('professional_availability_overrides')
         .select('*')
         .eq('professional_id', prof.id)
         .order('override_date', { ascending: true })
@@ -162,7 +162,7 @@ export default function DoctorSchedulePage() {
          }
       }
 
-      await supabase.from('professional_overrides').insert({
+      await supabase.from('professional_availability_overrides').insert({
         professional_id: profId,
         tenant_id: tenantId,
         override_date: overrideModal.date,
@@ -172,7 +172,7 @@ export default function DoctorSchedulePage() {
         note: overrideForm.note
       })
 
-      const { data: ov } = await supabase.from('professional_overrides').select('*').eq('professional_id', profId).order('override_date')
+      const { data: ov } = await supabase.from('professional_availability_overrides').select('*').eq('professional_id', profId).order('override_date')
       setOverrides((ov || []) as Override[])
       setOverrideModal(null)
       setSaved(true)
@@ -185,7 +185,7 @@ export default function DoctorSchedulePage() {
   }
 
   const handleDeleteOverride = async (id: string) => {
-    await supabase.from('professional_overrides').delete().eq('id', id)
+    await supabase.from('professional_availability_overrides').delete().eq('id', id)
     setOverrides(ov => ov.filter(o => o.id !== id))
   }
 

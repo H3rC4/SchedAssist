@@ -81,7 +81,7 @@ export function useProfessionals() {
 
   const fetchOverrides = async (profId: string) => {
     const { data } = await supabase
-      .from('professional_overrides')
+      .from('professional_availability_overrides')
       .select('*')
       .eq('professional_id', profId)
       .order('override_date', { ascending: true })
@@ -180,13 +180,13 @@ export function useProfessionals() {
   }
 
   const addOverride = async (profId: string, data: { date: string, type: 'block' | 'open' }) => {
-    const { error } = await supabase.from('professional_overrides').insert({
+    const { error } = await supabase.from('professional_availability_overrides').insert({
       professional_id: profId,
       tenant_id: tenantId,
       override_date: data.date,
       override_type: data.type,
-      start_time: data.type === 'open' ? '09:00:00' : null,
-      end_time: data.type === 'open' ? '18:00:00' : null,
+      start_time: (data as any).start_time ? (data as any).start_time + ':00' : (data.type === 'open' ? '09:00:00' : null),
+      end_time: (data as any).end_time ? (data as any).end_time + ':00' : (data.type === 'open' ? '18:00:00' : null),
       note: (data as any).note || null
     })
     if (!error) {
@@ -195,7 +195,7 @@ export function useProfessionals() {
   }
 
   const deleteOverride = async (profId: string, overrideId: string) => {
-    const { error } = await supabase.from('professional_overrides').delete().eq('id', overrideId)
+    const { error } = await supabase.from('professional_availability_overrides').delete().eq('id', overrideId)
     if (!error) await fetchOverrides(profId)
   }
 

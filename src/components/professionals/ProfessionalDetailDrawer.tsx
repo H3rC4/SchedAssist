@@ -113,8 +113,9 @@ export function ProfessionalDetailDrawer({
       // Importante: pasar el objeto entero con nota
       await (addOverride as any)(overrideModal.date, overrideForm)
       setOverrideModal(null)
-    } catch (err) {
+    } catch (err: any) {
       console.error(err)
+      alert(err.message || 'Error saving exception')
     } finally {
       setInternalSaving(false)
     }
