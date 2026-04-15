@@ -25,8 +25,8 @@ export async function POST(req: NextRequest) {
       .eq('tenant_id', tenant_id)
       .single()
 
-    if (!callerData || (callerData.role !== 'owner' && callerData.role !== 'admin')) {
-      return NextResponse.json({ error: 'Forbidden. Solo administradores pueden restablecer contraseñas.' }, { status: 403 })
+    if (!callerData || (callerData.role !== 'owner' && callerData.role !== 'admin' && callerData.role !== 'tenant_admin')) {
+      return NextResponse.json({ error: 'Forbidden. Only administrators can reset passwords.' }, { status: 403 })
     }
 
     const adminSupabase = createAdminClient(
@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
       .single()
 
     if (profError || !profData?.user_id) {
-      return NextResponse.json({ error: 'No se encontró el usuario del profesional' }, { status: 404 })
+      return NextResponse.json({ error: 'Professional user not found' }, { status: 404 })
     }
 
     // Generar nueva contraseña temporal: 8 caracteres random + X! para cumplir complejidad

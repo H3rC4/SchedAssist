@@ -15,14 +15,15 @@ export async function PATCH(req: NextRequest) {
     }
 
     // Since we use Service Role Key, we MUST enforce the tenant_id explicitly
-    const result = await supabase
-      .from('clients')
-      .update({
-        first_name: data.first_name,
-        last_name: data.last_name || null,
-        phone: data.phone,
-        notes: data.notes || null,
-      })
+      const updatePayload: any = {}
+      if (data.first_name !== undefined) updatePayload.first_name = data.first_name
+      if (data.last_name !== undefined) updatePayload.last_name = data.last_name
+      if (data.phone !== undefined) updatePayload.phone = data.phone
+      if (data.notes !== undefined) updatePayload.notes = data.notes
+
+      const result = await supabase
+        .from('clients')
+        .update(updatePayload)
       .eq('id', id)
       .eq('tenant_id', tenant_id)
       .select()

@@ -6,10 +6,10 @@ import { LogOut, Menu, X } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { Sidebar } from '@/components/dashboard/Sidebar'
 import { TrialBanner } from '@/components/dashboard/TrialBanner'
-import { OnboardingWizard } from '@/components/dashboard/OnboardingWizard'
 import { InteractiveTutorial } from '@/components/dashboard/InteractiveTutorial'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ForcePasswordChangeGate } from '@/components/dashboard/ForcePasswordChangeGate'
+import { useLandingTranslation } from '@/components/LanguageContext'
 
 function DashboardHeader({ lang = 'es', onMenuClick }: { lang?: Language; onMenuClick: () => void }) {
   const supabase = createClient()
@@ -89,6 +89,7 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode
 }) {
+  const { setLanguage } = useLandingTranslation()
   const [tenantInfo, setTenantInfo] = useState<{ id: string; status: string; trial_ends_at: string | null; settings: any; lang: Language } | null>(null)
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const [forcePasswordChange, setForcePasswordChange] = useState(false)
@@ -107,13 +108,15 @@ export default function DashboardLayout({
       
       if (data?.tenants) {
         const t = data.tenants as any
+        const detectedLang = (t.settings?.language as Language) || 'es'
         setTenantInfo({
           id: t.id,
           status: t.subscription_status,
           trial_ends_at: t.trial_ends_at,
           settings: t.settings || {},
-          lang: (t.settings?.language as Language) || 'es'
+          lang: detectedLang
         })
+        setLanguage(detectedLang)
         if (data.role === 'professional') {
           const { data: profData } = await supabase.from('professionals').select('auth_password_hint').eq('user_id', user.id).single()
           if (profData?.auth_password_hint) {

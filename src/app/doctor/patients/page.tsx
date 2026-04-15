@@ -242,12 +242,50 @@ export default function DoctorPatientsPage() {
             <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8">
               <div className="lg:col-span-4 space-y-6">
                 <div className="bg-white rounded-[2rem] p-8 shadow-sm border border-slate-100">
-                  <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-6 flex items-center gap-2">
-                    <Users className="h-4 w-4" /> {language === 'es' ? 'OBSERVACIONES GENERALES' : 'GENERAL OBSERVATIONS'}
-                  </h4>
-                  <div className="bg-slate-50 rounded-2xl p-5 text-sm font-medium text-slate-600 min-h-[120px] leading-relaxed">
-                    {parseMedicalNotes(selectedClient.notes).summary || (language === 'es' ? 'Sin observaciones previas' : 'No previous observations')}
+                  <div className="flex items-center justify-between mb-6">
+                    <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                      <Users className="h-4 w-4" /> {language === 'es' ? 'OBSERVACIONES GENERALES' : 'GENERAL OBSERVATIONS'}
+                    </h4>
+                    <button 
+                      onClick={() => setIsEditing(!isEditing)}
+                      className="p-2 hover:bg-slate-50 rounded-xl text-amber-500 transition-all active:scale-95"
+                    >
+                      {isEditing ? <X className="h-4 w-4" /> : <User className="h-4 w-4" />}
+                    </button>
                   </div>
+                  
+                  {isEditing ? (
+                    <div className="space-y-4 animate-in fade-in zoom-in-95 duration-200">
+                      <textarea 
+                        value={editData.notes}
+                        onChange={e => setEditData({ notes: e.target.value })}
+                        className="w-full bg-slate-50 rounded-2xl p-5 text-sm font-medium text-slate-600 min-h-[150px] leading-relaxed border-none focus:ring-2 focus:ring-amber-500 outline-none"
+                        placeholder={language === 'es' ? 'Escribe aquí la historia clínica general...' : 'Write general medical history here...'}
+                      />
+                      <button 
+                        onClick={async () => {
+                          const medical = parseMedicalNotes(selectedClient.notes)
+                          const updatedNotes = JSON.stringify({ ...medical, summary: editData.notes })
+                          const res = await fetch('/api/clients', {
+                            method: 'PATCH',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ id: selectedClient.id, tenant_id: tenantId, data: { notes: updatedNotes } })
+                          })
+                          if (res.ok) {
+                            setSelectedClient({ ...selectedClient, notes: updatedNotes })
+                            setIsEditing(false)
+                          }
+                        }}
+                        className="w-full bg-slate-900 text-white py-3 rounded-xl text-xs font-black uppercase tracking-widest shadow-lg shadow-slate-900/10 active:scale-95 transition-all"
+                      >
+                         {language === 'es' ? 'Guardar Observaciones' : 'Save Observations'}
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="bg-slate-50 rounded-2xl p-5 text-sm font-medium text-slate-600 min-h-[120px] leading-relaxed">
+                      {parseMedicalNotes(selectedClient.notes).summary || (language === 'es' ? 'Sin observaciones previas' : 'No previous observations')}
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -272,9 +310,14 @@ export default function DoctorPatientsPage() {
                                 {format(parseISO(app.start_at), "d MMMM yyyy · HH:mm'h'", { locale: dateLocale })}
                               </p>
                             </div>
-                            <span className={`px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest ${app.status === 'confirmed' || app.status === 'completed' ? 'bg-emerald-50 text-emerald-600' : app.status === 'cancelled' ? 'bg-red-50 text-red-500' : 'bg-amber-50 text-amber-600'}`}>
-                              {app.status === 'confirmed' ? (language === 'es' ? 'Confirmado' : 'Confirmed') : app.status === 'completed' ? (language === 'es' ? 'Completado' : 'Completed') : app.status === 'cancelled' ? (language === 'es' ? 'Cancelado' : 'Cancelled') : (language === 'es' ? 'Pendiente' : 'Pending')}
-                            </span>
+                            <div className="flex items-center gap-2">
+                              <span className={`px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest ${app.status === 'confirmed' || app.status === 'completed' ? 'bg-emerald-50 text-emerald-600' : app.status === 'cancelled' ? 'bg-red-50 text-red-500' : 'bg-amber-50 text-amber-600'}`}>
+                                {app.status === 'confirmed' ? (language === 'es' ? 'Confirmado' : 'Confirmed') : app.status === 'completed' ? (language === 'es' ? 'Completado' : 'Completed') : app.status === 'cancelled' ? (language === 'es' ? 'Cancelado' : 'Cancelled') : (language === 'es' ? 'Pendiente' : 'Pending')}
+                              </span>
+                              <button onClick={() => setEditingAppId(app.id)} className="p-1.5 hover:bg-white rounded-lg text-slate-400 hover:text-amber-500 transition-colors">
+                                <User className="h-3.5 w-3.5" />
+                              </button>
+                            </div>
                           </div>
 
                           <div className="space-y-3">
