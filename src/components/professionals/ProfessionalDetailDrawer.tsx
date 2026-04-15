@@ -322,8 +322,8 @@ export function ProfessionalDetailDrawer({
                             className={`aspect-square flex flex-col items-center justify-center rounded-2xl text-[11px] font-black transition-all relative border-2
                               ${!inMonth ? 'opacity-0 cursor-default pointer-events-none' : ''}
                               ${hasOverride?.override_type === 'block' ? 'bg-red-50 border-red-100 text-red-600 shadow-sm' : 
-                                hasOverride?.override_type === 'open' ? 'bg-emerald-50 border-emerald-100 text-emerald-700 shadow-sm' :
-                                isToday ? 'bg-primary-50 border-primary-100 text-primary-700' : 'bg-white border-transparent text-slate-600 hover:bg-slate-50'}
+                                hasOverride?.override_type === 'open' ? 'bg-orange-50 border-orange-200 text-orange-600 shadow-sm' :
+                                isToday ? 'bg-emerald-50 border-emerald-100 text-emerald-700' : 'bg-white border-transparent text-slate-600 hover:bg-slate-50'}
                             `}
                           >
                             {format(day, 'd')}
