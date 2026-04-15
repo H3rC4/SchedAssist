@@ -25,12 +25,12 @@ export async function signIn(formData: FormData) {
     return redirect('/superadmin')
   }
 
-  // Check if tenant is suspended
+  // Check if tenant is suspended and get user role
   const { data: userData } = await supabase.auth.getUser()
   if (userData?.user) {
     const { data: tenantUser } = await supabase
       .from('tenant_users')
-      .select('tenant_id, tenants(settings)')
+      .select('tenant_id, role, tenants(settings)')
       .eq('user_id', userData.user.id)
       .single()
 
@@ -38,6 +38,10 @@ export async function signIn(formData: FormData) {
     if (settings?.suspended) {
       await supabase.auth.signOut()
       return redirect(`/login?error=${encodeURIComponent('Tu cuenta ha sido suspendida por falta de pago. Por favor, regulariza tu deuda para continuar.')}`)
+    }
+
+    if (tenantUser?.role === 'professional') {
+      return redirect('/doctor')
     }
   }
 

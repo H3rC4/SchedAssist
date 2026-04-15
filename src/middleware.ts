@@ -81,6 +81,16 @@ export async function middleware(request: NextRequest) {
       if (isSuperAdmin) {
         return NextResponse.redirect(new URL('/superadmin', request.url))
       }
+      
+      const { data: tenantUser } = await supabase
+        .from('tenant_users')
+        .select('role')
+        .eq('user_id', user.id)
+        .single()
+        
+      if (tenantUser?.role === 'professional') {
+        return NextResponse.redirect(new URL('/doctor', request.url))
+      }
       return NextResponse.redirect(new URL('/dashboard', request.url))
     }
   }
