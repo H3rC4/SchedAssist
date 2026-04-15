@@ -1,8 +1,8 @@
 "use client"
 
 import { useState, Suspense } from 'react'
-import { Plus, LayoutDashboard } from 'lucide-react'
-import { format } from 'date-fns'
+import { Plus, LayoutDashboard, Phone, Clock, User, ChevronRight, CheckCircle } from 'lucide-react'
+import { format, parseISO } from 'date-fns'
 import { useAppointments, Appointment } from '@/hooks/useAppointments'
 import { MiniCalendar } from '@/components/appointments/MiniCalendar'
 import { DayActivityFeed } from '@/components/appointments/DayActivityFeed'
@@ -38,12 +38,16 @@ function AppointmentsContent() {
     navigateMonth,
     fetchSlots,
     cancelAppointment,
+    markAsNotified,
+    pendingCalls,
+    notifyingId,
     refresh
   } = useAppointments()
 
   const [selectedApp, setSelectedApp] = useState<Appointment | null>(null)
   const [showNewForm, setShowNewForm] = useState(false)
   const [toast, setToast] = useState<{ message: string; type: 'error' | 'success' } | null>(null)
+  const [callNotes, setCallNotes] = useState<{[key: string]: string}>({})
 
   const T = translations[lang] || translations['en']
   const dayNames = lang === 'it'
@@ -70,6 +74,64 @@ function AppointmentsContent() {
   return (
     <div className="space-y-8 animate-in fade-in duration-700 max-w-[1600px] mx-auto">
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
+
+      {/* Pending Calls Reminder (Reusing Doctor Style) */}
+      {pendingCalls.length > 0 && (
+        <div className="bg-red-50/50 border border-red-100 rounded-[2rem] p-6 md:p-8 animate-in slide-in-from-top duration-700">
+           <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 bg-red-100 flex items-center justify-center rounded-xl text-red-600">
+                  <Phone className="h-5 w-5" />
+                </div>
+                <div>
+                   <h3 className="text-lg font-black text-red-900">{T.pending_notification_title}</h3>
+                   <p className="text-sm text-red-600 font-medium">{lang === 'es' ? 'Pacientes que deben ser avisados de la cancelación de su cita.' : 'Patients that must be notified about their app cancellation.'}</p>
+                </div>
+              </div>
+              <span className="bg-red-600 text-white px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">{pendingCalls.length}</span>
+           </div>
+           
+           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {pendingCalls.map(call => (
+                <div key={call.id} className="bg-white p-6 rounded-2xl border border-red-200/50 shadow-sm flex flex-col justify-between group">
+                  <div className="flex items-center gap-4 mb-4">
+                    <div className="h-12 w-12 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 font-black text-xs">
+                      {call.clients?.first_name[0]}{call.clients?.last_name[0]}
+                    </div>
+                    <div>
+                      <p className="text-sm font-black text-slate-900 leading-none">{call.clients?.first_name} {call.clients?.last_name}</p>
+                      <p className="text-xs font-bold text-slate-400 mt-1">{call.clients?.phone}</p>
+                    </div>
+                  </div>
+
+                  <div className="mb-4">
+                    <input 
+                      type="text"
+                      placeholder={T.notification_notes_placeholder}
+                      value={callNotes[call.id] || ''}
+                      onChange={(e) => setCallNotes(prev => ({ ...prev, [call.id]: e.target.value }))}
+                      className="w-full bg-slate-50 border border-slate-100 rounded-xl px-4 py-2 text-[10px] font-bold text-slate-600 placeholder:text-slate-300 focus:ring-2 focus:ring-red-500/20 outline-none transition-all"
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                     <span className="text-[10px] font-bold text-slate-400 uppercase">
+                       {format(parseISO(call.start_at), "d MMM, HH:mm", { locale: dateLocales[lang] })}
+                     </span>
+                     <button 
+                        onClick={() => markAsNotified(call.id, callNotes[call.id])}
+                        disabled={notifyingId === call.id}
+                        className="h-9 px-4 rounded-xl bg-slate-900 text-white text-[10px] font-black uppercase tracking-widest hover:bg-slate-800 transition-all flex items-center gap-2"
+                      >
+                        {notifyingId === call.id ? <Clock className="h-3 w-3 animate-spin" /> : <ChevronRight className="h-3 w-3" />}
+                        {T.mark_as_notified}
+                      </button>
+                  </div>
+                </div>
+              ))}
+           </div>
+        </div>
+      )}
 
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-white/70 backdrop-blur-xl p-6 md:p-10 rounded-[2rem] md:rounded-[2.5rem] border border-white shadow-[0_32px_64px_-16px_rgba(0,0,0,0.05)] relative overflow-hidden group">

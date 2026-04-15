@@ -53,7 +53,7 @@ export function MiniCalendar({
                 ${selected ? 'bg-primary-600 text-white shadow-2xl shadow-primary-200 scale-110 z-10' : today ? 'bg-primary-50 text-primary-600 ring-2 ring-primary-100' : 'text-gray-600 hover:bg-gray-50'}
                 ${!sameMonth ? 'opacity-10 pointer-events-none' : ''}`}>
               {format(day, 'd')}
-              {hasApp && !selected && <span className="absolute bottom-2 h-1 w-1 rounded-full bg-primary-400" />}
+              {hasApp && !selected && <span className="absolute bottom-2 h-1.5 w-1.5 rounded-full bg-emerald-500" />}
             </button>
           )
         })}

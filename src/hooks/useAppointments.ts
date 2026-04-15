@@ -33,6 +33,8 @@ export function useAppointments() {
   const [professionals, setProfessionals] = useState<any[]>([])
   const [availableSlots, setAvailableSlots] = useState<string[]>([])
   const [slotLoading, setSlotLoading] = useState(false)
+  const [pendingCalls, setPendingCalls] = useState<Appointment[]>([])
+  const [notifyingId, setNotifyingId] = useState<string | null>(null)
   const [lang, setLang] = useState<'en' | 'es' | 'it'>('es')
   const [loading, setLoading] = useState(true)
 
@@ -50,6 +52,15 @@ export function useAppointments() {
       .eq('tenant_id', tenantId).neq('status', 'cancelled')
       .gte('start_at', `${start}T00:00:00Z`).lte('start_at', `${end}T23:59:59Z`)
     if (data) setAllMonthApps(data as any[])
+
+    // Fetch pending notifications (any cancelled app where cancellation_notified is false)
+    const { data: pending } = await supabase.from('appointments')
+      .select('id, status, start_at, clients(first_name, last_name, phone), services(name)')
+      .eq('tenant_id', tenantId)
+      .eq('status', 'cancelled')
+      .eq('cancellation_notified', false)
+      .order('start_at', { ascending: true })
+    if (pending) setPendingCalls(pending as any[])
   }, [supabase])
 
   const fetchDayAppointments = useCallback(async (tenantId: string, date: Date) => {
@@ -160,6 +171,19 @@ export function useAppointments() {
     setCurrentMonth(m => direction === 'next' ? addMonths(m, 1) : subMonths(m, 1))
   }
 
+  const markAsNotified = async (id: string, notes: string = '') => {
+    setNotifyingId(id)
+    const { error } = await supabase.from('appointments').update({ 
+      cancellation_notified: true,
+      cancellation_notified_notes: notes 
+    }).eq('id', id)
+    if (!error) {
+      setPendingCalls(prev => prev.filter(c => c.id !== id))
+    }
+    setNotifyingId(null)
+    return !error
+  }
+
   return {
     appointments,
     allMonthApps,
@@ -172,10 +196,13 @@ export function useAppointments() {
     slotLoading,
     lang,
     loading,
+    pendingCalls,
+    notifyingId,
     setSelectedDate,
     navigateMonth,
     fetchSlots,
     cancelAppointment,
+    markAsNotified,
     refresh: () => { fetchDayAppointments(tenantId, selectedDate); fetchMonthAppointments(tenantId, currentMonth) }
   }
 }
