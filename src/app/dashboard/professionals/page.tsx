@@ -118,7 +118,7 @@ export default function ProfessionalsPage() {
           overrides={overrides}
           onDelete={() => deleteProfessional(selectedProf.id)}
           onSave={() => updateAvailability(selectedProf.id, editRules)}
-          addOverride={(date, type) => addOverride(selectedProf.id, { date, type })}
+          addOverride={(date, formData) => addOverride(selectedProf.id, { date, ...formData })}
           deleteOverride={(id) => deleteOverride(selectedProf.id, id)}
           saving={saving}
           saved={saved}

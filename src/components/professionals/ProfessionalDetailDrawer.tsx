@@ -31,7 +31,7 @@ interface ProfessionalDetailDrawerProps {
   overrides: Override[];
   onDelete: () => void;
   onSave: () => void;
-  addOverride: (date: string, type: 'block' | 'open') => void;
+  addOverride: (date: string, data: any) => void;
   deleteOverride: (id: string) => void;
   saving: boolean;
   saved: boolean;
@@ -62,6 +62,11 @@ export function ProfessionalDetailDrawer({
   const [localHint, setLocalHint] = useState(professional.auth_password_hint)
   const [resettingPassword, setResettingPassword] = useState(false)
   const [internalSaving, setInternalSaving] = useState(false)
+
+  // Sync local hint when professional prop changes (e.g. after refresh)
+  useEffect(() => {
+    setLocalHint(professional.auth_password_hint)
+  }, [professional.auth_password_hint])
   
   const [calendarMonth, setCalendarMonth] = useState(new Date())
   const [overrideModal, setOverrideModal] = useState<{ date: string } | null>(null)
@@ -110,7 +115,7 @@ export function ProfessionalDetailDrawer({
          }
       }
 
-      // Importante: pasar el objeto entero con nota
+      // Pasar el objeto entero con nota, horas y tipo
       await (addOverride as any)(overrideModal.date, overrideForm)
       setOverrideModal(null)
     } catch (err: any) {

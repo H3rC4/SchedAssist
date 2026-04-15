@@ -179,15 +179,15 @@ export function useProfessionals() {
     }
   }
 
-  const addOverride = async (profId: string, data: { date: string, type: 'block' | 'open' }) => {
+  const addOverride = async (profId: string, data: { date: string, type: 'block' | 'open', start_time?: string, end_time?: string, note?: string }) => {
     const { error } = await supabase.from('professional_availability_overrides').insert({
       professional_id: profId,
       tenant_id: tenantId,
       override_date: data.date,
       override_type: data.type,
-      start_time: (data as any).start_time ? (data as any).start_time + ':00' : (data.type === 'open' ? '09:00:00' : null),
-      end_time: (data as any).end_time ? (data as any).end_time + ':00' : (data.type === 'open' ? '18:00:00' : null),
-      note: (data as any).note || null
+      start_time: data.start_time ? data.start_time + ':00' : (data.type === 'open' ? '09:00:00' : null),
+      end_time: data.end_time ? data.end_time + ':00' : (data.type === 'open' ? '18:00:00' : null),
+      note: data.note || null
     })
     if (!error) {
       await fetchOverrides(profId)
