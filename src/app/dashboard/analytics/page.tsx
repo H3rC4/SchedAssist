@@ -1,0 +1,226 @@
+"use client"
+
+import { useEffect, useState, useCallback } from 'react'
+import { createClient } from '@/lib/supabase/client'
+import { 
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer,
+  PieChart, Pie, Cell, LineChart, Line, AreaChart, Area
+} from 'recharts'
+import { translations, Language } from '@/lib/i18n'
+import { TrendingUp, AlertTriangle, Users, DollarSign, Activity } from 'lucide-react'
+
+export default function AnalyticsPage() {
+  const supabase = createClient()
+  const [tenantId, setTenantId] = useState('')
+  const [lang, setLang] = useState<Language>('es')
+  const [data, setData] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
+
+  const COLORS = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899']
+
+  const fetchTenantAndData = useCallback(async () => {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return
+
+    const { data: tuData } = await supabase
+      .from('tenant_users')
+      .select('tenant_id, tenants(id, settings)')
+      .eq('user_id', user.id)
+      .limit(1).single()
+
+    if (tuData?.tenants) {
+      const tenant = tuData.tenants as any
+      setTenantId(tenant.id)
+      setLang((tenant.settings?.language as Language) || 'es')
+      
+      const res = await fetch(`/api/analytics?tenant_id=${tenant.id}`)
+      if (res.ok) {
+        const analyticsData = await res.json()
+        setData(analyticsData)
+      }
+    }
+    setLoading(false)
+  }, [supabase])
+
+  useEffect(() => {
+    fetchTenantAndData()
+  }, [fetchTenantAndData])
+
+  const t = translations[lang] || translations['es']
+
+  if (loading) return null // Handled by loading.tsx
+
+  if (!data) return (
+    <div className="flex flex-col items-center justify-center min-h-[60vh] text-slate-400">
+      <Activity className="h-12 w-12 mb-4 opacity-50" />
+      <p>Error cargando métricas / Error loading metrics</p>
+    </div>
+  )
+
+  const CustomTooltip = ({ active, payload, label, formatter }: any) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="bg-slate-900/95 backdrop-blur-md border border-white/10 p-4 rounded-2xl shadow-2xl">
+          <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">
+            {label}
+          </p>
+          {payload.map((p: any, i: number) => (
+            <p key={i} className="text-sm font-bold text-white flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full" style={{ backgroundColor: p.color || p.fill }} />
+              {formatter ? formatter(p.value) : p.value}
+            </p>
+          ))}
+        </div>
+      )
+    }
+    return null
+  }
+
+  return (
+    <div className="space-y-8 pb-10">
+      <div>
+        <h1 className="text-2xl font-bold text-gray-900 tracking-tight flex items-center gap-2">
+          <Activity className="h-6 w-6 text-primary-600" /> Analíticas Avanzadas
+        </h1>
+        <p className="text-sm text-gray-500 mt-1">Métricas clave de rendimiento clínico y de negocio.</p>
+      </div>
+
+      {/* Top Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="bg-white rounded-[2rem] p-6 border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] relative overflow-hidden">
+          <div className="absolute -right-6 -top-6 h-24 w-24 bg-red-500/10 rounded-full blur-2xl" />
+          <div className="flex items-center gap-4 mb-4">
+            <div className="h-12 w-12 rounded-2xl bg-red-50 flex items-center justify-center text-red-500">
+              <AlertTriangle className="h-6 w-6" />
+            </div>
+            <div>
+              <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">Tasa de Ausentismo</p>
+              <h3 className="text-3xl font-black text-gray-900 tracking-tighter">{data.noShowRate}%</h3>
+            </div>
+          </div>
+          <p className="text-xs font-bold text-gray-500">
+            De <span className="text-gray-900">{data.totalAppointments}</span> citas, <span className="text-red-500">{data.cancelledAppointments}</span> fueron canceladas.
+          </p>
+        </div>
+
+        <div className="bg-white rounded-[2rem] p-6 border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] relative overflow-hidden">
+          <div className="absolute -right-6 -top-6 h-24 w-24 bg-emerald-500/10 rounded-full blur-2xl" />
+          <div className="flex items-center gap-4 mb-4">
+            <div className="h-12 w-12 rounded-2xl bg-emerald-50 flex items-center justify-center text-emerald-500">
+              <DollarSign className="h-6 w-6" />
+            </div>
+            <div>
+              <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">Top Profesional (Ingresos)</p>
+              <h3 className="text-2xl font-black text-gray-900 tracking-tight truncate max-w-[150px]">
+                {data.revenueByProfessional[0]?.name || 'N/A'}
+              </h3>
+            </div>
+          </div>
+          <p className="text-xs font-bold text-gray-500">
+            Generó <span className="text-emerald-600 font-black">${(data.revenueByProfessional[0]?.revenue || 0).toLocaleString()}</span> este año.
+          </p>
+        </div>
+
+        <div className="bg-white rounded-[2rem] p-6 border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] relative overflow-hidden">
+          <div className="absolute -right-6 -top-6 h-24 w-24 bg-primary-500/10 rounded-full blur-2xl" />
+          <div className="flex items-center gap-4 mb-4">
+            <div className="h-12 w-12 rounded-2xl bg-primary-50 flex items-center justify-center text-primary-500">
+              <TrendingUp className="h-6 w-6" />
+            </div>
+            <div>
+              <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">Servicio Estrella</p>
+              <h3 className="text-xl font-black text-gray-900 tracking-tight leading-tight truncate max-w-[150px]">
+                {data.popularServices[0]?.name || 'N/A'}
+              </h3>
+            </div>
+          </div>
+          <p className="text-xs font-bold text-gray-500">
+            Realizado <span className="text-primary-600 font-black">{data.popularServices[0]?.count || 0} veces</span>.
+          </p>
+        </div>
+      </div>
+
+      {/* Main Charts */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        
+        {/* Revenue by Professional */}
+        <div className="bg-white rounded-[2.5rem] p-8 border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
+          <h3 className="text-lg font-black text-gray-900 mb-6">Ingresos por Profesional</h3>
+          <div className="h-[300px] w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={data.revenueByProfessional} margin={{ top: 10, right: 10, left: -20, bottom: 0 }} layout="vertical">
+                <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="#f1f5f9" />
+                <XAxis type="number" tick={{ fill: '#94a3b8', fontSize: 10, fontWeight: 700 }} axisLine={false} tickLine={false} />
+                <YAxis dataKey="name" type="category" tick={{ fill: '#64748b', fontSize: 11, fontWeight: 600 }} axisLine={false} tickLine={false} width={100} />
+                <RechartsTooltip content={<CustomTooltip formatter={(val: number) => `$${val.toLocaleString()}`} />} cursor={{ fill: 'transparent' }} />
+                <Bar dataKey="revenue" fill="#6366f1" radius={[0, 4, 4, 0]}>
+                  {data.revenueByProfessional.map((entry: any, index: number) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* Popular Services */}
+        <div className="bg-white rounded-[2.5rem] p-8 border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
+          <h3 className="text-lg font-black text-gray-900 mb-6">Demanda de Servicios</h3>
+          <div className="h-[300px] w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={data.popularServices}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={70}
+                  outerRadius={100}
+                  paddingAngle={5}
+                  dataKey="count"
+                  nameKey="name"
+                  stroke="none"
+                >
+                  {data.popularServices.map((entry: any, index: number) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Pie>
+                <RechartsTooltip content={<CustomTooltip formatter={(val: number) => `${val} citas`} />} />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+          <div className="mt-4 flex flex-wrap gap-4 justify-center">
+            {data.popularServices.slice(0, 4).map((srv: any, index: number) => (
+              <div key={srv.name} className="flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full" style={{ backgroundColor: COLORS[index % COLORS.length] }} />
+                <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">{srv.name}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Monthly Trend */}
+        <div className="lg:col-span-2 bg-white rounded-[2.5rem] p-8 border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
+          <h3 className="text-lg font-black text-gray-900 mb-6">Volumen de Citas (Año Actual)</h3>
+          <div className="h-[300px] w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={data.appointmentsByMonth} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="colorMonth" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/>
+                    <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                <XAxis dataKey="month" tick={{ fill: '#94a3b8', fontSize: 10, fontWeight: 700 }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fill: '#94a3b8', fontSize: 10, fontWeight: 700 }} axisLine={false} tickLine={false} />
+                <RechartsTooltip content={<CustomTooltip formatter={(val: number) => `${val} citas totales`} />} />
+                <Area type="monotone" dataKey="count" stroke="#10b981" strokeWidth={4} fillOpacity={1} fill="url(#colorMonth)" />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  )
+}

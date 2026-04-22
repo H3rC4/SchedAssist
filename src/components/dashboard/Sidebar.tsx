@@ -4,13 +4,14 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import {
-  Calendar, Users, Briefcase, Settings, LayoutDashboard, Clock, ChevronRight, Zap, Layers, LifeBuoy, X, Mail
+  Calendar, Users, Briefcase, Settings, LayoutDashboard, Clock, ChevronRight, Zap, Layers, LifeBuoy, X, Mail, TrendingUp
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { Language, translations } from '@/lib/i18n'
 
 const navItemsBase = [
   { id: 'dashboard', es: 'Dashboard', it: 'Dashboard', en: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, category: 'General' },
+  { id: 'analytics', es: 'Analíticas', it: 'Analitiche', en: 'Analytics', href: '/dashboard/analytics', icon: TrendingUp, category: 'General' },
   { id: 'appointments', es: 'Agenda', it: 'Agenda', en: 'Schedule', href: '/dashboard/appointments', icon: Calendar, category: 'Operativo' },
   { id: 'professionals', es: 'Staff', it: 'Personale', en: 'Staff', href: '/dashboard/professionals', icon: Briefcase, category: 'Operativo' },
   { id: 'services', es: 'Servicios', it: 'Servizi', en: 'Services', href: '/dashboard/services', icon: Layers, category: 'Operativo' },

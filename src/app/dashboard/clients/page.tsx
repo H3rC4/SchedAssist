@@ -1,7 +1,7 @@
 "use client"
 
-import { useEffect, useState, useCallback } from 'react'
-import { Search, User, Phone, Calendar, X, ChevronRight, Edit2, ArrowLeft } from 'lucide-react'
+import { useEffect, useState, useCallback, useRef } from 'react'
+import { Search, User, Phone, Calendar, X, ChevronRight, Edit2, ArrowLeft, Upload, FileText, Download, Stethoscope, Paperclip, Plus, Loader2 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { translations } from '@/lib/i18n'
 import { format, parseISO } from 'date-fns'
@@ -43,6 +43,23 @@ export default function ClientsPage() {
   const [appNoteEdit, setAppNoteEdit] = useState('')
   const [postNoteEdit, setPostNoteEdit] = useState('')
   const [isSavingAppNote, setIsSavingAppNote] = useState(false)
+
+  // EHR States
+  const [activeTab, setActiveTab] = useState<'perfil' | 'historia'>('perfil')
+  const [clinicalRecords, setClinicalRecords] = useState<any[]>([])
+  const [newRecordText, setNewRecordText] = useState('')
+  const [isSavingRecord, setIsSavingRecord] = useState(false)
+  const [uploadingFiles, setUploadingFiles] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const fetchClinicalRecords = useCallback(async (clientId: string) => {
+    if (!tenantId || !clientId) return
+    const res = await fetch(`/api/clinical-records?tenant_id=${tenantId}&client_id=${clientId}`)
+    if (res.ok) {
+      const data = await res.json()
+      setClinicalRecords(data)
+    }
+  }, [tenantId])
 
   const initTenant = useCallback(async () => {
     const { data: { user } } = await supabase.auth.getUser()
@@ -104,8 +121,10 @@ export default function ClientsPage() {
       phone: client.phone || '',
       notes: medical.summary // Global edit only edits the fixed summary
     })
+    setActiveTab('perfil')
     const { data } = await supabase.from('appointments').select(`id, status, start_at, end_at, notes, services(name), professionals(full_name)`).eq('client_id', client.id).order('start_at', { ascending: false })
     setClientApps(data || [])
+    fetchClinicalRecords(client.id)
   }
 
   // Helper to parse complex medical notes (summary + logs)
@@ -226,6 +245,74 @@ export default function ClientsPage() {
       setClientApps(clientApps.map(a => a.id === appId ? { ...a, notes: updatedNotesStr } : a))
       setEditingPostId(null)
     }
+  }
+
+  // EHR Actions
+  async function handleSaveClinicalRecord() {
+    if (!selectedClient || !newRecordText.trim()) return
+    setIsSavingRecord(true)
+    
+    // Check if there's files uploaded in the state (Not yet implemented deeply in state, we'll do it later or just text for now)
+    const res = await fetch('/api/clinical-records', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        tenant_id: tenantId,
+        client_id: selectedClient.id,
+        content: newRecordText
+      })
+    })
+
+    if (res.ok) {
+      setNewRecordText('')
+      fetchClinicalRecords(selectedClient.id)
+    }
+    setIsSavingRecord(false)
+  }
+
+  async function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    if (!selectedClient || !e.target.files || e.target.files.length === 0) return
+    const file = e.target.files[0]
+    if (file.size > 5 * 1024 * 1024) {
+      alert(translations[lang].file_too_large || "El archivo es demasiado grande (Máx 5MB)")
+      return
+    }
+
+    setUploadingFiles(true)
+    const fileExt = file.name.split('.').pop()
+    const fileName = `${tenantId}/${selectedClient.id}/${crypto.randomUUID()}.${fileExt}`
+
+    const { error: uploadError } = await supabase.storage
+      .from('clinical_files')
+      .upload(fileName, file)
+
+    if (uploadError) {
+      alert((translations[lang].error_save || "Error al subir archivo") + ": " + uploadError.message)
+      setUploadingFiles(false)
+      return
+    }
+
+    // Get public URL
+    const { data: { publicUrl } } = supabase.storage
+      .from('clinical_files')
+      .getPublicUrl(fileName)
+
+    // Save as a new record with attachment
+    const res = await fetch('/api/clinical-records', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        tenant_id: tenantId,
+        client_id: selectedClient.id,
+        content: `Archivo adjunto: ${file.name}`,
+        attachments: [{ name: file.name, url: publicUrl }]
+      })
+    })
+
+    if (res.ok) {
+      fetchClinicalRecords(selectedClient.id)
+    }
+    setUploadingFiles(false)
   }
 
   async function handleSaveEdit() {
@@ -424,6 +511,26 @@ export default function ClientsPage() {
 
           {/* Main Content Area */}
           <div className="flex-1 overflow-y-auto bg-slate-50">
+            {/* Tabs Header */}
+            {!isEditing && (
+              <div className="bg-white border-b border-gray-200 px-6 pt-4 sticky top-0 z-10">
+                <div className="max-w-7xl mx-auto flex gap-8">
+                  <button 
+                    onClick={() => setActiveTab('perfil')}
+                    className={`pb-4 text-sm font-bold border-b-2 transition-colors flex items-center gap-2 ${activeTab === 'perfil' ? 'border-primary-500 text-primary-600' : 'border-transparent text-gray-400 hover:text-gray-600'}`}
+                  >
+                    <User className="h-4 w-4" /> Perfil & Turnos
+                  </button>
+                  <button 
+                    onClick={() => setActiveTab('historia')}
+                    className={`pb-4 text-sm font-bold border-b-2 transition-colors flex items-center gap-2 ${activeTab === 'historia' ? 'border-primary-500 text-primary-600' : 'border-transparent text-gray-400 hover:text-gray-600'}`}
+                  >
+                    <Stethoscope className="h-4 w-4" /> Historia Clínica (EHR)
+                  </button>
+                </div>
+              </div>
+            )}
+
             <div className="max-w-7xl mx-auto p-6">
               {isEditing ? (
                 <div className="max-w-2xl mx-auto bg-white rounded-3xl p-8 shadow-sm border border-gray-100">
@@ -450,6 +557,99 @@ export default function ClientsPage() {
                         <textarea value={editData.notes} onChange={e => setEditData({...editData, notes: e.target.value})} rows={6} className="block w-full rounded-2xl border-gray-200 bg-gray-50 py-3 px-4 text-sm text-gray-900 focus:bg-white focus:ring-2 focus:ring-primary-500/10 focus:border-primary-500 transition-all outline-none resize-none" placeholder="Alergias, condiciones previas, antecedentes..."/>
                       </div>
                    </div>
+                 </div>
+              ) : activeTab === 'historia' ? (
+                <div className="max-w-4xl mx-auto space-y-6">
+                  {/* EHR Input Area */}
+                  <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100">
+                    <h4 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                      <Plus className="h-5 w-5 text-primary-600" /> Nueva Entrada Médica
+                    </h4>
+                    <textarea 
+                      value={newRecordText}
+                      onChange={e => setNewRecordText(e.target.value)}
+                      placeholder="Escribe la evolución, diagnóstico o notas de la sesión..."
+                      className="w-full bg-slate-50 border border-gray-200 rounded-2xl p-4 text-sm focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 outline-none resize-none min-h-[120px]"
+                    />
+                    <div className="flex items-center justify-between mt-4">
+                      <div>
+                        <input 
+                          type="file" 
+                          ref={fileInputRef} 
+                          className="hidden" 
+                          onChange={handleFileUpload}
+                          accept=".pdf,.jpg,.jpeg,.png"
+                        />
+                        <button 
+                          onClick={() => fileInputRef.current?.click()}
+                          disabled={uploadingFiles}
+                          className="flex items-center gap-2 text-sm font-bold text-gray-500 hover:text-primary-600 transition-colors px-3 py-2 rounded-xl hover:bg-primary-50"
+                        >
+                          {uploadingFiles ? <Loader2 className="h-4 w-4 animate-spin" /> : <Paperclip className="h-4 w-4" />}
+                          Adjuntar Archivo (PDF, Img)
+                        </button>
+                      </div>
+                      <button 
+                        onClick={handleSaveClinicalRecord}
+                        disabled={isSavingRecord || !newRecordText.trim()}
+                        className="bg-primary-600 hover:bg-primary-700 text-white px-6 py-2.5 rounded-xl text-sm font-bold shadow-lg shadow-primary-500/20 disabled:opacity-50 transition-all flex items-center gap-2"
+                      >
+                        {isSavingRecord ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+                        Guardar Registro
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* EHR Timeline */}
+                  <div className="space-y-6">
+                    <h4 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                      <Stethoscope className="h-5 w-5 text-primary-600" /> Historial Clínico Completo
+                    </h4>
+                    {clinicalRecords.length === 0 ? (
+                      <div className="text-center py-16 bg-white rounded-3xl border border-dashed border-gray-200">
+                        <FileText className="mx-auto h-12 w-12 text-gray-300 mb-3" />
+                        <p className="text-sm text-gray-400 font-medium">No hay registros médicos todavía.</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-6 relative before:absolute before:left-6 before:top-4 before:bottom-0 before:w-0.5 before:bg-gray-200">
+                        {clinicalRecords.map(record => (
+                          <div key={record.id} className="relative pl-14 animate-in fade-in slide-in-from-left-4 duration-500">
+                            <div className="absolute left-4 top-2 h-4 w-4 rounded-full bg-primary-500 border-4 border-white shadow-sm z-10" />
+                            <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 hover:border-primary-100 transition-colors">
+                              <div className="flex items-center justify-between mb-3 border-b border-gray-50 pb-3">
+                                <div>
+                                  <p className="text-xs font-bold text-primary-600 uppercase tracking-widest">
+                                    {format(parseISO(record.created_at), "d MMMM yyyy · HH:mm'h'", { locale: dateLocale })}
+                                  </p>
+                                </div>
+                                <div className="text-right">
+                                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none">Profesional</p>
+                                  <p className="text-sm font-bold text-gray-800 mt-1">{record.professionals?.full_name || 'Admin'}</p>
+                                </div>
+                              </div>
+                              <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">{record.content}</p>
+                              
+                              {record.attachments && record.attachments.length > 0 && (
+                                <div className="mt-4 pt-4 border-t border-gray-50 flex flex-wrap gap-3">
+                                  {record.attachments.map((file: any, idx: number) => (
+                                    <a 
+                                      key={idx} 
+                                      href={file.url} 
+                                      target="_blank" 
+                                      rel="noreferrer"
+                                      className="flex items-center gap-2 bg-slate-50 border border-gray-200 hover:border-primary-300 rounded-xl px-3 py-2 text-xs font-bold text-gray-600 hover:text-primary-600 transition-colors"
+                                    >
+                                      <Download className="h-3 w-3" /> {file.name}
+                                    </a>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
