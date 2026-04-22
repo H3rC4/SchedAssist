@@ -83,6 +83,7 @@ export async function POST(req: NextRequest) {
   const cleanLastName = capitalize(last_name)
 
   // Note: professional check moved up to access logic
+  try {
     // 1. Find or create client
     let { data: client } = await supabaseAdmin
       .from('clients')
@@ -113,32 +114,32 @@ export async function POST(req: NextRequest) {
       notes: notes || null
     })
 
-      // Fetch tenant settings for language
-      const { data: tData } = await supabaseAdmin.from('tenants').select('settings').eq('id', tenant_id).single();
-      const lang = (tData?.settings?.language as 'en'|'es'|'it') || 'es';
-      const t = translations[lang] || translations['en'];
-      const dateLocale = dateLocales[lang] || dateLocales['en'];
+    // Fetch tenant settings for language
+    const { data: tData } = await supabaseAdmin.from('tenants').select('settings').eq('id', tenant_id).single();
+    const lang = (tData?.settings?.language as 'en'|'es'|'it') || 'es';
+    const t = translations[lang] || translations['en'];
+    const dateLocale = dateLocales[lang] || dateLocales['en'];
 
-      // Determine channel and send confirmation message
-      const channel = client!.phone?.startsWith('tg_') ? 'telegram_gastro' : 'whatsapp';
-      let chatId: string | number = client!.phone;
-      if (client!.phone?.startsWith('tg_')) {
-        chatId = parseInt(client!.phone.replace('tg_', ''));
-      }
-      
-      const { data: prof } = await supabase.from('professionals').select('full_name').eq('id', professional_id).single()
-      const { data: serv } = await supabase.from('services').select('name').eq('id', service_id).single()
-      const dateStr = format(parseISO(start_at), "EEEE d 'HH:mm'", { locale: dateLocale })
+    // Determine channel and send confirmation message
+    const channel = client!.phone?.startsWith('tg_') ? 'telegram_gastro' : 'whatsapp';
+    let chatId: string | number = client!.phone;
+    if (client!.phone?.startsWith('tg_')) {
+      chatId = parseInt(client!.phone.replace('tg_', ''));
+    }
+    
+    const { data: prof } = await supabase.from('professionals').select('full_name').eq('id', professional_id).single()
+    const { data: serv } = await supabase.from('services').select('name').eq('id', service_id).single()
+    const dateStr = format(parseISO(start_at), "EEEE d 'HH:mm'", { locale: dateLocale })
 
-      const htmlText = `${t.bot_new_title}\n\n${t.bot_new_desc(cleanName, serv?.name || '', prof?.full_name || '', dateStr)}`;
-      const waText = htmlText.replace(/<b>/g, '*').replace(/<\/b>/g, '*');
+    const htmlText = `${t.bot_new_title}\n\n${t.bot_new_desc(cleanName, serv?.name || '', prof?.full_name || '', dateStr)}`;
+    const waText = htmlText.replace(/<b>/g, '*').replace(/<\/b>/g, '*');
 
-      await MessageService.sendMessage({
-        channel,
-        chat_id: chatId,
-        tenant_id,
-        text: channel === 'whatsapp' ? waText : htmlText,
-      });
+    await MessageService.sendMessage({
+      channel,
+      chat_id: chatId,
+      tenant_id,
+      text: channel === 'whatsapp' ? waText : htmlText,
+    });
 
     return NextResponse.json(data, { status: 201 })
   } catch (error: any) {
