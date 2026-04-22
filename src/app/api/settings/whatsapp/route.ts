@@ -1,11 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
-
-// Use service role to allow superadmin to configure any tenant
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+import { createClient } from '@/lib/supabase/server';
 
 /**
  * GET /api/settings/whatsapp
@@ -15,22 +9,24 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const explicitTenantId = searchParams.get('tenant_id');
 
-  let tenantId: string | null = explicitTenantId;
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  if (!tenantId) {
-    const { createClient: createServerClient } = await import('@/lib/supabase/server');
-    const serverSupabase = createServerClient();
-    const { data: { user } } = await serverSupabase.auth.getUser();
-    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  // Get the user's tenant
+  const { data: tenantUser } = await supabase
+    .from('tenant_users')
+    .select('tenant_id, role')
+    .eq('user_id', user.id)
+    .single();
 
-    const { data: tenantUser } = await serverSupabase
-      .from('tenant_users')
-      .select('tenant_id')
-      .eq('user_id', user.id)
-      .single();
+  if (!tenantUser) return NextResponse.json({ error: 'Tenant not found' }, { status: 404 });
 
-    if (!tenantUser) return NextResponse.json({ error: 'Tenant not found' }, { status: 404 });
-    tenantId = tenantUser.tenant_id;
+  const tenantId = explicitTenantId || tenantUser.tenant_id;
+
+  // Strict ownership check
+  if (tenantId !== tenantUser.tenant_id) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
   const { data: accounts, error } = await supabase
@@ -50,29 +46,35 @@ export async function GET(req: NextRequest) {
  */
 export async function POST(req: NextRequest) {
   const body = await req.json();
-  const { id, phone_number_id, access_token, label, tenant_id: explicitTenantId } = body;
+  const { phone_number_id, access_token, label, tenant_id: explicitTenantId } = body;
 
-  let tenantId: string | null = explicitTenantId || null;
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  if (!tenantId) {
-    const { createClient: createServerClient } = await import('@/lib/supabase/server');
-    const serverSupabase = createServerClient();
-    const { data: { user } } = await serverSupabase.auth.getUser();
-    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const { data: tenantUser } = await supabase
+    .from('tenant_users')
+    .select('tenant_id, role')
+    .eq('user_id', user.id)
+    .single();
 
-    const { data: tenantUser } = await serverSupabase
-      .from('tenant_users')
-      .select('tenant_id')
-      .eq('user_id', user.id)
-      .single();
-
-    if (!tenantUser) return NextResponse.json({ error: 'Tenant not found' }, { status: 404 });
-    tenantId = tenantUser.tenant_id;
+  if (!tenantUser) return NextResponse.json({ error: 'Tenant not found' }, { status: 404 });
+  
+  if (tenantUser.role !== 'admin' && tenantUser.role !== 'owner') {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
-  // Realizamos un Upsert basado en el "phone_number_id" para que el número pueda reasignarse
-  // a una clínica diferente sin entrar en conflicto de unicidad.
-  const result = await supabase
+  const tenantId = explicitTenantId || tenantUser.tenant_id;
+
+  if (tenantId !== tenantUser.tenant_id) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  }
+
+  // Use admin client for upsert if needed, but here we can try with authenticated client if RLS allows
+  const { createClient: createAdminClient } = require('@supabase/supabase-js');
+  const supabaseAdmin = createAdminClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
+
+  const result = await supabaseAdmin
     .from('whatsapp_accounts')
     .upsert({
       tenant_id: tenantId,
@@ -98,6 +100,21 @@ export async function DELETE(req: NextRequest) {
   const tenantId = searchParams.get('tenant_id');
 
   if (!id || !tenantId) return NextResponse.json({ error: 'Missing id or tenant_id' }, { status: 400 });
+
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+  const { data: tenantUser } = await supabase
+    .from('tenant_users')
+    .select('tenant_id, role')
+    .eq('user_id', user.id)
+    .eq('tenant_id', tenantId)
+    .single();
+
+  if (!tenantUser || (tenantUser.role !== 'admin' && tenantUser.role !== 'owner')) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  }
 
   const { error } = await supabase
     .from('whatsapp_accounts')

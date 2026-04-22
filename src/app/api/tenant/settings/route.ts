@@ -7,6 +7,20 @@ export async function PATCH(req: Request) {
     if (!tenant_id) return NextResponse.json({ error: 'Missing tenant_id' }, { status: 400 })
 
     const supabase = createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+    // Verify tenant ownership
+    const { data: tuData } = await supabase
+      .from('tenant_users')
+      .select('tenant_id, role')
+      .eq('user_id', user.id)
+      .eq('tenant_id', tenant_id)
+      .single()
+
+    if (!tuData || (tuData.role !== 'admin' && tuData.role !== 'owner')) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    }
     
     // Get existing settings
     const { data: tenant, error: fetchError } = await supabase

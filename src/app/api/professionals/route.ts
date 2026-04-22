@@ -1,10 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
+import { createClient } from '@/lib/supabase/server';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
+// Note: For POST/DELETE where auth admin access is needed, 
+// the admin client will be created inside the method after verification.
 
 // GET: List professionals (optionally with their availability rules)
 export async function GET(req: NextRequest) {
@@ -13,30 +11,24 @@ export async function GET(req: NextRequest) {
 
   if (!tenantId) return NextResponse.json({ error: 'tenant_id required' }, { status: 400 })
 
-  // GET THE CALLER TO RESTRICT IF PROFESSIONAL
-  const { createClient: createServerClient } = await import('@/lib/supabase/server');
-  const authClient = createServerClient();
-  const { data: { user } } = await authClient.auth.getUser();
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  let isProfessional = false;
-  let callerProfId = null;
-
-  if (user) {
-    const { data: tuData } = await authClient.from('tenant_users').select('role').eq('user_id', user.id).single();
-    if (tuData?.role === 'professional') {
-      isProfessional = true;
-      const { data: profData } = await authClient.from('professionals').select('id').eq('user_id', user.id).single();
-      if (profData) callerProfId = profData.id;
-    }
-  }
+  // Verify caller belongs to tenant
+  const { data: tuData } = await supabase.from('tenant_users').select('role').eq('user_id', user.id).eq('tenant_id', tenantId).single();
+  if (!tuData) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
   let query = supabase
     .from('professionals')
     .select(`*, availability_rules(*)`)
     .eq('tenant_id', tenantId)
 
-  if (isProfessional && callerProfId) {
-    query = query.eq('id', callerProfId);
+  if (tuData.role === 'professional') {
+    const { data: profData } = await supabase.from('professionals').select('id').eq('user_id', user.id).single();
+    if (profData) {
+      query = query.eq('id', profData.id);
+    }
   }
 
   const { data, error } = await query.order('full_name')
@@ -54,15 +46,28 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'tenant_id and full_name required' }, { status: 400 })
   }
 
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+  // Verify caller is admin/owner of THIS tenant
+  const { data: tuDataCaller } = await supabase.from('tenant_users').select('role').eq('user_id', user.id).eq('tenant_id', tenant_id).single();
+  if (!tuDataCaller || (tuDataCaller.role !== 'admin' && tuDataCaller.role !== 'owner')) {
+    return NextResponse.json({ error: 'Forbidden: Only admins can add professionals' }, { status: 403 });
+  }
+
+  // Use Service Role client for Auth manipulation
+  const { createClient: createAdminClient } = require('@supabase/supabase-js');
+  const supabaseAdmin = createAdminClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
+
   // Generate auth credentials
   const randomSuffix = Math.random().toString(36).substring(2, 8);
   const normalizedName = full_name.toLowerCase().replace(/[^a-z0-9]/g, '');
   const auth_email = `dr.${normalizedName}.${randomSuffix}@schedassist.com`;
-  // Generate an 8 char alphanumeric password with a symbol to meet complexity
   const auth_password_hint = Math.random().toString(36).substring(2, 8) + 'X!';
 
   // Create user in Supabase Auth
-  const { data: authData, error: authError } = await supabase.auth.admin.createUser({
+  const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
     email: auth_email,
     password: auth_password_hint,
     email_confirm: true,
@@ -75,18 +80,18 @@ export async function POST(req: NextRequest) {
   const userId = authData.user.id;
 
   // Insert into tenant_users
-  const { error: tuError } = await supabase.from('tenant_users').insert({
+  const { error: tuError } = await supabaseAdmin.from('tenant_users').insert({
     tenant_id,
     user_id: userId,
     role: 'professional'
   });
 
   if (tuError) {
-    await supabase.auth.admin.deleteUser(userId);
+    await supabaseAdmin.auth.admin.deleteUser(userId);
     return NextResponse.json({ error: `Tenant User Error: ${tuError.message}` }, { status: 500 })
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await supabaseAdmin
     .from('professionals')
     .insert([{ 
       tenant_id, 
@@ -101,7 +106,7 @@ export async function POST(req: NextRequest) {
     .single()
 
   if (error) {
-    await supabase.auth.admin.deleteUser(userId); // rollback
+    await supabaseAdmin.auth.admin.deleteUser(userId); // rollback
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 
@@ -117,18 +122,19 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ error: 'professional_id, tenant_id, and rules required' }, { status: 400 })
   }
 
-  // Auth Check
-  const { createClient: createServerClient } = await import('@/lib/supabase/server');
-  const authClient = createServerClient();
-  const { data: { user } } = await authClient.auth.getUser();
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  if (user) {
-    const { data: tuData } = await authClient.from('tenant_users').select('role').eq('user_id', user.id).single();
-    if (tuData?.role === 'professional') {
-      const { data: profData } = await authClient.from('professionals').select('id').eq('user_id', user.id).single();
-      if (!profData || profData.id !== professional_id) {
-        return NextResponse.json({ error: 'Unauthorized: Can only edit your own rules' }, { status: 403 });
-      }
+  // Verify caller belongs to tenant
+  const { data: tuData } = await supabase.from('tenant_users').select('role').eq('user_id', user.id).eq('tenant_id', tenant_id).single();
+  if (!tuData) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+
+  // If professional, can only edit own rules
+  if (tuData.role === 'professional') {
+    const { data: profData } = await supabase.from('professionals').select('id').eq('user_id', user.id).single();
+    if (!profData || profData.id !== professional_id) {
+      return NextResponse.json({ error: 'Unauthorized: Can only edit your own rules' }, { status: 403 });
     }
   }
 
@@ -165,8 +171,22 @@ export async function DELETE(req: NextRequest) {
 
   if (!id || !tenantId) return NextResponse.json({ error: 'id and tenant_id required' }, { status: 400 })
 
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+  // Verify caller is admin/owner
+  const { data: tuDataCaller } = await supabase.from('tenant_users').select('role').eq('user_id', user.id).eq('tenant_id', tenantId).single();
+  if (!tuDataCaller || (tuDataCaller.role !== 'admin' && tuDataCaller.role !== 'owner')) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  }
+
+  // Use admin client for deep cleanup
+  const { createClient: createAdminClient } = require('@supabase/supabase-js');
+  const supabaseAdmin = createAdminClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
+
   // 1. Obtener la data del profesional a eliminar
-  const { data: profData } = await supabase
+  const { data: profData } = await supabaseAdmin
     .from('professionals')
     .select('user_id')
     .eq('id', id)
@@ -174,10 +194,10 @@ export async function DELETE(req: NextRequest) {
     .single()
 
   // 2. Eliminar reglas de disponibilidad
-  await supabase.from('availability_rules').delete().eq('professional_id', id).eq('tenant_id', tenantId)
+  await supabaseAdmin.from('availability_rules').delete().eq('professional_id', id).eq('tenant_id', tenantId)
   
   // 3. Eliminar el registro en professionals
-  const { data, error } = await supabase
+  const { data, error } = await supabaseAdmin
     .from('professionals')
     .delete()
     .eq('id', id)
@@ -190,9 +210,9 @@ export async function DELETE(req: NextRequest) {
   // 4. Si el profesional tenía una cuenta de usuario, la limpiamos completamente
   if (profData?.user_id) {
     // Eliminar de tenant_users
-    await supabase.from('tenant_users').delete().eq('user_id', profData.user_id).eq('tenant_id', tenantId)
+    await supabaseAdmin.from('tenant_users').delete().eq('user_id', profData.user_id).eq('tenant_id', tenantId)
     // Eliminar en Auth
-    await supabase.auth.admin.deleteUser(profData.user_id)
+    await supabaseAdmin.auth.admin.deleteUser(profData.user_id)
   }
 
   return NextResponse.json(data)

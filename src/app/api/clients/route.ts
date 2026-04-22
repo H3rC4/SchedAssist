@@ -1,10 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+import { createClient } from '@/lib/supabase/server';
 
 export async function PATCH(req: NextRequest) {
   try {
@@ -14,16 +9,24 @@ export async function PATCH(req: NextRequest) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
-    // Since we use Service Role Key, we MUST enforce the tenant_id explicitly
-      const updatePayload: any = {}
-      if (data.first_name !== undefined) updatePayload.first_name = data.first_name
-      if (data.last_name !== undefined) updatePayload.last_name = data.last_name
-      if (data.phone !== undefined) updatePayload.phone = data.phone
-      if (data.notes !== undefined) updatePayload.notes = data.notes
+    const supabase = createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-      const result = await supabase
-        .from('clients')
-        .update(updatePayload)
+    // Verify tenant ownership
+    const { data: tuData } = await supabase.from('tenant_users').select('tenant_id').eq('user_id', user.id).eq('tenant_id', tenant_id).single()
+    if (!tuData) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+
+    // Since we use the authenticated client, RLS should apply, but we explicitly enforce tenant_id for extra safety
+    const updatePayload: any = {}
+    if (data.first_name !== undefined) updatePayload.first_name = data.first_name
+    if (data.last_name !== undefined) updatePayload.last_name = data.last_name
+    if (data.phone !== undefined) updatePayload.phone = data.phone
+    if (data.notes !== undefined) updatePayload.notes = data.notes
+
+    const result = await supabase
+      .from('clients')
+      .update(updatePayload)
       .eq('id', id)
       .eq('tenant_id', tenant_id)
       .select()
