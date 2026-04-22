@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { cookies } from 'next/headers'
+import { SUPERADMIN_EMAILS } from '@/lib/constants'
 
 export async function signIn(formData: FormData) {
   const email = formData.get('email') as string
@@ -20,7 +21,6 @@ export async function signIn(formData: FormData) {
   }
 
   // Bouncer Logic - SuperAdmins
-  const SUPERADMIN_EMAILS = ['hernanenriquecaballero@gmail.com'];
   if (SUPERADMIN_EMAILS.includes(email)) {
     return redirect('/superadmin')
   }

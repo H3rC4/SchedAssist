@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
+import { verifyTenantAccess } from '@/lib/auth-utils'
 
 export async function PATCH(req: Request) {
   try {
@@ -8,18 +9,10 @@ export async function PATCH(req: Request) {
 
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
-    // Verify tenant ownership
-    const { data: tuData } = await supabase
-      .from('tenant_users')
-      .select('tenant_id, role')
-      .eq('user_id', user.id)
-      .eq('tenant_id', tenant_id)
-      .single()
-
-    if (!tuData || (tuData.role !== 'admin' && tuData.role !== 'owner')) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    
+    const access = await verifyTenantAccess(supabase, user, tenant_id, ['admin', 'owner']);
+    if (!access.authorized) {
+      return NextResponse.json({ error: access.error }, { status: access.status });
     }
     
     // Get existing settings

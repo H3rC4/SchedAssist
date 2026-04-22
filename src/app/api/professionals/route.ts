@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server';
+import { verifyTenantAccess } from '@/lib/auth-utils';
 
 // Note: For POST/DELETE where auth admin access is needed, 
 // the admin client will be created inside the method after verification.
@@ -13,11 +14,11 @@ export async function GET(req: NextRequest) {
 
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
-  // Verify caller belongs to tenant
-  const { data: tuData } = await supabase.from('tenant_users').select('role').eq('user_id', user.id).eq('tenant_id', tenantId).single();
-  if (!tuData) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  
+  const access = await verifyTenantAccess(supabase, user, tenantId);
+  if (!access.authorized) {
+    return NextResponse.json({ error: access.error }, { status: access.status });
+  }
 
   let query = supabase
     .from('professionals')
@@ -48,12 +49,10 @@ export async function POST(req: NextRequest) {
 
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
-  // Verify caller is admin/owner of THIS tenant
-  const { data: tuDataCaller } = await supabase.from('tenant_users').select('role').eq('user_id', user.id).eq('tenant_id', tenant_id).single();
-  if (!tuDataCaller || (tuDataCaller.role !== 'admin' && tuDataCaller.role !== 'owner')) {
-    return NextResponse.json({ error: 'Forbidden: Only admins can add professionals' }, { status: 403 });
+  
+  const access = await verifyTenantAccess(supabase, user, tenant_id, ['admin', 'owner']);
+  if (!access.authorized) {
+    return NextResponse.json({ error: access.error }, { status: access.status });
   }
 
   // Use Service Role client for Auth manipulation
@@ -124,15 +123,15 @@ export async function PATCH(req: NextRequest) {
 
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
-  // Verify caller belongs to tenant
-  const { data: tuData } = await supabase.from('tenant_users').select('role').eq('user_id', user.id).eq('tenant_id', tenant_id).single();
-  if (!tuData) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  
+  const access = await verifyTenantAccess(supabase, user, tenant_id);
+  if (!access.authorized) {
+    return NextResponse.json({ error: access.error }, { status: access.status });
+  }
 
   // If professional, can only edit own rules
-  if (tuData.role === 'professional') {
-    const { data: profData } = await supabase.from('professionals').select('id').eq('user_id', user.id).single();
+  if (access.role === 'professional') {
+    const { data: profData } = await supabase.from('professionals').select('id').eq('user_id', user!.id).single();
     if (!profData || profData.id !== professional_id) {
       return NextResponse.json({ error: 'Unauthorized: Can only edit your own rules' }, { status: 403 });
     }
@@ -173,12 +172,10 @@ export async function DELETE(req: NextRequest) {
 
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
-  // Verify caller is admin/owner
-  const { data: tuDataCaller } = await supabase.from('tenant_users').select('role').eq('user_id', user.id).eq('tenant_id', tenantId).single();
-  if (!tuDataCaller || (tuDataCaller.role !== 'admin' && tuDataCaller.role !== 'owner')) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  
+  const access = await verifyTenantAccess(supabase, user, tenantId, ['admin', 'owner']);
+  if (!access.authorized) {
+    return NextResponse.json({ error: access.error }, { status: access.status });
   }
 
   // Use admin client for deep cleanup

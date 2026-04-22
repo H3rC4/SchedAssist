@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { verifyTenantAccess } from '@/lib/auth-utils';
 
 /**
  * GET /api/settings/whatsapp
@@ -11,23 +12,13 @@ export async function GET(req: NextRequest) {
 
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
-  // Get the user's tenant
-  const { data: tenantUser } = await supabase
-    .from('tenant_users')
-    .select('tenant_id, role')
-    .eq('user_id', user.id)
-    .single();
-
-  if (!tenantUser) return NextResponse.json({ error: 'Tenant not found' }, { status: 404 });
-
-  const tenantId = explicitTenantId || tenantUser.tenant_id;
-
-  // Strict ownership check
-  if (tenantId !== tenantUser.tenant_id) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  
+  const access = await verifyTenantAccess(supabase, user, explicitTenantId || '');
+  if (!access.authorized) {
+    return NextResponse.json({ error: access.error }, { status: access.status });
   }
+
+  const tenantId = access.tenantId;
 
   const { data: accounts, error } = await supabase
     .from('whatsapp_accounts')
@@ -50,25 +41,13 @@ export async function POST(req: NextRequest) {
 
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
-  const { data: tenantUser } = await supabase
-    .from('tenant_users')
-    .select('tenant_id, role')
-    .eq('user_id', user.id)
-    .single();
-
-  if (!tenantUser) return NextResponse.json({ error: 'Tenant not found' }, { status: 404 });
   
-  if (tenantUser.role !== 'admin' && tenantUser.role !== 'owner') {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  const access = await verifyTenantAccess(supabase, user, explicitTenantId || '', ['admin', 'owner']);
+  if (!access.authorized) {
+    return NextResponse.json({ error: access.error }, { status: access.status });
   }
 
-  const tenantId = explicitTenantId || tenantUser.tenant_id;
-
-  if (tenantId !== tenantUser.tenant_id) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-  }
+  const tenantId = access.tenantId;
 
   // Use admin client for upsert if needed, but here we can try with authenticated client if RLS allows
   const { createClient: createAdminClient } = require('@supabase/supabase-js');
@@ -103,17 +82,10 @@ export async function DELETE(req: NextRequest) {
 
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
-  const { data: tenantUser } = await supabase
-    .from('tenant_users')
-    .select('tenant_id, role')
-    .eq('user_id', user.id)
-    .eq('tenant_id', tenantId)
-    .single();
-
-  if (!tenantUser || (tenantUser.role !== 'admin' && tenantUser.role !== 'owner')) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  
+  const access = await verifyTenantAccess(supabase, user, tenantId, ['admin', 'owner']);
+  if (!access.authorized) {
+    return NextResponse.json({ error: access.error }, { status: access.status });
   }
 
   const { error } = await supabase

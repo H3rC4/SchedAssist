@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server';
+import { verifyTenantAccess } from '@/lib/auth-utils';
 
 // Removed global admin client for security. Clients are created per request.
 
@@ -12,11 +13,11 @@ export async function GET(req: NextRequest) {
 
   const supabase = createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
-  // Verify tenant ownership
-  const { data: tuData } = await supabase.from('tenant_users').select('tenant_id').eq('user_id', user.id).eq('tenant_id', tenantId).single()
-  if (!tuData) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  
+  const access = await verifyTenantAccess(supabase, user, tenantId);
+  if (!access.authorized) {
+    return NextResponse.json({ error: access.error }, { status: access.status });
+  }
 
   const { data, error } = await supabase
     .from('services')
@@ -39,12 +40,10 @@ export async function POST(req: NextRequest) {
 
   const supabase = createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
-  // Verify tenant ownership and role (only admin/owner can add services)
-  const { data: tuData } = await supabase.from('tenant_users').select('tenant_id, role').eq('user_id', user.id).eq('tenant_id', tenant_id).single()
-  if (!tuData || (tuData.role !== 'admin' && tuData.role !== 'owner')) {
-    return NextResponse.json({ error: 'Forbidden: Insufficient permissions' }, { status: 403 })
+  
+  const access = await verifyTenantAccess(supabase, user, tenant_id, ['admin', 'owner']);
+  if (!access.authorized) {
+    return NextResponse.json({ error: access.error }, { status: access.status });
   }
 
   const { data, error } = await supabase
@@ -74,12 +73,10 @@ export async function PATCH(req: NextRequest) {
 
   const supabase = createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
-  // Verify tenant ownership and role
-  const { data: tuData } = await supabase.from('tenant_users').select('tenant_id, role').eq('user_id', user.id).eq('tenant_id', tenant_id).single()
-  if (!tuData || (tuData.role !== 'admin' && tuData.role !== 'owner')) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  
+  const access = await verifyTenantAccess(supabase, user, tenant_id, ['admin', 'owner']);
+  if (!access.authorized) {
+    return NextResponse.json({ error: access.error }, { status: access.status });
   }
 
   const { data, error } = await supabase
@@ -104,12 +101,10 @@ export async function DELETE(req: NextRequest) {
 
   const supabase = createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
-  // Verify tenant ownership and role
-  const { data: tuData } = await supabase.from('tenant_users').select('tenant_id, role').eq('user_id', user.id).eq('tenant_id', tenantId).single()
-  if (!tuData || (tuData.role !== 'admin' && tuData.role !== 'owner')) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  
+  const access = await verifyTenantAccess(supabase, user, tenantId, ['admin', 'owner']);
+  if (!access.authorized) {
+    return NextResponse.json({ error: access.error }, { status: access.status });
   }
 
   const { data, error } = await supabase

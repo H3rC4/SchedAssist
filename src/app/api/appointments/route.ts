@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { AppointmentService } from '@/services/appointment.service'
 import { MessageService } from '@/services/message.service'
+import { verifyTenantAccess } from '@/lib/auth-utils'
 import { format, parseISO } from 'date-fns'
 import { translations, dateLocales } from '@/lib/i18n'
 
@@ -55,17 +56,18 @@ export async function POST(req: NextRequest) {
   const { tenant_id, first_name, last_name, phone, service_id, professional_id, start_at, end_at, notes } = body
   const supabase = createClient()
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  
+  const access = await verifyTenantAccess(supabase, user, tenant_id);
+  if (!access.authorized) {
+    return NextResponse.json({ error: access.error }, { status: access.status });
+  }
 
-  // Get the user's tenant to verify ownership
-  const { data: tuData } = await supabase
-    .from('tenant_users')
-    .select('tenant_id, role')
-    .eq('user_id', user.id)
-    .single();
-
-  if (!tuData || tuData.tenant_id !== tenant_id) {
-    return NextResponse.json({ error: 'Unauthorized: Tenant mismatch' }, { status: 403 });
+  // Extra check for professionals (they can only create for themselves)
+  if (access.role === 'professional') {
+    const { data: profData } = await supabase.from('professionals').select('id').eq('user_id', user!.id).single();
+    if (!profData || profData.id !== professional_id) {
+      return NextResponse.json({ error: 'Unauthorized: Can only create appointments for yourself' }, { status: 403 });
+    }
   }
 
   // Create admin client to bypass RLS for now (ensuring we strictly checked tenant_id above)
@@ -80,13 +82,7 @@ export async function POST(req: NextRequest) {
   const cleanName = capitalize(first_name)
   const cleanLastName = capitalize(last_name)
 
-  try {
-    if (tuData?.role === 'professional') {
-      const { data: profData } = await supabase.from('professionals').select('id').eq('user_id', user.id).single();
-      if (!profData || profData.id !== professional_id) {
-        return NextResponse.json({ error: 'Unauthorized: Can only create appointments for yourself' }, { status: 403 });
-      }
-    }
+  // Note: professional check moved up to access logic
     // 1. Find or create client
     let { data: client } = await supabaseAdmin
       .from('clients')
@@ -163,16 +159,13 @@ export async function DELETE(req: NextRequest) {
 
   try {
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
-    const { data: tuData } = await supabase.from('tenant_users').select('tenant_id, role').eq('user_id', user.id).single();
-    
-    if (!tuData || (tenantId && tuData.tenant_id !== tenantId)) {
-      return NextResponse.json({ error: 'Unauthorized: Tenant mismatch' }, { status: 403 });
+    const access = await verifyTenantAccess(supabase, user, tenantId || '');
+    if (!access.authorized) {
+      return NextResponse.json({ error: access.error }, { status: access.status });
     }
 
-    if (tuData.role === 'professional') {
-      const { data: profData } = await supabase.from('professionals').select('id').eq('user_id', user.id).single();
+    if (access.role === 'professional') {
+      const { data: profData } = await supabase.from('professionals').select('id').eq('user_id', user!.id).single();
       const { data: targetApt } = await supabase.from('appointments').select('professional_id').eq('id', id).single();
       if (!profData || !targetApt || profData.id !== targetApt.professional_id) {
         return NextResponse.json({ error: 'Unauthorized: Can only cancel your own appointments' }, { status: 403 });
@@ -181,7 +174,7 @@ export async function DELETE(req: NextRequest) {
 
     const data = await AppointmentService.cancelAppointment(supabase, {
       appointment_id: id,
-      tenant_id: tuData.tenant_id,
+      tenant_id: access.tenantId!,
       reason: 'Cancelado desde Dashboard',
       is_admin_override: true 
     })
