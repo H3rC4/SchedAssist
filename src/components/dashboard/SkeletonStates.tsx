@@ -65,3 +65,25 @@ export function DashboardHeaderSkeleton() {
     </div>
   )
 }
+export function DashboardChartsSkeleton() {
+  return (
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      {[1, 2].map((i) => (
+        <div key={i} className="bg-white/40 dark:bg-slate-900/40 rounded-[2.5rem] border border-white/60 dark:border-white/10 p-8 space-y-6">
+          <div className="flex items-center justify-between">
+            <div className="space-y-2">
+              <Skeleton className="h-6 w-48 rounded-lg" />
+              <Skeleton className="h-4 w-32 rounded-full" />
+            </div>
+            <Skeleton className="h-10 w-10 rounded-xl" />
+          </div>
+          <Skeleton className="h-[250px] w-full rounded-2xl" />
+          <div className="flex justify-center gap-6">
+            <Skeleton className="h-3 w-20 rounded-full" />
+            <Skeleton className="h-3 w-24 rounded-full" />
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
