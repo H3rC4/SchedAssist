@@ -274,7 +274,7 @@ export default function ClientsPage() {
     if (!selectedClient || !e.target.files || e.target.files.length === 0) return
     const file = e.target.files[0]
     if (file.size > 5 * 1024 * 1024) {
-      alert(translations[lang].file_too_large || "El archivo es demasiado grande (Máx 5MB)")
+      alert((translations[lang] as any).file_too_large || "El archivo es demasiado grande (Máx 5MB)")
       return
     }
 
