@@ -1,57 +1,37 @@
+import { DashboardHeaderSkeleton, StatCardSkeleton, AppointmentListSkeleton } from "@/components/dashboard/SkeletonStates"
+import { Skeleton } from "@/components/ui/Skeleton"
+
 export default function DashboardLoading() {
   return (
-    <div className="w-full h-full flex flex-col space-y-10 animate-in fade-in duration-500">
-      {/* Skeleton Top Header inside main view */}
-      <div className="flex items-center justify-between">
-        <div className="space-y-4">
-          <div className="h-10 w-64 bg-slate-200 dark:bg-slate-800 rounded-2xl animate-pulse" />
-          <div className="h-4 w-48 bg-slate-100 dark:bg-slate-900 rounded-full animate-pulse" />
-        </div>
-        <div className="h-12 w-12 bg-slate-100 dark:bg-slate-900 rounded-2xl animate-pulse" />
+    <div className="w-full space-y-12 animate-in fade-in duration-700 max-w-[1400px] mx-auto pb-12">
+      {/* Header Skeleton */}
+      <DashboardHeaderSkeleton />
+
+      {/* Hero Stats Skeleton */}
+      <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
+        <StatCardSkeleton />
+        <StatCardSkeleton />
+        <StatCardSkeleton />
+        <StatCardSkeleton />
       </div>
 
-      {/* Main Content Grid Skeleton */}
-      <div className="grid gap-10 lg:grid-cols-12">
-        <div className="lg:col-span-8 space-y-10">
-          {/* Large Card Skeleton */}
-          <div className="h-[400px] w-full bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 p-10 flex flex-col justify-between shadow-xl shadow-indigo-900/5">
-             <div className="space-y-6">
-                <div className="flex items-center gap-4">
-                  <div className="h-14 w-14 bg-slate-100 dark:bg-slate-800 rounded-2xl animate-pulse" />
-                  <div className="h-8 w-40 bg-slate-100 dark:bg-slate-800 rounded-full animate-pulse" />
-                </div>
-                <div className="h-24 w-full bg-slate-50 dark:bg-slate-800/50 rounded-2xl animate-pulse" />
-             </div>
-             <div className="h-16 w-full bg-slate-900 dark:bg-slate-800 rounded-[2rem] animate-pulse" />
-          </div>
+      {/* Analytics Placeholder */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <Skeleton className="lg:col-span-2 h-[400px] rounded-[2.5rem] bg-white/40 dark:bg-slate-900/40 border border-white/60 dark:border-white/10 shadow-sm" />
+        <Skeleton className="lg:col-span-1 h-[400px] rounded-[2.5rem] bg-white/40 dark:bg-slate-900/40 border border-white/60 dark:border-white/10 shadow-sm" />
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+        {/* Appointments List Skeleton */}
+        <div className="lg:col-span-8">
+          <AppointmentListSkeleton />
         </div>
 
-        <div className="lg:col-span-4 space-y-10">
-          {/* Small Card Skeleton 1 */}
-          <div className="h-[250px] w-full bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 p-8 shadow-lg shadow-indigo-900/5">
-            <div className="flex items-center gap-4 mb-8">
-              <div className="h-12 w-12 bg-slate-100 dark:bg-slate-800 rounded-xl animate-pulse" />
-              <div className="h-6 w-32 bg-slate-100 dark:bg-slate-800 rounded-full animate-pulse" />
-            </div>
-            <div className="space-y-4">
-               <div className="h-4 w-full bg-slate-50 dark:bg-slate-800/50 rounded-full animate-pulse" />
-               <div className="h-12 w-full bg-slate-100 dark:bg-slate-800 rounded-2xl animate-pulse" />
-            </div>
-          </div>
-
-          {/* Small Card Skeleton 2 */}
-          <div className="h-[250px] w-full bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 p-8 shadow-lg shadow-indigo-900/5">
-            <div className="flex items-center gap-4 mb-8">
-              <div className="h-12 w-12 bg-slate-100 dark:bg-slate-800 rounded-xl animate-pulse" />
-              <div className="h-6 w-32 bg-slate-100 dark:bg-slate-800 rounded-full animate-pulse" />
-            </div>
-            <div className="space-y-4">
-               <div className="h-12 w-full bg-slate-100 dark:bg-slate-800 rounded-2xl animate-pulse" />
-               <div className="h-12 w-full bg-slate-900 dark:bg-slate-800 rounded-[1.5rem] animate-pulse" />
-            </div>
-          </div>
+        {/* Quick Context Panel Skeleton */}
+        <div className="lg:col-span-4">
+          <Skeleton className="h-[500px] w-full rounded-[2.5rem] bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10" />
         </div>
       </div>
     </div>
-  );
+  )
 }
