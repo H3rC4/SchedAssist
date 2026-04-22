@@ -54,8 +54,21 @@ export async function POST(req: NextRequest) {
   const body = await req.json()
   const { tenant_id, first_name, last_name, phone, service_id, professional_id, start_at, end_at, notes } = body
   const supabase = createClient()
-  
-  // Create admin client to bypass RLS since Dashboard auth is not yet implemented
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+  // Get the user's tenant to verify ownership
+  const { data: tuData } = await supabase
+    .from('tenant_users')
+    .select('tenant_id, role')
+    .eq('user_id', user.id)
+    .single();
+
+  if (!tuData || tuData.tenant_id !== tenant_id) {
+    return NextResponse.json({ error: 'Unauthorized: Tenant mismatch' }, { status: 403 });
+  }
+
+  // Create admin client to bypass RLS for now (ensuring we strictly checked tenant_id above)
   const { createClient: createSupabaseClient } = require('@supabase/supabase-js')
   const supabaseAdmin = createSupabaseClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -68,14 +81,10 @@ export async function POST(req: NextRequest) {
   const cleanLastName = capitalize(last_name)
 
   try {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (user) {
-      const { data: tuData } = await supabase.from('tenant_users').select('role').eq('user_id', user.id).single();
-      if (tuData?.role === 'professional') {
-        const { data: profData } = await supabase.from('professionals').select('id').eq('user_id', user.id).single();
-        if (!profData || profData.id !== professional_id) {
-          return NextResponse.json({ error: 'Unauthorized: Can only create appointments for yourself' }, { status: 403 });
-        }
+    if (tuData?.role === 'professional') {
+      const { data: profData } = await supabase.from('professionals').select('id').eq('user_id', user.id).single();
+      if (!profData || profData.id !== professional_id) {
+        return NextResponse.json({ error: 'Unauthorized: Can only create appointments for yourself' }, { status: 403 });
       }
     }
     // 1. Find or create client
@@ -154,22 +163,27 @@ export async function DELETE(req: NextRequest) {
 
   try {
     const { data: { user } } = await supabase.auth.getUser();
-    if (user) {
-      const { data: tuData } = await supabase.from('tenant_users').select('role').eq('user_id', user.id).single();
-      if (tuData?.role === 'professional') {
-        const { data: profData } = await supabase.from('professionals').select('id').eq('user_id', user.id).single();
-        const { data: targetApt } = await supabase.from('appointments').select('professional_id').eq('id', id).single();
-        if (!profData || !targetApt || profData.id !== targetApt.professional_id) {
-          return NextResponse.json({ error: 'Unauthorized: Can only cancel your own appointments' }, { status: 403 });
-        }
+    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+    const { data: tuData } = await supabase.from('tenant_users').select('tenant_id, role').eq('user_id', user.id).single();
+    
+    if (!tuData || (tenantId && tuData.tenant_id !== tenantId)) {
+      return NextResponse.json({ error: 'Unauthorized: Tenant mismatch' }, { status: 403 });
+    }
+
+    if (tuData.role === 'professional') {
+      const { data: profData } = await supabase.from('professionals').select('id').eq('user_id', user.id).single();
+      const { data: targetApt } = await supabase.from('appointments').select('professional_id').eq('id', id).single();
+      if (!profData || !targetApt || profData.id !== targetApt.professional_id) {
+        return NextResponse.json({ error: 'Unauthorized: Can only cancel your own appointments' }, { status: 403 });
       }
     }
 
     const data = await AppointmentService.cancelAppointment(supabase, {
       appointment_id: id,
-      tenant_id: tenantId || 'any', // If tenantId not provided, search by id only might fail depending on Service implementation
+      tenant_id: tuData.tenant_id,
       reason: 'Cancelado desde Dashboard',
-      is_admin_override: true // Dashboard admin can override 24h rule
+      is_admin_override: true 
     })
 
     return NextResponse.json(data)
