@@ -25,7 +25,7 @@ export async function GET(req: NextRequest) {
     .select(`*, availability_rules(*)`)
     .eq('tenant_id', tenantId)
 
-  if (tuData.role === 'professional') {
+  if (access.role === 'professional') {
     const { data: profData } = await supabase.from('professionals').select('id').eq('user_id', user.id).single();
     if (profData) {
       query = query.eq('id', profData.id);
