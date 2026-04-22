@@ -22,6 +22,17 @@ export interface Client {
   phone: string;
 }
 
+// Simple in-memory cache to store data during the session
+const appointmentsCache: {
+  meta: { services: any[]; professionals: any[] } | null;
+  days: Record<string, any[]>;
+  months: Record<string, any[]>;
+} = {
+  meta: null,
+  days: {},
+  months: {},
+};
+
 export function useAppointments() {
   const supabase = createClient()
   const [currentMonth, setCurrentMonth] = useState(new Date())
@@ -39,19 +50,42 @@ export function useAppointments() {
   const [loading, setLoading] = useState(true)
 
   const fetchMeta = useCallback(async (tenantId: string) => {
+    // Check cache first
+    if (appointmentsCache.meta) {
+      setServices(appointmentsCache.meta.services);
+      setProfessionals(appointmentsCache.meta.professionals);
+      return;
+    }
+
     const { data: s } = await supabase.from('services').select('id, name').eq('tenant_id', tenantId).eq('active', true)
     const { data: p } = await supabase.from('professionals').select('id, full_name').eq('tenant_id', tenantId).eq('active', true)
-    if (s) setServices(s)
-    if (p) setProfessionals(p)
+    
+    if (s && p) {
+      const meta = { services: s, professionals: p };
+      appointmentsCache.meta = meta;
+      setServices(s)
+      setProfessionals(p)
+    }
   }, [supabase])
 
-  const fetchMonthAppointments = useCallback(async (tenantId: string, month: Date) => {
+  const fetchMonthAppointments = useCallback(async (tenantId: string, month: Date, force = false) => {
     const start = format(startOfMonth(month), 'yyyy-MM-dd')
     const end = format(endOfMonth(month), 'yyyy-MM-dd')
+    const cacheKey = `${tenantId}-${start}-${end}`;
+
+    if (!force && appointmentsCache.months[cacheKey]) {
+      setAllMonthApps(appointmentsCache.months[cacheKey]);
+      return;
+    }
+
     const { data } = await supabase.from('appointments').select('id, status, start_at, clients(id), professionals(id)')
       .eq('tenant_id', tenantId).neq('status', 'cancelled')
       .gte('start_at', `${start}T00:00:00Z`).lte('start_at', `${end}T23:59:59Z`)
-    if (data) setAllMonthApps(data as any[])
+    
+    if (data) {
+      appointmentsCache.months[cacheKey] = data;
+      setAllMonthApps(data as any[])
+    }
 
     // Fetch pending notifications (any cancelled app where cancellation_notified is false)
     const { data: pending } = await supabase.from('appointments')
@@ -63,15 +97,26 @@ export function useAppointments() {
     if (pending) setPendingCalls(pending as any[])
   }, [supabase])
 
-  const fetchDayAppointments = useCallback(async (tenantId: string, date: Date) => {
+  const fetchDayAppointments = useCallback(async (tenantId: string, date: Date, force = false) => {
     const dateStr = format(date, 'yyyy-MM-dd')
+    const cacheKey = `${tenantId}-${dateStr}`;
+
+    if (!force && appointmentsCache.days[cacheKey]) {
+      setAppointments(appointmentsCache.days[cacheKey]);
+      return;
+    }
+
     const { data } = await supabase.from('appointments')
       .select('id, status, start_at, end_at, notes, clients(id, first_name, last_name, phone), services(name), professionals(id, full_name)')
       .eq('tenant_id', tenantId)
       .not('status', 'in', '("cancelled","rescheduled")')
       .gte('start_at', `${dateStr}T00:00:00Z`).lte('start_at', `${dateStr}T23:59:59Z`)
       .order('start_at', { ascending: true })
-    if (data) setAppointments(data as any[])
+    
+    if (data) {
+      appointmentsCache.days[cacheKey] = data;
+      setAppointments(data as any[])
+    }
   }, [supabase])
 
   const init = useCallback(async () => {
@@ -106,8 +151,11 @@ export function useAppointments() {
     if (!tenantId) return
     const channel = supabase.channel('realtime-appointments')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'appointments', filter: `tenant_id=eq.${tenantId}` }, () => {
-        fetchMonthAppointments(tenantId, currentMonth)
-        fetchDayAppointments(tenantId, selectedDate)
+        // Clear caches on change to ensure consistency
+        appointmentsCache.days = {};
+        appointmentsCache.months = {};
+        fetchMonthAppointments(tenantId, currentMonth, true)
+        fetchDayAppointments(tenantId, selectedDate, true)
       })
       .subscribe()
     return () => { supabase.removeChannel(channel) }
@@ -203,6 +251,11 @@ export function useAppointments() {
     fetchSlots,
     cancelAppointment,
     markAsNotified,
-    refresh: () => { fetchDayAppointments(tenantId, selectedDate); fetchMonthAppointments(tenantId, currentMonth) }
+    refresh: () => { 
+      appointmentsCache.days = {};
+      appointmentsCache.months = {};
+      fetchDayAppointments(tenantId, selectedDate, true); 
+      fetchMonthAppointments(tenantId, currentMonth, true) 
+    }
   }
 }
