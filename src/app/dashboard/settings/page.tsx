@@ -201,7 +201,7 @@ export default function SettingsPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
 
-        {userRole === 'admin' && (
+        {(userRole === 'admin' || userRole === 'tenant_admin' || userRole === 'owner') && (
           <div className="bg-white dark:bg-slate-900 rounded-[2rem] md:rounded-[2.5rem] border border-slate-200 dark:border-slate-800 shadow-xl shadow-indigo-900/5 p-6 md:p-10 transition-all hover:shadow-indigo-900/10">
             <div className="flex items-center gap-4 mb-4">
               <div className="h-12 w-12 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center">
@@ -221,7 +221,7 @@ export default function SettingsPage() {
         )}
 
         {/* Clinic Configuration - Only for Admin */}
-        {userRole === 'admin' && (
+        {(userRole === 'admin' || userRole === 'tenant_admin' || userRole === 'owner') && (
           <div className="bg-white dark:bg-slate-900 rounded-[2rem] md:rounded-[2.5rem] border border-slate-200 dark:border-slate-800 shadow-xl shadow-indigo-900/5 p-6 md:p-10 transition-all hover:shadow-indigo-900/10">
           <div className="flex items-center gap-4 mb-8">
             <div className="h-12 w-12 rounded-xl bg-amber-50 dark:bg-amber-500/10 flex items-center justify-center">
@@ -344,7 +344,7 @@ export default function SettingsPage() {
         )}
 
         {/* Language Settings - Only for Admin */}
-        {userRole === 'admin' && (
+        {(userRole === 'admin' || userRole === 'tenant_admin' || userRole === 'owner') && (
           <div className="bg-white dark:bg-slate-900 rounded-[2rem] md:rounded-[2.5rem] border border-slate-200 dark:border-slate-800 shadow-xl shadow-indigo-900/5 p-6 md:p-10 transition-all hover:shadow-indigo-900/10">
           <div className="flex items-center gap-4 mb-8">
             <div className="h-12 w-12 rounded-xl bg-indigo-50 dark:bg-indigo-500/10 flex items-center justify-center">

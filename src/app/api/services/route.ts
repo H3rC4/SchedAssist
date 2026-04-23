@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
   const supabase = createClient()
   const { data: { user } } = await supabase.auth.getUser()
   
-  const access = await verifyTenantAccess(supabase, user, tenant_id, ['admin', 'owner']);
+  const access = await verifyTenantAccess(supabase, user, tenant_id, ['admin', 'owner', 'tenant_admin']);
   if (!access.authorized) {
     return NextResponse.json({ error: access.error }, { status: access.status });
   }
@@ -74,7 +74,7 @@ export async function PATCH(req: NextRequest) {
   const supabase = createClient()
   const { data: { user } } = await supabase.auth.getUser()
   
-  const access = await verifyTenantAccess(supabase, user, tenant_id, ['admin', 'owner']);
+  const access = await verifyTenantAccess(supabase, user, tenant_id, ['admin', 'owner', 'tenant_admin']);
   if (!access.authorized) {
     return NextResponse.json({ error: access.error }, { status: access.status });
   }
@@ -102,7 +102,7 @@ export async function DELETE(req: NextRequest) {
   const supabase = createClient()
   const { data: { user } } = await supabase.auth.getUser()
   
-  const access = await verifyTenantAccess(supabase, user, tenantId, ['admin', 'owner']);
+  const access = await verifyTenantAccess(supabase, user, tenantId, ['admin', 'owner', 'tenant_admin']);
   if (!access.authorized) {
     return NextResponse.json({ error: access.error }, { status: access.status });
   }
