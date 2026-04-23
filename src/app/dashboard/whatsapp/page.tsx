@@ -69,10 +69,10 @@ export default function WhatsAppPage() {
       if (data.url) {
         window.location.href = data.url
       } else {
-        alert('Error al iniciar pago: ' + (data.error || 'Desconocido'))
+        alert(`${t.error}: ` + (data.error || t.error_generic))
       }
     } catch (error) {
-      alert('Error de conexión')
+      alert(t.network_error)
     } finally {
       setIsProcessing(false)
     }
@@ -82,7 +82,7 @@ export default function WhatsAppPage() {
     e.preventDefault()
     setFormError('')
     if (!newAccount.phone_number_id || !newAccount.access_token) {
-      setFormError('ID y Token son obligatorios')
+      setFormError(t.form_id_token_required)
       return
     }
 
@@ -109,12 +109,12 @@ export default function WhatsAppPage() {
   }
 
   const handleDeleteAccount = async (id: string) => {
-    if (!confirm('¿Eliminar este canal?')) return
+    if (!confirm(t.delete_channel_confirm)) return
     try {
       await fetch(`/api/settings/whatsapp?id=${id}&tenant_id=${tenant.id}`, { method: 'DELETE' })
       fetchData()
     } catch (error) {
-      alert('Error al eliminar')
+      alert(t.delete_error)
     }
   }
 
@@ -143,10 +143,10 @@ export default function WhatsAppPage() {
 
           <div className="space-y-3 md:space-y-4">
             <h2 className="text-2xl md:text-4xl font-black text-slate-900 dark:text-white uppercase tracking-tighter">
-              ¡Pago <span className="text-emerald-500">Exitoso</span>!
+              {t.payment_success}
             </h2>
             <p className="text-sm md:text-base text-slate-500 font-bold leading-relaxed">
-              Tu suscripción **SchedAssist Premium** está activa. Ahora puedes vincular tus números de WhatsApp y activar el asistente de IA.
+              {t.payment_success_desc}
             </p>
           </div>
 
@@ -157,12 +157,12 @@ export default function WhatsAppPage() {
                 </div>
                 <div>
                     <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Plan</p>
-                    <p className="text-sm font-bold text-slate-900 dark:text-white">Mensual $70 (Acceso Ilimitado)</p>
+                    <p className="text-sm font-bold text-slate-900 dark:text-white">{t.plan_monthly_price}</p>
                 </div>
             </div>
             <div className="h-px bg-slate-200 dark:bg-white/10 w-full my-4" />
             <div className="flex items-center justify-between text-xs font-bold text-slate-400 uppercase tracking-widest">
-                <span>Próximo cobro</span>
+                <span>{t.next_billing}</span>
                 <span className="text-slate-900 dark:text-white">{new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString()}</span>
             </div>
           </div>
@@ -174,7 +174,7 @@ export default function WhatsAppPage() {
             }}
             className="w-full h-16 bg-slate-900 dark:bg-amber-500 text-white dark:text-slate-900 rounded-2xl font-black uppercase tracking-widest transition-all hover:scale-105 shadow-xl shadow-slate-900/20 active:scale-95 flex items-center justify-center gap-3"
           >
-            Configurar WhatsApp Ahora <ArrowRight className="h-5 w-5" />
+            {t.configure_whatsapp_now} <ArrowRight className="h-5 w-5" />
           </button>
         </div>
       </div>
@@ -199,7 +199,7 @@ export default function WhatsAppPage() {
               </div>
               
               <h1 className="text-3xl md:text-6xl font-black text-white tracking-tighter uppercase mb-4 md:mb-6 leading-none">
-                WhatsApp <span className="text-amber-500">Premium</span>
+                {t.whatsapp_premium_title}
               </h1>
               
               <p className="text-base md:text-xl text-slate-400 font-medium max-w-2xl mx-auto mb-8 md:mb-12 leading-relaxed">
@@ -226,7 +226,7 @@ export default function WhatsAppPage() {
                   disabled={isProcessing}
                   className="w-full md:w-auto px-10 py-5 bg-amber-500 hover:bg-amber-400 text-slate-900 rounded-3xl font-black text-lg uppercase tracking-wider transition-all hover:scale-105 active:scale-95 disabled:opacity-50 disabled:scale-100 shadow-xl shadow-amber-500/20 flex items-center justify-center gap-3"
                 >
-                  {isProcessing ? <Loader2 className="h-6 w-6 animate-spin" /> : <>{t.whatsapp_banner.cta} por $70/mes <ArrowRight className="h-5 w-5" /></>}
+                  {isProcessing ? <Loader2 className="h-6 w-6 animate-spin" /> : <>{t.whatsapp_banner.cta} {t.plan_monthly_price} <ArrowRight className="h-5 w-5" /></>}
                 </button>
                 <div className="flex items-center gap-2 text-slate-500 text-sm font-bold uppercase tracking-widest">
                   <ShieldCheck className="h-4 w-4" /> {t.secure_payment || 'Pago Seguro vía Stripe'}
@@ -246,11 +246,11 @@ export default function WhatsAppPage() {
         <div>
           <div className="flex items-center gap-3 mb-2 md:mb-4">
             <div className="px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em]">
-              Suscripción Activa
+              {t.subscription_active_label}
             </div>
           </div>
           <h1 className="text-3xl md:text-5xl font-black text-slate-900 dark:text-white uppercase tracking-tighter leading-none">
-            {t.whatsapp_config || 'Configuración'} <span className="text-amber-500">WhatsApp</span>
+            {t.whatsapp_config || 'Configuración'} WhatsApp
           </h1>
         </div>
         
@@ -258,7 +258,7 @@ export default function WhatsAppPage() {
           onClick={() => setShowAddForm(!showAddForm)}
           className="w-full md:w-auto px-6 py-4 bg-slate-900 dark:bg-white dark:text-slate-900 text-white rounded-[1.25rem] md:rounded-[1.5rem] font-black text-[10px] md:text-xs uppercase tracking-widest transition-all hover:scale-105 flex items-center justify-center gap-2"
         >
-          {showAddForm ? t.cancel : <><Plus className="h-4 w-4" /> {t.link_new_number || 'Vincular Nuevo Número'}</>}
+          {showAddForm ? t.cancel : <><Plus className="h-4 w-4" /> {t.add_account}</>}
         </button>
       </div>
 
@@ -267,36 +267,36 @@ export default function WhatsAppPage() {
           <form onSubmit={handleAddAccount} className="max-w-xl space-y-6 md:space-y-8">
             <div className="space-y-4 md:space-y-6">
               <div>
-                <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 md:mb-3 px-1">Etiqueta (Ej: Recepción)</label>
+                <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 md:mb-3 px-1">{t.account_label}</label>
                 <input 
                   type="text" 
                   value={newAccount.label}
                   onChange={e => setNewAccount({...newAccount, label: e.target.value})}
                   className="w-full h-12 md:h-14 bg-white dark:bg-black rounded-xl md:rounded-2xl border border-slate-200 dark:border-white/10 px-4 md:px-6 font-bold text-slate-900 dark:text-white transition-all focus:border-amber-500 outline-none text-sm md:text-base"
-                  placeholder="Nombre del canal..." 
+                  placeholder={t.account_label_placeholder} 
                 />
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                 <div>
-                  <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 md:mb-3 px-1">Channel ID (Whapi)</label>
+                  <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 md:mb-3 px-1">{t.phone_number_id}</label>
                   <input 
                     type="text" 
                     required
                     value={newAccount.phone_number_id}
                     onChange={e => setNewAccount({...newAccount, phone_number_id: e.target.value})}
                     className="w-full h-12 md:h-14 bg-white dark:bg-black rounded-xl md:rounded-2xl border border-slate-200 dark:border-white/10 px-4 md:px-6 font-bold text-slate-900 dark:text-white transition-all focus:border-amber-500 outline-none text-sm md:text-base"
-                    placeholder="THOROD-..." 
+                    placeholder={t.phone_number_id_placeholder} 
                   />
                 </div>
                 <div>
-                  <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 md:mb-3 px-1">API Token</label>
+                  <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 md:mb-3 px-1">{t.access_token}</label>
                   <input 
                     type="password" 
                     required
                     value={newAccount.access_token}
                     onChange={e => setNewAccount({...newAccount, access_token: e.target.value})}
                     className="w-full h-12 md:h-14 bg-white dark:bg-black rounded-xl md:rounded-2xl border border-slate-200 dark:border-white/10 px-4 md:px-6 font-bold text-slate-900 dark:text-white transition-all focus:border-amber-500 outline-none text-sm md:text-base"
-                    placeholder="••••••••" 
+                    placeholder={t.access_token_placeholder} 
                   />
                 </div>
               </div>
@@ -313,7 +313,7 @@ export default function WhatsAppPage() {
               disabled={isProcessing}
               className="h-16 w-full bg-amber-500 hover:bg-amber-400 text-slate-900 rounded-2xl font-black uppercase tracking-widest transition-all disabled:opacity-50 flex items-center justify-center gap-3"
             >
-              {isProcessing ? <Loader2 className="h-5 w-5 animate-spin" /> : t.btnSave || 'Guardar Configuración'}
+              {isProcessing ? <Loader2 className="h-5 w-5 animate-spin" /> : t.save_config}
             </button>
           </form>
         </div>
@@ -323,7 +323,7 @@ export default function WhatsAppPage() {
         {accounts.length === 0 ? (
           <div className="p-12 text-center rounded-[3rem] border border-dashed border-slate-200 dark:border-white/10">
             <Smartphone className="h-12 w-12 text-slate-300 dark:text-slate-700 mx-auto mb-4" />
-            <p className="text-slate-500 font-bold uppercase tracking-widest text-xs">Aún no has vinculado ningún número de WhatsApp.</p>
+            <p className="text-slate-500 font-bold uppercase tracking-widest text-xs">{t.no_whatsapp_accounts}</p>
           </div>
         ) : (
           accounts.map(acc => (
@@ -338,7 +338,7 @@ export default function WhatsAppPage() {
                     <span className="text-[9px] md:text-[10px] font-mono font-bold text-slate-400 uppercase tracking-widest px-2 py-0.5 rounded bg-slate-100 dark:bg-white/5 truncate max-w-[120px]">ID: {acc.phone_number_id}</span>
                     <div className="flex items-center gap-1.5">
                       <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                      <span className="text-[9px] md:text-[10px] font-black text-emerald-500 uppercase tracking-[0.2em]">Conectado</span>
+                      <span className="text-[9px] md:text-[10px] font-black text-emerald-500 uppercase tracking-[0.2em]">{t.connected}</span>
                     </div>
                   </div>
                 </div>
@@ -362,8 +362,8 @@ export default function WhatsAppPage() {
           <AlertCircle className="h-6 w-6" />
         </div>
         <div className="flex-1">
-          <h4 className="text-sm font-black text-indigo-500 uppercase tracking-widest mb-1">Nota sobre Whapi</h4>
-          <p className="text-xs text-slate-500 leading-relaxed font-medium">Asegúrate de que tu canal en el panel de Whapi.Cloud esté en estado <span className="text-emerald-500 font-bold uppercase">Authed</span>. Puedes vincular múltiples canales para mayor redundancia.</p>
+          <h4 className="text-sm font-black text-indigo-500 uppercase tracking-widest mb-1">{t.whapi_note_title}</h4>
+          <p className="text-xs text-slate-500 leading-relaxed font-medium">{t.whapi_note_desc}</p>
         </div>
       </div>
     </div>

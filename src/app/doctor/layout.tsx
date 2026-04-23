@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { LogOut, Calendar, Clock, Zap, User } from 'lucide-react'
+import { LogOut, Calendar, Clock, Zap, User, Settings } from 'lucide-react'
 import { ForcePasswordChangeGate } from '@/components/dashboard/ForcePasswordChangeGate'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
@@ -56,6 +56,7 @@ export default function DoctorLayout({ children }: { children: React.ReactNode }
     { label: fullT.nav_calendar, href: '/doctor', icon: Calendar },
     { label: fullT.tab_weekly_config, href: '/doctor/schedule', icon: Clock },
     { label: fullT.nav_patients, href: '/doctor/patients', icon: User },
+    { label: fullT.nav_settings, href: '/doctor/settings', icon: Settings },
   ]
 
   return (

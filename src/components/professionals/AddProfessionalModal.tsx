@@ -6,12 +6,13 @@ import { X, UserPlus, CheckCircle, Loader2 } from 'lucide-react'
 interface AddProfessionalModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onConfirm: (data: { full_name: string, specialty: string }) => Promise<{ success: boolean }>;
+  onConfirm: (data: { full_name: string, specialty: string, location_id?: string }) => Promise<{ success: boolean }>;
   t: any;
+  locations?: any[];
 }
 
-export function AddProfessionalModal({ isOpen, onClose, onConfirm, t }: AddProfessionalModalProps) {
-  const [data, setData] = useState({ full_name: '', specialty: '' })
+export function AddProfessionalModal({ isOpen, onClose, onConfirm, t, locations = [] }: AddProfessionalModalProps) {
+  const [data, setData] = useState({ full_name: '', specialty: '', location_id: '' })
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
 
@@ -25,7 +26,7 @@ export function AddProfessionalModal({ isOpen, onClose, onConfirm, t }: AddProfe
       setSuccess(true)
       setTimeout(() => {
         setSuccess(false)
-        setData({ full_name: '', specialty: '' })
+        setData({ full_name: '', specialty: '', location_id: '' })
         onClose()
       }, 1500)
     }
@@ -68,6 +69,22 @@ export function AddProfessionalModal({ isOpen, onClose, onConfirm, t }: AddProfe
                 placeholder={t.specialtyPH}
               />
             </div>
+
+            {locations.length > 0 && (
+              <div className="space-y-2">
+                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-2">{t.locationLabel}</label>
+                <select
+                  value={data.location_id}
+                  onChange={e => setData({ ...data, location_id: e.target.value })}
+                  className="w-full rounded-2xl bg-gray-50 border border-gray-100 px-6 py-4 text-sm font-bold text-gray-900 focus:bg-white focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 transition-all outline-none"
+                >
+                  <option value="">{t.selectLocationOptional}</option>
+                  {locations.map(loc => (
+                    <option key={loc.id} value={loc.id}>{loc.name}</option>
+                  ))}
+                </select>
+              </div>
+            )}
 
             <button
               type="submit"

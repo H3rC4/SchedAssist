@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import Link from 'next/link'
-import { Calendar, Users, CheckCircle, Clock, ChevronRight, Zap, Target, Star, MoreHorizontal, ArrowUpRight, ArrowDownRight, LayoutDashboard, Plus } from 'lucide-react'
+import { Calendar, Users, CheckCircle, Clock, ChevronRight, Zap, Target, Star, MoreHorizontal, ArrowUpRight, ArrowDownRight, LayoutDashboard, Plus, ExternalLink, Copy, Check } from 'lucide-react'
 import { StatCard } from '@/components/dashboard/StatCard'
 import { createClient } from '@/lib/supabase/client'
 import { format, parseISO } from 'date-fns'
@@ -18,7 +18,9 @@ export default function DashboardPage() {
   const [notifyingId, setNotifyingId] = useState<string | null>(null)
   const [callNotes, setCallNotes] = useState<{[key: string]: string}>({})
   const [tenantName, setTenantName] = useState('Admin')
+  const [tenantSlug, setTenantSlug] = useState('')
   const [lang, setLang] = useState<Language>('es')
+  const [copied, setCopied] = useState(false)
   const supabase = createClient()
 
   const fetchData = useCallback(async () => {
@@ -27,7 +29,7 @@ export default function DashboardPage() {
 
     const { data: tuData } = await supabase
       .from('tenant_users')
-      .select('tenant_id, tenants(id, name, settings)')
+      .select('tenant_id, tenants(id, name, slug, settings)')
       .eq('user_id', user.id)
       .limit(1).single()
 
@@ -35,6 +37,7 @@ export default function DashboardPage() {
     const tenant = tuData.tenants as any
     const tenantId = tenant.id
     setTenantName(tenant.name)
+    setTenantSlug(tenant.slug)
     setLang((tenant.settings?.language as Language) || 'es')
 
     const { data: apps } = await supabase.from('appointments').select(`
@@ -164,6 +167,13 @@ export default function DashboardPage() {
     setNotifyingId(null)
   };
 
+  const copyToClipboard = () => {
+    const url = `${window.location.origin}/book/${tenantSlug}`;
+    navigator.clipboard.writeText(url);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
   return (
     <div className="space-y-12 animate-in fade-in slide-in-from-bottom-8 duration-1000 ease-out-expo max-w-[1400px] mx-auto pb-12">
       {/* Header / Welcome Section */}
@@ -203,6 +213,46 @@ export default function DashboardPage() {
         <StatCard name={t.active_patients} value={stats.clients.toString()} icon={Users} change="+5%" changeType="increase" />
         <StatCard name={t.confirmed} value={stats.completed.toString()} icon={CheckCircle} change="-2%" changeType="decrease" />
         <StatCard name={t.pending} value={stats.pending.toString()} icon={Clock} change="+8%" changeType="increase" />
+      </div>
+
+      {/* Booking Portal Link Section */}
+      <div className="bg-gradient-to-br from-slate-900 to-indigo-950 rounded-[2.5rem] p-8 md:p-10 border border-white/10 shadow-2xl relative overflow-hidden group">
+          <div className="absolute top-0 right-0 p-12 opacity-10 group-hover:opacity-20 transition-opacity">
+              <Zap className="h-40 w-40 text-amber-500 rotate-12" />
+          </div>
+          
+          <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8">
+              <div className="max-w-xl">
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-500 text-[10px] font-black uppercase tracking-widest mb-6">
+                      <Star className="h-3 w-3 fill-amber-500" /> {t.booking_portal}
+                  </div>
+                  <h2 className="text-2xl md:text-3xl font-black text-white uppercase tracking-tight mb-4">
+                      {t.booking_portal_desc}
+                  </h2>
+                  <div className="flex flex-wrap items-center gap-3">
+                      <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl px-6 py-4 flex items-center gap-4 group/link transition-all hover:bg-white/10">
+                          <span className="text-slate-400 font-mono text-sm">
+                              schedassist.com/book/<span className="text-white font-bold">{tenantSlug}</span>
+                          </span>
+                          <button 
+                            onClick={copyToClipboard}
+                            className="p-2 hover:bg-white/10 rounded-xl text-slate-400 hover:text-white transition-all flex items-center gap-2"
+                          >
+                              {copied ? <Check className="h-4 w-4 text-emerald-500" /> : <Copy className="h-4 w-4" />}
+                              <span className="text-[10px] font-black uppercase tracking-widest">{copied ? t.success : t.copy_link}</span>
+                          </button>
+                      </div>
+                  </div>
+              </div>
+              
+              <Link 
+                href={`/book/${tenantSlug}`}
+                target="_blank"
+                className="h-20 px-10 bg-white text-slate-900 rounded-[1.5rem] font-black uppercase tracking-[0.2em] text-xs flex items-center gap-3 hover:scale-105 active:scale-95 transition-all shadow-2xl shadow-white/10"
+              >
+                  {t.view_portal} <ExternalLink className="h-5 w-5" />
+              </Link>
+          </div>
       </div>
 
       {/* Analytics Section */}

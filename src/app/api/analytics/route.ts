@@ -6,6 +6,7 @@ import { startOfMonth, subMonths, format, parseISO } from 'date-fns';
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const tenantId = searchParams.get('tenant_id');
+  const locationId = searchParams.get('location_id');
 
   if (!tenantId) {
     return NextResponse.json({ error: 'tenant_id required' }, { status: 400 });
@@ -27,7 +28,7 @@ export async function GET(req: NextRequest) {
   // Fetch all appointments for the current year to have enough data for charts
   const yearStart = new Date(now.getFullYear(), 0, 1).toISOString();
 
-  const { data: apps, error } = await supabase
+  const query = supabase
     .from('appointments')
     .select(`
       id, status, start_at,
@@ -36,6 +37,12 @@ export async function GET(req: NextRequest) {
     `)
     .eq('tenant_id', tenantId)
     .gte('start_at', yearStart);
+
+  if (locationId) {
+    query.eq('location_id', locationId);
+  }
+
+  const { data: apps, error } = await query;
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });

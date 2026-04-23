@@ -35,6 +35,7 @@ interface ProfessionalDetailDrawerProps {
   deleteOverride: (id: string) => void;
   saving: boolean;
   saved: boolean;
+  locations?: any[];
 }
 
 export function ProfessionalDetailDrawer({
@@ -51,7 +52,8 @@ export function ProfessionalDetailDrawer({
   addOverride,
   deleteOverride,
   saving,
-  saved
+  saved,
+  locations = []
 }: ProfessionalDetailDrawerProps) {
   // fullT contiene las traducciones completas (root), t solo landing.
   const { fullT } = useLandingTranslation()
@@ -62,11 +64,22 @@ export function ProfessionalDetailDrawer({
   const [localHint, setLocalHint] = useState(professional.auth_password_hint)
   const [resettingPassword, setResettingPassword] = useState(false)
   const [internalSaving, setInternalSaving] = useState(false)
+  
+  const [localInfo, setLocalInfo] = useState({
+    full_name: professional.full_name,
+    specialty: professional.specialty || '',
+    location_id: professional.location_id || ''
+  })
 
   // Sync local hint when professional prop changes (e.g. after refresh)
   useEffect(() => {
     setLocalHint(professional.auth_password_hint)
-  }, [professional.auth_password_hint])
+    setLocalInfo({
+      full_name: professional.full_name,
+      specialty: professional.specialty || '',
+      location_id: professional.location_id || ''
+    })
+  }, [professional])
   
   const [calendarMonth, setCalendarMonth] = useState(new Date())
   const [overrideModal, setOverrideModal] = useState<{ date: string } | null>(null)
@@ -178,6 +191,11 @@ export function ProfessionalDetailDrawer({
      if (confirm(T.confirm_delete_prof)) {
         onDelete()
      }
+  }
+
+  const handleSaveAll = () => {
+    const save = onSave as any
+    save(localInfo)
   }
 
   return (
@@ -437,18 +455,53 @@ export function ProfessionalDetailDrawer({
                 </div>
                 </div>
 
-                <div className="bg-slate-50 rounded-3xl p-8 border border-slate-100 flex items-center justify-between gap-6">
-                  <div className="flex items-center gap-4">
+                <div className="bg-slate-50 rounded-3xl p-8 border border-slate-100 space-y-6">
+                  <div className="flex items-center gap-4 mb-4">
                     <div className="h-12 w-12 bg-white rounded-2xl flex items-center justify-center shadow-sm text-slate-400">
                       <Users className="h-6 w-6" />
                     </div>
                     <div>
                       <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Información de Perfil</p>
-                      <p className="text-xl font-black text-slate-900">{professional.specialty || 'General'}</p>
+                      <p className="text-xl font-black text-slate-900">{localInfo.full_name}</p>
                     </div>
                   </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">Nombre Completo</label>
+                      <input 
+                        value={localInfo.full_name}
+                        onChange={e => setLocalInfo({...localInfo, full_name: e.target.value})}
+                        className="w-full rounded-xl bg-white border border-slate-200 px-4 py-3 text-sm font-bold text-slate-900 focus:ring-2 focus:ring-primary-500 outline-none transition-all"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">Especialidad</label>
+                      <input 
+                        value={localInfo.specialty}
+                        onChange={e => setLocalInfo({...localInfo, specialty: e.target.value})}
+                        className="w-full rounded-xl bg-white border border-slate-200 px-4 py-3 text-sm font-bold text-slate-900 focus:ring-2 focus:ring-primary-500 outline-none transition-all"
+                      />
+                    </div>
+                  </div>
+
+                  {locations.length > 0 && (
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">Sede Asignada</label>
+                      <select
+                        value={localInfo.location_id}
+                        onChange={e => setLocalInfo({...localInfo, location_id: e.target.value})}
+                        className="w-full rounded-xl bg-white border border-slate-200 px-4 py-3 text-sm font-bold text-slate-900 focus:ring-2 focus:ring-primary-500 outline-none transition-all"
+                      >
+                        <option value="">Ninguna / Rotativo</option>
+                        {locations.map(loc => (
+                          <option key={loc.id} value={loc.id}>{loc.name}</option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
                 </div>
-            </div>
+              </div>
           )}
         </div>
 
@@ -463,7 +516,7 @@ export function ProfessionalDetailDrawer({
           </button>
           
           <button 
-            onClick={onSave} 
+            onClick={handleSaveAll} 
             disabled={saving} 
             className="flex-1 flex items-center justify-center gap-3 py-4 rounded-2xl bg-slate-900 text-white font-black uppercase tracking-widest hover:bg-slate-800 shadow-xl shadow-slate-900/10 disabled:opacity-50 transition-all active:scale-95 px-6"
           >

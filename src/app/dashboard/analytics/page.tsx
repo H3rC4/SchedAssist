@@ -7,7 +7,7 @@ import {
   PieChart, Pie, Cell, LineChart, Line, AreaChart, Area
 } from 'recharts'
 import { translations, Language } from '@/lib/i18n'
-import { TrendingUp, AlertTriangle, Users, DollarSign, Activity } from 'lucide-react'
+import { TrendingUp, AlertTriangle, Users, DollarSign, Activity, MapPin, ChevronDown } from 'lucide-react'
 
 export default function AnalyticsPage() {
   const supabase = createClient()
@@ -15,6 +15,8 @@ export default function AnalyticsPage() {
   const [lang, setLang] = useState<Language>('es')
   const [data, setData] = useState<any>(null)
   const [loading, setLoading] = useState(true)
+  const [locations, setLocations] = useState<any[]>([])
+  const [selectedLocation, setSelectedLocation] = useState<string>('')
 
   const COLORS = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899']
 
@@ -33,14 +35,23 @@ export default function AnalyticsPage() {
       setTenantId(tenant.id)
       setLang((tenant.settings?.language as Language) || 'es')
       
-      const res = await fetch(`/api/analytics?tenant_id=${tenant.id}`)
+      // Fetch Locations
+      const { data: locs } = await supabase
+        .from('locations')
+        .select('id, name')
+        .eq('tenant_id', tenant.id)
+        .eq('active', true)
+      setLocations(locs || [])
+
+      const url = `/api/analytics?tenant_id=${tenant.id}${selectedLocation ? `&location_id=${selectedLocation}` : ''}`
+      const res = await fetch(url)
       if (res.ok) {
         const analyticsData = await res.json()
         setData(analyticsData)
       }
     }
     setLoading(false)
-  }, [supabase])
+  }, [supabase, selectedLocation])
 
   useEffect(() => {
     fetchTenantAndData()
@@ -53,7 +64,7 @@ export default function AnalyticsPage() {
   if (!data) return (
     <div className="flex flex-col items-center justify-center min-h-[60vh] text-slate-400">
       <Activity className="h-12 w-12 mb-4 opacity-50" />
-      <p>Error cargando métricas / Error loading metrics</p>
+      <p>{t.error_loading_metrics}</p>
     </div>
   )
 
@@ -78,11 +89,34 @@ export default function AnalyticsPage() {
 
   return (
     <div className="space-y-8 pb-10">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900 tracking-tight flex items-center gap-2">
-          <Activity className="h-6 w-6 text-primary-600" /> Analíticas Avanzadas
-        </h1>
-        <p className="text-sm text-gray-500 mt-1">Métricas clave de rendimiento clínico y de negocio.</p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900 tracking-tight flex items-center gap-2">
+            <Activity className="h-6 w-6 text-primary-600" /> {t.analytics_advanced}
+          </h1>
+          <p className="text-sm text-gray-500 mt-1">{t.analytics_advanced_desc}</p>
+        </div>
+
+        {locations.length > 0 && (
+          <div className="relative group min-w-[200px]">
+            <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
+              <MapPin className="h-4 w-4 text-primary-500" />
+            </div>
+            <select
+              value={selectedLocation}
+              onChange={(e) => setSelectedLocation(e.target.value)}
+              className="w-full pl-11 pr-10 py-3 bg-white border border-slate-200 rounded-2xl text-sm font-bold text-slate-700 appearance-none outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all cursor-pointer shadow-sm group-hover:shadow-md"
+            >
+              <option value="">{lang === 'es' ? 'Todas las Sedes' : (lang === 'it' ? 'Tutte le Sedi' : 'All Locations')}</option>
+              {locations.map(loc => (
+                <option key={loc.id} value={loc.id}>{loc.name}</option>
+              ))}
+            </select>
+            <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none">
+              <ChevronDown className="h-4 w-4 text-slate-400" />
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Top Stats Cards */}
@@ -94,12 +128,12 @@ export default function AnalyticsPage() {
               <AlertTriangle className="h-6 w-6" />
             </div>
             <div>
-              <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">Tasa de Ausentismo</p>
+              <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">{t.no_show_rate}</p>
               <h3 className="text-3xl font-black text-gray-900 tracking-tighter">{data.noShowRate}%</h3>
             </div>
           </div>
           <p className="text-xs font-bold text-gray-500">
-            De <span className="text-gray-900">{data.totalAppointments}</span> citas, <span className="text-red-500">{data.cancelledAppointments}</span> fueron canceladas.
+            {t.from} <span className="text-gray-900">{data.totalAppointments}</span> {t.appointments_total}, <span className="text-red-500">{data.cancelledAppointments}</span> {t.were_cancelled}.
           </p>
         </div>
 
@@ -110,14 +144,14 @@ export default function AnalyticsPage() {
               <DollarSign className="h-6 w-6" />
             </div>
             <div>
-              <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">Top Profesional (Ingresos)</p>
+              <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">{t.top_professional_revenue}</p>
               <h3 className="text-2xl font-black text-gray-900 tracking-tight truncate max-w-[150px]">
                 {data.revenueByProfessional[0]?.name || 'N/A'}
               </h3>
             </div>
           </div>
           <p className="text-xs font-bold text-gray-500">
-            Generó <span className="text-emerald-600 font-black">${(data.revenueByProfessional[0]?.revenue || 0).toLocaleString()}</span> este año.
+            {t.generated} <span className="text-emerald-600 font-black">${(data.revenueByProfessional[0]?.revenue || 0).toLocaleString()}</span> {t.this_year}.
           </p>
         </div>
 
@@ -128,14 +162,14 @@ export default function AnalyticsPage() {
               <TrendingUp className="h-6 w-6" />
             </div>
             <div>
-              <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">Servicio Estrella</p>
+              <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">{t.star_service}</p>
               <h3 className="text-xl font-black text-gray-900 tracking-tight leading-tight truncate max-w-[150px]">
                 {data.popularServices[0]?.name || 'N/A'}
               </h3>
             </div>
           </div>
           <p className="text-xs font-bold text-gray-500">
-            Realizado <span className="text-primary-600 font-black">{data.popularServices[0]?.count || 0} veces</span>.
+            {t.performed} <span className="text-primary-600 font-black">{data.popularServices[0]?.count || 0} {t.times}</span>.
           </p>
         </div>
       </div>
@@ -145,7 +179,7 @@ export default function AnalyticsPage() {
         
         {/* Revenue by Professional */}
         <div className="bg-white rounded-[2.5rem] p-8 border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
-          <h3 className="text-lg font-black text-gray-900 mb-6">Ingresos por Profesional</h3>
+          <h3 className="text-lg font-black text-gray-900 mb-6">{t.revenue_by_professional}</h3>
           <div className="h-[300px] w-full">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={data.revenueByProfessional} margin={{ top: 10, right: 10, left: -20, bottom: 0 }} layout="vertical">
@@ -165,7 +199,7 @@ export default function AnalyticsPage() {
 
         {/* Popular Services */}
         <div className="bg-white rounded-[2.5rem] p-8 border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
-          <h3 className="text-lg font-black text-gray-900 mb-6">Demanda de Servicios</h3>
+          <h3 className="text-lg font-black text-gray-900 mb-6">{t.service_demand}</h3>
           <div className="h-[300px] w-full">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
@@ -184,7 +218,7 @@ export default function AnalyticsPage() {
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
-                <RechartsTooltip content={<CustomTooltip formatter={(val: number) => `${val} citas`} />} />
+                <RechartsTooltip content={<CustomTooltip formatter={(val: number) => t.citas_count(val)} />} />
               </PieChart>
             </ResponsiveContainer>
           </div>
@@ -200,7 +234,7 @@ export default function AnalyticsPage() {
 
         {/* Monthly Trend */}
         <div className="lg:col-span-2 bg-white rounded-[2.5rem] p-8 border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
-          <h3 className="text-lg font-black text-gray-900 mb-6">Volumen de Citas (Año Actual)</h3>
+          <h3 className="text-lg font-black text-gray-900 mb-6">{t.appointments_volume_year}</h3>
           <div className="h-[300px] w-full">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={data.appointmentsByMonth} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
@@ -213,7 +247,7 @@ export default function AnalyticsPage() {
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
                 <XAxis dataKey="month" tick={{ fill: '#94a3b8', fontSize: 10, fontWeight: 700 }} axisLine={false} tickLine={false} />
                 <YAxis tick={{ fill: '#94a3b8', fontSize: 10, fontWeight: 700 }} axisLine={false} tickLine={false} />
-                <RechartsTooltip content={<CustomTooltip formatter={(val: number) => `${val} citas totales`} />} />
+                <RechartsTooltip content={<CustomTooltip formatter={(val: number) => t.total_appointments_trend(val)} />} />
                 <Area type="monotone" dataKey="count" stroke="#10b981" strokeWidth={4} fillOpacity={1} fill="url(#colorMonth)" />
               </AreaChart>
             </ResponsiveContainer>

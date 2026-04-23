@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import {
-  Calendar, Users, Briefcase, Settings, LayoutDashboard, Clock, ChevronRight, Zap, Layers, LifeBuoy, X, Mail, TrendingUp
+  Calendar, Users, Briefcase, Settings, LayoutDashboard, Clock, ChevronRight, Zap, Layers, LifeBuoy, X, Mail, TrendingUp, MapPin
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { Language, translations } from '@/lib/i18n'
@@ -16,6 +16,7 @@ const navItemsBase = [
   { id: 'professionals', es: 'Staff', it: 'Personale', en: 'Staff', href: '/dashboard/professionals', icon: Briefcase, category: 'Operativo' },
   { id: 'services', es: 'Servicios', it: 'Servizi', en: 'Services', href: '/dashboard/services', icon: Layers, category: 'Operativo' },
   { id: 'clients', es: 'Pacientes', it: 'Pazienti', en: 'Patients', href: '/dashboard/clients', icon: Users, category: 'Operativo' },
+  { id: 'locations', es: 'Sedes', it: 'Sedi', en: 'Locations', href: '/dashboard/locations', icon: MapPin, category: 'Operativo' },
   { id: 'whatsapp', es: 'WhatsApp', it: 'WhatsApp', en: 'WhatsApp', href: '/dashboard/whatsapp', icon: Zap, category: 'Configuración' },
   { id: 'settings', es: 'Ajustes', it: 'Impostazioni', en: 'Settings', href: '/dashboard/settings', icon: Settings, category: 'Sistema' },
   { id: 'support', es: 'Soporte', it: 'Supporto', en: 'Support', href: '#', icon: LifeBuoy, category: 'Sistema' },
@@ -68,7 +69,7 @@ export function Sidebar({ lang = 'es' }: SidebarProps) {
 
   const filteredNavItems = navItemsBase.filter(item => {
     if (userRole === 'professional') {
-      return ['dashboard', 'appointments', 'professionals', 'support'].includes(item.id);
+      return ['dashboard', 'appointments', 'professionals', 'settings', 'support'].includes(item.id);
     }
     return true;
   });

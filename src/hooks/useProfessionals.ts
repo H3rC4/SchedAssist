@@ -24,6 +24,7 @@ export interface Professional {
   auth_password_hint?: string;
   user_id?: string;
   availability_rules: AvailabilityRule[];
+  location_id?: string | null;
 }
 
 export interface Override {
@@ -42,6 +43,7 @@ export function useProfessionals() {
   const [loading, setLoading] = useState(true)
   const [selectedProf, setSelectedProf] = useState<Professional | null>(null)
   const [overrides, setOverrides] = useState<Override[]>([])
+  const [locations, setLocations] = useState<any[]>([])
   const [activeTab, setActiveTab] = useState<'schedule' | 'exceptions' | 'access'>('schedule')
   
   // CRUD Status
@@ -71,6 +73,10 @@ export function useProfessionals() {
         .order('full_name')
       
       setProfessionals(profs || [])
+
+      // Fetch locations
+      const { data: locs } = await supabase.from('locations').select('*').eq('tenant_id', tuData.tenant_id).eq('active', true)
+      setLocations(locs || [])
     }
     setLoading(false)
   }, [supabase])
@@ -113,7 +119,7 @@ export function useProfessionals() {
     }
   }
 
-  const createProfessional = async (data: { full_name: string, specialty: string }) => {
+  const createProfessional = async (data: { full_name: string, specialty: string, location_id?: string }) => {
     setSaving(true)
     const { data: newProf, error } = await supabase
       .from('professionals')
@@ -121,6 +127,7 @@ export function useProfessionals() {
         tenant_id: tenantId,
         full_name: data.full_name,
         specialty: data.specialty || null,
+        location_id: data.location_id || null,
         active: true
       })
       .select()
@@ -151,18 +158,18 @@ export function useProfessionals() {
     await fetchProfessionals()
   }
 
-  const updateAvailability = async (profId: string, rules: AvailabilityRule[]) => {
+  const updateAvailability = async (profId: string, rules: AvailabilityRule[], generalInfo?: any) => {
     setSaving(true)
     try {
       const res = await fetch('/api/professionals', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ professional_id: profId, tenant_id: tenantId, rules })
+        body: JSON.stringify({ professional_id: profId, tenant_id: tenantId, rules, ...generalInfo })
       })
       if (!res.ok) throw new Error('API Error')
       setSaved(true)
       await fetchProfessionals()
-      // Sincronizar profesional seleccionado para reflejar cambios (ej: auth_email)
+      // Sincronizar profesional seleccionado para reflejar cambios
       if (profId) {
         const { data: updatedProf } = await supabase
           .from('professionals')
@@ -208,6 +215,7 @@ export function useProfessionals() {
     activeTab,
     saving,
     saved,
+    locations,
     setActiveTab,
     selectProfessional,
     createProfessional,

@@ -131,6 +131,18 @@ export default function DashboardLayout({
     loadStatus()
   }, [])
 
+  useEffect(() => {
+    if (tenantInfo?.settings?.primary_color) {
+      document.documentElement.style.setProperty('--primary', tenantInfo.settings.primary_color)
+      // Also update related shades if possible, or just the main one
+      const hex = tenantInfo.settings.primary_color
+      if (hex.startsWith('#')) {
+        // Simple way to inject into tailwind-like vars if needed
+        // For now, our buttons use bg-primary-600 which usually maps to --primary
+      }
+    }
+  }, [tenantInfo])
+
   function handleOnboardingComplete() {
     setTenantInfo(prev => prev ? {
       ...prev,

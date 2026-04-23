@@ -2,10 +2,11 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Calendar, ChevronLeft, ChevronRight, Clock, User, Phone, Stethoscope } from 'lucide-react'
+import { Calendar, ChevronLeft, ChevronRight, Clock, User, Phone, Stethoscope, Plus } from 'lucide-react'
 import { format, parseISO, isSameDay, isToday, startOfMonth, endOfMonth, eachDayOfInterval, addMonths, subMonths } from 'date-fns'
-import { dateLocales } from '@/lib/i18n'
+import { translations, dateLocales } from '@/lib/i18n'
 import { useLandingTranslation } from '@/components/LanguageContext'
+import { NewAppointmentModal } from '@/components/appointments/NewAppointmentModal'
 
 interface Appointment {
   id: string
@@ -29,6 +30,13 @@ export default function DoctorDashboard() {
   const [loading, setLoading] = useState(true)
   const [notifyingId, setNotifyingId] = useState<string | null>(null)
   const [callNotes, setCallNotes] = useState<{[key: string]: string}>({})
+  
+  // New appointment states
+  const [showNewModal, setShowNewModal] = useState(false)
+  const [services, setServices] = useState<any[]>([])
+  const [professionals, setProfessionals] = useState<any[]>([])
+  const [availableSlots, setAvailableSlots] = useState<string[]>([])
+  const [slotLoading, setSlotLoading] = useState(false)
 
   const fetchAppointments = useCallback(async (pId: string, tId: string, month: Date) => {
     const start = format(startOfMonth(month), 'yyyy-MM-dd')
@@ -45,11 +53,57 @@ export default function DoctorDashboard() {
 
     if (data) {
       setAllMonthApps(data as any)
-      // Actualizamos también la lista de avisos pendientes para este doctor
       const pending = (data as any).filter((a: any) => a.status === 'cancelled' && !a.cancellation_notified)
       setPendingCalls(pending)
     }
   }, [supabase])
+
+  const fetchMeta = useCallback(async (tId: string) => {
+    const { data: s } = await supabase.from('services').select('id, name').eq('tenant_id', tId).eq('active', true)
+    const { data: p } = await supabase.from('professionals').select('id, full_name').eq('tenant_id', tId).eq('active', true)
+    if (s) setServices(s)
+    if (p) setProfessionals(p)
+  }, [supabase])
+
+  const fetchSlots = useCallback(async (pId: string, dateStr: string) => {
+    if (!pId || !tenantId || !dateStr) return
+    setSlotLoading(true)
+    const date = parseISO(dateStr)
+    const dayOfWeek = date.getDay()
+
+    const { data: rules } = await supabase.from('availability_rules').select('*')
+      .eq('tenant_id', tenantId).eq('professional_id', pId)
+      .eq('day_of_week', dayOfWeek).eq('active', true)
+
+    if (!rules || rules.length === 0) { setAvailableSlots([]); setSlotLoading(false); return }
+
+    const { data: existingApps } = await supabase.from('appointments').select('start_at, end_at')
+      .eq('tenant_id', tenantId).eq('professional_id', pId).neq('status', 'cancelled')
+      .gte('start_at', `${dateStr}T00:00:00Z`).lte('start_at', `${dateStr}T23:59:59Z`)
+
+    const slots: string[] = []
+    const now = new Date()
+
+    for (const rule of rules) {
+      let current = parseISO(`${dateStr}T${rule.start_time}`)
+      const endRule = parseISO(`${dateStr}T${rule.end_time}`)
+      while (current < endRule) {
+        const slotStart = new Date(current)
+        const slotEnd = new Date(current.getTime() + 30 * 60000)
+        if (slotStart >= now) {
+          const isOccupied = existingApps?.some((a: any) => {
+            const appStart = parseISO(a.start_at.slice(0, 19))
+            const appEnd = parseISO(a.end_at.slice(0, 19))
+            return appStart < slotEnd && appEnd > slotStart
+          })
+          if (!isOccupied) slots.push(format(slotStart, 'HH:mm'))
+        }
+        current = slotEnd
+      }
+    }
+    setAvailableSlots(slots)
+    setSlotLoading(false)
+  }, [supabase, tenantId])
 
   const markAsNotified = async (id: string) => {
     setNotifyingId(id)
@@ -85,7 +139,10 @@ export default function DoctorDashboard() {
       if (tu && prof) {
         setProfId(prof.id)
         setTenantId(tu.tenant_id)
-        await fetchAppointments(prof.id, tu.tenant_id, currentMonth)
+        await Promise.all([
+          fetchAppointments(prof.id, tu.tenant_id, currentMonth),
+          fetchMeta(tu.tenant_id)
+        ])
       }
       setLoading(false)
     }
@@ -119,11 +176,19 @@ export default function DoctorDashboard() {
   return (
     <div className="max-w-[1200px] mx-auto space-y-8 animate-in fade-in duration-700">
       {/* Header */}
-      <div>
-        <h1 className="text-3xl font-black text-slate-900 tracking-tight">{fullT.nav_calendar}</h1>
-        <p className="text-sm font-medium text-slate-400 mt-1 uppercase tracking-widest">
-          {format(new Date(), "EEEE d MMMM, yyyy", { locale })}
-        </p>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div>
+          <h1 className="text-3xl font-black text-slate-900 tracking-tight">{fullT.nav_calendar}</h1>
+          <p className="text-sm font-medium text-slate-400 mt-1 uppercase tracking-widest">
+            {format(new Date(), "EEEE d MMMM, yyyy", { locale })}
+          </p>
+        </div>
+        <button 
+          onClick={() => setShowNewModal(true)}
+          className="flex items-center justify-center gap-2 px-6 py-4 bg-slate-900 text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-amber-500 hover:text-slate-900 transition-all shadow-xl shadow-slate-900/10"
+        >
+          <Plus className="h-4 w-4" /> {translations[language]?.new_appointment || 'Nueva Cita'}
+        </button>
       </div>
 
       {/* Pending Calls Reminder (Doctor View) */}
@@ -288,6 +353,44 @@ export default function DoctorDashboard() {
           )}
         </div>
       </div>
+      {/* New Appointment Modal */}
+      {showNewModal && tenantId && (
+        <NewAppointmentModal 
+          tenantId={tenantId}
+          lang={language}
+          services={services}
+          professionals={professionals}
+          onClose={() => setShowNewModal(false)}
+          onSuccess={() => {
+            fetchAppointments(profId, tenantId, currentMonth)
+            setShowNewModal(false)
+          }}
+          selectedDate={selectedDate}
+          translations={{
+            modalTitle: translations[language]?.schedule_appointment,
+            modalSubtitle: translations[language]?.manual_entry,
+            searchPatient: translations[language]?.search_patient,
+            searchPlaceholder: translations[language]?.search_placeholder,
+            orNew: translations[language]?.or_new_patient,
+            whenLabel: translations[language]?.when,
+            nameLabel: translations[language]?.name,
+            lastNameLabel: translations[language]?.last_name,
+            phoneLabel: translations[language]?.phone,
+            serviceLabel: translations[language]?.service,
+            profLabel: translations[language]?.professional,
+            slotsLabel: translations[language]?.available_slots,
+            noSlots: translations[language]?.no_slots,
+            reserving: translations[language]?.reserving,
+            confirm: translations[language]?.confirm_booking,
+            ready: translations[language]?.ready,
+            errGeneric: translations[language]?.err_generic,
+            selectOption: language === 'es' ? 'Selecciona...' : (language === 'it' ? 'Seleziona...' : 'Select...')
+          }}
+          availableSlots={availableSlots}
+          slotLoading={slotLoading}
+          onFetchSlots={fetchSlots}
+        />
+      )}
     </div>
   )
 }

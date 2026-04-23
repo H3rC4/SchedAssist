@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { Users, UserPlus, Loader2 } from 'lucide-react'
+import { createClient } from '@/lib/supabase/client'
 import { useProfessionals, AvailabilityRule } from '@/hooks/useProfessionals'
 import { AddProfessionalModal } from '@/components/professionals/AddProfessionalModal'
 import { ProfessionalDetailDrawer } from '@/components/professionals/ProfessionalDetailDrawer'
@@ -23,14 +24,28 @@ export default function ProfessionalsPage() {
     deleteProfessional,
     updateAvailability,
     addOverride,
-    deleteOverride
+    deleteOverride,
+    locations
   } = useProfessionals()
 
   const [showAddForm, setShowAddForm] = useState(false)
   const [lang, setLang] = useState<Language>('es')
   const [editRules, setEditRules] = useState<AvailabilityRule[]>([])
 
+  const supabase = createClient()
   const T_ui = translations[lang] || translations['en']
+
+  useEffect(() => {
+    async function fetchLang() {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+      const { data: tuData } = await supabase.from('tenant_users').select('tenants(settings)').eq('user_id', user.id).single()
+      if (tuData?.tenants) {
+        setLang(((tuData.tenants as any).settings?.language as Language) || 'es')
+      }
+    }
+    fetchLang()
+  }, [])
 
   useEffect(() => {
     if (selectedProf) {
@@ -76,7 +91,7 @@ export default function ProfessionalsPage() {
         {professionals.length === 0 ? (
           <div className="col-span-full py-12 text-center text-gray-400 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200">
             <Users className="mx-auto h-12 w-12 mb-3 opacity-20" />
-            <p className="px-4">No hay profesionales registrados aún.</p>
+            <p className="px-4">{T_ui.no_professionals_yet}</p>
           </div>
         ) : (
           professionals.map(prof => (
@@ -94,21 +109,25 @@ export default function ProfessionalsPage() {
         isOpen={showAddForm} 
         onClose={() => setShowAddForm(false)} 
         onConfirm={createProfessional}
+        locations={locations}
         t={{
-          newProf: 'Nuevo Profesional',
+          newProf: T_ui.new_professional,
           subtitle: T_ui.staff_subtitle,
-          fullName: 'Nombre Completo',
-          fullNamePH: 'Ej: Dr. Mario Rossi',
-          specialty: 'Especialidad',
-          specialtyPH: 'Ej: Pediatría',
-          created: '¡Creado!',
-          createBtn: 'Crear'
+          fullName: T_ui.fullName,
+          fullNamePH: T_ui.fullNamePH,
+          specialty: T_ui.specialty,
+          specialtyPH: T_ui.specialtyPH,
+          created: T_ui.created,
+          createBtn: T_ui.create,
+          locationLabel: T_ui.location_label,
+          selectLocationOptional: T_ui.select_location_optional
         }}
       />
 
       {selectedProf && (
         <ProfessionalDetailDrawer 
           professional={selectedProf}
+          locations={locations}
           onClose={() => selectProfessional(null)}
           activeTab={activeTab}
           setActiveTab={setActiveTab}
@@ -117,7 +136,7 @@ export default function ProfessionalsPage() {
           toggleLunchBreak={toggleLunchBreak}
           overrides={overrides}
           onDelete={() => deleteProfessional(selectedProf.id)}
-          onSave={() => updateAvailability(selectedProf.id, editRules)}
+          onSave={(generalInfo?: any) => updateAvailability(selectedProf.id, editRules, generalInfo)}
           addOverride={(date, formData) => addOverride(selectedProf.id, { date, ...formData })}
           deleteOverride={(id) => deleteOverride(selectedProf.id, id)}
           saving={saving}

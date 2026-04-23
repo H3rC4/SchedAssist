@@ -113,13 +113,14 @@ export async function POST(req: NextRequest) {
   return NextResponse.json(data, { status: 201 })
 }
 
-// PATCH: Update availability rules for a professional
+// PATCH: Update professional info or availability rules
 export async function PATCH(req: NextRequest) {
   const body = await req.json()
-  const { professional_id, tenant_id, rules } = body
+  const { id, professional_id, tenant_id, rules, ...generalInfo } = body
+  const targetId = id || professional_id
 
-  if (!professional_id || !tenant_id || !rules) {
-    return NextResponse.json({ error: 'professional_id, tenant_id, and rules required' }, { status: 400 })
+  if (!targetId || !tenant_id) {
+    return NextResponse.json({ error: 'id and tenant_id required' }, { status: 400 })
   }
 
   const supabase = createClient();
@@ -130,37 +131,52 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ error: access.error }, { status: access.status });
   }
 
-  // If professional, can only edit own rules
+  // If professional, can only edit own data
   if (access.role === 'professional') {
     const { data: profData } = await supabase.from('professionals').select('id').eq('user_id', user!.id).single();
-    if (!profData || profData.id !== professional_id) {
-      return NextResponse.json({ error: 'Unauthorized: Can only edit your own rules' }, { status: 403 });
+    if (!profData || profData.id !== targetId) {
+      return NextResponse.json({ error: 'Unauthorized: Can only edit your own data' }, { status: 403 });
     }
   }
 
-  // Delete old rules
-  await supabase
-    .from('availability_rules')
-    .delete()
-    .eq('professional_id', professional_id)
-    .eq('tenant_id', tenant_id)
+  // 1. Update general info if present
+  if (Object.keys(generalInfo).length > 0) {
+    const { error: genError } = await supabase
+      .from('professionals')
+      .update(generalInfo)
+      .eq('id', targetId)
+      .eq('tenant_id', tenant_id)
+    
+    if (genError) return NextResponse.json({ error: genError.message }, { status: 500 })
+  }
 
-  const { data, error } = await supabase
-    .from('availability_rules')
-    .insert(rules.map((r: any) => ({
-        tenant_id,
-        professional_id,
-        day_of_week: r.day_of_week,
-        start_time: r.start_time,
-        end_time: r.end_time,
-        active: r.active,
-        lunch_break_start: r.lunch_break_start || null,
-        lunch_break_end: r.lunch_break_end || null,
-    })))
-    .select()
+  // 2. Update rules if present
+  if (rules) {
+    // Delete old rules
+    await supabase
+      .from('availability_rules')
+      .delete()
+      .eq('professional_id', targetId)
+      .eq('tenant_id', tenant_id)
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-  return NextResponse.json(data)
+    const { data: rulesData, error: rulesError } = await supabase
+      .from('availability_rules')
+      .insert(rules.map((r: any) => ({
+          tenant_id,
+          professional_id: targetId,
+          day_of_week: r.day_of_week,
+          start_time: r.start_time,
+          end_time: r.end_time,
+          active: r.active,
+          lunch_break_start: r.lunch_break_start || null,
+          lunch_break_end: r.lunch_break_end || null,
+      })))
+      .select()
+    
+    if (rulesError) return NextResponse.json({ error: rulesError.message }, { status: 500 })
+  }
+
+  return NextResponse.json({ success: true })
 }
 
 // DELETE: Remove a professional
