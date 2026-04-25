@@ -46,6 +46,11 @@ export async function GET(req: NextRequest) {
   for (const expired of expiredOffers) {
     try {
       const tenantSettings = (expired.tenants as any)?.settings || {}
+      // Skip if clinic chose manual mode
+      if (tenantSettings.waitlist_auto_notify === false) {
+        console.log(`[Waitlist Cron] Tenant ${expired.tenant_id} has manual mode, skipping.`)
+        continue
+      }
       const lang = (tenantSettings.language as 'en' | 'es' | 'it') || 'es'
       const offerTimeoutMinutes: number = tenantSettings.waitlist_offer_timeout_minutes ?? 30
       const profName = expired.professionals?.full_name || ''

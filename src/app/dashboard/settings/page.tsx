@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from 'react'
-import { KeyRound, Eye, EyeOff, Languages, Upload, Image as ImageIcon, Loader2, AlertTriangle } from 'lucide-react'
+import { KeyRound, Eye, EyeOff, Languages, Upload, Image as ImageIcon, Loader2, AlertTriangle, Clock, ListOrdered } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { translations, Language } from '@/lib/i18n'
 
@@ -38,6 +38,12 @@ export default function SettingsPage() {
   const [deleteConfirmText, setDeleteConfirmText] = useState('')
   const [showDangerZone, setShowDangerZone] = useState(false)
 
+  // Waitlist settings
+  const [waitlistAutoNotify, setWaitlistAutoNotify] = useState(true)
+  const [waitlistOfferTimeout, setWaitlistOfferTimeout] = useState(30)
+  const [isSavingWaitlist, setIsSavingWaitlist] = useState(false)
+  const [waitlistMessage, setWaitlistMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null)
+
   const t = translations[lang] || translations['en']
 
   useEffect(() => {
@@ -67,6 +73,8 @@ export default function SettingsPage() {
         setLogoUrl(tenant.settings?.logo_url || '')
         setPrimaryColor(tenant.settings?.primary_color || '#fbbf24')
         setCustomDomain(tenant.settings?.custom_domain || '')
+        setWaitlistAutoNotify(tenant.settings?.waitlist_auto_notify !== false) // default true
+        setWaitlistOfferTimeout(tenant.settings?.waitlist_offer_timeout_minutes ?? 30)
         setTenantId(tenant.id)
         setUserRole(tuData.role)
       } catch (error) {
@@ -194,6 +202,30 @@ export default function SettingsPage() {
       window.location.href = '/dashboard'
     }
     setIsSavingLang(false)
+  }
+
+  const handleSaveWaitlistSettings = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsSavingWaitlist(true)
+    setWaitlistMessage(null)
+    const supabase = createClient()
+    const newSettings = {
+      ...tenantSettings,
+      waitlist_auto_notify: waitlistAutoNotify,
+      waitlist_offer_timeout_minutes: waitlistOfferTimeout,
+    }
+    const { error } = await supabase
+      .from('tenants')
+      .update({ settings: newSettings })
+      .eq('id', tenantId)
+    if (error) {
+      setWaitlistMessage({ text: error.message, type: 'error' })
+    } else {
+      setTenantSettings(newSettings)
+      setWaitlistMessage({ text: t.config_saved, type: 'success' })
+      setTimeout(() => setWaitlistMessage(null), 3000)
+    }
+    setIsSavingWaitlist(false)
   }
 
   const [isDeleted, setIsDeleted] = useState(false)
@@ -419,6 +451,97 @@ export default function SettingsPage() {
               className="w-full bg-slate-900 dark:bg-amber-500 hover:bg-slate-800 dark:hover:bg-amber-400 disabled:opacity-50 transition-all text-white dark:text-slate-900 py-4 rounded-[1.5rem] text-sm font-black uppercase tracking-widest shadow-lg active:scale-95"
             >
               {isSavingLang ? '...' : t.save_config}
+            </button>
+          </form>
+        </div>
+        )}
+
+        {/* Waitlist Settings */}
+        {(userRole === 'admin' || userRole === 'tenant_admin' || userRole === 'owner') && (
+        <div className="bg-white dark:bg-slate-900 rounded-[2rem] md:rounded-[2.5rem] border border-slate-200 dark:border-slate-800 shadow-xl shadow-indigo-900/5 p-6 md:p-10 transition-all hover:shadow-indigo-900/10">
+          <div className="flex items-center gap-4 mb-8">
+            <div className="h-12 w-12 rounded-xl bg-amber-50 dark:bg-amber-500/10 flex items-center justify-center">
+              <ListOrdered className="h-6 w-6 text-amber-500" />
+            </div>
+            <div>
+              <h3 className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight">
+                {lang === 'es' ? 'Lista de Espera' : lang === 'it' ? "Lista d'Attesa" : 'Waitlist'}
+              </h3>
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-0.5">
+                {lang === 'es' ? 'Configuración de notificaciones' : lang === 'it' ? 'Configurazione notifiche' : 'Notification settings'}
+              </p>
+            </div>
+          </div>
+          <form onSubmit={handleSaveWaitlistSettings} className="space-y-6">
+
+            {/* Auto / Manual toggle */}
+            <div className="flex items-start justify-between gap-4 p-5 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700">
+              <div>
+                <p className="text-sm font-black text-slate-900 dark:text-white">
+                  {lang === 'es' ? 'Notificación automática' : lang === 'it' ? 'Notifica automatica' : 'Automatic notification'}
+                </p>
+                <p className="text-[11px] font-medium text-slate-400 mt-1 leading-relaxed">
+                  {lang === 'es'
+                    ? 'El sistema notifica automáticamente al primer paciente en espera cuando se libera un turno. Si está desactivado, la secretaria lo gestiona manualmente desde el dashboard.'
+                    : lang === 'it'
+                    ? 'Il sistema notifica automaticamente il primo paziente in lista quando si libera un appuntamento. Se disattivato, la segretaria lo gestisce manualmente.'
+                    : 'The system automatically notifies the first waiting patient when a slot opens. If disabled, the secretary manages it manually from the dashboard.'}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setWaitlistAutoNotify(v => !v)}
+                className={`relative shrink-0 inline-flex h-7 w-12 items-center rounded-full transition-colors duration-200 focus:outline-none ${
+                  waitlistAutoNotify ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-slate-600'
+                }`}
+              >
+                <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-md transition-transform duration-200 ${
+                  waitlistAutoNotify ? 'translate-x-6' : 'translate-x-1'
+                }`} />
+              </button>
+            </div>
+
+            {/* Timeout minutes - only relevant when auto is ON */}
+            {waitlistAutoNotify && (
+              <div>
+                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1 mb-2">
+                  {lang === 'es' ? 'Tiempo de respuesta (minutos)' : lang === 'it' ? 'Tempo di risposta (minuti)' : 'Response time (minutes)'}
+                </label>
+                <div className="flex items-center gap-3">
+                  <input
+                    type="range"
+                    min={5} max={120} step={5}
+                    value={waitlistOfferTimeout}
+                    onChange={e => setWaitlistOfferTimeout(Number(e.target.value))}
+                    className="flex-1 accent-amber-500"
+                  />
+                  <span className="shrink-0 w-16 text-center bg-slate-100 dark:bg-slate-800 rounded-xl px-3 py-2 text-sm font-black text-slate-900 dark:text-white">
+                    {waitlistOfferTimeout} min
+                  </span>
+                </div>
+                <p className="text-[10px] font-medium text-slate-400 mt-2">
+                  {lang === 'es'
+                    ? `Si el paciente no responde en ${waitlistOfferTimeout} minutos, el turno se ofrece al siguiente en la lista.`
+                    : lang === 'it'
+                    ? `Se il paziente non risponde entro ${waitlistOfferTimeout} minuti, il turno viene offerto al successivo in lista.`
+                    : `If the patient doesn't respond within ${waitlistOfferTimeout} minutes, the slot is offered to the next patient on the list.`}
+                </p>
+              </div>
+            )}
+
+            {waitlistMessage && (
+              <div className={`p-4 rounded-xl text-xs font-bold border ${
+                waitlistMessage.type === 'error' ? 'bg-red-50 text-red-600 border-red-100' : 'bg-emerald-50 text-emerald-600 border-emerald-100'
+              }`}>
+                {waitlistMessage.text}
+              </div>
+            )}
+            <button
+              type="submit"
+              disabled={isSavingWaitlist}
+              className="w-full bg-slate-900 dark:bg-amber-500 hover:bg-slate-800 dark:hover:bg-amber-400 disabled:opacity-50 transition-all text-white dark:text-slate-900 py-4 rounded-[1.5rem] text-sm font-black uppercase tracking-widest shadow-lg active:scale-95"
+            >
+              {isSavingWaitlist ? '...' : t.save_config}
             </button>
           </form>
         </div>

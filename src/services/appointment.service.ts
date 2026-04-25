@@ -143,14 +143,19 @@ export class AppointmentService {
       new_value: data
     })
 
-    // 5. Notify waitlisted patients who match this professional and date
+    // 5. Notify waitlisted patients if auto-notify is enabled for this tenant
     try {
-      await AppointmentService._notifyWaitlist(supabase, {
-        tenant_id: params.tenant_id,
-        professional_id: appointment.professional_id,
-        freed_slot_date: appointment.start_at,
-        freed_start_at: appointment.start_at,
-      })
+      const { data: tenantCfg } = await supabase
+        .from('tenants').select('settings').eq('id', params.tenant_id).single()
+      const autoNotify = tenantCfg?.settings?.waitlist_auto_notify !== false // default true
+      if (autoNotify) {
+        await AppointmentService._notifyWaitlist(supabase, {
+          tenant_id: params.tenant_id,
+          professional_id: appointment.professional_id,
+          freed_slot_date: appointment.start_at,
+          freed_start_at: appointment.start_at,
+        })
+      }
     } catch (wlErr) {
       // Non-blocking: log but don't fail the cancellation
       console.error('[Waitlist] Failed to notify waitlisted patients:', wlErr)
