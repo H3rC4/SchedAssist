@@ -85,17 +85,6 @@ CREATE POLICY "Users can insert availability_rules to their tenant" ON public.av
 CREATE POLICY "Users can update availability_rules of their tenant" ON public.availability_rules FOR UPDATE USING (tenant_id IN (SELECT tenant_id FROM public.tenant_users WHERE user_id = auth.uid()));
 CREATE POLICY "Users can delete availability_rules of their tenant" ON public.availability_rules FOR DELETE USING (tenant_id IN (SELECT tenant_id FROM public.tenant_users WHERE user_id = auth.uid()));
 
--- 8. BLOCKED_SLOTS
-ALTER TABLE public.blocked_slots ENABLE ROW LEVEL SECURITY;
-DROP POLICY IF EXISTS "Users can select blocked_slots of their tenant" ON public.blocked_slots;
-DROP POLICY IF EXISTS "Users can insert blocked_slots to their tenant" ON public.blocked_slots;
-DROP POLICY IF EXISTS "Users can update blocked_slots of their tenant" ON public.blocked_slots;
-DROP POLICY IF EXISTS "Users can delete blocked_slots of their tenant" ON public.blocked_slots;
-
-CREATE POLICY "Users can select blocked_slots of their tenant" ON public.blocked_slots FOR SELECT USING (tenant_id IN (SELECT tenant_id FROM public.tenant_users WHERE user_id = auth.uid()));
-CREATE POLICY "Users can insert blocked_slots to their tenant" ON public.blocked_slots FOR INSERT WITH CHECK (tenant_id IN (SELECT tenant_id FROM public.tenant_users WHERE user_id = auth.uid()));
-CREATE POLICY "Users can update blocked_slots of their tenant" ON public.blocked_slots FOR UPDATE USING (tenant_id IN (SELECT tenant_id FROM public.tenant_users WHERE user_id = auth.uid()));
-CREATE POLICY "Users can delete blocked_slots of their tenant" ON public.blocked_slots FOR DELETE USING (tenant_id IN (SELECT tenant_id FROM public.tenant_users WHERE user_id = auth.uid()));
 
 -- 9. WHATSAPP_ACCOUNTS
 ALTER TABLE public.whatsapp_accounts ENABLE ROW LEVEL SECURITY;
