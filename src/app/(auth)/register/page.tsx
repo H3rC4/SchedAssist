@@ -45,14 +45,14 @@ export default function RegisterPage() {
             <Mail className="h-10 w-10 text-emerald-600 dark:text-emerald-400" />
           </div>
           <h2 className="text-3xl font-black text-slate-900 dark:text-white uppercase mb-4 tracking-tight">
-            ¡Casi listo!
+            ¡Cuenta Creada!
           </h2>
           <p className="text-slate-600 dark:text-slate-400 mb-8 font-medium">
-            Hemos enviado un correo de activación a tu bandeja de entrada. <br /><br />
-            <strong className="text-slate-900 dark:text-white">Haz clic en el enlace del correo para activar tu cuenta y proceder al pago.</strong>
+            Tu cuenta ha sido creada exitosamente. <br /><br />
+            <strong className="text-slate-900 dark:text-white">Inicia sesión con tu correo y contraseña para configurar tu clínica.</strong>
           </p>
-          <Link href="/" className="text-sm font-bold text-indigo-600 dark:text-amber-500 hover:underline px-4 py-2">
-            Volver al inicio
+          <Link href="/login" className="w-full inline-flex justify-center items-center py-4 rounded-2xl bg-slate-900 dark:bg-amber-500 text-white dark:text-slate-900 font-bold uppercase hover:bg-slate-800 dark:hover:bg-amber-400 transition-colors shadow-xl">
+            Ir a Iniciar Sesión
           </Link>
         </div>
       </div>
