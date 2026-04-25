@@ -53,7 +53,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: access.error }, { status: access.status });
   }
 
-  // Si es profesional, forzamos que el professional_id sea el suyo
   let finalProfessionalId = professional_id;
   if (access.role === 'professional') {
     const { data: profData } = await supabase.from('professionals').select('id').eq('user_id', user!.id).single();
@@ -84,4 +83,54 @@ export async function POST(req: NextRequest) {
   }
 
   return NextResponse.json(data, { status: 201 });
+}
+
+export async function PATCH(req: NextRequest) {
+  const { searchParams } = new URL(req.url);
+  const id = searchParams.get('id');
+  const body = await req.json();
+  
+  if (!id) return NextResponse.json({ error: 'ID required' }, { status: 400 });
+
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  const { data: record } = await supabase.from('clinical_records').select('tenant_id, professional_id').eq('id', id).single();
+  if (!record) return NextResponse.json({ error: 'Not found' }, { status: 404 });
+
+  const access = await verifyTenantAccess(supabase, user, record.tenant_id);
+  if (!access.authorized) return NextResponse.json({ error: access.error }, { status: access.status });
+
+  if (access.role === 'professional') {
+    const { data: prof } = await supabase.from('professionals').select('id').eq('user_id', user!.id).single();
+    if (record.professional_id !== prof?.id) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  }
+
+  const { data, error } = await supabase.from('clinical_records').update(body).eq('id', id).select().single();
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  return NextResponse.json(data);
+}
+
+export async function DELETE(req: NextRequest) {
+  const { searchParams } = new URL(req.url);
+  const id = searchParams.get('id');
+  if (!id) return NextResponse.json({ error: 'ID required' }, { status: 400 });
+
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  const { data: record } = await supabase.from('clinical_records').select('tenant_id, professional_id').eq('id', id).single();
+  if (!record) return NextResponse.json({ error: 'Not found' }, { status: 404 });
+
+  const access = await verifyTenantAccess(supabase, user, record.tenant_id);
+  if (!access.authorized) return NextResponse.json({ error: access.error }, { status: access.status });
+
+  if (access.role === 'professional') {
+    const { data: prof } = await supabase.from('professionals').select('id').eq('user_id', user!.id).single();
+    if (record.professional_id !== prof?.id) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  }
+
+  const { error } = await supabase.from('clinical_records').delete().eq('id', id);
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  return new NextResponse(null, { status: 204 });
 }

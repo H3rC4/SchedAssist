@@ -51,6 +51,10 @@ export default function ClientsPage() {
   const [isSavingRecord, setIsSavingRecord] = useState(false)
   const [uploadingFiles, setUploadingFiles] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const [userRole, setUserRole] = useState<string | null>(null)
+  const [userProfessionalId, setUserProfessionalId] = useState<string | null>(null)
+  const [editingRecordId, setEditingRecordId] = useState<string | null>(null)
+  const [editRecordText, setEditRecordText] = useState('')
 
   const fetchClinicalRecords = useCallback(async (clientId: string) => {
     if (!tenantId || !clientId) return
@@ -67,15 +71,24 @@ export default function ClientsPage() {
 
     const { data: tuData } = await supabase
       .from('tenant_users')
-      .select('tenant_id, tenants(id, settings)')
+      .select('tenant_id, role, tenants(id, settings)')
       .eq('user_id', user.id)
       .limit(1).single()
 
     if (tuData?.tenants) {
       const tenant = tuData.tenants as any
       setTenantId(tenant.id)
+      setUserRole(tuData.role)
       setLang((tenant.settings?.language as 'en'|'es'|'it') || 'es')
     }
+
+    // If professional, get their professional ID for ownership checks
+    const { data: profData } = await supabase
+      .from('professionals')
+      .select('id')
+      .eq('user_id', user.id)
+      .maybeSingle()
+    if (profData) setUserProfessionalId(profData.id)
   }, [supabase])
 
   const fetchClients = useCallback(async () => {
@@ -251,8 +264,6 @@ export default function ClientsPage() {
   async function handleSaveClinicalRecord() {
     if (!selectedClient || !newRecordText.trim()) return
     setIsSavingRecord(true)
-    
-    // Check if there's files uploaded in the state (Not yet implemented deeply in state, we'll do it later or just text for now)
     const res = await fetch('/api/clinical-records', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -262,12 +273,46 @@ export default function ClientsPage() {
         content: newRecordText
       })
     })
-
     if (res.ok) {
       setNewRecordText('')
       fetchClinicalRecords(selectedClient.id)
     }
     setIsSavingRecord(false)
+  }
+
+  async function handleEditClinicalRecord(recordId: string) {
+    if (!editRecordText.trim() || !selectedClient) return
+    const res = await fetch(`/api/clinical-records?id=${recordId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ content: editRecordText })
+    })
+    if (res.ok) {
+      setEditingRecordId(null)
+      fetchClinicalRecords(selectedClient.id)
+    } else {
+      alert((translations[lang] as any).error_save || 'Error al guardar')
+    }
+  }
+
+  async function handleDeleteClinicalRecord(recordId: string) {
+    const confirmMsg = lang === 'it' ? 'Eliminare questo registro clinico?' : (lang === 'en' ? 'Delete this clinical record?' : '¿Eliminar este registro clínico?')
+    if (!confirm(confirmMsg)) return
+    if (!selectedClient) return
+    const res = await fetch(`/api/clinical-records?id=${recordId}&tenant_id=${tenantId}`, {
+      method: 'DELETE'
+    })
+    if (res.ok || res.status === 204) {
+      fetchClinicalRecords(selectedClient.id)
+    } else {
+      alert((translations[lang] as any).error || 'Error')
+    }
+  }
+
+  function canEditRecord(record: any): boolean {
+    if (userRole === 'admin' || userRole === 'tenant_admin' || userRole === 'owner') return true
+    if (userRole === 'professional' && userProfessionalId && record.professionals?.id === userProfessionalId) return true
+    return false
   }
 
   async function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
@@ -615,21 +660,67 @@ export default function ClientsPage() {
                         {clinicalRecords.map(record => (
                           <div key={record.id} className="relative pl-14 animate-in fade-in slide-in-from-left-4 duration-500">
                             <div className="absolute left-4 top-2 h-4 w-4 rounded-full bg-primary-500 border-4 border-white shadow-sm z-10" />
-                            <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 hover:border-primary-100 transition-colors">
+                            <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 hover:border-primary-100 transition-colors group/rec">
                               <div className="flex items-center justify-between mb-3 border-b border-gray-50 pb-3">
                                 <div>
                                   <p className="text-xs font-bold text-primary-600 uppercase tracking-widest">
                                     {format(parseISO(record.created_at), "d MMMM yyyy · HH:mm'h'", { locale: dateLocale })}
                                   </p>
                                 </div>
-                                <div className="text-right">
-                                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none">Profesional</p>
-                                  <p className="text-sm font-bold text-gray-800 mt-1">{record.professionals?.full_name || 'Admin'}</p>
+                                <div className="flex items-center gap-3">
+                                  <div className="text-right">
+                                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none">Profesional</p>
+                                    <p className="text-sm font-bold text-gray-800 mt-1">{record.professionals?.full_name || 'Admin'}</p>
+                                  </div>
+                                  {canEditRecord(record) && editingRecordId !== record.id && (
+                                    <div className="flex items-center gap-1 opacity-0 group-hover/rec:opacity-100 transition-opacity">
+                                      <button
+                                        onClick={() => { setEditingRecordId(record.id); setEditRecordText(record.content) }}
+                                        className="p-1.5 hover:bg-primary-50 rounded-lg text-gray-400 hover:text-primary-600 transition-colors"
+                                        title={t.edit}
+                                      >
+                                        <Edit2 className="h-3.5 w-3.5" />
+                                      </button>
+                                      <button
+                                        onClick={() => handleDeleteClinicalRecord(record.id)}
+                                        className="p-1.5 hover:bg-red-50 rounded-lg text-gray-300 hover:text-red-500 transition-colors"
+                                        title={t.delete}
+                                      >
+                                        <X className="h-3.5 w-3.5" />
+                                      </button>
+                                    </div>
+                                  )}
                                 </div>
                               </div>
-                              <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">{record.content}</p>
+                              {editingRecordId === record.id ? (
+                                <div className="space-y-3">
+                                  <textarea
+                                    autoFocus
+                                    value={editRecordText}
+                                    onChange={e => setEditRecordText(e.target.value)}
+                                    className="w-full bg-slate-50 border border-primary-200 rounded-2xl p-4 text-sm focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 outline-none resize-none min-h-[100px]"
+                                    rows={4}
+                                  />
+                                  <div className="flex gap-2 justify-end">
+                                    <button
+                                      onClick={() => handleEditClinicalRecord(record.id)}
+                                      className="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-xl text-xs font-bold transition-all"
+                                    >
+                                      {t.save}
+                                    </button>
+                                    <button
+                                      onClick={() => setEditingRecordId(null)}
+                                      className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-xl text-xs font-bold transition-all"
+                                    >
+                                      {t.cancel}
+                                    </button>
+                                  </div>
+                                </div>
+                              ) : (
+                                <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">{record.content}</p>
+                              )}
                               
-                              {record.attachments && record.attachments.length > 0 && (
+                              {record.attachments && record.attachments.length > 0 && editingRecordId !== record.id && (
                                 <div className="mt-4 pt-4 border-t border-gray-50 flex flex-wrap gap-3">
                                   {record.attachments.map((file: any, idx: number) => (
                                     <a 

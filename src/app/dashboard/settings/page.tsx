@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from 'react'
-import { KeyRound, Eye, EyeOff, Languages, Upload, Image as ImageIcon, Loader2 } from 'lucide-react'
+import { KeyRound, Eye, EyeOff, Languages, Upload, Image as ImageIcon, Loader2, AlertTriangle } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { translations, Language } from '@/lib/i18n'
 
@@ -32,6 +32,11 @@ export default function SettingsPage() {
   const [isSavingClinic, setIsSavingClinic] = useState(false)
   const [clinicMessage, setClinicMessage] = useState<{ text: string, type: 'success' | 'error' } | null>(null)
   const [isUploadingLogo, setIsUploadingLogo] = useState(false)
+
+  // Danger zone
+  const [isDeletingTenant, setIsDeletingTenant] = useState(false)
+  const [deleteConfirmText, setDeleteConfirmText] = useState('')
+  const [showDangerZone, setShowDangerZone] = useState(false)
 
   const t = translations[lang] || translations['en']
 
@@ -174,7 +179,7 @@ export default function SettingsPage() {
   }
 
   const handleRestartTutorial = async () => {
-    setIsSavingLang(true) // Reuse simple loading state or add one
+    setIsSavingLang(true)
     const supabase = createClient()
     const newSettings = { ...tenantSettings, tutorial_completed: false }
     const { error } = await supabase
@@ -186,6 +191,30 @@ export default function SettingsPage() {
       window.location.href = '/dashboard'
     }
     setIsSavingLang(false)
+  }
+
+  const handleDeleteTenant = async () => {
+    const requiredPhrase = lang === 'it' ? 'ELIMINA' : (lang === 'en' ? 'DELETE' : 'ELIMINAR')
+    if (deleteConfirmText !== requiredPhrase) return
+    setIsDeletingTenant(true)
+    try {
+      const res = await fetch(`/api/tenant/delete?tenant_id=${tenantId}`, {
+        method: 'DELETE'
+      })
+      if (res.ok) {
+        // Sign out and redirect to home after deletion
+        const supabase = createClient()
+        await supabase.auth.signOut()
+        window.location.href = '/'
+      } else {
+        const body = await res.json()
+        alert('Error: ' + (body.error || 'Unknown error'))
+        setIsDeletingTenant(false)
+      }
+    } catch (e: any) {
+      alert('Error: ' + e.message)
+      setIsDeletingTenant(false)
+    }
   }
 
   return (
@@ -469,6 +498,78 @@ export default function SettingsPage() {
             </button>
           </div>
         </div>
+
+        {/* Danger Zone - Only for admin/owner */}
+        {(userRole === 'admin' || userRole === 'tenant_admin' || userRole === 'owner') && (
+          <div className="lg:col-span-2 bg-white dark:bg-slate-900 rounded-[2rem] md:rounded-[2.5rem] border-2 border-red-200 dark:border-red-900/50 shadow-xl shadow-red-900/5 p-6 md:p-10 transition-all">
+            <div className="flex items-center justify-between gap-4 mb-6">
+              <div className="flex items-center gap-4">
+                <div className="h-12 w-12 rounded-xl bg-red-50 dark:bg-red-500/10 flex items-center justify-center">
+                  <AlertTriangle className="h-6 w-6 text-red-500" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-black text-red-600 dark:text-red-400 uppercase tracking-tight">
+                    {lang === 'es' ? 'Zona de Peligro' : (lang === 'it' ? 'Zona di Pericolo' : 'Danger Zone')}
+                  </h3>
+                  <p className="text-xs font-bold text-slate-400 mt-0.5 uppercase tracking-wider">
+                    {lang === 'es' ? 'Acciones irreversibles' : (lang === 'it' ? 'Azioni irreversibili' : 'Irreversible actions')}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowDangerZone(!showDangerZone)}
+                className="text-xs font-black uppercase tracking-widest text-red-400 hover:text-red-600 transition-colors px-4 py-2 rounded-xl hover:bg-red-50 dark:hover:bg-red-900/20"
+              >
+                {showDangerZone
+                  ? (lang === 'es' ? 'Ocultar' : (lang === 'it' ? 'Nascondi' : 'Hide'))
+                  : (lang === 'es' ? 'Mostrar opciones' : (lang === 'it' ? 'Mostra opzioni' : 'Show options'))}
+              </button>
+            </div>
+
+            {showDangerZone && (
+              <div className="space-y-6 border-t border-red-100 dark:border-red-900/30 pt-6">
+                <div className="bg-red-50 dark:bg-red-900/20 rounded-2xl p-5 border border-red-100 dark:border-red-900/30">
+                  <h4 className="text-sm font-black text-red-700 dark:text-red-400 mb-2">
+                    {lang === 'es' ? 'Eliminar Cuenta del Tenant' : (lang === 'it' ? 'Elimina Account Tenant' : 'Delete Tenant Account')}
+                  </h4>
+                  <p className="text-xs font-medium text-red-600/80 dark:text-red-400/80 mb-5 leading-relaxed">
+                    {lang === 'es'
+                      ? 'Esta acción eliminará permanentemente tu cuenta, todos los pacientes, citas, profesionales y datos de la clínica. Esta acción NO se puede deshacer.'
+                      : lang === 'it'
+                      ? 'Questa azione eliminerà permanentemente il tuo account, tutti i pazienti, appuntamenti, professionisti e dati della clinica. Questa azione NON può essere annullata.'
+                      : 'This action will permanently delete your account, all patients, appointments, professionals, and clinic data. This action CANNOT be undone.'}
+                  </p>
+                  <div className="space-y-3">
+                    <label className="block text-[10px] font-black text-red-500 uppercase tracking-[0.2em]">
+                      {lang === 'es' ? 'Escribe ELIMINAR para confirmar' : (lang === 'it' ? 'Scrivi ELIMINA per confermare' : 'Type DELETE to confirm')}
+                    </label>
+                    <input
+                      type="text"
+                      value={deleteConfirmText}
+                      onChange={(e) => setDeleteConfirmText(e.target.value)}
+                      placeholder={lang === 'es' ? 'ELIMINAR' : (lang === 'it' ? 'ELIMINA' : 'DELETE')}
+                      className="block w-full rounded-2xl border-none ring-2 ring-red-200 dark:ring-red-800 bg-white dark:bg-slate-900 py-4 px-5 text-sm font-bold text-red-700 dark:text-red-400 focus:ring-red-400 transition-all appearance-none outline-none placeholder-red-200 dark:placeholder-red-900"
+                    />
+                    <button
+                      onClick={handleDeleteTenant}
+                      disabled={
+                        isDeletingTenant ||
+                        deleteConfirmText !== (lang === 'it' ? 'ELIMINA' : lang === 'en' ? 'DELETE' : 'ELIMINAR')
+                      }
+                      className="w-full bg-red-600 hover:bg-red-700 disabled:bg-red-200 dark:disabled:bg-red-900/30 disabled:cursor-not-allowed transition-all text-white disabled:text-red-400 py-4 rounded-[1.5rem] text-sm font-black uppercase tracking-widest shadow-lg shadow-red-500/20 active:scale-95 flex items-center justify-center gap-2"
+                    >
+                      {isDeletingTenant ? (
+                        <><Loader2 className="h-4 w-4 animate-spin" /> {lang === 'es' ? 'Eliminando...' : (lang === 'it' ? 'Eliminazione...' : 'Deleting...')}</>
+                      ) : (
+                        <><AlertTriangle className="h-4 w-4" /> {lang === 'es' ? 'Eliminar Cuenta Permanentemente' : (lang === 'it' ? 'Elimina Account Definitivamente' : 'Delete Account Permanently')}</>
+                      )}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
 
       </div>
     </div>

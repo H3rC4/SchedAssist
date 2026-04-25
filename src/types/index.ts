@@ -11,6 +11,7 @@ export interface Tenant {
   timezone: string;
   settings: Record<string, any>;
   stripe_customer_id?: string;
+  stripe_subscription_id?: string;
   subscription_status?: string;
   subscription_price_id?: string;
   created_at: string;

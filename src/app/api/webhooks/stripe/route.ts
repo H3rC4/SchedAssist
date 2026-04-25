@@ -32,11 +32,13 @@ export async function POST(req: NextRequest) {
       const session = event.data.object as any;
       const tenantId = session.metadata?.tenant_id;
       const customerId = session.customer;
+      const subscriptionId = session.subscription; // <-- guardamos el subscription ID
       
       console.log('📦 DATOS DE SESIÓN:', {
         sessionId: session.id,
         tenantId: tenantId,
         customer: customerId,
+        subscription: subscriptionId,
         metadata: session.metadata
       });
 
@@ -50,9 +52,8 @@ export async function POST(req: NextRequest) {
         .from('tenants')
         .update({
           stripe_customer_id: customerId,
+          stripe_subscription_id: subscriptionId,
           subscription_status: 'active',
-          // Nota: el ID del precio a veces viene en session.subscription o hay que expandirlo
-          // Por ahora guardamos el status que es lo vital
         })
         .eq('id', tenantId)
         .select();
