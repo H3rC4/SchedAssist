@@ -149,6 +149,9 @@ export function useProfessionals() {
         active: i > 0 && i < 6
       }))
       await supabase.from('availability_rules').insert(defaultRules)
+      
+      newProf.availability_rules = defaultRules;
+
       await fetchProfessionals()
       setSaving(false)
       return { success: true, prof: newProf }

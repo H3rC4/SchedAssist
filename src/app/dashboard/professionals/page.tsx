@@ -70,6 +70,16 @@ export default function ProfessionalsPage() {
     )
   }
 
+  const handleCreateProfessional = async (data: any) => {
+    const res = await createProfessional(data)
+    if (res.success && res.prof) {
+      setTimeout(() => {
+        selectProfessional(res.prof)
+      }, 1500)
+    }
+    return res
+  }
+
   return (
     <div className="space-y-4 md:space-y-6">
       {/* HEADER SECTION */}
@@ -108,7 +118,7 @@ export default function ProfessionalsPage() {
       <AddProfessionalModal 
         isOpen={showAddForm} 
         onClose={() => setShowAddForm(false)} 
-        onConfirm={createProfessional}
+        onConfirm={handleCreateProfessional}
         locations={locations}
         t={{
           newProf: T_ui.new_professional,
