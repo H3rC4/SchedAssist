@@ -112,12 +112,15 @@ export default function SettingsPage() {
       .eq('id', tenantId)
     if (error) {
       setLangMessage({ text: error.message || t.error, type: 'error' })
+      setIsSavingLang(false)
     } else {
       setLang(selectedLang)
       setTenantSettings(newSettings)
       setLangMessage({ text: t.config_saved, type: 'success' })
+      setTimeout(() => {
+        window.location.reload()
+      }, 500)
     }
-    setIsSavingLang(false)
   }
 
   const handleSaveClinic = async (e: React.FormEvent) => {

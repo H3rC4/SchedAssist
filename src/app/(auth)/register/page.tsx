@@ -146,6 +146,24 @@ export default function RegisterPage() {
 
             <div>
               <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 ml-1 uppercase tracking-wider">
+                Idioma Preferido
+              </label>
+              <div className="relative group">
+                <select
+                  name="language"
+                  required
+                  className="block w-full px-4 py-4 rounded-2xl bg-slate-50 dark:bg-slate-800 border-none ring-1 ring-slate-200 dark:ring-slate-700 focus:ring-2 focus:ring-amber-500 transition-all font-medium text-slate-900 dark:text-white"
+                  defaultValue="es"
+                >
+                  <option value="es">Español</option>
+                  <option value="en">English (US)</option>
+                  <option value="it">Italiano</option>
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 ml-1 uppercase tracking-wider">
                 Contraseña
               </label>
               <div className="relative group">

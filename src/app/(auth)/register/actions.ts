@@ -7,6 +7,7 @@ export async function registerAction(formData: FormData) {
   const email = formData.get('email') as string;
   const password = formData.get('password') as string;
   const clinicName = formData.get('clinicName') as string;
+  const language = formData.get('language') as string || 'es';
 
   if (!email || !password || !clinicName) {
     return { error: 'Por favor completa todos los campos.' };
@@ -51,7 +52,7 @@ export async function registerAction(formData: FormData) {
           subscription_status: 'trial', 
           trial_ends_at: trialEndsAt.toISOString(),
           settings: {
-            language: 'es',
+            language: language,
             specialty: 'Medicina General'
           }
         }
