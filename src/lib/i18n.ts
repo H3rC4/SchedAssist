@@ -163,6 +163,24 @@ export const translations = {
     bot_new_desc: (name: string, svc: string, prof: string, date: string) => 
       `Hello ${name}, your appointment for <b>${svc}</b> with <b>${prof}</b> is confirmed.\n\n📅 Date: <b>${date}</b>.\n\nSee you soon!`,
 
+    // Waitlist
+    waitlist_title: 'Waitlist',
+    waitlist_waiting: 'waiting',
+    waitlist_notified: 'notified',
+    waitlist_active: 'Active',
+    waitlist_all: 'All',
+    waitlist_empty: 'No patients on the waitlist',
+    waitlist_specific_day: 'Specific day',
+    waitlist_range: 'Range',
+    waitlist_any_date: 'Any date',
+    waitlist_notified_on: 'Notified on',
+    waitlist_resolve: 'Resolve',
+    waitlist_status_pending: 'Waiting',
+    waitlist_status_notified: 'Notified',
+    waitlist_status_offer_expired: 'Offer Expired',
+    waitlist_status_resolved: 'Resolved',
+    waitlist_status_cancelled: 'Cancelled',
+
     // Appointments Calendar
     schedule_appointment: 'Schedule Appointment',
     manual_entry: 'Manual patient entry',
@@ -501,6 +519,24 @@ export const translations = {
     bot_new_title: '✅ <b>NUEVA CITA AGENDADA</b>',
     bot_new_desc: (name: string, svc: string, prof: string, date: string) => 
       `Hola ${name}, te confirmamos tu turno para <b>${svc}</b> con <b>${prof}</b>.\n\n📅 Fecha: <b>${date}</b>.\n\n¡Te esperamos!`,
+
+    // Waitlist
+    waitlist_title: 'Lista de Espera',
+    waitlist_waiting: 'esperando',
+    waitlist_notified: 'notificados',
+    waitlist_active: 'Activos',
+    waitlist_all: 'Todos',
+    waitlist_empty: 'No hay pacientes en lista de espera',
+    waitlist_specific_day: 'Día específico',
+    waitlist_range: 'Rango',
+    waitlist_any_date: 'Cualquier fecha',
+    waitlist_notified_on: 'Notificado el',
+    waitlist_resolve: 'Resolver',
+    waitlist_status_pending: 'En Espera',
+    waitlist_status_notified: 'Notificado',
+    waitlist_status_offer_expired: 'Oferta Expirada',
+    waitlist_status_resolved: 'Resuelto',
+    waitlist_status_cancelled: 'Cancelado',
 
     // Appointments Calendar
     schedule_appointment: 'Agendar Turno',
@@ -852,6 +888,24 @@ export const translations = {
     bot_new_title: '✅ <b>NUOVO APPUNTAMENTO PROGRAMMATO</b>',
     bot_new_desc: (name: string, svc: string, prof: string, date: string) => 
       `Ciao ${name}, ti confermiamo il tuo appuntamento per <b>${svc}</b> con <b>${prof}</b>.\n\n📅 Data: <b>${date}</b>.\n\nTi aspettiamo!`,
+
+    // Waitlist
+    waitlist_title: 'Lista d\'Attesa',
+    waitlist_waiting: 'in attesa',
+    waitlist_notified: 'notificati',
+    waitlist_active: 'Attivi',
+    waitlist_all: 'Tutti',
+    waitlist_empty: 'Nessun paziente in lista d\'attesa',
+    waitlist_specific_day: 'Giorno specifico',
+    waitlist_range: 'Intervallo',
+    waitlist_any_date: 'Qualsiasi data',
+    waitlist_notified_on: 'Notificato il',
+    waitlist_resolve: 'Risolvi',
+    waitlist_status_pending: 'In Attesa',
+    waitlist_status_notified: 'Notificato',
+    waitlist_status_offer_expired: 'Offerta Scaduta',
+    waitlist_status_resolved: 'Risolto',
+    waitlist_status_cancelled: 'Cancellato',
 
     // Appointments Calendar
     schedule_appointment: 'Prenota Appuntamento',

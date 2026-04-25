@@ -158,9 +158,9 @@ export class AppointmentService {
 
     return data
   }
-
-  /**
-   * Checks the waitlist for patients interested in a freed slot and sends them a WhatsApp notification.
+  /**
+   * Notifies the FIRST patient in the waitlist for a freed slot.
+   * If the offer expires without response, the cron job picks up the next in line.
    */
   private static async _notifyWaitlist(supabase: any, params: {
     tenant_id: string;
@@ -172,21 +172,17 @@ export class AppointmentService {
     const dateStr = format(cancelledDate, 'yyyy-MM-dd')
     const timeStr = format(cancelledDate, 'HH:mm')
 
-    // Fetch tenant language and professional name
+    // Fetch tenant language, offer timeout config, and professional name
     const [{ data: tenantData }, { data: profData }] = await Promise.all([
       supabase.from('tenants').select('settings').eq('id', params.tenant_id).single(),
       supabase.from('professionals').select('full_name').eq('id', params.professional_id).single(),
     ])
 
     const lang = (tenantData?.settings?.language as 'en' | 'es' | 'it') || 'es'
-    const t = translations[lang] || translations['es']
+    const offerTimeoutMinutes: number = tenantData?.settings?.waitlist_offer_timeout_minutes ?? 30
     const profName = profData?.full_name || ''
 
-    // Find pending waitlist entries that match:
-    //   - Same professional
-    //   - Either preferred_date == cancelledDate
-    //   - OR start_date <= cancelledDate <= end_date
-    //   - AND status = 'pending'
+    // Find ONLY THE FIRST pending entry (FIFO order) that matches professional + date
     const { data: waitlisted } = await supabase
       .from('waitlists')
       .select('*, clients(id, first_name, last_name, phone)')
@@ -194,46 +190,52 @@ export class AppointmentService {
       .eq('professional_id', params.professional_id)
       .eq('status', 'pending')
       .or(`preferred_date.eq.${dateStr},and(start_date.lte.${dateStr},end_date.gte.${dateStr})`)
+      .order('created_at', { ascending: true })
+      .limit(1)
 
     if (!waitlisted || waitlisted.length === 0) return
 
-    // Compose message
+    const entry = waitlisted[0]
+    const client = entry.clients
+    if (!client?.phone) return
+
+    // Compute offer expiry
+    const offerExpiresAt = new Date(Date.now() + offerTimeoutMinutes * 60 * 1000).toISOString()
+
     const buildMsg = (firstName: string) => {
-      if (lang === 'es') return `¡Hola ${firstName}! 🗓️ Se liberó un turno con *${profName}* para el *${format(cancelledDate, 'dd/MM/yyyy')} a las ${timeStr}*.\n\nRespóndenos para tomarlo antes de que lo tome otro paciente.`
-      if (lang === 'it') return `Ciao ${firstName}! 🗓️ Si è liberato un appuntamento con *${profName}* per il *${format(cancelledDate, 'dd/MM/yyyy')} alle ${timeStr}*.\n\nRispondici per prenotarlo.`
-      return `Hi ${firstName}! 🗓️ A slot with *${profName}* opened up for *${format(cancelledDate, 'MM/dd/yyyy')} at ${timeStr}*.\n\nReply to book it before someone else does.`
+      const dateFormatted = format(cancelledDate, lang === 'en' ? 'MM/dd/yyyy' : 'dd/MM/yyyy')
+      if (lang === 'es') return `¡Hola ${firstName}! 🗓️ Se liberó un turno con *${profName}* para el *${dateFormatted} a las ${timeStr}*.\n\n¡Tenés *${offerTimeoutMinutes} minutos* para tomarlo! Responde *SÍ* para confirmar o *NO* si no podés.\n\nSi no respondés, le ofreceremos el turno al siguiente paciente en espera.`
+      if (lang === 'it') return `Ciao ${firstName}! 🗓️ Si è liberato un appuntamento con *${profName}* per il *${dateFormatted} alle ${timeStr}*.\n\nHai *${offerTimeoutMinutes} minuti* per prenderlo! Rispondi *SÌ* per confermare o *NO* se non puoi.\n\nSe non rispondi, offriremo il turno al paziente successivo in lista.`
+      return `Hi ${firstName}! 🗓️ A slot with *${profName}* opened up for *${dateFormatted} at ${timeStr}*.\n\nYou have *${offerTimeoutMinutes} minutes* to claim it! Reply *YES* to confirm or *NO* if you can't make it.\n\nIf you don't respond, we'll offer the slot to the next patient on the waitlist.`
     }
 
-    const notifiedIds: string[] = []
+    const isTelegram = client.phone.startsWith('tg_')
+    const channel = isTelegram ? 'telegram_gastro' : 'whatsapp'
+    const chatId = isTelegram ? parseInt(client.phone.replace('tg_', '')) : client.phone
 
-    for (const entry of waitlisted) {
-      const client = entry.clients
-      if (!client?.phone) continue
+    try {
+      await MessageService.sendMessage({
+        channel,
+        chat_id: chatId,
+        tenant_id: params.tenant_id,
+        text: buildMsg(client.first_name),
+        buttons: lang === 'es' ? ['✅ SÍ', '❌ NO'] : (lang === 'it' ? ['✅ SÌ', '❌ NO'] : ['✅ YES', '❌ NO']),
+      })
 
-      const isTelegram = client.phone.startsWith('tg_')
-      const channel = isTelegram ? 'telegram_gastro' : 'whatsapp'
-      const chatId = isTelegram ? parseInt(client.phone.replace('tg_', '')) : client.phone
-      const msg = buildMsg(client.first_name)
-
-      try {
-        await MessageService.sendMessage({
-          channel,
-          chat_id: chatId,
-          tenant_id: params.tenant_id,
-          text: msg,
-        })
-        notifiedIds.push(entry.id)
-      } catch (msgErr) {
-        console.error(`[Waitlist] Failed to notify client ${client.id}:`, msgErr)
-      }
-    }
-
-    // Mark notified entries as 'notified'
-    if (notifiedIds.length > 0) {
+      // Mark as notified with offer details
       await supabase
         .from('waitlists')
-        .update({ status: 'notified', notified_at: new Date().toISOString(), updated_at: new Date().toISOString() })
-        .in('id', notifiedIds)
+        .update({
+          status: 'notified',
+          notified_at: new Date().toISOString(),
+          offer_expires_at: offerExpiresAt,
+          offered_slot_start_at: params.freed_start_at,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', entry.id)
+
+    } catch (msgErr) {
+      console.error(`[Waitlist] Failed to notify client ${client.id}:`, msgErr)
     }
   }
 
