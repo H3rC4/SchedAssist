@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, Suspense } from 'react'
-import { Plus, LayoutDashboard, Phone, Clock, User, ChevronRight, CheckCircle } from 'lucide-react'
+import { Plus, LayoutDashboard, Phone, Clock, ChevronRight, CalendarDays, ListOrdered } from 'lucide-react'
 import { format, parseISO } from 'date-fns'
 import { useAppointments, Appointment } from '@/hooks/useAppointments'
 import { MiniCalendar } from '@/components/appointments/MiniCalendar'
@@ -9,6 +9,7 @@ import { DayActivityFeed } from '@/components/appointments/DayActivityFeed'
 import { AppointmentDetailModal } from '@/components/appointments/AppointmentDetailModal'
 import { NewAppointmentModal } from '@/components/appointments/NewAppointmentModal'
 import { translations, dateLocales } from '@/lib/i18n'
+import WaitlistView from '@/components/dashboard/WaitlistView'
 
 function Toast({ message, type, onClose }: { message: string; type: 'error' | 'success'; onClose: () => void }) {
   const [visible, setVisible] = useState(true)
@@ -48,6 +49,7 @@ function AppointmentsContent() {
   const [showNewForm, setShowNewForm] = useState(false)
   const [toast, setToast] = useState<{ message: string; type: 'error' | 'success' } | null>(null)
   const [callNotes, setCallNotes] = useState<{[key: string]: string}>({})
+  const [activeTab, setActiveTab] = useState<'calendar' | 'waitlist'>('calendar')
 
   const T = translations[lang] || translations['en']
   const dayNames = lang === 'it'
@@ -144,44 +146,77 @@ function AppointmentsContent() {
           </h1>
           <p className="text-xs md:text-base font-bold text-gray-400 mt-1 md:mt-2 uppercase tracking-[0.2em]">{T.patient_management_subtitle}</p>
         </div>
-        <button onClick={() => setShowNewForm(true)}
-          className="relative z-10 flex items-center justify-center rounded-2xl md:rounded-3xl bg-gray-900 px-6 md:px-8 py-4 md:py-5 text-sm font-black text-white shadow-2xl hover:bg-primary-600 hover:scale-[1.05] active:scale-95 transition-all duration-300 w-full md:w-auto">
-          <Plus className="-ml-1 mr-2 md:mr-3 h-5 md:h-6 w-5 md:w-6" /> {T.new_appointment}
-        </button>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-10">
-        {/* Mini Calendar */}
-        <div className="lg:col-span-4">
-            <MiniCalendar 
-                currentMonth={currentMonth}
-                selectedDate={selectedDate}
-                onSelectDate={setSelectedDate}
-                onNavigate={navigateMonth}
-                appointments={allMonthApps}
-                locale={dateLocales[lang]}
-                dayNames={dayNames}
-            />
+        <div className="relative z-10 flex items-center gap-3 flex-wrap">
+          {/* Tab Toggle */}
+          <div className="flex items-center bg-slate-100 rounded-2xl p-1 gap-1">
+            <button
+              onClick={() => setActiveTab('calendar')}
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
+                activeTab === 'calendar' ? 'bg-white shadow text-slate-900' : 'text-slate-500 hover:text-slate-700'
+              }`}
+            >
+              <CalendarDays className="h-3.5 w-3.5" />
+              {lang === 'es' ? 'Calendario' : lang === 'it' ? 'Calendario' : 'Calendar'}
+            </button>
+            <button
+              onClick={() => setActiveTab('waitlist')}
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
+                activeTab === 'waitlist' ? 'bg-white shadow text-slate-900' : 'text-slate-500 hover:text-slate-700'
+              }`}
+            >
+              <ListOrdered className="h-3.5 w-3.5" />
+              {lang === 'es' ? 'Lista de Espera' : lang === 'it' ? 'Lista d\'Attesa' : 'Waitlist'}
+            </button>
+          </div>
+          {activeTab === 'calendar' && (
+            <button onClick={() => setShowNewForm(true)}
+              className="flex items-center justify-center rounded-2xl md:rounded-3xl bg-gray-900 px-6 md:px-8 py-4 md:py-5 text-sm font-black text-white shadow-2xl hover:bg-primary-600 hover:scale-[1.05] active:scale-95 transition-all duration-300">
+              <Plus className="-ml-1 mr-2 md:mr-3 h-5 md:h-6 w-5 md:w-6" /> {T.new_appointment}
+            </button>
+          )}
         </div>
-
-        {/* Day Feed */}
-        <DayActivityFeed 
-            selectedDate={selectedDate}
-            appointments={appointments}
-            translations={{
-                dailyView: T.daily_view,
-                appointments: T.appointments_list,
-                noActivity: T.no_activity_today,
-                createFirst: T.create_first,
-                reminder: T.awaiting,
-                confirmed: T.confirmed,
-            }}
-            locale={dateLocales[lang]}
-            onSelectAppointment={setSelectedApp}
-            onNewAppointment={() => setShowNewForm(true)}
-            lang={lang}
-        />
       </div>
+
+      {activeTab === 'calendar' ? (
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-10">
+          {/* Mini Calendar */}
+          <div className="lg:col-span-4">
+              <MiniCalendar 
+                  currentMonth={currentMonth}
+                  selectedDate={selectedDate}
+                  onSelectDate={setSelectedDate}
+                  onNavigate={navigateMonth}
+                  appointments={allMonthApps}
+                  locale={dateLocales[lang]}
+                  dayNames={dayNames}
+              />
+          </div>
+
+          {/* Day Feed */}
+          <DayActivityFeed 
+              selectedDate={selectedDate}
+              appointments={appointments}
+              translations={{
+                  dailyView: T.daily_view,
+                  appointments: T.appointments_list,
+                  noActivity: T.no_activity_today,
+                  createFirst: T.create_first,
+                  reminder: T.awaiting,
+                  confirmed: T.confirmed,
+              }}
+              locale={dateLocales[lang]}
+              onSelectAppointment={setSelectedApp}
+              onNewAppointment={() => setShowNewForm(true)}
+              lang={lang}
+          />
+        </div>
+      ) : (
+        tenantId && (
+          <div className="bg-white/70 backdrop-blur-xl rounded-[2rem] md:rounded-[2.5rem] border border-white shadow-[0_32px_64px_-16px_rgba(0,0,0,0.05)] p-6 md:p-10">
+            <WaitlistView tenantId={tenantId} lang={lang} />
+          </div>
+        )
+      )}
 
       {/* Modals */}
       {selectedApp && (

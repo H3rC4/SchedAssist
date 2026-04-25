@@ -1,6 +1,8 @@
 import { Appointment, AppointmentStatus, AppointmentSource } from '@/types'
 import { AuditService } from './audit.service'
+import { MessageService } from './message.service'
 import { differenceInHours, parseISO, format } from 'date-fns'
+import { translations } from '@/lib/i18n'
 
 export class AppointmentService {
   /**
@@ -141,7 +143,98 @@ export class AppointmentService {
       new_value: data
     })
 
+    // 5. Notify waitlisted patients who match this professional and date
+    try {
+      await AppointmentService._notifyWaitlist(supabase, {
+        tenant_id: params.tenant_id,
+        professional_id: appointment.professional_id,
+        freed_slot_date: appointment.start_at,
+        freed_start_at: appointment.start_at,
+      })
+    } catch (wlErr) {
+      // Non-blocking: log but don't fail the cancellation
+      console.error('[Waitlist] Failed to notify waitlisted patients:', wlErr)
+    }
+
     return data
+  }
+
+  /**
+   * Checks the waitlist for patients interested in a freed slot and sends them a WhatsApp notification.
+   */
+  private static async _notifyWaitlist(supabase: any, params: {
+    tenant_id: string;
+    professional_id: string;
+    freed_slot_date: string; // ISO timestamp
+    freed_start_at: string;
+  }) {
+    const cancelledDate = parseISO(params.freed_slot_date)
+    const dateStr = format(cancelledDate, 'yyyy-MM-dd')
+    const timeStr = format(cancelledDate, 'HH:mm')
+
+    // Fetch tenant language and professional name
+    const [{ data: tenantData }, { data: profData }] = await Promise.all([
+      supabase.from('tenants').select('settings').eq('id', params.tenant_id).single(),
+      supabase.from('professionals').select('full_name').eq('id', params.professional_id).single(),
+    ])
+
+    const lang = (tenantData?.settings?.language as 'en' | 'es' | 'it') || 'es'
+    const t = translations[lang] || translations['es']
+    const profName = profData?.full_name || ''
+
+    // Find pending waitlist entries that match:
+    //   - Same professional
+    //   - Either preferred_date == cancelledDate
+    //   - OR start_date <= cancelledDate <= end_date
+    //   - AND status = 'pending'
+    const { data: waitlisted } = await supabase
+      .from('waitlists')
+      .select('*, clients(id, first_name, last_name, phone)')
+      .eq('tenant_id', params.tenant_id)
+      .eq('professional_id', params.professional_id)
+      .eq('status', 'pending')
+      .or(`preferred_date.eq.${dateStr},and(start_date.lte.${dateStr},end_date.gte.${dateStr})`)
+
+    if (!waitlisted || waitlisted.length === 0) return
+
+    // Compose message
+    const buildMsg = (firstName: string) => {
+      if (lang === 'es') return `¡Hola ${firstName}! 🗓️ Se liberó un turno con *${profName}* para el *${format(cancelledDate, 'dd/MM/yyyy')} a las ${timeStr}*.\n\nRespóndenos para tomarlo antes de que lo tome otro paciente.`
+      if (lang === 'it') return `Ciao ${firstName}! 🗓️ Si è liberato un appuntamento con *${profName}* per il *${format(cancelledDate, 'dd/MM/yyyy')} alle ${timeStr}*.\n\nRispondici per prenotarlo.`
+      return `Hi ${firstName}! 🗓️ A slot with *${profName}* opened up for *${format(cancelledDate, 'MM/dd/yyyy')} at ${timeStr}*.\n\nReply to book it before someone else does.`
+    }
+
+    const notifiedIds: string[] = []
+
+    for (const entry of waitlisted) {
+      const client = entry.clients
+      if (!client?.phone) continue
+
+      const isTelegram = client.phone.startsWith('tg_')
+      const channel = isTelegram ? 'telegram_gastro' : 'whatsapp'
+      const chatId = isTelegram ? parseInt(client.phone.replace('tg_', '')) : client.phone
+      const msg = buildMsg(client.first_name)
+
+      try {
+        await MessageService.sendMessage({
+          channel,
+          chat_id: chatId,
+          tenant_id: params.tenant_id,
+          text: msg,
+        })
+        notifiedIds.push(entry.id)
+      } catch (msgErr) {
+        console.error(`[Waitlist] Failed to notify client ${client.id}:`, msgErr)
+      }
+    }
+
+    // Mark notified entries as 'notified'
+    if (notifiedIds.length > 0) {
+      await supabase
+        .from('waitlists')
+        .update({ status: 'notified', notified_at: new Date().toISOString(), updated_at: new Date().toISOString() })
+        .in('id', notifiedIds)
+    }
   }
 
   /**
