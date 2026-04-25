@@ -193,6 +193,8 @@ export default function SettingsPage() {
     setIsSavingLang(false)
   }
 
+  const [isDeleted, setIsDeleted] = useState(false)
+
   const handleDeleteTenant = async () => {
     const requiredPhrase = lang === 'it' ? 'ELIMINA' : (lang === 'en' ? 'DELETE' : 'ELIMINAR')
     if (deleteConfirmText !== requiredPhrase) return
@@ -202,10 +204,12 @@ export default function SettingsPage() {
         method: 'DELETE'
       })
       if (res.ok) {
-        // Sign out and redirect to home after deletion
-        const supabase = createClient()
-        await supabase.auth.signOut()
-        window.location.href = '/'
+        setIsDeleted(true)
+        setTimeout(async () => {
+          const supabase = createClient()
+          await supabase.auth.signOut()
+          window.location.href = '/'
+        }, 4000)
       } else {
         const body = await res.json()
         alert('Error: ' + (body.error || 'Unknown error'))
@@ -572,6 +576,26 @@ export default function SettingsPage() {
         )}
 
       </div>
+      
+      {isDeleted && (
+        <div className="fixed inset-0 z-[100] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-slate-900 rounded-[3rem] p-10 max-w-md w-full text-center shadow-2xl animate-in zoom-in-95 duration-500 border border-slate-200 dark:border-white/5">
+            <div className="h-20 w-20 bg-red-100 dark:bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
+              <AlertTriangle className="h-10 w-10 text-red-600 dark:text-red-500" />
+            </div>
+            <h2 className="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tight mb-4">
+              {lang === 'es' ? 'Cuenta Eliminada' : (lang === 'it' ? 'Account Eliminato' : 'Account Deleted')}
+            </h2>
+            <p className="text-slate-500 font-medium mb-8">
+              {lang === 'es' ? 'Tu clínica y todos sus datos han sido borrados permanentemente. Esperamos verte pronto.' : (lang === 'it' ? 'La tua clinica e tutti i suoi dati sono stati cancellati in modo permanente. Speriamo di rivederti presto.' : 'Your clinic and all its data have been permanently deleted. We hope to see you soon.')}
+            </p>
+            <div className="flex justify-center">
+              <Loader2 className="h-6 w-6 animate-spin text-slate-300" />
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   )
 }

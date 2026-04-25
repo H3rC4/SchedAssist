@@ -121,22 +121,28 @@ export function useProfessionals() {
 
   const createProfessional = async (data: { full_name: string, specialty: string, location_id?: string }) => {
     setSaving(true)
-    const { data: newProf, error } = await supabase
-      .from('professionals')
-      .insert({
-        tenant_id: tenantId,
-        full_name: data.full_name,
-        specialty: data.specialty || null,
-        location_id: data.location_id || null,
-        active: true
-      })
-      .select()
-      .single()
+    try {
+      const res = await fetch('/api/professionals', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          tenant_id: tenantId,
+          full_name: data.full_name,
+          specialty: data.specialty || null,
+          location_id: data.location_id || null,
+          active: true
+        })
+      });
+      
+      const responseData = await res.json();
+      if (!res.ok) throw new Error(responseData.error || 'Failed to create professional');
 
-    if (!error && newProf) {
+      const newProf = responseData;
+
       // Default rules
       const defaultRules = Array.from({ length: 7 }, (_, i) => ({
         professional_id: newProf.id,
+        tenant_id: tenantId,
         day_of_week: i,
         start_time: '09:00:00',
         end_time: '18:00:00',
@@ -146,9 +152,11 @@ export function useProfessionals() {
       await fetchProfessionals()
       setSaving(false)
       return { success: true, prof: newProf }
+    } catch (error: any) {
+      console.error('Error creating professional:', error)
+      setSaving(false)
+      return { success: false, error: error.message }
     }
-    setSaving(false)
-    return { success: false, error }
   }
 
   const deleteProfessional = async (id: string) => {
