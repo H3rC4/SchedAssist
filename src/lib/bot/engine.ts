@@ -884,11 +884,21 @@ export async function executeStateMachine(ctx: BotContext): Promise<boolean> {
             const startAt = offer.offered_slot_start_at;
             const endAt = new Date(new Date(startAt).getTime() + 30 * 60000).toISOString();
 
+            let serviceId = offer.service_id;
+            if (!serviceId) {
+              const { data: srvData } = await ctx.supabase.from('services').select('id').eq('tenant_id', ctx.tenant.id).limit(1).maybeSingle();
+              serviceId = srvData?.id;
+            }
+
+            if (!serviceId) {
+              throw new Error('No service found to book appointment');
+            }
+
             await AppointmentService.createAppointment(ctx.supabase, {
               tenant_id: ctx.tenant.id,
               client_id: ctx.client.id,
               professional_id: offer.professional_id,
-              service_id: offer.service_id || (await ctx.supabase.from('services').select('id').eq('tenant_id', ctx.tenant.id).limit(1).single()).data.id,
+              service_id: serviceId,
               start_at: startAt,
               end_at: endAt,
               source: ctx.channel as any,
