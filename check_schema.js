@@ -7,23 +7,17 @@ const supabase = createClient(
 );
 
 async function checkSchema() {
-  console.log('--- REVISANDO COLUMNAS DE TENANTS ---');
+  console.log('--- REVISANDO TABLA APPOINTMENTS ---');
   
-  // Probamos pedir una fila y ver qué columnas trae
   const { data, error } = await supabase
-    .from('tenants')
-    .select('*')
+    .from('appointments')
+    .select('id, location_id')
     .limit(1);
   
   if (error) {
-    console.error('Error:', error);
-    return;
-  }
-  
-  if (data && data.length > 0) {
-    console.log('Columnas encontradas:', Object.keys(data[0]));
+    console.error('ERROR: Faltan columnas en appointments:', error.message);
   } else {
-    console.log('No hay datos en tenants, pero la tabla existe.');
+    console.log('✅ Columna location_id en appointments encontrada.');
   }
 }
 

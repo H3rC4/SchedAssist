@@ -6,7 +6,7 @@
     },
     {
       "path": "/api/cron/waitlist-followup",
-      "schedule": "*/10 * * * *"
+      "schedule": "0 8 * * *"
     }
   ]
 }

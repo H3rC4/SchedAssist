@@ -5,8 +5,8 @@ import { MessageService } from '@/services/message.service'
 
 /**
  * Vercel Cron Job: Waitlist follow-up
- * Runs every 10 minutes. Finds expired waitlist offers and notifies the next patient in line.
- * Schedule: every 10 mins
+ * Runs DAILY (Vercel Hobby limitation). 
+ * Finds expired waitlist offers and notifies the next patient in line.
  */
 export async function GET(req: NextRequest) {
   const authHeader = req.headers.get('authorization')
@@ -52,7 +52,6 @@ export async function GET(req: NextRequest) {
         continue
       }
       const lang = (tenantSettings.language as 'en' | 'es' | 'it') || 'es'
-      const offerTimeoutMinutes: number = tenantSettings.waitlist_offer_timeout_minutes ?? 30
       const profName = expired.professionals?.full_name || ''
 
       // 1. Mark the expired entry as 'offer_expired'
@@ -83,6 +82,13 @@ export async function GET(req: NextRequest) {
       // 2. Find the NEXT pending patient for the same professional + slot date
       if (!expired.offered_slot_start_at) continue
 
+      // RULE: Only offer if slot is at least 24 hours in the future
+      const hoursUntilSlot = (new Date(expired.offered_slot_start_at).getTime() - new Date().getTime()) / 3600000
+      if (hoursUntilSlot < 24) {
+        console.log(`[Waitlist Cron] Slot ${expired.offered_slot_start_at} is too soon (<24h), skipping notification for next patient.`)
+        continue
+      }
+
       const slotDate = format(parseISO(expired.offered_slot_start_at), 'yyyy-MM-dd')
       const slotTime = format(parseISO(expired.offered_slot_start_at), 'HH:mm')
       const slotDateFormatted = format(parseISO(expired.offered_slot_start_at), lang === 'en' ? 'MM/dd/yyyy' : 'dd/MM/yyyy')
@@ -106,12 +112,13 @@ export async function GET(req: NextRequest) {
       const nextClient = next.clients
       if (!nextClient?.phone) continue
 
-      const newOfferExpiresAt = new Date(Date.now() + offerTimeoutMinutes * 60 * 1000).toISOString()
+      // Use 24 hours for Hobby plan (1440 minutes)
+      const newOfferExpiresAt = new Date(Date.now() + 1440 * 60 * 1000).toISOString()
 
       const buildMsg = (firstName: string) => {
-        if (lang === 'es') return `¡Hola ${firstName}! 🗓️ Se liberó un turno con *${profName}* para el *${slotDateFormatted} a las ${slotTime}*.\n\n¡Tenés *${offerTimeoutMinutes} minutos* para tomarlo! Responde *SÍ* para confirmar o *NO* si no podés.`
-        if (lang === 'it') return `Ciao ${firstName}! 🗓️ Si è liberato un appuntamento con *${profName}* per il *${slotDateFormatted} alle ${slotTime}*.\n\nHai *${offerTimeoutMinutes} minuti* per prenderlo! Rispondi *SÌ* per confermare o *NO* se non puoi.`
-        return `Hi ${firstName}! 🗓️ A slot with *${profName}* opened up for *${slotDateFormatted} at ${slotTime}*.\n\nYou have *${offerTimeoutMinutes} minutes* to claim it! Reply *YES* to confirm or *NO* if you can't make it.`
+        if (lang === 'es') return `¡Hola ${firstName}! 🗓️ Se liberó un turno con *${profName}* para el *${slotDateFormatted} a las ${slotTime}*.\n\n¡Tenés *24 horas* para tomarlo! Responde *SÍ* para confirmar o *NO* si no podés.`
+        if (lang === 'it') return `Ciao ${firstName}! 🗓️ Si è liberato un appuntamento con *${profName}* per il *${slotDateFormatted} alle ${slotTime}*.\n\nHai *24 ore* per prenderlo! Rispondi *SÌ* per confermare o *NO* se non puoi.`
+        return `Hi ${firstName}! 🗓️ A slot with *${profName}* opened up for *${slotDateFormatted} at ${slotTime}*.\n\nYou have *24 hours* to claim it! Reply *YES* to confirm or *NO* if you can't make it.`
       }
 
       const isTgNext = nextClient.phone.startsWith('tg_')

@@ -247,8 +247,14 @@ export class AppointmentService {
     ])
 
     const lang = (tenantData?.settings?.language as 'en' | 'es' | 'it') || 'es'
-    const offerTimeoutMinutes: number = tenantData?.settings?.waitlist_offer_timeout_minutes ?? 30
     const profName = profData?.full_name || ''
+
+    // RULE: Only offer if slot is at least 24 hours in the future
+    const hoursUntilSlot = (new Date(params.freed_start_at).getTime() - new Date().getTime()) / 3600000
+    if (hoursUntilSlot < 24) {
+      console.log(`[Waitlist] Slot ${params.freed_start_at} is too soon (<24h), skipping notification.`)
+      return
+    }
 
     // Find ONLY THE FIRST pending entry (FIFO order) that matches professional + date
     const { data: waitlisted } = await supabase
@@ -267,14 +273,14 @@ export class AppointmentService {
     const client = entry.clients
     if (!client?.phone) return
 
-    // Compute offer expiry
-    const offerExpiresAt = new Date(Date.now() + offerTimeoutMinutes * 60 * 1000).toISOString()
+    // Compute offer expiry (24 hours for daily cron compatibility)
+    const offerExpiresAt = new Date(Date.now() + 1440 * 60 * 1000).toISOString()
 
     const buildMsg = (firstName: string) => {
       const dateFormatted = format(cancelledDate, lang === 'en' ? 'MM/dd/yyyy' : 'dd/MM/yyyy')
-      if (lang === 'es') return `¡Hola ${firstName}! 🗓️ Se liberó un turno con *${profName}* para el *${dateFormatted} a las ${timeStr}*.\n\n¡Tenés *${offerTimeoutMinutes} minutos* para tomarlo! Responde *SÍ* para confirmar o *NO* si no podés.\n\nSi no respondés, le ofreceremos el turno al siguiente paciente en espera.`
-      if (lang === 'it') return `Ciao ${firstName}! 🗓️ Si è liberato un appuntamento con *${profName}* per il *${dateFormatted} alle ${timeStr}*.\n\nHai *${offerTimeoutMinutes} minuti* per prenderlo! Rispondi *SÌ* per confermare o *NO* se non puoi.\n\nSe non rispondi, offriremo il turno al paziente successivo in lista.`
-      return `Hi ${firstName}! 🗓️ A slot with *${profName}* opened up for *${dateFormatted} at ${timeStr}*.\n\nYou have *${offerTimeoutMinutes} minutes* to claim it! Reply *YES* to confirm or *NO* if you can't make it.\n\nIf you don't respond, we'll offer the slot to the next patient on the waitlist.`
+      if (lang === 'es') return `¡Hola ${firstName}! 🗓️ Se liberó un turno con *${profName}* para el *${dateFormatted} a las ${timeStr}*.\n\n¡Tenés *24 horas* para tomarlo! Responde *SÍ* para confirmar o *NO* si no podés.\n\nSi no respondés, le ofreceremos el turno al siguiente paciente en espera.`
+      if (lang === 'it') return `Ciao ${firstName}! 🗓️ Si è liberato un appuntamento con *${profName}* per il *${dateFormatted} alle ${timeStr}*.\n\nHai *24 ore* per prenderlo! Rispondi *SÌ* per confermare o *NO* se non puoi.\n\nSe non rispondi, offriremo il turno al paziente successivo in lista.`
+      return `Hi ${firstName}! 🗓️ A slot with *${profName}* opened up for *${dateFormatted} at ${timeStr}*.\n\nYou have *24 hours* to claim it! Reply *YES* to confirm or *NO* if you can't make it.\n\nIf you don't respond, we'll offer the slot to the next patient on the waitlist.`
     }
 
     const isTelegram = client.phone.startsWith('tg_')

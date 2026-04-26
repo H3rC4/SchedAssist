@@ -843,7 +843,101 @@ export async function executeStateMachine(ctx: BotContext): Promise<boolean> {
     }
   }
 
-  // 1. Check for Appointment Confirmations (SI/NO out of band)
+  // 1. Check for Waitlist Offer Responses
+  const { data: activeOffers } = await ctx.supabase
+    .from('waitlists')
+    .select('*, professionals(full_name)')
+    .eq('client_id', ctx.client.id)
+    .in('status', ['notified', 'offer_expired'])
+    .order('created_at', { ascending: false })
+    .limit(1);
+
+  if (activeOffers && activeOffers.length > 0) {
+    const offer = activeOffers[0];
+    const keywordsYes = translations[lang].keywordsYes;
+    const keywordsNo = translations[lang].keywordsNo;
+    const isYes = keywordsYes.some(k => msgLower === k || msgLower.includes(k));
+    const isNo = keywordsNo.some(k => msgLower === k || msgLower.includes(k));
+
+    if (isYes || isNo) {
+      if (offer.status === 'offer_expired' || (offer.offer_expires_at && new Date(offer.offer_expires_at) < new Date())) {
+        if (isYes) {
+          await MessageService.sendMessage({
+            channel: ctx.channel,
+            tenant_id: ctx.tenant.id,
+            sender_phone_id: ctx.sender_phone_id,
+            chat_id: ctx.chatId,
+            text: t('waitlistExpired', lang),
+          });
+          // Ensure it's marked as expired in DB
+          if (offer.status !== 'offer_expired') {
+            await ctx.supabase.from('waitlists').update({ status: 'offer_expired' }).eq('id', offer.id);
+          }
+          await showMainMenu(ctx.supabase, ctx.tenant, ctx.client.id, ctx.chatId, ctx.client.first_name, ctx.channel, ctx.sender_phone_id);
+          return true;
+        }
+      } else {
+        // Offer is still valid
+        if (isYes) {
+          try {
+            // Create the appointment
+            const startAt = offer.offered_slot_start_at;
+            const endAt = new Date(new Date(startAt).getTime() + 30 * 60000).toISOString();
+
+            await AppointmentService.createAppointment(ctx.supabase, {
+              tenant_id: ctx.tenant.id,
+              client_id: ctx.client.id,
+              professional_id: offer.professional_id,
+              service_id: offer.service_id || (await ctx.supabase.from('services').select('id').eq('tenant_id', ctx.tenant.id).limit(1).single()).data.id,
+              start_at: startAt,
+              end_at: endAt,
+              source: ctx.channel as any,
+              notes: 'Confirmado vía Lista de Espera',
+            });
+
+            // Mark waitlist as booked
+            await ctx.supabase.from('waitlists').update({ status: 'booked', updated_at: new Date().toISOString() }).eq('id', offer.id);
+
+            await MessageService.sendMessage({
+              channel: ctx.channel,
+              tenant_id: ctx.tenant.id,
+              sender_phone_id: ctx.sender_phone_id,
+              chat_id: ctx.chatId,
+              text: t('waitlistConfirmed', lang),
+            });
+          } catch (err: any) {
+            console.error('[Waitlist] Error booking:', err);
+            await MessageService.sendMessage({
+              channel: ctx.channel,
+              tenant_id: ctx.tenant.id,
+              sender_phone_id: ctx.sender_phone_id,
+              chat_id: ctx.chatId,
+              text: t('appointmentError', lang, { error: err.message }),
+            });
+          }
+          await showMainMenu(ctx.supabase, ctx.tenant, ctx.client.id, ctx.chatId, ctx.client.first_name, ctx.channel, ctx.sender_phone_id);
+          return true;
+        }
+
+        if (isNo) {
+          await ctx.supabase.from('waitlists').update({ status: 'declined', updated_at: new Date().toISOString() }).eq('id', offer.id);
+          await MessageService.sendMessage({
+            channel: ctx.channel,
+            tenant_id: ctx.tenant.id,
+            sender_phone_id: ctx.sender_phone_id,
+            chat_id: ctx.chatId,
+            text: t('waitlistCanceled', lang),
+          });
+          // Optional: Trigger next in line immediately? 
+          // The cron will handle it in the daily run, but for better UX we could call notifyWaitlist here.
+          await showMainMenu(ctx.supabase, ctx.tenant, ctx.client.id, ctx.chatId, ctx.client.first_name, ctx.channel, ctx.sender_phone_id);
+          return true;
+        }
+      }
+    }
+  }
+
+  // 2. Check for Appointment Confirmations (SI/NO out of band)
   if (ctx.botState.step === 'INITIAL' || !StateHandlers[ctx.botState.step]) {
     const { data: awaitingApps } = await ctx.supabase
       .from('appointments')
