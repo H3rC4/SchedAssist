@@ -6,6 +6,82 @@ import { translations } from '@/lib/i18n'
 
 export class AppointmentService {
   /**
+   * Check if a professional is available in a given time range,
+   * respecting weekly rules, lunch breaks, and date-specific overrides.
+   */
+  static async isProfessionalAvailable(supabase: any, params: {
+    tenant_id: string;
+    professional_id: string;
+    start_at: string;
+    end_at: string;
+  }) {
+    const startLocalStr = params.start_at.replace('Z', '');
+    const endLocalStr = params.end_at.replace('Z', '');
+    
+    const startDate = parseISO(startLocalStr);
+    const endDate = parseISO(endLocalStr);
+    const dateStr = format(startDate, 'yyyy-MM-dd');
+    const dayOfWeek = startDate.getDay();
+    
+    const startTimeStr = format(startDate, 'HH:mm:ss');
+    const endTimeStr = format(endDate, 'HH:mm:ss');
+
+    // 1. Check for a date-specific override FIRST
+    const { data: override } = await supabase
+      .from('professional_availability_overrides')
+      .select('*')
+      .eq('tenant_id', params.tenant_id)
+      .eq('professional_id', params.professional_id)
+      .eq('override_date', dateStr)
+      .maybeSingle();
+
+    // If explicitly blocked → not available
+    if (override?.override_type === 'block') return false;
+
+    let effectiveRules: any[] = [];
+
+    if (override?.override_type === 'open') {
+      // Use the override's custom hours for this specific date
+      effectiveRules = [{ 
+        start_time: override.start_time, 
+        end_time: override.end_time,
+        lunch_break_start: null,
+        lunch_break_end: null
+      }];
+    } else {
+      // Fall back to normal weekly availability rules
+      const { data: rules } = await supabase
+        .from('availability_rules')
+        .select('*')
+        .eq('tenant_id', params.tenant_id)
+        .eq('professional_id', params.professional_id)
+        .eq('day_of_week', dayOfWeek)
+        .eq('active', true);
+
+      if (!rules || rules.length === 0) return false;
+      effectiveRules = rules;
+    }
+
+    // 2. Validate against rules (usually only 1 rule per day, but we handle multiple for robustness)
+    const fitsInRule = effectiveRules.some(rule => {
+      // Check if it fits within working hours
+      const withinWorkingHours = rule.start_time <= startTimeStr && rule.end_time >= endTimeStr;
+      if (!withinWorkingHours) return false;
+
+      // Check if it overlaps with lunch break
+      if (rule.lunch_break_start && rule.lunch_break_end) {
+        // Overlap if: appointmentStart < lunchEnd AND appointmentEnd > lunchStart
+        const overlapLunch = startTimeStr < rule.lunch_break_end && endTimeStr > rule.lunch_break_start;
+        if (overlapLunch) return false;
+      }
+
+      return true;
+    });
+
+    return fitsInRule;
+  }
+
+  /**
    * Create a new appointment with conflict check.
    */
   static async createAppointment(supabase: any, params: {
@@ -19,29 +95,16 @@ export class AppointmentService {
     notes?: string;
     created_by_user_id?: string;
   }) {
-    // 1. Check if professional is working at that time (Availability Check)
-    // Remove Z if present so parseISO treats it as wall-clock local time, avoiding server shifts
-    const startLocalStr = params.start_at.replace('Z', '');
-    const endLocalStr = params.end_at.replace('Z', '');
-    
-    const startDate = parseISO(startLocalStr);
-    const dayOfWeek = startDate.getDay();
-    const startTimeStr = format(startDate, 'HH:mm:ss');
-    const endTimeStr = format(parseISO(endLocalStr), 'HH:mm:ss');
+    // 1. Availability Check (Rules + Overrides + Lunch Breaks)
+    const isAvailable = await this.isProfessionalAvailable(supabase, {
+      tenant_id: params.tenant_id,
+      professional_id: params.professional_id,
+      start_at: params.start_at,
+      end_at: params.end_at
+    });
 
-    const { data: rules } = await supabase
-      .from('availability_rules')
-      .select('id')
-      .eq('tenant_id', params.tenant_id)
-      .eq('professional_id', params.professional_id)
-      .eq('day_of_week', dayOfWeek)
-      .eq('active', true)
-      .lte('start_time', startTimeStr)
-      .gte('end_time', endTimeStr)
-      .limit(1);
-
-    if (!rules || rules.length === 0) {
-      throw new Error('El profesional no atiende en el horario seleccionado.');
+    if (!isAvailable) {
+      throw new Error('El profesional no atiende en el horario seleccionado o tiene este día bloqueado.');
     }
 
     // 2. Prevent double-booking (Overlap check)

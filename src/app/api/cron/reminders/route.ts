@@ -52,6 +52,13 @@ export async function GET(req: NextRequest) {
 
       console.log(`[CRON] Procesando Tenant: ${tenant.name} (${tz}) - Hora local: ${localHour}:00`);
 
+      // ─── Verificación de Configuración ──────────────────────────────────────
+      const isReminderEnabled = tenant.settings?.reminder_enabled !== false; // Default true
+      if (!isReminderEnabled && !forceAll) {
+        console.log(`[CRON] Recordatorios desactivados para ${tenant.name}. Saltando...`);
+        continue;
+      }
+
       // Definir "Mañana" relativo a la zona horaria del tenant
       // Nota: Usamos la fecha actual +/- el desfase si quisiéramos ser exactos, 
       // pero para simplificar, "mañana" es el día calendario siguiente al día actual en esa zona.

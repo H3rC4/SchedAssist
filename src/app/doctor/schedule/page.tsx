@@ -80,7 +80,23 @@ export default function DoctorSchedulePage() {
         .eq('professional_id', prof.id)
         .order('override_date', { ascending: true })
 
-      setRules(rulesData || [])
+      // Repair if rules are missing (Ensure all 7 days exist)
+      const repairedRules = [...(rulesData || [])];
+      for (let i = 0; i < 7; i++) {
+        if (!repairedRules.find(r => r.day_of_week === i)) {
+          repairedRules.push({
+            day_of_week: i,
+            start_time: '09:00:00',
+            end_time: '18:00:00',
+            active: i > 0 && i < 6,
+            lunch_break_start: null,
+            lunch_break_end: null
+          });
+        }
+      }
+      repairedRules.sort((a, b) => a.day_of_week - b.day_of_week);
+
+      setRules(repairedRules)
       setOverrides((overridesData || []) as Override[])
     }
     setLoading(false)
@@ -103,18 +119,26 @@ export default function DoctorSchedulePage() {
   }
 
   const handleSaveRules = async () => {
-    if (!profId) return
+    if (!profId || !tenantId) return
     setSaving(true)
     try {
-      await Promise.all(rules.map(rule => 
-        supabase.from('availability_rules').upsert({
+      const { error } = await supabase.from('availability_rules').upsert(
+        rules.map(rule => ({
           ...rule,
           professional_id: profId,
           tenant_id: tenantId
-        })
-      ))
+        }))
+      )
+
+      if (error) throw error
+
       setSaved(true)
       setTimeout(() => setSaved(false), 3000)
+      // Refresh to get IDs for newly created rules
+      await fetchData()
+    } catch (err) {
+      console.error('Error saving rules:', err)
+      alert(language === 'es' ? 'Error al guardar el horario. Por favor intenta de nuevo.' : 'Error saving schedule. Please try again.')
     } finally {
       setSaving(false)
     }
@@ -126,7 +150,7 @@ export default function DoctorSchedulePage() {
       .from('appointments')
       .select('id, start_at, clients(first_name, last_name)')
       .eq('professional_id', profId)
-      .eq('status', 'scheduled')
+      .in('status', ['pending', 'confirmed', 'awaiting_confirmation'])
       .gte('start_at', `${date}T00:00:00`)
       .lte('start_at', `${date}T23:59:59`)
     return data || []

@@ -163,6 +163,12 @@ export const translations = {
     bot_new_desc: (name: string, svc: string, prof: string, date: string) => 
       `Hello ${name}, your appointment for <b>${svc}</b> with <b>${prof}</b> is confirmed.\n\n📅 Date: <b>${date}</b>.\n\nSee you soon!`,
 
+    bot_cancellation_title: '⚠️ <b>APPOINTMENT CANCELLED</b>',
+    bot_cancellation_desc: (name: string, svc: string, date: string, tenant: string) => 
+      `Hello ${name}, we regret to inform you that your appointment for <b>${svc}</b> on <b>${date}</b> at <b>${tenant}</b> has been cancelled due to unforeseen circumstances at the clinic.\n\nWe will contact you shortly to reschedule. Sorry for the inconvenience!`,
+
+    send_whatsapp: 'Send WhatsApp',
+
     // Waitlist
     waitlist_title: 'Waitlist',
     waitlist_waiting: 'waiting',
@@ -519,6 +525,12 @@ export const translations = {
     bot_new_title: '✅ <b>NUEVA CITA AGENDADA</b>',
     bot_new_desc: (name: string, svc: string, prof: string, date: string) => 
       `Hola ${name}, te confirmamos tu turno para <b>${svc}</b> con <b>${prof}</b>.\n\n📅 Fecha: <b>${date}</b>.\n\n¡Te esperamos!`,
+
+    bot_cancellation_title: '⚠️ <b>CITA CANCELADA</b>',
+    bot_cancellation_desc: (name: string, svc: string, date: string, tenant: string) => 
+      `Hola ${name}, lamentamos informarte que tu cita para <b>${svc}</b> el día <b>${date}</b> en <b>${tenant}</b> ha sido cancelada por imprevistos en la clínica.\n\nNos pondremos en contacto contigo a la brevedad para reagendar. ¡Disculpa las molestias!`,
+
+    send_whatsapp: 'Enviar WhatsApp',
 
     // Waitlist
     waitlist_title: 'Lista de Espera',

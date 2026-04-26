@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import Link from 'next/link'
-import { Calendar, Users, CheckCircle, Clock, ChevronRight, Zap, Target, Star, MoreHorizontal, ArrowUpRight, ArrowDownRight, LayoutDashboard, Plus, ExternalLink, Copy, Check } from 'lucide-react'
+import { Calendar, Users, CheckCircle, Clock, ChevronRight, Zap, Target, Star, MoreHorizontal, ArrowUpRight, ArrowDownRight, LayoutDashboard, Plus, ExternalLink, Copy, Check, MessageSquare } from 'lucide-react'
 import { StatCard } from '@/components/dashboard/StatCard'
 import { createClient } from '@/lib/supabase/client'
 import { format, parseISO } from 'date-fns'
@@ -20,6 +20,8 @@ export default function DashboardPage() {
   const [tenantName, setTenantName] = useState('Admin')
   const [tenantSlug, setTenantSlug] = useState('')
   const [lang, setLang] = useState<Language>('es')
+  const [tenantId, setTenantId] = useState('')
+  const [sendingId, setSendingId] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
   const supabase = createClient()
 
@@ -35,7 +37,8 @@ export default function DashboardPage() {
 
     if (!tuData?.tenants) return
     const tenant = tuData.tenants as any
-    const tenantId = tenant.id
+    const tId = tenant.id
+    setTenantId(tId)
     setTenantName(tenant.name)
     setTenantSlug(tenant.slug)
     setLang((tenant.settings?.language as Language) || 'es')
@@ -45,7 +48,7 @@ export default function DashboardPage() {
         clients(id, first_name, last_name, phone),
         services(name, price),
         professionals(full_name)
-      `).eq('tenant_id', tenantId).order('start_at', { ascending: false })
+      `).eq('tenant_id', tId).order('start_at', { ascending: false })
 
     if (apps) {
       setAllAppsForExport(apps)
@@ -165,6 +168,27 @@ export default function DashboardPage() {
       setPendingCalls(prev => prev.filter(c => c.id !== id))
     }
     setNotifyingId(null)
+  };
+
+  const handleSendWhatsApp = async (appointment: any) => {
+    setSendingId(appointment.id)
+    try {
+      const res = await fetch('/api/appointments/notify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ appointment_id: appointment.id, tenant_id: tenantId })
+      })
+      if (res.ok) {
+        setPendingCalls(prev => prev.filter(c => c.id !== appointment.id))
+      } else {
+        const data = await res.json()
+        alert(data.error || 'Error sending message')
+      }
+    } catch (err) {
+      alert('Network error')
+    } finally {
+      setSendingId(null)
+    }
   };
 
   const copyToClipboard = () => {
@@ -309,14 +333,24 @@ export default function DashboardPage() {
                         <div className="text-[10px] font-bold text-slate-500 uppercase">
                           {format(parseISO(call.start_at), 'd MMM · HH:mm', { locale: dateLocale })}
                         </div>
-                        <button 
-                          onClick={() => markAsNotified(call.id)}
-                          disabled={notifyingId === call.id}
-                          className="h-10 px-5 rounded-xl bg-slate-900 dark:bg-red-500/20 text-white dark:text-red-400 text-[10px] font-black uppercase tracking-widest hover:bg-slate-800 dark:hover:bg-red-500/30 transition-all flex items-center gap-2"
-                        >
-                          {notifyingId === call.id ? <Clock className="h-3 w-3 animate-spin" /> : <CheckCircle className="h-3 w-3" />}
-                          {t.mark_as_notified}
-                        </button>
+                        <div className="flex items-center gap-2">
+                          <button 
+                            onClick={() => handleSendWhatsApp(call)}
+                            disabled={sendingId === call.id || notifyingId === call.id}
+                            className="h-10 px-4 rounded-xl bg-emerald-500 text-white text-[10px] font-black uppercase tracking-widest hover:bg-emerald-600 transition-all flex items-center gap-2 shadow-lg shadow-emerald-500/20"
+                          >
+                            {sendingId === call.id ? <Clock className="h-3 w-3 animate-spin" /> : <MessageSquare className="h-3 w-3" />}
+                            {t.send_whatsapp}
+                          </button>
+                          <button 
+                            onClick={() => markAsNotified(call.id)}
+                            disabled={notifyingId === call.id || sendingId === call.id}
+                            className="h-10 px-5 rounded-xl bg-slate-900 dark:bg-red-500/20 text-white dark:text-red-400 text-[10px] font-black uppercase tracking-widest hover:bg-slate-800 dark:hover:bg-red-500/30 transition-all flex items-center gap-2"
+                          >
+                            {notifyingId === call.id ? <Clock className="h-3 w-3 animate-spin" /> : <CheckCircle className="h-3 w-3" />}
+                            {t.mark_as_notified}
+                          </button>
+                        </div>
                       </div>
                     </div>
                   ))}

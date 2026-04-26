@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Calendar, ChevronLeft, ChevronRight, Clock, User, Phone, Stethoscope, Plus } from 'lucide-react'
+import { Calendar, ChevronLeft, ChevronRight, Clock, User, Phone, Stethoscope, Plus, MessageSquare, CheckCircle } from 'lucide-react'
 import { format, parseISO, isSameDay, isToday, startOfMonth, endOfMonth, eachDayOfInterval, addMonths, subMonths } from 'date-fns'
 import { translations, dateLocales } from '@/lib/i18n'
 import { useLandingTranslation } from '@/components/LanguageContext'
@@ -29,6 +29,7 @@ export default function DoctorDashboard() {
   const [currentMonth, setCurrentMonth] = useState(new Date())
   const [loading, setLoading] = useState(true)
   const [notifyingId, setNotifyingId] = useState<string | null>(null)
+  const [sendingId, setSendingId] = useState<string | null>(null)
   const [callNotes, setCallNotes] = useState<{[key: string]: string}>({})
   
   // New appointment states
@@ -71,11 +72,41 @@ export default function DoctorDashboard() {
     const date = parseISO(dateStr)
     const dayOfWeek = date.getDay()
 
-    const { data: rules } = await supabase.from('availability_rules').select('*')
-      .eq('tenant_id', tenantId).eq('professional_id', pId)
-      .eq('day_of_week', dayOfWeek).eq('active', true)
+    // 0. Check for overrides
+    const { data: override } = await supabase
+      .from('professional_availability_overrides')
+      .select('*')
+      .eq('tenant_id', tenantId)
+      .eq('professional_id', pId)
+      .eq('override_date', dateStr)
+      .maybeSingle()
 
-    if (!rules || rules.length === 0) { setAvailableSlots([]); setSlotLoading(false); return }
+    if (override?.override_type === 'block') {
+      setAvailableSlots([])
+      setSlotLoading(false)
+      return
+    }
+
+    let effectiveRules: any[] = []
+    if (override?.override_type === 'open') {
+      effectiveRules = [{ 
+        start_time: override.start_time, 
+        end_time: override.end_time,
+        lunch_break_start: null,
+        lunch_break_end: null
+      }]
+    } else {
+      const { data: rules } = await supabase.from('availability_rules').select('*')
+        .eq('tenant_id', tenantId).eq('professional_id', pId)
+        .eq('day_of_week', dayOfWeek).eq('active', true)
+
+      if (!rules || rules.length === 0) { 
+        setAvailableSlots([])
+        setSlotLoading(false)
+        return 
+      }
+      effectiveRules = rules
+    }
 
     const { data: existingApps } = await supabase.from('appointments').select('start_at, end_at')
       .eq('tenant_id', tenantId).eq('professional_id', pId).neq('status', 'cancelled')
@@ -84,13 +115,25 @@ export default function DoctorDashboard() {
     const slots: string[] = []
     const now = new Date()
 
-    for (const rule of rules) {
+    for (const rule of effectiveRules) {
       let current = parseISO(`${dateStr}T${rule.start_time}`)
       const endRule = parseISO(`${dateStr}T${rule.end_time}`)
+      const lunchStart = rule.lunch_break_start ? parseISO(`${dateStr}T${rule.lunch_break_start}`) : null
+      const lunchEnd = rule.lunch_break_end ? parseISO(`${dateStr}T${rule.lunch_break_end}`) : null
+
       while (current < endRule) {
         const slotStart = new Date(current)
         const slotEnd = new Date(current.getTime() + 30 * 60000)
+        
+        if (slotEnd > endRule) break
+
         if (slotStart >= now) {
+          // Lunch break check
+          if (lunchStart && lunchEnd && slotStart < lunchEnd && slotEnd > lunchStart) {
+            current = slotEnd
+            continue
+          }
+
           const isOccupied = existingApps?.some((a: any) => {
             const appStart = parseISO(a.start_at.slice(0, 19))
             const appEnd = parseISO(a.end_at.slice(0, 19))
@@ -118,6 +161,28 @@ export default function DoctorDashboard() {
     }
     setNotifyingId(null)
   };
+
+  const handleSendWhatsApp = async (appointment: Appointment) => {
+    setSendingId(appointment.id)
+    try {
+      const res = await fetch('/api/appointments/notify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ appointment_id: appointment.id, tenant_id: tenantId })
+      })
+      if (res.ok) {
+        setPendingCalls(prev => prev.filter(c => c.id !== appointment.id))
+        setAllMonthApps(prev => prev.map(a => a.id === appointment.id ? { ...a, cancellation_notified: true } : a))
+      } else {
+        const data = await res.json()
+        alert(data.error || 'Error sending message')
+      }
+    } catch (err) {
+      alert('Network error')
+    } finally {
+      setSendingId(null)
+    }
+  }
 
   useEffect(() => {
     async function init() {
@@ -230,16 +295,26 @@ export default function DoctorDashboard() {
                     />
                   </div>
 
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between gap-2">
                      <span className="text-[10px] font-bold text-slate-400 uppercase">{format(parseISO(call.start_at), "d MMM, HH:mm", { locale })}</span>
-                     <button 
-                        onClick={() => markAsNotified(call.id)}
-                        disabled={notifyingId === call.id}
-                        className="h-9 px-4 rounded-xl bg-slate-900 text-white text-[10px] font-black uppercase tracking-widest hover:bg-slate-800 transition-all flex items-center gap-2"
-                      >
-                        {notifyingId === call.id ? <Clock className="h-3 w-3 animate-spin" /> : <ChevronRight className="h-3 w-3" />}
-                        {fullT.mark_as_notified}
-                      </button>
+                     <div className="flex items-center gap-2">
+                       <button 
+                         onClick={() => handleSendWhatsApp(call)}
+                         disabled={sendingId === call.id || notifyingId === call.id}
+                         className="h-9 px-4 rounded-xl bg-emerald-500 text-white text-[10px] font-black uppercase tracking-widest hover:bg-emerald-600 transition-all flex items-center gap-2 shadow-lg shadow-emerald-500/20"
+                       >
+                         {sendingId === call.id ? <Clock className="h-3 w-3 animate-spin" /> : <MessageSquare className="h-3 w-3" />}
+                         {fullT.send_whatsapp}
+                       </button>
+                       <button 
+                         onClick={() => markAsNotified(call.id)}
+                         disabled={notifyingId === call.id || sendingId === call.id}
+                         className="h-9 px-4 rounded-xl bg-slate-900 text-white text-[10px] font-black uppercase tracking-widest hover:bg-slate-800 transition-all flex items-center gap-2"
+                       >
+                         {notifyingId === call.id ? <Clock className="h-3 w-3 animate-spin" /> : <CheckCircle className="h-3 w-3" />}
+                         {fullT.mark_as_notified}
+                       </button>
+                     </div>
                   </div>
                 </div>
               ))}

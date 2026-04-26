@@ -41,6 +41,7 @@ export default function SettingsPage() {
   // Waitlist settings
   const [waitlistAutoNotify, setWaitlistAutoNotify] = useState(true)
   const [waitlistOfferTimeout, setWaitlistOfferTimeout] = useState(30)
+  const [reminderEnabled, setReminderEnabled] = useState(true)
   const [isSavingWaitlist, setIsSavingWaitlist] = useState(false)
   const [waitlistMessage, setWaitlistMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null)
 
@@ -75,6 +76,7 @@ export default function SettingsPage() {
         setCustomDomain(tenant.settings?.custom_domain || '')
         setWaitlistAutoNotify(tenant.settings?.waitlist_auto_notify !== false) // default true
         setWaitlistOfferTimeout(tenant.settings?.waitlist_offer_timeout_minutes ?? 30)
+        setReminderEnabled(tenant.settings?.reminder_enabled !== false) // default true
         setTenantId(tenant.id)
         setUserRole(tuData.role)
       } catch (error) {
@@ -213,6 +215,7 @@ export default function SettingsPage() {
       ...tenantSettings,
       waitlist_auto_notify: waitlistAutoNotify,
       waitlist_offer_timeout_minutes: waitlistOfferTimeout,
+      reminder_enabled: reminderEnabled,
     }
     const { error } = await supabase
       .from('tenants')
@@ -474,8 +477,7 @@ export default function SettingsPage() {
           </div>
           <form onSubmit={handleSaveWaitlistSettings} className="space-y-6">
 
-            {/* Auto / Manual toggle */}
-            <div className="flex items-start justify-between gap-4 p-5 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700">
+            {/* Auto / Manual toggle            <div className="flex items-start justify-between gap-4 p-5 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700">
               <div>
                 <p className="text-sm font-black text-slate-900 dark:text-white">
                   {lang === 'es' ? 'Notificación automática' : lang === 'it' ? 'Notifica automatica' : 'Automatic notification'}
@@ -500,6 +502,34 @@ export default function SettingsPage() {
                 }`} />
               </button>
             </div>
+
+            {/* Confirmation Reminders Toggle */}
+            <div className="flex items-start justify-between gap-4 p-5 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700">
+              <div>
+                <p className="text-sm font-black text-slate-900 dark:text-white">
+                  {lang === 'es' ? 'Recordatorios de Confirmación' : lang === 'it' ? 'Promemoria di Conferma' : 'Confirmation Reminders'}
+                </p>
+                <p className="text-[11px] font-medium text-slate-400 mt-1 leading-relaxed">
+                  {lang === 'es'
+                    ? 'Envía automáticamente un mensaje de WhatsApp a las 9:00 AM del día anterior para que el paciente confirme su asistencia.'
+                    : lang === 'it'
+                    ? 'Invia automaticamente un messaggio WhatsApp alle 9:00 del giorno precedente affinché il paziente confermi la sua presenza.'
+                    : 'Automatically sends a WhatsApp message at 9:00 AM the previous day for the patient to confirm attendance.'}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setReminderEnabled(v => !v)}
+                className={`relative shrink-0 inline-flex h-7 w-12 items-center rounded-full transition-colors duration-200 focus:outline-none ${
+                  reminderEnabled ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-slate-600'
+                }`}
+              >
+                <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-md transition-transform duration-200 ${
+                  reminderEnabled ? 'translate-x-6' : 'translate-x-1'
+                }`} />
+              </button>
+            </div>
+  </div>
 
             {/* Timeout minutes - only relevant when auto is ON */}
             {waitlistAutoNotify && (
