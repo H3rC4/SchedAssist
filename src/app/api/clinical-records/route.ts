@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { verifyTenantAccess } from '@/lib/auth-utils';
 
 export async function GET(req: NextRequest) {
@@ -34,7 +35,34 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  return NextResponse.json(data);
+  // Generate signed URLs for private files
+  const adminClient = createAdminClient();
+  const enrichedData = await Promise.all((data || []).map(async (record: any) => {
+    if (record.attachments && Array.isArray(record.attachments)) {
+      const enrichedAttachments = await Promise.all(record.attachments.map(async (att: any) => {
+        // Si el bucket es privado, necesitamos una URL firmada.
+        // Extraemos el path relativo al bucket clinical_files.
+        // El formato actual guardado es una URL completa.
+        try {
+          const urlParts = att.url.split('/clinical_files/');
+          if (urlParts.length > 1) {
+            const path = urlParts[1];
+            const { data: signedData } = await adminClient.storage
+              .from('clinical_files')
+              .createSignedUrl(path, 3600); // 1 hora de validez
+            return { ...att, url: signedData?.signedUrl || att.url };
+          }
+        } catch (e) {
+          console.error('Error generating signed URL:', e);
+        }
+        return att;
+      }));
+      return { ...record, attachments: enrichedAttachments };
+    }
+    return record;
+  }));
+
+  return NextResponse.json(enrichedData);
 }
 
 export async function POST(req: NextRequest) {

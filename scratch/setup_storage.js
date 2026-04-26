@@ -22,20 +22,20 @@ async function setupStorage() {
   if (!exists) {
     console.log(`Bucket "${bucketName}" no existe. Creándolo...`);
     const { error: createErr } = await supabase.storage.createBucket(bucketName, {
-      public: true, // Lo hacemos público para que getPublicUrl funcione como espera el código actual
+      public: false, // PRIVADO por seguridad médica
       fileSizeLimit: 5242880, // 5MB
     });
     if (createErr) {
       console.error('Error creando bucket:', createErr);
     } else {
-      console.log('✅ Bucket creado exitosamente.');
+      console.log('✅ Bucket creado exitosamente (Privado).');
     }
   } else {
     console.log(`✅ Bucket "${bucketName}" ya existe.`);
-    // Asegurarse de que sea público si no lo era
-    if (!exists.public) {
-      console.log('Actualizando bucket a público...');
-      await supabase.storage.updateBucket(bucketName, { public: true });
+    // Asegurarse de que sea privado
+    if (exists.public) {
+      console.log('Actualizando bucket a PRIVADO por seguridad...');
+      await supabase.storage.updateBucket(bucketName, { public: false });
     }
   }
 
