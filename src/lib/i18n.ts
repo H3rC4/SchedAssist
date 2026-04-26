@@ -901,6 +901,12 @@ export const translations = {
     bot_new_desc: (name: string, svc: string, prof: string, date: string) => 
       `Ciao ${name}, ti confermiamo il tuo appuntamento per <b>${svc}</b> con <b>${prof}</b>.\n\n📅 Data: <b>${date}</b>.\n\nTi aspettiamo!`,
 
+    bot_cancellation_title: '⚠️ <b>APPUNTAMENTO ANNULLATO</b>',
+    bot_cancellation_desc: (name: string, svc: string, date: string, tenant: string) => 
+      `Ciao ${name}, siamo spiacenti di informarti che il tuo appuntamento per <b>${svc}</b> il giorno <b>${date}</b> presso <b>${tenant}</b> è stato annullato per imprevisti in clinica.\n\nTi contatteremo al più presto per riprogrammare. Ci scusiamo per l'inconveniente!`,
+
+    send_whatsapp: 'Invia WhatsApp',
+
     // Waitlist
     waitlist_title: 'Lista d\'Attesa',
     waitlist_waiting: 'in attesa',

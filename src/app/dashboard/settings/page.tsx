@@ -477,7 +477,8 @@ export default function SettingsPage() {
           </div>
           <form onSubmit={handleSaveWaitlistSettings} className="space-y-6">
 
-            {/* Auto / Manual toggle            <div className="flex items-start justify-between gap-4 p-5 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700">
+            {/* Auto / Manual toggle */}
+            <div className="flex items-start justify-between gap-4 p-5 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700">
               <div>
                 <p className="text-sm font-black text-slate-900 dark:text-white">
                   {lang === 'es' ? 'Notificación automática' : lang === 'it' ? 'Notifica automatica' : 'Automatic notification'}
@@ -529,7 +530,6 @@ export default function SettingsPage() {
                 }`} />
               </button>
             </div>
-  </div>
 
             {/* Timeout minutes - only relevant when auto is ON */}
             {waitlistAutoNotify && (

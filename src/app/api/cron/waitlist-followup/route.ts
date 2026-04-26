@@ -6,7 +6,7 @@ import { MessageService } from '@/services/message.service'
 /**
  * Vercel Cron Job: Waitlist follow-up
  * Runs every 10 minutes. Finds expired waitlist offers and notifies the next patient in line.
- * Schedule: "*/10 * * * *"
+ * Schedule: every 10 mins
  */
 export async function GET(req: NextRequest) {
   const authHeader = req.headers.get('authorization')
