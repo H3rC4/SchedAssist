@@ -167,7 +167,17 @@ export default function DoctorPatientsPage() {
     const { error } = await supabase.storage.from('clinical_files').upload(fileName, file)
     if (!error) {
       const { data: { publicUrl } } = supabase.storage.from('clinical_files').getPublicUrl(fileName)
-      await fetch('/api/clinical-records', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ tenant_id: tenantId, client_id: selectedClient.id, content: `Archivo adjunto: ${file.name}`, attachments: [{ name: file.name, url: publicUrl }] }) })
+      await fetch('/api/clinical-records', { 
+        method: 'POST', 
+        headers: { 'Content-Type': 'application/json' }, 
+        body: JSON.stringify({ 
+          tenant_id: tenantId, 
+          client_id: selectedClient.id, 
+          content: newRecordText.trim() || `Archivo adjunto: ${file.name}`, 
+          attachments: [{ name: file.name, url: publicUrl }] 
+        }) 
+      })
+      setNewRecordText('')
       fetchClinicalRecords(selectedClient.id)
     }
     setUploadingFiles(false)

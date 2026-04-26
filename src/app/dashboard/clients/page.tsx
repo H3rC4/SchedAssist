@@ -349,12 +349,13 @@ export default function ClientsPage() {
       body: JSON.stringify({
         tenant_id: tenantId,
         client_id: selectedClient.id,
-        content: `Archivo adjunto: ${file.name}`,
+        content: newRecordText.trim() || `Archivo adjunto: ${file.name}`,
         attachments: [{ name: file.name, url: publicUrl }]
       })
     })
 
     if (res.ok) {
+      setNewRecordText('')
       fetchClinicalRecords(selectedClient.id)
     }
     setUploadingFiles(false)
