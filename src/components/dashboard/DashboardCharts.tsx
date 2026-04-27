@@ -1,17 +1,8 @@
 "use client"
 
-import { 
-  AreaChart, 
-  Area, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
-  ResponsiveContainer, 
-  PieChart, 
-  Pie, 
-  Cell,
-  Legend
+import {
+  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
+  ResponsiveContainer, PieChart, Pie, Cell
 } from 'recharts'
 import { format, parseISO } from 'date-fns'
 import { es, it, enUS } from 'date-fns/locale'
@@ -25,19 +16,22 @@ interface DashboardChartsProps {
 }
 
 export function DashboardCharts({ chartData, statusData, revenue, lang = 'es' }: DashboardChartsProps) {
-  const COLORS = ['#10b981', '#f59e0b', '#ef4444', '#1e3a8a']
+  const COLORS = ['#10b981', '#f59e0b', '#ef4444', '#0e7490']
   const t = translations[lang] || translations['es']
   const dateLocale = lang === 'it' ? it : (lang === 'es' ? es : enUS)
 
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       return (
-        <div className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border border-slate-200 dark:border-white/10 p-4 rounded-2xl shadow-2xl">
-          <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">
-            {format(parseISO(label), 'EEEE d MMMM', { locale: dateLocale })}
+        <div className="bg-white border border-border-subtle p-4 rounded-xl shadow-float">
+          <p className="text-[11px] font-semibold text-on-surface-muted uppercase tracking-widest mb-1">
+            {format(parseISO(label), 'EEE d MMM', { locale: dateLocale })}
           </p>
-          <p className="text-lg font-black text-slate-800 dark:text-white">
-            {payload[0].value} <span className="text-sm font-bold text-slate-500">{t.appointments.toLowerCase()}</span>
+          <p className="text-xl font-bold text-on-surface leading-none">
+            {payload[0].value}{' '}
+            <span className="text-sm font-medium text-on-surface-muted">
+              {t.appointments.toLowerCase()}
+            </span>
           </p>
         </div>
       )
@@ -46,109 +40,127 @@ export function DashboardCharts({ chartData, statusData, revenue, lang = 'es' }:
   }
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-      {/* Activity Chart */}
-      <div className="lg:col-span-8 bg-surface-container-lowest rounded-[2.5rem] p-8 shadow-sm hover:shadow-ambient transition-all duration-700">
-        <div className="flex items-center justify-between mb-8">
+    <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+
+      {/* ── Activity Area Chart ── */}
+      <div className="lg:col-span-8 bg-white rounded-2xl p-6 shadow-card">
+        <div className="flex items-center justify-between mb-6">
           <div>
-            <h3 className="text-xl font-black text-on-surface tracking-tight">{t.weekly_activity}</h3>
-            <p className="text-sm font-bold text-on-surface/50 uppercase tracking-widest mt-1">{t.appointments_volume}</p>
+            <h3 className="text-base font-semibold text-on-surface">{t.weekly_activity}</h3>
+            <p className="text-sm text-on-surface-muted mt-0.5">{t.appointments_volume}</p>
           </div>
-          <div className="h-12 w-12 rounded-2xl bg-surface flex items-center justify-center shadow-ambient">
-            <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary-light">
+            <div className="h-2 w-2 rounded-full bg-primary" />
+            <span className="text-[11px] font-semibold text-primary">Live</span>
           </div>
         </div>
-        
-        <div className="h-[300px] w-full">
+
+        <div className="h-[280px] w-full">
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+            <AreaChart data={chartData} margin={{ top: 5, right: 5, left: -25, bottom: 0 }}>
               <defs>
                 <linearGradient id="colorCount" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#1e3a8a" stopOpacity={0.3}/>
-                  <stop offset="95%" stopColor="#1e3a8a" stopOpacity={0}/>
+                  <stop offset="5%"  stopColor="#0f766e" stopOpacity={0.15} />
+                  <stop offset="95%" stopColor="#0f766e" stopOpacity={0} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(203, 213, 225, 0.2)" />
-              <XAxis 
-                dataKey="date" 
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+              <XAxis
+                dataKey="date"
                 axisLine={false}
                 tickLine={false}
-                tick={{ fill: '#94a3b8', fontSize: 10, fontWeight: 700 }}
+                tick={{ fill: '#94a3b8', fontSize: 11, fontWeight: 500 }}
                 tickFormatter={(str) => format(parseISO(str), 'EEE', { locale: dateLocale })}
-                dy={10}
+                dy={8}
               />
-              <YAxis 
+              <YAxis
                 axisLine={false}
                 tickLine={false}
-                tick={{ fill: '#94a3b8', fontSize: 10, fontWeight: 700 }}
+                tick={{ fill: '#94a3b8', fontSize: 11, fontWeight: 500 }}
               />
               <Tooltip content={<CustomTooltip />} />
-              <Area 
-                type="monotone" 
-                dataKey="count" 
-                stroke="#1e3a8a" 
-                strokeWidth={4}
-                fillOpacity={1} 
-                fill="url(#colorCount)" 
-                animationDuration={2000}
+              <Area
+                type="monotone"
+                dataKey="count"
+                stroke="#0f766e"
+                strokeWidth={2.5}
+                fillOpacity={1}
+                fill="url(#colorCount)"
+                animationDuration={1200}
               />
             </AreaChart>
           </ResponsiveContainer>
         </div>
       </div>
 
-      {/* Distribution & Revenue */}
-      <div className="lg:col-span-4 space-y-8">
-        <div className="bg-surface-container-lowest rounded-[2.5rem] p-8 shadow-sm hover:shadow-ambient transition-all duration-700 h-full flex flex-col justify-between">
-          <div>
-            <h3 className="text-xl font-black text-on-surface tracking-tight mb-6">{t.distribution}</h3>
-            <div className="h-[200px] w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={statusData}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={60}
-                    outerRadius={80}
-                    paddingAngle={8}
-                    dataKey="value"
-                    stroke="none"
-                  >
-                    {statusData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip 
-                     contentStyle={{ backgroundColor: 'rgba(15, 23, 42, 0.9)', borderRadius: '16px', border: 'none', color: 'white' }}
-                     itemStyle={{ color: 'white', fontSize: '12px', fontWeight: 'bold' }}
-                  />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
-            <div className="space-y-3 mt-4">
-              {statusData.map((item, index) => (
-                <div key={item.name} className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="h-2 w-2 rounded-full" style={{ backgroundColor: COLORS[index % COLORS.length] }} />
-                    <span className="text-[10px] font-black uppercase tracking-widest text-on-surface/50">
-                      {item.name === 'completed' ? t.confirmed : (item.name === 'cancelled' ? t.canceled : (item.name === 'pending' ? t.pending : item.name))}
-                    </span>
-                  </div>
-                  <span className="text-sm font-black text-on-surface">{item.value}</span>
-                </div>
-              ))}
-            </div>
-          </div>
+      {/* ── Distribution + Revenue ── */}
+      <div className="lg:col-span-4 bg-white rounded-2xl p-6 shadow-card flex flex-col">
+        <h3 className="text-base font-semibold text-on-surface mb-5">{t.distribution}</h3>
 
-          <div className="mt-8 pt-8 border-t border-surface-container-highest">
-            <p className="text-[10px] font-black uppercase tracking-widest text-on-surface/50 mb-1 text-center">{t.estimated_revenue}</p>
-            <h4 className="text-4xl font-black text-on-surface text-center tracking-tighter">
-              ${revenue.toLocaleString()}
-            </h4>
-            <div className="mt-4 px-4 py-2 rounded-2xl bg-surface-container-low text-center shadow-sm">
-              <span className="text-[10px] font-black text-primary uppercase tracking-widest">{t.appointments_completed}</span>
+        {/* Donut chart */}
+        <div className="h-[180px] w-full flex-shrink-0">
+          <ResponsiveContainer width="100%" height="100%">
+            <PieChart>
+              <Pie
+                data={statusData}
+                cx="50%"
+                cy="50%"
+                innerRadius={54}
+                outerRadius={72}
+                paddingAngle={6}
+                dataKey="value"
+                stroke="none"
+              >
+                {statusData.map((_, index) => (
+                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                ))}
+              </Pie>
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: '#ffffff',
+                  borderRadius: '12px',
+                  border: '1px solid #e2e8f0',
+                  boxShadow: '0 8px 40px rgba(15,23,42,0.10)',
+                  fontSize: '12px',
+                  fontWeight: '600',
+                }}
+              />
+            </PieChart>
+          </ResponsiveContainer>
+        </div>
+
+        {/* Legend */}
+        <div className="space-y-2.5 mt-3">
+          {statusData.map((item, index) => (
+            <div key={item.name} className="flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div
+                  className="h-2.5 w-2.5 rounded-full flex-shrink-0"
+                  style={{ backgroundColor: COLORS[index % COLORS.length] }}
+                />
+                <span className="text-sm font-medium text-on-surface-muted capitalize">
+                  {item.name === 'completed' ? t.confirmed
+                    : item.name === 'cancelled' ? t.canceled
+                    : item.name === 'pending'   ? t.pending
+                    : item.name}
+                </span>
+              </div>
+              <span className="text-sm font-bold text-on-surface">{item.value}</span>
             </div>
+          ))}
+        </div>
+
+        {/* Revenue */}
+        <div className="mt-auto pt-5 border-t border-border-subtle">
+          <p className="text-[11px] font-semibold text-on-surface-muted uppercase tracking-widest mb-1">
+            {t.estimated_revenue}
+          </p>
+          <p className="text-3xl font-bold text-on-surface tracking-tight">
+            ${revenue.toLocaleString()}
+          </p>
+          <div className="mt-2.5 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-success-light">
+            <div className="h-1.5 w-1.5 rounded-full bg-success" />
+            <span className="text-[11px] font-semibold text-success">{t.appointments_completed}</span>
           </div>
         </div>
       </div>
