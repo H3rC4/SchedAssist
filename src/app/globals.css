@@ -10,20 +10,20 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
 
 :root {
-  /* Color tokens (Light mode - People Analytics Inspired) */
-  --primary-sidebar: #0f172a; /* Deep Navy Blue */
-  --active-accent: #eab308;  /* Gold / Yellow */
-  --background: #f1f5f9;     /* Light Gray/Blue Bg */
+  /* Color tokens (The Midnight Amber Sanctuary - Blue & Amber) */
+  --primary-sidebar: #1e3a8a; /* Sapphire Blue - Deep & Trustworthy */
+  --active-accent: #f59e0b;   /* Amber - Warm & Attentive */
+  --background: #f8fafc;      /* Slate 50 - Clean & Clinical */
   --foreground: #0f172a;
   --panel-bg: #ffffff;
   
-  --primary-hsl: 222 47% 11%;
-  --accent-hsl: 45 93% 47%;
+  --primary-hsl: 226 64% 33%;
+  --accent-hsl: 38 92% 50%;
 
   /* Glass tokens */
   --glass-bg: rgba(255, 255, 255, 0.7);
   --glass-border: rgba(255, 255, 255, 0.8);
-  --glass-shadow: 0 8px 32px rgba(15, 23, 42, 0.05);
+  --glass-shadow: 0 8px 32px rgba(30, 58, 138, 0.05);
   --glass-blur: blur(12px);
 
   /* Radius tokens */
@@ -35,8 +35,8 @@
   --ease-in-out-circ: cubic-bezier(0.85, 0, 0.15, 1);
 
   /* Spatial Shadows */
-  --shadow-weightless: 0 32px 64px -16px rgba(15, 23, 42, 0.08);
-  --shadow-spatial: 0 50px 100px -20px rgba(15, 23, 42, 0.12), 0 30px 60px -30px rgba(0, 0, 0, 0.15);
+  --shadow-weightless: 0 32px 64px -16px rgba(30, 58, 138, 0.08);
+  --shadow-spatial: 0 50px 100px -20px rgba(30, 58, 138, 0.12), 0 30px 60px -30px rgba(0, 0, 0, 0.15);
 }
 
 .dark {
@@ -59,8 +59,8 @@ html {
 }
 
 ::selection {
-  background: rgba(234, 179, 8, 0.2);
-  color: #eab308;
+  background: rgba(245, 158, 11, 0.2); /* Amber wash */
+  color: #f59e0b;
 }
 
 body {
@@ -130,8 +130,8 @@ body {
 }
 
 @keyframes pulse-glow {
-  0%, 100% { box-shadow: 0 0 12px rgba(99, 102, 241, 0.3); }
-  50% { box-shadow: 0 0 24px rgba(99, 102, 241, 0.6); }
+  0%, 100% { box-shadow: 0 0 12px rgba(30, 58, 138, 0.3); }
+  50% { box-shadow: 0 0 24px rgba(30, 58, 138, 0.6); }
 }
 
 @keyframes shimmer {
@@ -214,11 +214,11 @@ body {
 .custom-scrollbar::-webkit-scrollbar { width: 4px; }
 .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(99, 102, 241, 0.2);
+  background: rgba(30, 58, 138, 0.2);
   border-radius: 99px;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: rgba(99, 102, 241, 0.5);
+  background: rgba(30, 58, 138, 0.5);
 }
 
 /* === STATUS DOT === */

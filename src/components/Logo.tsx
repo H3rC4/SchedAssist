@@ -6,7 +6,7 @@ export function Logo({ className = "h-10 w-10", iconOnly = false }: { className?
   return (
     <div className={`flex items-center gap-2 group ${!iconOnly ? '' : 'justify-center'}`}>
       <div className={`relative ${className} transition-all duration-500 group-hover:scale-110 active:scale-95`}>
-        <div className="absolute inset-0 bg-amber-500/10 blur-xl rounded-full -z-10 opacity-60" />
+        <div className="absolute inset-0 bg-accent-500/10 blur-xl rounded-full -z-10 opacity-60" />
         
         <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full drop-shadow-sm">
           <circle cx="45" cy="45" r="33" stroke="#f59e0b" strokeWidth="4" />
@@ -21,7 +21,7 @@ export function Logo({ className = "h-10 w-10", iconOnly = false }: { className?
 
       {!iconOnly && (
         <span className="text-xl font-black text-white tracking-tight uppercase select-none">
-          Sched<span className="text-amber-500 group-hover:text-amber-400 transition-colors">Assist</span>
+          Sched<span className="text-accent-500 group-hover:text-accent-400 transition-colors">Assist</span>
         </span>
       )}
     </div>

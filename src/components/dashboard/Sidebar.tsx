@@ -76,22 +76,22 @@ export function Sidebar({ lang = 'es' }: SidebarProps) {
 
   return (
     <>
-      <div className="flex h-full w-72 flex-col bg-slate-950/80 dark:bg-black/40 backdrop-blur-2xl border border-white/10 rounded-[2.5rem] relative overflow-hidden transition-all duration-500 shadow-2xl shadow-black/20">
+      <div className="flex h-full w-72 flex-col bg-primary-950/90 dark:bg-primary-950/40 backdrop-blur-2xl border border-white/10 rounded-[2.5rem] relative overflow-hidden transition-all duration-500 shadow-2xl shadow-black/20">
       
       {/* Background Glow */}
       <div className="absolute top-0 left-0 w-full h-full pointer-events-none overflow-hidden z-0 opacity-40">
-        <div className="absolute top-[-10%] left-[-20%] w-[80%] h-[40%] bg-indigo-500/20 rounded-full blur-[100px]" />
-        <div className="absolute bottom-[20%] right-[-20%] w-[60%] h-[40%] bg-amber-500/10 rounded-full blur-[80px]" />
+        <div className="absolute top-[-10%] left-[-20%] w-[80%] h-[40%] bg-primary-500/20 rounded-full blur-[100px]" />
+        <div className="absolute bottom-[20%] right-[-20%] w-[60%] h-[40%] bg-accent-500/10 rounded-full blur-[80px]" />
       </div>
 
       {/* Logo Container */}
       <div className="relative z-10 flex h-24 items-center justify-between px-8">
         <div className="flex items-center gap-3">
-          <div className="h-11 w-11 bg-amber-500 rounded-2xl flex items-center justify-center shadow-lg shadow-amber-500/20">
+          <div className="h-11 w-11 bg-accent-500 rounded-2xl flex items-center justify-center shadow-lg shadow-accent-500/20">
             <Zap className="h-6 w-6 text-slate-900 fill-slate-900/80" />
           </div>
           <div>
-            <span className="text-xl font-black text-white tracking-tight uppercase">SCHED<span className="text-amber-500">ASSIST</span></span>
+            <span className="text-xl font-black text-white tracking-tight uppercase">SCHED<span className="text-accent-500">ASSIST</span></span>
             <span className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.3em] block mt-0.5">Premium SaaS</span>
           </div>
         </div>
@@ -123,7 +123,7 @@ export function Sidebar({ lang = 'es' }: SidebarProps) {
                     }}
                     className={`group flex items-center gap-4 rounded-[1.5rem] px-5 py-4 text-sm font-bold transition-all duration-300 relative
                       ${active 
-                        ? 'bg-amber-500 text-slate-900 shadow-lg shadow-amber-500/20' 
+                        ? 'bg-accent-500 text-slate-900 shadow-lg shadow-accent-500/20' 
                         : 'text-slate-400 hover:text-white hover:bg-white/5'}`}
                   >
                     <item.icon className={`h-5 w-5 transition-colors ${active ? 'text-slate-900' : 'text-slate-500 group-hover:text-white'}`} />

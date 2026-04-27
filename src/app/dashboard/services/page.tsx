@@ -146,58 +146,58 @@ export default function ServicesPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">{T.title}</h1>
-          <p className="text-sm text-gray-500">{T.subtitle}</p>
+          <h1 className="text-2xl font-bold text-white tracking-tight">{T.title}</h1>
+          <p className="text-sm text-white/50">{T.subtitle}</p>
         </div>
         <button onClick={() => setShowAddForm(true)}
-          className="inline-flex items-center rounded-lg bg-primary-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-primary-700 transition-colors">
+          className="inline-flex items-center rounded-xl bg-amber-500 px-5 py-2.5 text-sm font-bold text-primary-950 shadow-lg shadow-amber-500/20 hover:bg-amber-400 hover:scale-[1.02] active:scale-[0.98] transition-all">
           <Plus className="-ml-1 mr-2 h-5 w-5" /> {T.addBtn}
         </button>
       </div>
 
       {loading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 animate-pulse">
-          {[1, 2, 3].map(i => <div key={i} className="h-40 bg-gray-100 rounded-3xl" />)}
+          {[1, 2, 3].map(i => <div key={i} className="h-40 bg-primary-900/40 border border-white/5 rounded-3xl" />)}
         </div>
       ) : services.length === 0 ? (
-        <div className="py-20 text-center text-gray-400 bg-white rounded-3xl border-2 border-dashed border-gray-100 shadow-sm">
-          <Scissors className="mx-auto h-12 w-12 mb-4 opacity-10" />
-          <p className="font-medium text-lg text-gray-400">{T.noServicesCreated}</p>
-          <button onClick={() => setShowAddForm(true)} className="text-primary-600 font-bold mt-2 hover:underline">{T.createFirst}</button>
+        <div className="py-20 text-center text-white/40 bg-primary-900/20 rounded-3xl border border-dashed border-white/10">
+          <Scissors className="mx-auto h-12 w-12 mb-4 opacity-20" />
+          <p className="font-medium text-lg text-white/60">{T.noServicesCreated}</p>
+          <button onClick={() => setShowAddForm(true)} className="text-amber-500 font-bold mt-2 hover:text-amber-400 transition-colors">{T.createFirst}</button>
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {services.map(service => (
-            <div key={service.id} className={`bg-white rounded-3xl border p-6 shadow-sm hover:shadow-xl transition-all group relative overflow-hidden ${savedId === service.id ? 'border-emerald-200 bg-emerald-50/20' : 'border-gray-100'}`}>
+            <div key={service.id} className={`bg-primary-900/40 backdrop-blur-sm rounded-3xl border p-6 transition-all group relative overflow-hidden ${savedId === service.id ? 'border-emerald-500/50 bg-emerald-500/10' : 'border-white/5 hover:border-white/20 hover:bg-primary-800/40'}`}>
               <div className="flex items-start justify-between mb-4">
-                <div className="h-12 w-12 rounded-2xl bg-primary-50 flex items-center justify-center text-primary-600">
+                <div className="h-12 w-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-amber-500 shadow-inner">
                   {serviceIcon(service.name)}
                 </div>
                 {savedId === service.id ? (
-                  <div className="p-2 text-emerald-500"><CheckCircle className="h-5 w-5" /></div>
+                  <div className="p-2 text-emerald-400"><CheckCircle className="h-5 w-5" /></div>
                 ) : (
                   <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                     <button onClick={() => openEditModal(service)}
-                      className="p-2 text-gray-300 hover:text-primary-500 hover:bg-primary-50 rounded-xl transition-all">
+                      className="p-2 text-white/30 hover:text-amber-500 hover:bg-amber-500/10 rounded-xl transition-all">
                       <Pencil className="h-4 w-4" />
                     </button>
                     <button onClick={() => handleDeleteService(service.id)}
-                      className="p-2 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all">
+                      className="p-2 text-white/30 hover:text-red-400 hover:bg-red-500/10 rounded-xl transition-all">
                       <Trash2 className="h-4 w-4" />
                     </button>
                   </div>
                 )}
               </div>
 
-              <h3 className="text-lg font-bold text-gray-900 mb-1">{service.name}</h3>
+              <h3 className="text-lg font-bold text-white mb-1">{service.name}</h3>
 
               <div className="flex flex-wrap gap-3 mt-4">
-                <div className="flex items-center gap-1.5 bg-gray-50 px-3 py-1.5 rounded-full text-xs font-bold text-gray-600 border border-gray-100">
-                  <Clock className="h-3.5 w-3.5 text-primary-500" />
+                <div className="flex items-center gap-1.5 bg-white/5 px-3 py-1.5 rounded-full text-xs font-bold text-white/70 border border-white/10">
+                  <Clock className="h-3.5 w-3.5 text-amber-500" />
                   {duration_labels[service.duration_minutes] || `${service.duration_minutes} min`}
                 </div>
                 {service.price && service.price > 0 && (
-                  <div className="flex items-center gap-1.5 bg-emerald-50 px-3 py-1.5 rounded-full text-xs font-bold text-emerald-700 border border-emerald-100">
+                  <div className="flex items-center gap-1.5 bg-emerald-500/10 px-3 py-1.5 rounded-full text-xs font-bold text-emerald-400 border border-emerald-500/20">
                     <DollarSign className="h-3.5 w-3.5" />
                     {service.price}
                   </div>
@@ -218,42 +218,42 @@ export default function ServicesPage() {
         }
 
         return (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-md"
+          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-md p-4"
             onClick={() => { setShowAddForm(false); setEditService(null) }}>
-            <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md mx-4 overflow-hidden" onClick={e => e.stopPropagation()}>
+            <div className="bg-primary-950/90 backdrop-blur-xl rounded-3xl border border-white/10 shadow-2xl w-full max-w-md overflow-hidden" onClick={e => e.stopPropagation()}>
               <div className="p-8">
                 <div className="flex items-center justify-between mb-8">
-                  <h3 className="text-xl font-bold text-gray-900">{isEdit ? T.editService : T.newService}</h3>
-                  <button onClick={() => { setShowAddForm(false); setEditService(null) }} className="p-2 rounded-full hover:bg-gray-100">
-                    <X className="h-5 w-5 text-gray-400" />
+                  <h3 className="text-xl font-bold text-white">{isEdit ? T.editService : T.newService}</h3>
+                  <button onClick={() => { setShowAddForm(false); setEditService(null) }} className="p-2 rounded-full text-white/40 hover:bg-white/10 hover:text-white transition-colors">
+                    <X className="h-5 w-5" />
                   </button>
                 </div>
 
                 <div className="space-y-5">
                   <div>
-                    <label className="block text-xs font-bold text-gray-400 uppercase mb-2">{T.serviceName}</label>
+                    <label className="block text-[10px] font-bold text-white/50 uppercase tracking-widest mb-2">{T.serviceName}</label>
                     <input autoFocus value={currentData.name}
                       onChange={e => setField('name', e.target.value)}
-                      className="w-full rounded-xl border border-gray-200 px-4 py-3 text-gray-900 focus:ring-2 focus:ring-primary-500 outline-none transition-all"
+                      className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white placeholder-white/20 focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50 outline-none transition-all"
                       placeholder={T.serviceNamePH} />
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-xs font-bold text-gray-400 uppercase mb-2">{T.duration}</label>
+                      <label className="block text-[10px] font-bold text-white/50 uppercase tracking-widest mb-2">{T.duration}</label>
                       <select value={currentData.duration_minutes}
                         onChange={e => setField('duration_minutes', parseInt(e.target.value))}
-                        className="w-full rounded-xl border border-gray-200 px-4 py-3 text-gray-900 focus:ring-2 focus:ring-primary-500 outline-none transition-all">
+                        className="w-full rounded-xl border border-white/10 bg-primary-900 px-4 py-3 text-white focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50 outline-none transition-all">
                         {duration_options.map(d => (
                           <option key={d} value={d}>{duration_labels[d]}</option>
                         ))}
                       </select>
                     </div>
                     <div>
-                      <label className="block text-xs font-bold text-gray-400 uppercase mb-2">{T.price}</label>
+                      <label className="block text-[10px] font-bold text-white/50 uppercase tracking-widest mb-2">{T.price}</label>
                       <input type="number" value={currentData.price || 0}
                         onChange={e => setField('price', parseFloat(e.target.value))}
-                        className="w-full rounded-xl border border-gray-200 px-4 py-3 text-gray-900 focus:ring-2 focus:ring-primary-500 outline-none transition-all"
+                        className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white placeholder-white/20 focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50 outline-none transition-all"
                         placeholder="0.00" />
                     </div>
                   </div>
@@ -261,7 +261,7 @@ export default function ServicesPage() {
                   <button
                     onClick={isEdit ? handleEditService : handleAddService}
                     disabled={saving || !currentData.name}
-                    className="w-full py-4 rounded-2xl bg-primary-600 text-white font-bold hover:bg-primary-700 shadow-lg shadow-primary-200 transition-all disabled:opacity-50 mt-4">
+                    className="w-full py-4 rounded-2xl bg-amber-500 text-primary-950 font-bold hover:bg-amber-400 hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-amber-500/20 transition-all disabled:opacity-50 disabled:hover:scale-100 mt-4">
                     {saving ? T.saving : isEdit ? T.btnSave : T.btnCreate}
                   </button>
                 </div>

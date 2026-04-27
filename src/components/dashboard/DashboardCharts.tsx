@@ -25,7 +25,7 @@ interface DashboardChartsProps {
 }
 
 export function DashboardCharts({ chartData, statusData, revenue, lang = 'es' }: DashboardChartsProps) {
-  const COLORS = ['#10b981', '#f59e0b', '#ef4444', '#6366f1']
+  const COLORS = ['#10b981', '#f59e0b', '#ef4444', '#1e3a8a']
   const t = translations[lang] || translations['es']
   const dateLocale = lang === 'it' ? it : (lang === 'es' ? es : enUS)
 
@@ -54,8 +54,8 @@ export function DashboardCharts({ chartData, statusData, revenue, lang = 'es' }:
             <h3 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">{t.weekly_activity}</h3>
             <p className="text-sm font-bold text-slate-400 uppercase tracking-widest mt-1">{t.appointments_volume}</p>
           </div>
-          <div className="h-12 w-12 rounded-2xl bg-indigo-50 dark:bg-indigo-500/10 flex items-center justify-center">
-            <div className="h-2 w-2 rounded-full bg-indigo-500 animate-pulse" />
+          <div className="h-12 w-12 rounded-2xl bg-primary-50 dark:bg-primary-500/10 flex items-center justify-center">
+            <div className="h-2 w-2 rounded-full bg-primary-500 animate-pulse" />
           </div>
         </div>
         
@@ -64,8 +64,8 @@ export function DashboardCharts({ chartData, statusData, revenue, lang = 'es' }:
             <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
               <defs>
                 <linearGradient id="colorCount" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#6366f1" stopOpacity={0.3}/>
-                  <stop offset="95%" stopColor="#6366f1" stopOpacity={0}/>
+                  <stop offset="5%" stopColor="#1e3a8a" stopOpacity={0.3}/>
+                  <stop offset="95%" stopColor="#1e3a8a" stopOpacity={0}/>
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(203, 213, 225, 0.2)" />
@@ -86,7 +86,7 @@ export function DashboardCharts({ chartData, statusData, revenue, lang = 'es' }:
               <Area 
                 type="monotone" 
                 dataKey="count" 
-                stroke="#6366f1" 
+                stroke="#1e3a8a" 
                 strokeWidth={4}
                 fillOpacity={1} 
                 fill="url(#colorCount)" 

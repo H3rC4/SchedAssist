@@ -18,7 +18,7 @@ export function Navbar() {
       className="fixed top-0 left-0 right-0 z-50 px-6 py-6"
     >
       <div className="max-w-7xl mx-auto">
-        <div className="bg-slate-950/60 backdrop-blur-2xl h-20 rounded-[2.5rem] px-8 flex items-center justify-between border border-white/5 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.5)] relative">
+        <div className="bg-primary-950/60 backdrop-blur-2xl h-20 rounded-[2.5rem] px-8 flex items-center justify-between border border-white/5 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.5)] relative">
           
           {/* Logo */}
           <Link href="/" className="relative z-10 scale-110 md:scale-125 transition-transform origin-left">
@@ -33,7 +33,7 @@ export function Navbar() {
 
             <Link 
               href="/login" 
-              className="px-8 py-3.5 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-[10px] font-black uppercase tracking-widest transition-all shadow-xl shadow-amber-500/10 active:scale-95 flex items-center gap-3"
+              className="px-8 py-3.5 rounded-2xl bg-accent-500 hover:bg-accent-400 text-slate-950 text-[10px] font-black uppercase tracking-widest transition-all shadow-xl shadow-accent-500/10 active:scale-95 flex items-center gap-3"
             >
               {t.nav_login} <ShieldCheck className="h-4 w-4" />
             </Link>
@@ -44,7 +44,7 @@ export function Navbar() {
              <LanguageSelector />
              <Link 
                href="/login" 
-               className="h-10 w-10 rounded-xl bg-amber-500 text-slate-950 flex items-center justify-center shadow-lg"
+               className="h-10 w-10 rounded-xl bg-accent-500 text-slate-950 flex items-center justify-center shadow-lg"
              >
                <ShieldCheck className="h-5 w-5" />
              </Link>

@@ -35,17 +35,16 @@ export default function WaitlistView({ tenantId, lang }: WaitlistViewProps) {
   const T = translations[lang] || translations['es']
 
   const STATUS_CONFIG: Record<string, { label: string; color: string; icon: React.ElementType }> = {
-    pending:       { label: T.waitlist_status_pending,       color: 'bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400',   icon: Clock },
-    notified:      { label: T.waitlist_status_notified,      color: 'bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-400',        icon: Bell },
-    offer_expired: { label: T.waitlist_status_offer_expired, color: 'bg-orange-100 text-orange-700 dark:bg-orange-500/20 dark:text-orange-400', icon: AlertCircle },
-    resolved:      { label: T.waitlist_status_resolved,      color: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400', icon: CheckCircle },
-    cancelled:     { label: T.waitlist_status_cancelled,     color: 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-500',        icon: Trash2 },
+    pending:       { label: T.waitlist_status_pending,       color: 'bg-accent-500/10 text-accent-500',   icon: Clock },
+    notified:      { label: T.waitlist_status_notified,      color: 'bg-blue-500/10 text-blue-400',        icon: Bell },
+    offer_expired: { label: T.waitlist_status_offer_expired, color: 'bg-orange-500/10 text-orange-400', icon: AlertCircle },
+    resolved:      { label: T.waitlist_status_resolved,      color: 'bg-emerald-500/10 text-emerald-400', icon: CheckCircle },
+    cancelled:     { label: T.waitlist_status_cancelled,     color: 'bg-primary-800 text-primary-400',        icon: Trash2 },
   }
 
   const fetchWaitlist = useCallback(async () => {
     setIsLoading(true)
     try {
-      const statusParam = filter === 'all' ? '' : '' // active = default (pending+notified), all = omit filter
       const url = `/api/waitlists?tenant_id=${tenantId}${filter === 'all' ? '&status=all' : ''}`
       const res = await fetch(url)
       if (res.ok) setEntries(await res.json())
@@ -98,30 +97,30 @@ export default function WaitlistView({ tenantId, lang }: WaitlistViewProps) {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-center gap-3 flex-wrap">
-          <h2 className="text-lg md:text-xl font-black uppercase tracking-tight text-slate-900 dark:text-white">
+          <h2 className="text-lg md:text-xl font-black uppercase tracking-tight text-white">
             {T.waitlist_title}
           </h2>
           {pendingCount > 0 && (
-            <span className="inline-flex items-center gap-1 bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-400 text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-wider">
+            <span className="inline-flex items-center gap-1 bg-accent-500/10 text-accent-500 text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-wider">
               <Clock className="h-3 w-3" />{pendingCount} {T.waitlist_waiting}
             </span>
           )}
           {notifiedCount > 0 && (
-            <span className="inline-flex items-center gap-1 bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-400 text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-wider">
+            <span className="inline-flex items-center gap-1 bg-blue-500/10 text-blue-400 text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-wider">
               <Bell className="h-3 w-3" />{notifiedCount} {T.waitlist_notified}
             </span>
           )}
         </div>
         <div className="flex items-center gap-2">
-          <div className="flex items-center bg-slate-100 dark:bg-slate-800 rounded-2xl p-1 gap-1">
-            <button onClick={() => setFilter('active')} className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${filter === 'active' ? 'bg-white dark:bg-slate-700 shadow text-slate-900 dark:text-white' : 'text-slate-500'}`}>
+          <div className="flex items-center bg-primary-950/50 rounded-2xl p-1 gap-1 border border-white/5">
+            <button onClick={() => setFilter('active')} className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${filter === 'active' ? 'bg-accent-500 shadow-xl shadow-accent-500/20 text-primary-950' : 'text-primary-400 hover:text-white'}`}>
               {T.waitlist_active}
             </button>
-            <button onClick={() => setFilter('all')} className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${filter === 'all' ? 'bg-white dark:bg-slate-700 shadow text-slate-900 dark:text-white' : 'text-slate-500'}`}>
+            <button onClick={() => setFilter('all')} className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${filter === 'all' ? 'bg-accent-500 shadow-xl shadow-accent-500/20 text-primary-950' : 'text-primary-400 hover:text-white'}`}>
               {T.waitlist_all}
             </button>
           </div>
-          <button onClick={fetchWaitlist} disabled={isLoading} className="h-9 w-9 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors active:scale-95">
+          <button onClick={fetchWaitlist} disabled={isLoading} className="h-9 w-9 rounded-xl bg-primary-950/50 border border-white/5 flex items-center justify-center text-primary-400 hover:text-white transition-colors active:scale-95">
             <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
           </button>
         </div>
@@ -130,14 +129,14 @@ export default function WaitlistView({ tenantId, lang }: WaitlistViewProps) {
       {/* List */}
       {isLoading ? (
         <div className="flex items-center justify-center py-16">
-          <Loader2 className="h-8 w-8 animate-spin text-slate-300" />
+          <Loader2 className="h-8 w-8 animate-spin text-primary-800" />
         </div>
       ) : entries.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-center">
-          <div className="h-16 w-16 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-4">
-            <Clock className="h-8 w-8 text-slate-300" />
+          <div className="h-16 w-16 rounded-2xl bg-primary-950/50 border border-white/5 flex items-center justify-center mb-4">
+            <Clock className="h-8 w-8 text-primary-800" />
           </div>
-          <p className="text-sm font-bold text-slate-500 uppercase tracking-wider">{T.waitlist_empty}</p>
+          <p className="text-sm font-bold text-primary-500 uppercase tracking-wider">{T.waitlist_empty}</p>
         </div>
       ) : (
         <div className="space-y-3">
@@ -150,40 +149,40 @@ export default function WaitlistView({ tenantId, lang }: WaitlistViewProps) {
               && (new Date(entry.offer_expires_at).getTime() - Date.now()) < 5 * 60 * 1000
 
             return (
-              <div key={entry.id} className={`bg-white dark:bg-slate-900 rounded-[1.5rem] border border-slate-200 dark:border-slate-800 p-5 shadow-sm transition-all hover:shadow-md ${isUpdating ? 'opacity-60 pointer-events-none' : ''} ${isExpiringSoon ? 'border-orange-300 dark:border-orange-500/40' : ''}`}>
+              <div key={entry.id} className={`group relative bg-primary-900/40 backdrop-blur-xl border border-white/5 rounded-2xl p-5 transition-all hover:border-accent-500/30 ${isUpdating ? 'opacity-60 pointer-events-none' : ''} ${isExpiringSoon ? 'ring-1 ring-orange-500/50 shadow-[0_0_20px_rgba(249,115,22,0.1)]' : ''}`}>
                 <div className="flex flex-col md:flex-row md:items-center gap-4">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <p className="text-sm font-black text-slate-900 dark:text-white truncate">
+                      <p className="text-sm font-black text-white truncate">
                         {entry.clients.first_name} {entry.clients.last_name}
                       </p>
-                      <span className={`inline-flex items-center gap-1 text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider ${statusCfg.color}`}>
+                      <span className={`inline-flex items-center gap-1 text-[10px] font-black px-2 py-0.5 rounded-lg uppercase tracking-wider ${statusCfg.color}`}>
                         <StatusIcon className="h-2.5 w-2.5" />
                         {statusCfg.label}
                       </span>
                     </div>
                     <div className="mt-1.5 flex items-center gap-4 flex-wrap">
-                      <span className="flex items-center gap-1.5 text-[11px] font-bold text-slate-500">
-                        <UserCheck className="h-3 w-3" />{entry.professionals.full_name}
+                      <span className="flex items-center gap-1.5 text-[11px] font-bold text-primary-400">
+                        <UserCheck className="h-3 w-3 text-accent-500" />{entry.professionals.full_name}
                       </span>
                       {entry.services && (
-                        <span className="flex items-center gap-1.5 text-[11px] font-bold text-slate-500">
-                          <CheckCircle className="h-3 w-3" />{entry.services.name}
+                        <span className="flex items-center gap-1.5 text-[11px] font-bold text-primary-400">
+                          <CheckCircle className="h-3 w-3 text-accent-500" />{entry.services.name}
                         </span>
                       )}
-                      <span className="flex items-center gap-1.5 text-[11px] font-bold text-slate-500">
-                        <Calendar className="h-3 w-3" />
-                        <span className="text-[10px] text-slate-400 uppercase tracking-wider">{dateInfo.label}:</span>
-                        {dateInfo.value}
+                      <span className="flex items-center gap-1.5 text-[11px] font-bold text-primary-400">
+                        <Calendar className="h-3 w-3 text-accent-500" />
+                        <span className="text-[10px] text-primary-500 uppercase tracking-wider">{dateInfo.label}:</span>
+                        <span className="text-white/80">{dateInfo.value}</span>
                       </span>
                     </div>
-                    {entry.notes && <p className="mt-1.5 text-[11px] text-slate-400 italic truncate">{entry.notes}</p>}
+                    {entry.notes && <p className="mt-1.5 text-[11px] text-primary-500 italic truncate border-l-2 border-white/5 pl-2">{entry.notes}</p>}
                     {entry.notified_at && (
-                      <p className="mt-1 text-[10px] text-blue-400 font-bold uppercase tracking-wider flex items-center gap-1">
+                      <p className="mt-2 text-[10px] text-blue-400 font-bold uppercase tracking-wider flex items-center gap-1">
                         <Bell className="h-3 w-3" />
                         {T.waitlist_notified_on} {format(parseISO(entry.notified_at), 'dd/MM/yyyy HH:mm')}
                         {entry.offer_expires_at && entry.status === 'notified' && (
-                          <span className={`ml-2 ${isExpiringSoon ? 'text-orange-500' : 'text-slate-400'}`}>
+                          <span className={`ml-2 px-2 py-0.5 rounded-md ${isExpiringSoon ? 'bg-orange-500/20 text-orange-400 animate-pulse' : 'bg-primary-950/50 text-primary-400'}`}>
                             · {lang === 'es' ? 'Expira' : lang === 'it' ? 'Scade' : 'Expires'} {format(parseISO(entry.offer_expires_at), 'HH:mm')}
                           </span>
                         )}
@@ -194,16 +193,16 @@ export default function WaitlistView({ tenantId, lang }: WaitlistViewProps) {
                   {/* Actions */}
                   <div className="flex items-center gap-2 shrink-0 flex-wrap">
                     {!entry.clients.phone.startsWith('tg_') && (
-                      <button onClick={() => openWhatsApp(entry.clients.phone)} className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] font-black uppercase tracking-wider hover:bg-emerald-100 dark:hover:bg-emerald-500/20 transition-colors active:scale-95">
+                      <button onClick={() => openWhatsApp(entry.clients.phone)} className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-[#25D366]/10 text-[#25D366] text-[10px] font-black uppercase tracking-wider border border-[#25D366]/20 hover:bg-[#25D366]/20 transition-all active:scale-95">
                         <MessageSquare className="h-3 w-3" />WhatsApp
                       </button>
                     )}
                     {(entry.status === 'pending' || entry.status === 'notified' || entry.status === 'offer_expired') && (
-                      <button onClick={() => updateStatus(entry.id, 'resolved')} className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-[10px] font-black uppercase tracking-wider hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors active:scale-95">
+                      <button onClick={() => updateStatus(entry.id, 'resolved')} className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-accent-500 text-primary-950 text-[10px] font-black uppercase tracking-wider shadow-lg shadow-accent-500/20 hover:scale-[1.02] active:scale-95 transition-all">
                         <CheckCircle className="h-3 w-3" />{T.waitlist_resolve}
                       </button>
                     )}
-                    <button onClick={() => deleteEntry(entry.id)} className="h-8 w-8 rounded-xl bg-red-50 dark:bg-red-500/10 text-red-400 hover:bg-red-100 dark:hover:bg-red-500/20 flex items-center justify-center transition-colors active:scale-95">
+                    <button onClick={() => deleteEntry(entry.id)} className="h-9 w-9 rounded-xl bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20 flex items-center justify-center transition-all active:scale-95">
                       <Trash2 className="h-3.5 w-3.5" />
                     </button>
                   </div>

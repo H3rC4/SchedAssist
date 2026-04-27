@@ -127,54 +127,54 @@ export default function LocationsPage() {
   const T = T_MAP[lang] || T_MAP['es']
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-700">
+    <div className="space-y-6 animate-in fade-in duration-700">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">{T.title}</h1>
-          <p className="text-slate-500 dark:text-slate-400 font-medium">{T.subtitle}</p>
+          <h1 className="text-2xl font-bold text-white tracking-tight">{T.title}</h1>
+          <p className="text-sm text-white/50">{T.subtitle}</p>
         </div>
         <button onClick={() => setShowAddForm(true)}
-          className="inline-flex items-center justify-center rounded-2xl bg-primary-600 px-6 py-3.5 text-sm font-black text-white shadow-xl shadow-primary-500/20 hover:scale-105 active:scale-95 transition-all">
+          className="inline-flex items-center justify-center rounded-xl bg-amber-500 px-5 py-2.5 text-sm font-bold text-primary-950 shadow-lg shadow-amber-500/20 hover:bg-amber-400 hover:scale-[1.02] active:scale-[0.98] transition-all">
           <Plus className="-ml-1 mr-2 h-5 w-5" /> {T.addBtn}
         </button>
       </div>
 
       {loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[1, 2, 3].map(i => <div key={i} className="h-48 bg-slate-100 dark:bg-white/5 rounded-[2.5rem] animate-pulse" />)}
+          {[1, 2, 3].map(i => <div key={i} className="h-48 bg-primary-900/40 border border-white/5 rounded-3xl animate-pulse" />)}
         </div>
       ) : locations.length === 0 ? (
-        <div className="py-24 text-center bg-white dark:bg-white/5 rounded-[3rem] border-2 border-dashed border-slate-100 dark:border-white/5 shadow-sm">
-          <div className="h-20 w-20 bg-slate-50 dark:bg-slate-800 rounded-[2rem] flex items-center justify-center mx-auto mb-6">
-            <MapPin className="h-10 w-10 text-slate-300 dark:text-slate-600" />
+        <div className="py-24 text-center bg-primary-900/20 rounded-3xl border border-dashed border-white/10 shadow-sm">
+          <div className="h-20 w-20 bg-white/5 rounded-3xl flex items-center justify-center mx-auto mb-6">
+            <MapPin className="h-10 w-10 text-white/20" />
           </div>
-          <p className="font-bold text-xl text-slate-400 dark:text-slate-500">{T.noLocations}</p>
-          <button onClick={() => setShowAddForm(true)} className="text-primary-500 font-black mt-4 hover:underline text-sm uppercase tracking-widest">Configurar mi primera sede</button>
+          <p className="font-bold text-lg text-white/60">{T.noLocations}</p>
+          <button onClick={() => setShowAddForm(true)} className="text-amber-500 font-bold mt-4 hover:text-amber-400 transition-colors">Configurar mi primera sede</button>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {locations.map(loc => (
-            <div key={loc.id} className={`group relative bg-white dark:bg-slate-900 rounded-[2.5rem] border p-8 shadow-sm hover:shadow-2xl hover:-translate-y-1 transition-all duration-500 overflow-hidden ${savedId === loc.id ? 'border-emerald-500 ring-4 ring-emerald-500/10' : 'border-slate-100 dark:border-white/5'}`}>
+            <div key={loc.id} className={`group relative bg-primary-900/40 backdrop-blur-sm rounded-3xl border p-8 transition-all duration-500 overflow-hidden ${savedId === loc.id ? 'border-emerald-500/50 ring-4 ring-emerald-500/10' : 'border-white/5 hover:border-white/20 hover:bg-primary-800/40'}`}>
               
               {/* Decorative elements */}
               <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/5 blur-3xl pointer-events-none group-hover:bg-amber-500/10 transition-colors" />
               
               <div className="flex items-start justify-between relative z-10 mb-6">
-                <div className="h-14 w-14 rounded-2xl bg-primary-500/10 flex items-center justify-center text-primary-500 group-hover:bg-primary-500 group-hover:text-white transition-all duration-500">
+                <div className="h-14 w-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-amber-500 shadow-inner group-hover:bg-amber-500/10 transition-all duration-500">
                   <Building2 className="h-7 w-7" />
                 </div>
                 {savedId === loc.id ? (
-                  <div className="h-10 w-10 bg-emerald-500 rounded-xl flex items-center justify-center text-white animate-in zoom-in-50 duration-300">
+                  <div className="h-10 w-10 bg-emerald-500/20 border border-emerald-500/30 rounded-xl flex items-center justify-center text-emerald-400 animate-in zoom-in-50 duration-300">
                     <CheckCircle className="h-6 w-6" />
                   </div>
                 ) : (
                   <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-4 group-hover:translate-x-0">
                     <button onClick={() => setEditLocation({ ...loc })}
-                      className="h-10 w-10 bg-slate-50 dark:bg-slate-800 text-slate-400 hover:text-primary-500 rounded-xl flex items-center justify-center transition-all">
+                      className="h-10 w-10 bg-white/5 border border-white/10 text-white/40 hover:text-amber-500 hover:bg-amber-500/10 rounded-xl flex items-center justify-center transition-all">
                       <Pencil className="h-4 w-4" />
                     </button>
                     <button onClick={() => handleDeleteLocation(loc.id)}
-                      className="h-10 w-10 bg-slate-50 dark:bg-slate-800 text-slate-400 hover:text-red-500 rounded-xl flex items-center justify-center transition-all">
+                      className="h-10 w-10 bg-white/5 border border-white/10 text-white/40 hover:text-red-400 hover:bg-red-500/10 rounded-xl flex items-center justify-center transition-all">
                       <Trash2 className="h-4 w-4" />
                     </button>
                   </div>
@@ -182,25 +182,25 @@ export default function LocationsPage() {
               </div>
 
               <div className="relative z-10">
-                <h3 className="text-xl font-black text-slate-900 dark:text-white mb-4 tracking-tight group-hover:text-primary-500 transition-colors">{loc.name}</h3>
+                <h3 className="text-xl font-bold text-white mb-4 tracking-tight group-hover:text-amber-500 transition-colors">{loc.name}</h3>
                 
                 <div className="space-y-3">
                   <div className="flex items-start gap-3">
-                    <Navigation className="h-4 w-4 text-slate-300 dark:text-slate-600 mt-1 flex-shrink-0" />
-                    <p className="text-sm font-medium text-slate-500 dark:text-slate-400 leading-tight italic">{loc.address || '—'}</p>
+                    <Navigation className="h-4 w-4 text-white/30 mt-1 flex-shrink-0" />
+                    <p className="text-sm font-medium text-white/50 leading-tight italic">{loc.address || '—'}</p>
                   </div>
                   <div className="flex items-center gap-3">
-                    <MapIcon className="h-4 w-4 text-slate-300 dark:text-slate-600 flex-shrink-0" />
-                    <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">{loc.city || '—'}</p>
+                    <MapIcon className="h-4 w-4 text-white/30 flex-shrink-0" />
+                    <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest">{loc.city || '—'}</p>
                   </div>
                 </div>
               </div>
 
-              <div className="mt-8 pt-6 border-t border-slate-50 dark:border-white/5 flex items-center justify-between relative z-10">
-                <span className={`text-[10px] font-black uppercase tracking-[0.2em] px-3 py-1 rounded-full ${loc.active ? 'bg-emerald-500/10 text-emerald-500' : 'bg-slate-100 text-slate-400'}`}>
+              <div className="mt-8 pt-6 border-t border-white/5 flex items-center justify-between relative z-10">
+                <span className={`text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-full ${loc.active ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-white/5 text-white/40 border border-white/10'}`}>
                   {loc.active ? T.active : T.inactive}
                 </span>
-                <button className="text-xs font-bold text-primary-500 hover:underline">{T.viewAgenda} →</button>
+                <button className="text-[10px] font-bold uppercase tracking-widest text-amber-500 hover:text-amber-400 transition-colors">{T.viewAgenda} →</button>
               </div>
             </div>
           ))}
@@ -219,55 +219,53 @@ export default function LocationsPage() {
         return (
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-4"
             onClick={() => { setShowAddForm(false); setEditLocation(null) }}>
-            <div className="absolute inset-0 bg-slate-950/60 backdrop-blur-xl animate-in fade-in duration-500" />
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-md animate-in fade-in duration-500" />
             
-            <div className="relative bg-white dark:bg-slate-900 rounded-[3rem] shadow-2xl w-full max-w-lg overflow-hidden animate-in zoom-in-95 duration-300" 
+            <div className="relative bg-primary-950/90 backdrop-blur-xl border border-white/10 rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden animate-in zoom-in-95 duration-300" 
                  onClick={e => e.stopPropagation()}>
               
-              <div className="h-2 bg-primary-600" />
-              
-              <div className="p-10">
-                <div className="flex items-center justify-between mb-10">
+              <div className="p-8">
+                <div className="flex items-center justify-between mb-8">
                   <div>
-                    <h3 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">{isEdit ? T.editLoc : T.newLoc}</h3>
-                    <p className="text-sm text-slate-400 font-medium">{T.modalSubtitle}</p>
+                    <h3 className="text-xl font-bold text-white tracking-tight">{isEdit ? T.editLoc : T.newLoc}</h3>
+                    <p className="text-sm text-white/50 mt-1">{T.modalSubtitle}</p>
                   </div>
                   <button onClick={() => { setShowAddForm(false); setEditLocation(null) }} 
-                    className="h-12 w-12 rounded-2xl bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all">
-                    <X className="h-6 w-6" />
+                    className="p-2 rounded-full text-white/40 hover:bg-white/10 hover:text-white transition-colors">
+                    <X className="h-5 w-5" />
                   </button>
                 </div>
 
                 <div className="space-y-6">
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2">{T.locName}</label>
+                    <label className="text-[10px] font-bold text-white/50 uppercase tracking-widest ml-1">{T.locName}</label>
                     <div className="relative">
-                      <Building2 className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-300" />
+                      <Building2 className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-white/30" />
                       <input autoFocus value={currentData.name}
                         onChange={e => setField('name', e.target.value)}
-                        className="w-full rounded-2xl bg-slate-50 dark:bg-slate-800 border-none pl-14 pr-6 py-4 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary-500/50 outline-none transition-all font-bold"
+                        className="w-full rounded-xl bg-white/5 border border-white/10 pl-12 pr-4 py-3 text-white placeholder-white/20 focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50 outline-none transition-all font-medium"
                         placeholder="Nombre de la clínica o sede" />
                     </div>
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2">{T.address}</label>
+                    <label className="text-[10px] font-bold text-white/50 uppercase tracking-widest ml-1">{T.address}</label>
                     <div className="relative">
-                      <Navigation className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-300" />
+                      <Navigation className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-white/30" />
                       <input value={currentData.address}
                         onChange={e => setField('address', e.target.value)}
-                        className="w-full rounded-2xl bg-slate-50 dark:bg-slate-800 border-none pl-14 pr-6 py-4 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary-500/50 outline-none transition-all font-bold"
+                        className="w-full rounded-xl bg-white/5 border border-white/10 pl-12 pr-4 py-3 text-white placeholder-white/20 focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50 outline-none transition-all font-medium"
                         placeholder="Calle, número, oficina..." />
                     </div>
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2">{T.city}</label>
+                    <label className="text-[10px] font-bold text-white/50 uppercase tracking-widest ml-1">{T.city}</label>
                     <div className="relative">
-                      <MapIcon className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-300" />
+                      <MapIcon className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-white/30" />
                       <input value={currentData.city}
                         onChange={e => setField('city', e.target.value)}
-                        className="w-full rounded-2xl bg-slate-50 dark:bg-slate-800 border-none pl-14 pr-6 py-4 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary-500/50 outline-none transition-all font-bold"
+                        className="w-full rounded-xl bg-white/5 border border-white/10 pl-12 pr-4 py-3 text-white placeholder-white/20 focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50 outline-none transition-all font-medium"
                         placeholder="Ciudad o región" />
                     </div>
                   </div>
@@ -275,7 +273,7 @@ export default function LocationsPage() {
                   <button
                     onClick={isEdit ? handleEditLocation : handleAddLocation}
                     disabled={saving || !currentData.name}
-                    className="w-full py-5 rounded-[2rem] bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-black uppercase tracking-[0.2em] hover:scale-[1.02] active:scale-95 transition-all shadow-xl disabled:opacity-50 mt-4">
+                    className="w-full py-4 mt-8 rounded-2xl bg-amber-500 text-primary-950 font-bold hover:bg-amber-400 hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-amber-500/20 transition-all disabled:opacity-50 disabled:hover:scale-100">
                     {saving ? T.saving : isEdit ? T.btnSave : T.btnCreate}
                   </button>
                 </div>

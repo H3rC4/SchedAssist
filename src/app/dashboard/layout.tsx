@@ -54,7 +54,7 @@ function DashboardHeader({ lang = 'es', onMenuClick }: { lang?: Language; onMenu
         </button>
 
         <div className="flex items-center gap-2 md:gap-3">
-          <div className="h-8 w-8 md:h-10 md:w-10 rounded-xl md:rounded-2xl bg-amber-500 flex items-center justify-center shadow-lg shadow-amber-200 dark:shadow-amber-900/20 flex-shrink-0">
+          <div className="h-8 w-8 md:h-10 md:w-10 rounded-xl md:rounded-2xl bg-accent-500 flex items-center justify-center shadow-lg shadow-accent-500/20 flex-shrink-0">
             <span className="text-slate-900 font-black text-xs md:text-sm">
               {tenantName ? tenantName.slice(0, 2).toUpperCase() : '··'}
             </span>
@@ -158,7 +158,7 @@ export default function DashboardLayout({
   }
 
   return (
-    <div className="flex h-screen bg-slate-900 dark:bg-black overflow-hidden font-sans relative">
+    <div className="flex h-screen bg-primary-950 dark:bg-black overflow-hidden font-sans relative">
       
       {/* Mobile Sidebar Overlay */}
       <AnimatePresence>
@@ -222,10 +222,10 @@ export default function DashboardLayout({
       </div>
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col p-2 md:p-6 bg-slate-900 dark:bg-black overflow-hidden w-full">
+      <div className="flex-1 flex flex-col p-2 md:p-6 bg-primary-950 dark:bg-black overflow-hidden w-full">
 
-        {/* The White Panel */}
-        <div className="flex-1 flex flex-col bg-slate-50 dark:bg-slate-950 rounded-[2rem] md:rounded-[3rem] shadow-2xl relative overflow-hidden border border-white/5">
+        {/* The White/Blue Panel */}
+        <div className="flex-1 flex flex-col bg-slate-50 dark:bg-primary-950/80 rounded-[2rem] md:rounded-[3rem] shadow-2xl relative overflow-hidden border border-white/10">
 
           {tenantInfo && (
             <TrialBanner 
@@ -246,7 +246,7 @@ export default function DashboardLayout({
           </main>
 
           {/* Decorative Subtle Glow in Panel */}
-          <div className="absolute top-0 right-0 w-64 h-64 bg-amber-500/5 blur-[100px] pointer-events-none" />
+          <div className="absolute top-0 right-0 w-64 h-64 bg-accent-500/5 blur-[100px] pointer-events-none" />
         </div>
       </div>
     </div>

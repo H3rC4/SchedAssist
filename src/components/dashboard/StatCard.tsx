@@ -12,13 +12,13 @@ export function StatCard({ name, value, icon: Icon, change, changeType }: StatCa
   return (
     <div className="glass-card btn-magnetic relative overflow-hidden rounded-[2.5rem] p-8 group border border-white/60 dark:border-white/10 shadow-[var(--shadow-weightless)] hover:shadow-[var(--shadow-spatial)] transition-all duration-700">
       {/* Dynamic Aura Gradient */}
-      <div className="absolute inset-0 bg-gradient-to-br from-amber-500/5 via-transparent to-indigo-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
+      <div className="absolute inset-0 bg-gradient-to-br from-accent-500/5 via-transparent to-primary-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
       
       {/* Glow Effect / Orbital Flare */}
-      <div className="absolute -top-12 -right-12 h-40 w-40 bg-amber-500/10 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-1000 group-hover:animate-float-subtle" />
+      <div className="absolute -top-12 -right-12 h-40 w-40 bg-accent-500/10 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-1000 group-hover:animate-float-subtle" />
       
       <div className="relative z-10 flex items-center justify-between mb-8">
-        <div className="h-16 w-16 rounded-[1.5rem] bg-white dark:bg-slate-900 backdrop-blur-xl flex items-center justify-center group-hover:bg-amber-500 transition-all duration-700 shadow-sm border border-slate-100 dark:border-white/5 ring-4 ring-slate-50 dark:ring-white/5 group-hover:ring-amber-500/20 group-hover:-translate-y-2 group-hover:rotate-[8deg]">
+        <div className="h-16 w-16 rounded-[1.5rem] bg-white dark:bg-slate-900 backdrop-blur-xl flex items-center justify-center group-hover:bg-accent-500 transition-all duration-700 shadow-sm border border-slate-100 dark:border-white/5 ring-4 ring-slate-50 dark:ring-white/5 group-hover:ring-accent-500/20 group-hover:-translate-y-2 group-hover:rotate-[8deg]">
             <Icon className="h-8 w-8 text-slate-500 dark:text-slate-400 group-hover:text-slate-950 transition-colors duration-700" />
         </div>
         {change && (

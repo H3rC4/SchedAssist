@@ -233,7 +233,7 @@ export default function DoctorDashboard() {
   if (loading) {
     return (
       <div className="flex h-[60vh] items-center justify-center">
-        <div className="h-10 w-10 border-4 border-amber-500 border-t-transparent animate-spin rounded-full" />
+        <div className="h-10 w-10 border-4 border-accent-500 border-t-transparent animate-spin rounded-full" />
       </div>
     )
   }
@@ -243,14 +243,14 @@ export default function DoctorDashboard() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
-          <h1 className="text-3xl font-black text-slate-900 tracking-tight">{fullT.nav_calendar}</h1>
-          <p className="text-sm font-medium text-slate-400 mt-1 uppercase tracking-widest">
+          <h1 className="text-3xl font-black text-white tracking-tight">{fullT.nav_calendar}</h1>
+          <p className="text-sm font-bold text-primary-400 mt-1 uppercase tracking-widest">
             {format(new Date(), "EEEE d MMMM, yyyy", { locale })}
           </p>
         </div>
         <button 
           onClick={() => setShowNewModal(true)}
-          className="flex items-center justify-center gap-2 px-6 py-4 bg-slate-900 text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-amber-500 hover:text-slate-900 transition-all shadow-xl shadow-slate-900/10"
+          className="flex items-center justify-center gap-2 px-6 py-4 bg-accent-500 text-primary-950 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-accent-400 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl shadow-accent-500/20"
         >
           <Plus className="h-4 w-4" /> {translations[language]?.new_appointment || 'Nueva Cita'}
         </button>
@@ -258,7 +258,7 @@ export default function DoctorDashboard() {
 
       {/* Pending Calls Reminder (Doctor View) */}
       {pendingCalls.length > 0 && (
-        <div className="bg-red-50 border border-red-100 rounded-[2rem] p-8 animate-in slide-in-from-top duration-700">
+        <div className="bg-red-500/10 backdrop-blur-md border border-red-500/20 rounded-[2rem] p-8 animate-in slide-in-from-top duration-700">
            <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-3">
                 <div className="h-10 w-10 bg-red-100 flex items-center justify-center rounded-xl text-red-600">
@@ -325,22 +325,22 @@ export default function DoctorDashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         {/* Calendar */}
         <div className="lg:col-span-5">
-          <div className="bg-white rounded-3xl border border-slate-200 p-8 shadow-sm">
+          <div className="bg-primary-900/40 backdrop-blur-xl rounded-[2.5rem] border border-white/10 p-8 shadow-2xl noise h-full">
             <div className="flex items-center justify-between mb-8">
-              <button onClick={() => setCurrentMonth(subMonths(currentMonth, 1))} className="p-3 rounded-xl bg-slate-50 hover:bg-slate-100 transition-colors">
-                <ChevronLeft className="h-5 w-5 text-slate-600" />
+              <button onClick={() => setCurrentMonth(subMonths(currentMonth, 1))} className="p-3 rounded-xl bg-primary-800/50 hover:bg-primary-700 text-primary-200 transition-colors">
+                <ChevronLeft className="h-5 w-5" />
               </button>
-              <h2 className="text-xl font-black text-slate-900 capitalize tracking-tight">
+              <h2 className="text-xl font-black text-white capitalize tracking-tight">
                 {format(currentMonth, 'MMMM yyyy', { locale })}
               </h2>
-              <button onClick={() => setCurrentMonth(addMonths(currentMonth, 1))} className="p-3 rounded-xl bg-slate-50 hover:bg-slate-100 transition-colors">
-                <ChevronRight className="h-5 w-5 text-slate-600" />
+              <button onClick={() => setCurrentMonth(addMonths(currentMonth, 1))} className="p-3 rounded-xl bg-primary-800/50 hover:bg-primary-700 text-primary-200 transition-colors">
+                <ChevronRight className="h-5 w-5" />
               </button>
             </div>
 
             <div className="grid grid-cols-7 gap-2 mb-4">
               {['D', 'L', 'M', 'X', 'J', 'V', 'S'].map(d => (
-                <div key={d} className="text-center text-[10px] font-black text-slate-400 uppercase tracking-widest">{d}</div>
+                <div key={d} className="text-center text-[10px] font-black text-primary-400 uppercase tracking-widest">{d}</div>
               ))}
             </div>
 
@@ -353,9 +353,9 @@ export default function DoctorDashboard() {
                 return (
                   <button key={day.toISOString()} onClick={() => setSelectedDate(day)}
                     className={`relative aspect-square flex flex-col items-center justify-center rounded-2xl text-sm font-black transition-all duration-200
-                      ${selected ? 'bg-amber-500 text-white shadow-xl shadow-amber-500/20 scale-110 z-10' : today ? 'bg-amber-50 text-amber-600 ring-2 ring-amber-200' : 'text-slate-600 hover:bg-slate-50'}`}>
+                      ${selected ? 'bg-accent-500 text-primary-950 shadow-xl shadow-accent-500/20 scale-110 z-10' : today ? 'bg-primary-800 text-accent-400 ring-2 ring-accent-500/30' : 'text-primary-200 hover:bg-primary-800/50'}`}>
                     {format(day, 'd')}
-                    {hasApp && !selected && <span className="absolute bottom-1.5 h-1.5 w-1.5 rounded-full bg-amber-400" />}
+                    {hasApp && !selected && <span className="absolute bottom-1.5 h-1.5 w-1.5 rounded-full bg-accent-400" />}
                   </button>
                 )
               })}
@@ -366,37 +366,37 @@ export default function DoctorDashboard() {
         {/* Day Feed */}
         <div className="lg:col-span-7 space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-lg font-black text-slate-900 flex items-center gap-2">
-              <Calendar className="h-5 w-5 text-amber-500" />
+            <h3 className="text-lg font-black text-white flex items-center gap-2">
+              <Calendar className="h-5 w-5 text-accent-500" />
               {format(selectedDate, "EEEE d MMMM", { locale })}
             </h3>
-            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest bg-slate-100 px-3 py-1.5 rounded-lg">
+            <span className="text-[10px] font-black text-primary-400 uppercase tracking-widest bg-primary-900/50 px-3 py-1.5 rounded-lg border border-white/5">
               {dayApps.length} {fullT.nav_calendar.toLowerCase()}
             </span>
           </div>
 
           {dayApps.length === 0 ? (
-            <div className="bg-white rounded-3xl border border-slate-200 p-16 text-center">
-              <Calendar className="h-12 w-12 text-slate-200 mx-auto mb-4" />
-              <p className="text-lg font-bold text-slate-300">{fullT.no_activity_today}</p>
-              <p className="text-sm text-slate-300 mt-1">{language === 'es' ? '¡Disfruta tu tiempo libre! 🎉' : 'Enjoy your free time! 🎉'}</p>
+            <div className="bg-primary-900/40 backdrop-blur-xl rounded-[2.5rem] border border-white/10 p-16 text-center noise">
+              <Calendar className="h-12 w-12 text-primary-800 mx-auto mb-4" />
+              <p className="text-lg font-bold text-primary-400">{fullT.no_activity_today}</p>
+              <p className="text-sm text-primary-500 mt-1">{language === 'es' ? '¡Disfruta tu tiempo libre! 🎉' : 'Enjoy your free time! 🎉'}</p>
             </div>
           ) : (
             <div className="space-y-3">
               {dayApps.map((app, idx) => (
-                <div key={app.id} className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-all group">
+                <div key={app.id} className="bg-primary-900/40 backdrop-blur-xl rounded-3xl border border-white/10 p-5 shadow-sm hover:bg-primary-800/40 transition-all group noise">
                   <div className="flex items-center gap-5">
                     {/* Time */}
-                    <div className="h-14 w-14 rounded-xl bg-amber-50 border border-amber-100 flex flex-col items-center justify-center flex-shrink-0 group-hover:bg-amber-500 group-hover:text-white transition-colors">
-                      <span className="text-lg font-black leading-none group-hover:text-white text-amber-600">{format(parseISO(app.start_at), 'HH')}</span>
-                      <span className="text-[10px] font-bold group-hover:text-amber-100 text-amber-400">{format(parseISO(app.start_at), 'mm')}</span>
+                    <div className="h-14 w-14 rounded-2xl bg-primary-800/50 border border-white/5 flex flex-col items-center justify-center flex-shrink-0 group-hover:bg-accent-500 transition-all duration-300">
+                      <span className="text-lg font-black leading-none group-hover:text-primary-950 text-accent-500">{format(parseISO(app.start_at), 'HH')}</span>
+                      <span className="text-[10px] font-bold group-hover:text-primary-900 text-primary-400">{format(parseISO(app.start_at), 'mm')}</span>
                     </div>
 
                     {/* Info */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
-                        <User className="h-3.5 w-3.5 text-slate-400" />
-                        <p className="text-sm font-bold text-slate-900 truncate">
+                        <User className="h-3.5 w-3.5 text-primary-500" />
+                        <p className="text-sm font-bold text-white truncate">
                           {app.clients?.first_name} {app.clients?.last_name}
                         </p>
                       </div>
@@ -415,9 +415,9 @@ export default function DoctorDashboard() {
                     </div>
 
                     {/* Status */}
-                    <div className={`px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest
-                      ${app.status === 'confirmed' || app.status === 'completed' ? 'bg-emerald-50 text-emerald-600' :
-                        app.status === 'cancelled' ? 'bg-red-50 text-red-500' : 'bg-amber-50 text-amber-600'}`}>
+                    <div className={`px-3 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-widest
+                      ${app.status === 'confirmed' || app.status === 'completed' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
+                        app.status === 'cancelled' ? 'bg-red-500/10 text-red-400 border border-red-500/20' : 'bg-accent-500/10 text-accent-500 border border-accent-500/20'}`}>
                       {app.status === 'confirmed' ? fullT.confirmed : app.status === 'completed' ? fullT.done :
                        app.status === 'cancelled' ? fullT.canceled : fullT.pending}
                     </div>

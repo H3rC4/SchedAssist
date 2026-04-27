@@ -17,8 +17,8 @@ const MiniStatCard = ({ name, value, icon: Icon, color }: { name: string, value:
 )
 
 const AppointmentItem = ({ name, time, status, service }: { name: string, time: string, status: string, service: string }) => (
-    <div className="flex items-center gap-4 p-4 rounded-2xl bg-white/5 border border-white/5 hover:border-amber-500/30 transition-all group">
-        <div className="h-12 w-12 rounded-xl bg-slate-800 flex flex-col items-center justify-center border border-white/5 group-hover:bg-amber-500 transition-all">
+    <div className="flex items-center gap-4 p-4 rounded-2xl bg-white/5 border border-white/5 hover:border-accent-500/30 transition-all group">
+        <div className="h-12 w-12 rounded-xl bg-slate-800 flex flex-col items-center justify-center border border-white/5 group-hover:bg-accent-500 transition-all">
             <span className="text-[8px] font-black text-slate-400 group-hover:text-slate-950 uppercase leading-none mb-0.5">Hoy</span>
             <span className="text-sm font-black text-white group-hover:text-slate-950 leading-none">{time}</span>
         </div>
@@ -30,7 +30,7 @@ const AppointmentItem = ({ name, time, status, service }: { name: string, time: 
             <p className="text-[10px] font-bold text-slate-500">Confirmado vía WhatsApp</p>
         </div>
         <div className={`px-2 py-1 rounded-full text-[7px] font-black uppercase tracking-widest border ${
-            status === 'confirmed' ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : 'bg-amber-500/10 text-amber-500 border-amber-500/20'
+            status === 'confirmed' ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : 'bg-accent-500/10 text-accent-500 border-accent-500/20'
         }`}>
             {status}
         </div>
@@ -43,11 +43,11 @@ export function RealisticDashboard() {
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: "easeOut" }}
-            className="w-full max-w-4xl mx-auto p-4 md:p-8 rounded-[3rem] bg-slate-950 border border-white/10 shadow-[0_32px_128px_-16px_rgba(0,0,0,0.8)] overflow-hidden relative"
+            className="w-full max-w-4xl mx-auto p-4 md:p-8 rounded-[3rem] bg-primary-950 border border-white/10 shadow-[0_32px_128px_-16px_rgba(0,0,0,0.8)] overflow-hidden relative"
         >
             {/* Background Glows */}
-            <div className="absolute top-0 right-0 h-64 w-64 bg-amber-500/10 blur-[100px] rounded-full -mr-32 -mt-32" />
-            <div className="absolute bottom-0 left-0 h-48 w-48 bg-indigo-500/10 blur-[80px] rounded-full -ml-24 -mb-24" />
+            <div className="absolute top-0 right-0 h-64 w-64 bg-accent-500/10 blur-[100px] rounded-full -mr-32 -mt-32" />
+            <div className="absolute bottom-0 left-0 h-48 w-48 bg-primary-500/10 blur-[80px] rounded-full -ml-24 -mb-24" />
 
             <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-6">
                 {/* Main Content */}
@@ -68,8 +68,8 @@ export function RealisticDashboard() {
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
-                        <MiniStatCard name="Citas Hoy" value="24" icon={Calendar} color="amber" />
-                        <MiniStatCard name="Pacientes" value="1.2k" icon={Users} color="indigo" />
+                        <MiniStatCard name="Citas Hoy" value="24" icon={Calendar} color="accent" />
+                        <MiniStatCard name="Pacientes" value="1.2k" icon={Users} color="primary" />
                     </div>
 
                     <div className="space-y-3">
@@ -99,7 +99,7 @@ export function RealisticDashboard() {
                         <p className="text-[10px] font-bold text-slate-500 mt-4 leading-tight">Optimizing no-shows with automated WhatsApp reminders.</p>
                     </div>
 
-                    <div className="p-6 bg-amber-500 rounded-3xl text-slate-950">
+                    <div className="p-6 bg-accent-500 rounded-3xl text-slate-950">
                         <p className="text-[10px] font-black uppercase tracking-widest mb-1">WhatsApp Cloud</p>
                         <p className="text-sm font-black leading-tight">Bot Activo & Respondiendo</p>
                     </div>

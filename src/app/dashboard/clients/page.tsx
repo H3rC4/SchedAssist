@@ -453,47 +453,47 @@ export default function ClientsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 relative z-10">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 tracking-tight">{t.patient_management}</h1>
-        <p className="text-sm text-gray-500">{t.patient_management_subtitle}</p>
+        <h1 className="text-2xl font-black text-white tracking-tight">{t.patient_management}</h1>
+        <p className="text-sm font-bold text-primary-200">{t.patient_management_subtitle}</p>
       </div>
 
       <div className="relative max-w-md">
-        <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-          <Search className="h-5 w-5 text-gray-400" />
+        <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
+          <Search className="h-5 w-5 text-primary-400" />
         </div>
         <input 
           type="text" 
           value={searchTerm} 
           onChange={e => setSearchTerm(e.target.value)}
-          className="block w-full rounded-xl border border-gray-200 bg-white py-2.5 pl-10 pr-3 text-sm text-gray-900 placeholder-gray-400 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 shadow-sm"
+          className="block w-full rounded-2xl border border-white/10 bg-primary-900/40 backdrop-blur-md py-3 pl-11 pr-4 text-sm font-bold text-white placeholder-primary-300 focus:border-accent-500 focus:ring-1 focus:ring-accent-500 shadow-sm outline-none transition-all"
           placeholder={t.search_patients_placeholder} 
         />
       </div>
 
-      <div className="rounded-xl bg-white shadow-sm border border-gray-200 overflow-hidden">
+      <div className="rounded-[2rem] bg-primary-900/40 backdrop-blur-md shadow-2xl border border-white/10 overflow-hidden">
         {filteredClients.length === 0 ? (
-          <div className="text-center py-12 text-gray-400">
-            <User className="mx-auto h-12 w-12 mb-3 opacity-50" />
-            <p className="text-sm">{t.no_patients_found}</p>
+          <div className="text-center py-12 text-primary-300">
+            <User className="mx-auto h-12 w-12 mb-3 opacity-50 text-accent-500" />
+            <p className="text-sm font-bold uppercase tracking-widest">{t.no_patients_found}</p>
           </div>
         ) : (
-          <div className="divide-y divide-gray-100">
+          <div className="divide-y divide-white/5">
             {filteredClients.map(c => (
               <button 
                 key={c.id} 
                 onClick={() => openClientDetail(c)}
-                className="w-full flex items-center gap-4 px-5 py-4 hover:bg-primary-50/40 transition-colors text-left group"
+                className="w-full flex items-center gap-4 px-6 py-5 hover:bg-white/5 transition-all text-left group"
               >
-                <div className="flex-shrink-0 h-10 w-10 rounded-full bg-primary-100 flex items-center justify-center text-primary-700 font-bold text-sm">
+                <div className="flex-shrink-0 h-12 w-12 rounded-full bg-primary-800/50 border border-white/10 flex items-center justify-center text-accent-500 font-black text-sm shadow-[0_0_15px_rgba(59,130,246,0.15)] group-hover:scale-105 transition-transform">
                   {c.first_name.charAt(0)}{c.last_name?.charAt(0) || ''}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-gray-900 truncate">{c.first_name} {c.last_name}</p>
-                  <p className="text-xs text-gray-500">{c.phone}</p>
+                  <p className="text-sm font-black text-white truncate">{c.first_name} {c.last_name}</p>
+                  <p className="text-xs font-bold text-primary-300 flex items-center gap-1 mt-0.5"><Phone className="h-3 w-3" /> {c.phone}</p>
                 </div>
-                <ChevronRight className="h-4 w-4 text-gray-300 group-hover:text-primary-500 transition-colors" />
+                <ChevronRight className="h-5 w-5 text-primary-400 group-hover:text-accent-500 transition-colors" />
               </button>
             ))}
           </div>
@@ -501,26 +501,27 @@ export default function ClientsPage() {
       </div>
 
       {selectedClient && (
-        <div className="fixed inset-0 z-50 flex flex-col bg-slate-50 animate-in slide-in-from-right duration-300" onClick={e => e.stopPropagation()}>
+        <div className="fixed inset-0 z-50 flex flex-col bg-[#0B1120] animate-in slide-in-from-right duration-300" onClick={e => e.stopPropagation()}>
+          <div className="absolute inset-0 bg-[url('/noise.png')] opacity-[0.03] pointer-events-none mix-blend-overlay"></div>
           {/* Header Full-width */}
-          <div className="bg-gradient-to-r from-slate-800 to-slate-900 px-6 py-4 text-white shadow-lg sticky top-0 z-10">
-            <div className="max-w-7xl mx-auto flex items-center justify-between">
+          <div className="bg-[#0B1120]/80 backdrop-blur-xl border-b border-white/10 px-6 py-4 text-white shadow-lg sticky top-0 z-20">
+            <div className="max-w-7xl mx-auto flex items-center justify-between relative z-10">
               <div className="flex items-center gap-4">
                 <button 
                   onClick={() => { setSelectedClient(null); setIsEditing(false); }}
-                  className="p-2 rounded-xl bg-white/10 hover:bg-white/20 transition-all flex items-center gap-2 text-sm font-bold"
+                  className="p-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition-all flex items-center gap-2 text-sm font-bold"
                 >
-                  <ArrowLeft className="h-5 w-5" /> 
-                  <span className="hidden sm:inline">{t.back}</span>
+                  <ArrowLeft className="h-5 w-5 text-accent-500" /> 
+                  <span className="hidden sm:inline uppercase tracking-widest text-[10px]">{t.back}</span>
                 </button>
                 <div className="h-8 w-px bg-white/10 mx-1 hidden sm:block" />
                 <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-full bg-white/20 flex items-center justify-center text-md font-bold shadow-inner">
+                  <div className="h-12 w-12 rounded-full bg-primary-800/50 border border-white/10 flex items-center justify-center text-lg font-black text-accent-500 shadow-[0_0_15px_rgba(245,158,11,0.15)]">
                     {selectedClient.first_name.charAt(0)}{selectedClient.last_name?.charAt(0) || ''}
                   </div>
                   <div>
-                    <h3 className="text-lg font-bold leading-none">{selectedClient.first_name} {selectedClient.last_name}</h3>
-                    <p className="text-primary-200 text-xs flex items-center gap-1 mt-1 font-medium opacity-80">
+                    <h3 className="text-xl font-black leading-none">{selectedClient.first_name} {selectedClient.last_name}</h3>
+                    <p className="text-primary-300 text-xs flex items-center gap-1 mt-1.5 font-bold uppercase tracking-widest">
                       <Phone className="h-3 w-3" /> {selectedClient.phone}
                     </p>
                   </div>
@@ -531,45 +532,45 @@ export default function ClientsPage() {
                   <div className="flex items-center gap-3">
                     <button 
                       onClick={exportPatientHistory} 
-                      className="bg-white/10 hover:bg-white/20 px-4 py-2 rounded-xl text-sm font-bold transition-all flex items-center gap-2 border border-white/10"
+                      className="bg-white/5 hover:bg-white/10 px-4 py-2.5 rounded-xl text-[10px] uppercase tracking-widest font-black transition-all flex items-center gap-2 border border-white/10"
                     >
-                      {t.export_report}
+                      <Download className="h-4 w-4" /> {t.export_report}
                     </button>
                     <button 
                       onClick={() => setIsEditing(true)} 
-                      className="flex items-center gap-2 bg-white/10 hover:bg-white/20 px-4 py-2 rounded-xl text-sm font-bold transition-all"
+                      className="flex items-center gap-2 bg-accent-500 hover:bg-accent-400 text-primary-950 px-4 py-2.5 rounded-xl text-[10px] uppercase tracking-widest font-black transition-all shadow-[0_0_15px_rgba(245,158,11,0.2)]"
                     >
                       <Edit2 className="h-4 w-4" /> {t.edit}
                     </button>
                   </div>
                 ) : (
                   <div className="flex gap-2">
-                     <button onClick={handleSaveEdit} className="bg-emerald-500 hover:bg-emerald-400 text-white px-5 py-2 rounded-xl text-sm font-bold shadow-lg shadow-emerald-500/20">{t.save}</button>
-                     <button onClick={() => setIsEditing(false)} className="bg-white/10 hover:bg-white/20 text-white px-5 py-2 rounded-xl text-sm font-bold">{t.cancel}</button>
+                     <button onClick={handleSaveEdit} className="bg-accent-500 hover:bg-accent-400 text-primary-950 px-5 py-2.5 rounded-xl text-[10px] uppercase tracking-widest font-black shadow-[0_0_15px_rgba(245,158,11,0.2)]">{t.save}</button>
+                     <button onClick={() => setIsEditing(false)} className="bg-white/5 hover:bg-white/10 border border-white/10 text-white px-5 py-2.5 rounded-xl text-[10px] uppercase tracking-widest font-black">{t.cancel}</button>
                   </div>
                 )}
                 <button onClick={() => setSelectedClient(null)} className="p-2 rounded-full hover:bg-white/10 transition-colors">
-                  <X className="h-6 w-6 opacity-60 hover:opacity-100" />
+                  <X className="h-6 w-6 text-slate-400 hover:text-white" />
                 </button>
               </div>
             </div>
           </div>
 
           {/* Main Content Area */}
-          <div className="flex-1 overflow-y-auto bg-slate-50">
+          <div className="flex-1 overflow-y-auto bg-transparent relative z-10 custom-scrollbar">
             {/* Tabs Header */}
             {!isEditing && (
-              <div className="bg-white border-b border-gray-200 px-6 pt-4 sticky top-0 z-10">
+              <div className="bg-[#0B1120]/60 backdrop-blur-md border-b border-white/10 px-6 pt-4 sticky top-0 z-10">
                 <div className="max-w-7xl mx-auto flex gap-8">
                   <button 
                     onClick={() => setActiveTab('perfil')}
-                    className={`pb-4 text-sm font-bold border-b-2 transition-colors flex items-center gap-2 ${activeTab === 'perfil' ? 'border-primary-500 text-primary-600' : 'border-transparent text-gray-400 hover:text-gray-600'}`}
+                    className={`pb-4 text-[10px] uppercase tracking-widest font-black border-b-2 transition-all flex items-center gap-2 ${activeTab === 'perfil' ? 'border-accent-500 text-accent-500' : 'border-transparent text-slate-400 hover:text-white'}`}
                   >
                     <User className="h-4 w-4" /> Perfil & Turnos
                   </button>
                   <button 
                     onClick={() => setActiveTab('historia')}
-                    className={`pb-4 text-sm font-bold border-b-2 transition-colors flex items-center gap-2 ${activeTab === 'historia' ? 'border-primary-500 text-primary-600' : 'border-transparent text-gray-400 hover:text-gray-600'}`}
+                    className={`pb-4 text-[10px] uppercase tracking-widest font-black border-b-2 transition-all flex items-center gap-2 ${activeTab === 'historia' ? 'border-accent-500 text-accent-500' : 'border-transparent text-slate-400 hover:text-white'}`}
                   >
                     <Stethoscope className="h-4 w-4" /> Historia Clínica (EHR)
                   </button>
@@ -579,43 +580,43 @@ export default function ClientsPage() {
 
             <div className="max-w-7xl mx-auto p-6">
               {isEditing ? (
-                <div className="max-w-2xl mx-auto bg-white rounded-3xl p-8 shadow-sm border border-gray-100">
-                   <h4 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-                     <Edit2 className="h-5 w-5 text-primary-600" /> {t.edit_patient_data}
+                <div className="max-w-2xl mx-auto bg-primary-900/40 backdrop-blur-md rounded-[2rem] p-8 shadow-2xl border border-white/10">
+                   <h4 className="text-xl font-black text-white mb-6 flex items-center gap-2 tracking-tight">
+                     <Edit2 className="h-5 w-5 text-accent-500" /> {t.edit_patient_data}
                    </h4>
                    <div className="space-y-5">
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
-                          <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">{t.name}</label>
-                          <input type="text" value={editData.first_name} onChange={e => setEditData({...editData, first_name: e.target.value})} className="block w-full rounded-2xl border-gray-200 bg-gray-50 py-3 px-4 text-sm text-gray-900 focus:bg-white focus:ring-2 focus:ring-primary-500/10 focus:border-primary-500 transition-all outline-none"/>
+                          <label className="block text-[10px] font-black text-primary-300 uppercase tracking-widest mb-2">{t.name}</label>
+                          <input type="text" value={editData.first_name} onChange={e => setEditData({...editData, first_name: e.target.value})} className="block w-full rounded-2xl border-white/10 bg-primary-950/50 py-3 px-4 text-sm font-bold text-white focus:bg-primary-900 focus:ring-1 focus:ring-accent-500 focus:border-accent-500 transition-all outline-none"/>
                         </div>
                         <div>
-                          <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">{t.last_name}</label>
-                          <input type="text" value={editData.last_name} onChange={e => setEditData({...editData, last_name: e.target.value})} className="block w-full rounded-2xl border-gray-200 bg-gray-50 py-3 px-4 text-sm text-gray-900 focus:bg-white focus:ring-2 focus:ring-primary-500/10 focus:border-primary-500 transition-all outline-none"/>
+                          <label className="block text-[10px] font-black text-primary-300 uppercase tracking-widest mb-2">{t.last_name}</label>
+                          <input type="text" value={editData.last_name} onChange={e => setEditData({...editData, last_name: e.target.value})} className="block w-full rounded-2xl border-white/10 bg-primary-950/50 py-3 px-4 text-sm font-bold text-white focus:bg-primary-900 focus:ring-1 focus:ring-accent-500 focus:border-accent-500 transition-all outline-none"/>
                         </div>
                       </div>
                       <div>
-                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">{t.phone}</label>
-                        <input type="text" value={editData.phone} onChange={e => setEditData({...editData, phone: e.target.value})} className="block w-full rounded-2xl border-gray-200 bg-gray-50 py-3 px-4 text-sm text-gray-900 focus:bg-white focus:ring-2 focus:ring-primary-500/10 focus:border-primary-500 transition-all outline-none"/>
+                        <label className="block text-[10px] font-black text-primary-300 uppercase tracking-widest mb-2">{t.phone}</label>
+                        <input type="text" value={editData.phone} onChange={e => setEditData({...editData, phone: e.target.value})} className="block w-full rounded-2xl border-white/10 bg-primary-950/50 py-3 px-4 text-sm font-bold text-white focus:bg-primary-900 focus:ring-1 focus:ring-accent-500 focus:border-accent-500 transition-all outline-none"/>
                       </div>
                       <div>
-                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">{translations[lang].general_observations}</label>
-                        <textarea value={editData.notes} onChange={e => setEditData({...editData, notes: e.target.value})} rows={6} className="block w-full rounded-2xl border-gray-200 bg-gray-50 py-3 px-4 text-sm text-gray-900 focus:bg-white focus:ring-2 focus:ring-primary-500/10 focus:border-primary-500 transition-all outline-none resize-none" placeholder="Alergias, condiciones previas, antecedentes..."/>
+                        <label className="block text-[10px] font-black text-primary-300 uppercase tracking-widest mb-2">{translations[lang].general_observations}</label>
+                        <textarea value={editData.notes} onChange={e => setEditData({...editData, notes: e.target.value})} rows={6} className="block w-full rounded-2xl border-white/10 bg-primary-950/50 py-3 px-4 text-sm font-bold text-white focus:bg-primary-900 focus:ring-1 focus:ring-accent-500 focus:border-accent-500 transition-all outline-none resize-none placeholder-primary-400/50" placeholder="Alergias, condiciones previas, antecedentes..."/>
                       </div>
                    </div>
                  </div>
               ) : activeTab === 'historia' ? (
                 <div className="max-w-4xl mx-auto space-y-6">
                   {/* EHR Input Area */}
-                  <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100">
-                    <h4 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                      <Plus className="h-5 w-5 text-primary-600" /> Nueva Entrada Médica
+                  <div className="bg-primary-900/40 backdrop-blur-md rounded-[2rem] p-6 shadow-2xl border border-white/10">
+                    <h4 className="text-lg font-black text-white mb-4 flex items-center gap-2">
+                      <Plus className="h-5 w-5 text-accent-500" /> Nueva Entrada Médica
                     </h4>
                     <textarea 
                       value={newRecordText}
                       onChange={e => setNewRecordText(e.target.value)}
                       placeholder="Escribe la evolución, diagnóstico o notas de la sesión..."
-                      className="w-full bg-slate-50 border border-gray-200 rounded-2xl p-4 text-sm focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 outline-none resize-none min-h-[120px]"
+                      className="w-full bg-primary-950/50 border border-white/10 rounded-2xl p-4 text-sm font-bold text-white focus:ring-1 focus:ring-accent-500 focus:border-accent-500 outline-none resize-none min-h-[120px] placeholder-primary-400/50"
                     />
                     <div className="flex items-center justify-between mt-4">
                       <div>
@@ -629,7 +630,7 @@ export default function ClientsPage() {
                         <button 
                           onClick={() => fileInputRef.current?.click()}
                           disabled={uploadingFiles}
-                          className="flex items-center gap-2 text-sm font-bold text-gray-500 hover:text-primary-600 transition-colors px-3 py-2 rounded-xl hover:bg-primary-50"
+                          className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-primary-300 hover:text-white transition-colors px-3 py-2 rounded-xl hover:bg-white/5"
                         >
                           {uploadingFiles ? <Loader2 className="h-4 w-4 animate-spin" /> : <Paperclip className="h-4 w-4" />}
                           Adjuntar Archivo (PDF, Img)
@@ -638,7 +639,7 @@ export default function ClientsPage() {
                       <button 
                         onClick={handleSaveClinicalRecord}
                         disabled={isSavingRecord || !newRecordText.trim()}
-                        className="bg-primary-600 hover:bg-primary-700 text-white px-6 py-2.5 rounded-xl text-sm font-bold shadow-lg shadow-primary-500/20 disabled:opacity-50 transition-all flex items-center gap-2"
+                        className="bg-accent-500 hover:bg-accent-400 text-primary-950 px-6 py-2.5 rounded-xl text-[10px] uppercase tracking-widest font-black shadow-[0_0_15px_rgba(245,158,11,0.2)] disabled:opacity-50 transition-all flex items-center gap-2"
                       >
                         {isSavingRecord ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
                         Guardar Registro
@@ -648,43 +649,43 @@ export default function ClientsPage() {
 
                   {/* EHR Timeline */}
                   <div className="space-y-6">
-                    <h4 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-                      <Stethoscope className="h-5 w-5 text-primary-600" /> Historial Clínico Completo
+                    <h4 className="text-lg font-black text-white flex items-center gap-2">
+                      <Stethoscope className="h-5 w-5 text-accent-500" /> Historial Clínico Completo
                     </h4>
                     {clinicalRecords.length === 0 ? (
-                      <div className="text-center py-16 bg-white rounded-3xl border border-dashed border-gray-200">
-                        <FileText className="mx-auto h-12 w-12 text-gray-300 mb-3" />
-                        <p className="text-sm text-gray-400 font-medium">No hay registros médicos todavía.</p>
+                      <div className="text-center py-16 bg-primary-900/20 rounded-[2rem] border border-dashed border-white/10">
+                        <FileText className="mx-auto h-12 w-12 text-primary-400/50 mb-3" />
+                        <p className="text-sm text-primary-300 font-bold uppercase tracking-widest">No hay registros médicos todavía.</p>
                       </div>
                     ) : (
-                      <div className="space-y-6 relative before:absolute before:left-6 before:top-4 before:bottom-0 before:w-0.5 before:bg-gray-200">
+                      <div className="space-y-6 relative before:absolute before:left-6 before:top-4 before:bottom-0 before:w-0.5 before:bg-white/10">
                         {clinicalRecords.map(record => (
                           <div key={record.id} className="relative pl-14 animate-in fade-in slide-in-from-left-4 duration-500">
-                            <div className="absolute left-4 top-2 h-4 w-4 rounded-full bg-primary-500 border-4 border-white shadow-sm z-10" />
-                            <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 hover:border-primary-100 transition-colors group/rec">
-                              <div className="flex items-center justify-between mb-3 border-b border-gray-50 pb-3">
+                            <div className="absolute left-4 top-2 h-4 w-4 rounded-full bg-accent-500 border-4 border-[#0B1120] shadow-[0_0_10px_rgba(245,158,11,0.5)] z-10" />
+                            <div className="bg-primary-900/40 backdrop-blur-md rounded-[2rem] p-6 shadow-lg border border-white/10 hover:border-accent-500/50 transition-colors group/rec">
+                              <div className="flex items-center justify-between mb-3 border-b border-white/5 pb-3">
                                 <div>
-                                  <p className="text-xs font-bold text-primary-600 uppercase tracking-widest">
+                                  <p className="text-[10px] font-black text-accent-500 uppercase tracking-widest">
                                     {format(parseISO(record.created_at), "d MMMM yyyy · HH:mm'h'", { locale: dateLocale })}
                                   </p>
                                 </div>
                                 <div className="flex items-center gap-3">
                                   <div className="text-right">
-                                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none">Profesional</p>
-                                    <p className="text-sm font-bold text-gray-800 mt-1">{record.professionals?.full_name || 'Admin'}</p>
+                                    <p className="text-[10px] font-black text-primary-400 uppercase tracking-widest leading-none">Profesional</p>
+                                    <p className="text-xs font-bold text-white mt-1">{record.professionals?.full_name || 'Admin'}</p>
                                   </div>
                                   {canEditRecord(record) && editingRecordId !== record.id && (
                                     <div className="flex items-center gap-1 opacity-0 group-hover/rec:opacity-100 transition-opacity">
                                       <button
                                         onClick={() => { setEditingRecordId(record.id); setEditRecordText(record.content) }}
-                                        className="p-1.5 hover:bg-primary-50 rounded-lg text-gray-400 hover:text-primary-600 transition-colors"
+                                        className="p-1.5 hover:bg-white/5 rounded-lg text-primary-400 hover:text-accent-500 transition-colors"
                                         title={t.edit}
                                       >
                                         <Edit2 className="h-3.5 w-3.5" />
                                       </button>
                                       <button
                                         onClick={() => handleDeleteClinicalRecord(record.id)}
-                                        className="p-1.5 hover:bg-red-50 rounded-lg text-gray-300 hover:text-red-500 transition-colors"
+                                        className="p-1.5 hover:bg-red-500/10 rounded-lg text-primary-400 hover:text-red-400 transition-colors"
                                         title={t.delete}
                                       >
                                         <X className="h-3.5 w-3.5" />
@@ -699,37 +700,37 @@ export default function ClientsPage() {
                                     autoFocus
                                     value={editRecordText}
                                     onChange={e => setEditRecordText(e.target.value)}
-                                    className="w-full bg-slate-50 border border-primary-200 rounded-2xl p-4 text-sm focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 outline-none resize-none min-h-[100px]"
+                                    className="w-full bg-primary-950/50 border border-white/10 rounded-2xl p-4 text-sm font-bold text-white focus:ring-1 focus:ring-accent-500 focus:border-accent-500 outline-none resize-none min-h-[100px]"
                                     rows={4}
                                   />
                                   <div className="flex gap-2 justify-end">
                                     <button
                                       onClick={() => handleEditClinicalRecord(record.id)}
-                                      className="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-xl text-xs font-bold transition-all"
+                                      className="bg-accent-500 hover:bg-accent-400 text-primary-950 px-4 py-2 rounded-xl text-[10px] uppercase tracking-widest font-black transition-all shadow-[0_0_10px_rgba(245,158,11,0.2)]"
                                     >
                                       {t.save}
                                     </button>
                                     <button
                                       onClick={() => setEditingRecordId(null)}
-                                      className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-xl text-xs font-bold transition-all"
+                                      className="bg-white/5 hover:bg-white/10 text-white border border-white/10 px-4 py-2 rounded-xl text-[10px] uppercase tracking-widest font-black transition-all"
                                     >
                                       {t.cancel}
                                     </button>
                                   </div>
                                 </div>
                               ) : (
-                                <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">{record.content}</p>
+                                <p className="text-sm font-medium text-primary-100 leading-relaxed whitespace-pre-wrap">{record.content}</p>
                               )}
                               
                               {record.attachments && record.attachments.length > 0 && editingRecordId !== record.id && (
-                                <div className="mt-4 pt-4 border-t border-gray-50 flex flex-wrap gap-3">
+                                <div className="mt-4 pt-4 border-t border-white/5 flex flex-wrap gap-3">
                                   {record.attachments.map((file: any, idx: number) => (
                                     <a 
                                       key={idx} 
                                       href={file.url} 
                                       target="_blank" 
                                       rel="noreferrer"
-                                      className="flex items-center gap-2 bg-slate-50 border border-gray-200 hover:border-primary-300 rounded-xl px-3 py-2 text-xs font-bold text-gray-600 hover:text-primary-600 transition-colors"
+                                      className="flex items-center gap-2 bg-white/5 border border-white/10 hover:border-accent-500/50 rounded-xl px-3 py-2 text-[10px] uppercase tracking-widest font-black text-primary-200 hover:text-accent-500 transition-colors"
                                     >
                                       <Download className="h-3 w-3" /> {file.name}
                                     </a>
@@ -748,28 +749,28 @@ export default function ClientsPage() {
                   {/* Left Column: Summary Info */}
                   <div className="lg:col-span-12 xl:col-span-4 space-y-6">
                     {/* General Remarks (Allergies, History) - READ ONLY IN VIEW MODE */}
-                    <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100">
-                      <h4 className="text-sm font-bold text-gray-900 mb-4 flex items-center gap-2">
-                        <User className="h-4 w-4 text-primary-600" /> {translations[lang].general_observations}
+                    <div className="bg-primary-900/40 backdrop-blur-md rounded-[2rem] p-6 shadow-lg border border-white/10">
+                      <h4 className="text-[10px] font-black text-white mb-4 flex items-center gap-2 uppercase tracking-widest">
+                        <User className="h-4 w-4 text-accent-500" /> {translations[lang].general_observations}
                       </h4>
-                      <div className="w-full bg-slate-50/50 rounded-2xl p-4 text-sm text-gray-700 min-h-[100px] leading-relaxed">
+                      <div className="w-full bg-primary-950/50 rounded-2xl p-4 text-sm font-medium text-primary-100 border border-white/5 min-h-[100px] leading-relaxed">
                         {parseMedicalNotes(selectedClient.notes).summary || (
-                          <span className="text-gray-400 italic">{translations[lang].no_remarks_yet}</span>
+                          <span className="text-primary-400 italic">{translations[lang].no_remarks_yet}</span>
                         )}
                       </div>
                     </div>
 
                     {/* Quick Stats Card */}
-                    <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100">
-                      <h4 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-4">{translations[lang].visit_summary}</h4>
+                    <div className="bg-primary-900/40 backdrop-blur-md rounded-[2rem] p-6 shadow-lg border border-white/10">
+                      <h4 className="text-[10px] font-black text-primary-300 uppercase tracking-widest mb-4">{translations[lang].visit_summary}</h4>
                       <div className="grid grid-cols-1 gap-3">
-                        <div className="bg-emerald-50 rounded-2xl p-4 border border-emerald-100 flex items-center justify-between">
-                           <p className="text-[10px] uppercase tracking-widest text-emerald-600 font-bold">{t.successful_appointments}</p>
-                           <p className="text-xl font-black text-emerald-700 leading-none">{clientApps.filter(a => a.status === 'completed' || a.status === 'confirmed').length}</p>
+                        <div className="bg-emerald-500/10 rounded-2xl p-4 border border-emerald-500/20 flex items-center justify-between">
+                           <p className="text-[10px] uppercase tracking-widest text-emerald-400 font-bold">{t.successful_appointments}</p>
+                           <p className="text-xl font-black text-emerald-300 leading-none">{clientApps.filter(a => a.status === 'completed' || a.status === 'confirmed').length}</p>
                         </div>
-                        <div className="bg-red-50 rounded-2xl p-4 border border-red-100 flex items-center justify-between">
-                           <p className="text-[10px] uppercase tracking-widest text-red-600 font-bold">{t.cancellations}</p>
-                           <p className="text-xl font-black text-red-700 leading-none">{clientApps.filter(a => a.status === 'cancelled').length} </p>
+                        <div className="bg-red-500/10 rounded-2xl p-4 border border-red-500/20 flex items-center justify-between">
+                           <p className="text-[10px] uppercase tracking-widest text-red-400 font-bold">{t.cancellations}</p>
+                           <p className="text-xl font-black text-red-300 leading-none">{clientApps.filter(a => a.status === 'cancelled').length} </p>
                         </div>
                       </div>
                     </div>
@@ -777,35 +778,35 @@ export default function ClientsPage() {
 
                   {/* Right Column: Visit History */}
                   <div className="lg:col-span-12 xl:col-span-8 space-y-6">
-                    <div className="bg-white rounded-3xl p-8 shadow-sm border border-gray-100 min-h-[60vh]">
-                      <h4 className="text-lg font-bold text-gray-900 mb-8 flex items-center gap-2">
-                        <Calendar className="h-5 w-5 text-primary-600" /> {translations[lang].clinical_history || 'Historial de Consultas'} ({clientApps.length})
+                    <div className="bg-primary-900/40 backdrop-blur-md rounded-[2rem] p-8 shadow-lg border border-white/10 min-h-[60vh]">
+                      <h4 className="text-lg font-black text-white mb-8 flex items-center gap-2 tracking-tight">
+                        <Calendar className="h-5 w-5 text-accent-500" /> {translations[lang].clinical_history || 'Historial de Consultas'} ({clientApps.length})
                       </h4>
                       
                       {clientApps.length === 0 ? (
-                        <div className="text-center py-20 bg-gray-50 rounded-3xl border border-dashed border-gray-200">
-                          <p className="text-sm text-gray-400 font-medium">{t.no_activity_today}</p>
+                        <div className="text-center py-20 bg-primary-900/20 rounded-[2rem] border border-dashed border-white/10">
+                          <p className="text-sm text-primary-300 font-bold uppercase tracking-widest">{t.no_activity_today}</p>
                         </div>
                       ) : (
-                        <div className="space-y-6 relative before:absolute before:left-3 before:top-2 before:bottom-0 before:w-0.5 before:bg-gray-100">
+                        <div className="space-y-6 relative before:absolute before:left-3 before:top-2 before:bottom-0 before:w-0.5 before:bg-white/10">
                            {clientApps.map(app => {
                              const st = statusLabel(app.status)
                              return (
                                <div key={app.id} className="relative pl-10 animate-in fade-in slide-in-from-left-4 duration-500">
-                                 <div className="absolute left-0 top-1.5 h-6 w-6 rounded-full bg-white border-4 border-primary-100 shadow-sm z-10" />
-                                 <div className="bg-gray-50/50 rounded-2xl p-5 border border-gray-100 hover:border-primary-100 hover:bg-white transition-all group">
+                                 <div className="absolute left-0 top-1.5 h-6 w-6 rounded-full bg-[#0B1120] border-4 border-accent-500 shadow-[0_0_10px_rgba(245,158,11,0.3)] z-10" />
+                                 <div className="bg-primary-950/50 rounded-2xl p-5 border border-white/5 hover:border-accent-500/50 hover:bg-white/5 transition-all group">
                                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
                                      <div>
-                                       <p className="text-md font-bold text-gray-900">{app.services?.name || 'N/A'}</p>
-                                       <p className="text-xs text-gray-500 font-medium mt-1">
+                                       <p className="text-md font-black text-white">{app.services?.name || 'N/A'}</p>
+                                       <p className="text-[10px] font-bold text-primary-300 mt-1 uppercase tracking-widest">
                                          {format(parseISO(app.start_at), "d MMMM yyyy · HH:mm'h'", { locale: dateLocale })}
                                        </p>
                                      </div>
                                      <div className="flex items-center gap-3">
                                        <span className={`inline-flex rounded-lg px-3 py-1 text-[10px] font-black uppercase tracking-widest border ${st.cls}`}>{st.text}</span>
                                        <div className="text-right hidden sm:block">
-                                         <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none">{translations[lang].role_professional}</p>
-                                         <p className="text-xs font-bold text-gray-700 mt-1">{app.professionals?.full_name}</p>
+                                         <p className="text-[10px] font-black text-primary-400 uppercase tracking-widest leading-none">{translations[lang].role_professional}</p>
+                                         <p className="text-xs font-bold text-primary-100 mt-1">{app.professionals?.full_name}</p>
                                        </div>
                                      </div>
                                    </div>
@@ -813,24 +814,24 @@ export default function ClientsPage() {
                                      {/* Post List */}
                                      <div className="space-y-3">
                                        {parseAppEntries(app.notes).map((entry) => (
-                                         <div key={entry.id} className="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm group/post">
+                                         <div key={entry.id} className="bg-primary-950/80 border border-white/5 rounded-2xl p-4 shadow-sm group/post">
                                            <div className="flex items-center justify-between mb-2">
                                              <div className="flex items-center gap-2">
-                                               <span className="text-[10px] font-bold text-amber-600 uppercase tracking-widest">{translations[lang].medical_record}</span>
-                                               <span className="text-[10px] text-gray-400 font-bold">
+                                               <span className="text-[10px] font-black text-accent-500 uppercase tracking-widest">{translations[lang].medical_record}</span>
+                                               <span className="text-[10px] text-primary-400 font-bold uppercase tracking-widest">
                                                  {format(parseISO(entry.date), "HH:mm'h'", { locale: dateLocale })}
                                                </span>
                                              </div>
                                              <div className="flex items-center gap-1 opacity-0 group-hover/post:opacity-100 transition-opacity">
                                                <button 
                                                  onClick={() => { setEditingPostId(entry.id); setPostNoteEdit(entry.content); }}
-                                                 className="p-1 hover:bg-gray-100 rounded-md text-gray-400 hover:text-primary-600"
+                                                 className="p-1 hover:bg-white/10 rounded-md text-primary-400 hover:text-white transition-colors"
                                                >
                                                  <Edit2 className="h-3 w-3" />
                                                </button>
                                                <button 
                                                  onClick={() => handleDeleteAppPost(app.id, entry.id)}
-                                                 className="p-1 hover:bg-red-50 rounded-md text-gray-300 hover:text-red-500"
+                                                 className="p-1 hover:bg-red-500/20 rounded-md text-primary-400 hover:text-red-400 transition-colors"
                                                >
                                                  <X className="h-3 w-3" />
                                                </button>
@@ -843,29 +844,29 @@ export default function ClientsPage() {
                                                  autoFocus
                                                  value={postNoteEdit} 
                                                  onChange={e => setPostNoteEdit(e.target.value)}
-                                                 className="w-full text-sm p-3 bg-slate-50 border border-primary-200 rounded-xl outline-none text-gray-900 resize-none"
+                                                 className="w-full text-sm p-3 bg-primary-900/50 border border-white/10 rounded-xl outline-none text-white resize-none"
                                                  rows={2}
                                                />
                                                <div className="flex gap-2">
-                                                 <button onClick={() => handleSavePostEdit(app.id, entry.id)} className="bg-primary-600 text-white px-3 py-1 rounded-lg text-[10px] font-bold">{translations[lang].save}</button>
-                                                 <button onClick={() => setEditingPostId(null)} className="bg-gray-200 text-gray-700 px-3 py-1 rounded-lg text-[10px] font-bold">{translations[lang].cancel}</button>
+                                                 <button onClick={() => handleSavePostEdit(app.id, entry.id)} className="bg-accent-500 hover:bg-accent-400 text-primary-950 px-3 py-1 rounded-lg text-[10px] uppercase tracking-widest font-black transition-all shadow-[0_0_10px_rgba(245,158,11,0.2)]">{translations[lang].save}</button>
+                                                 <button onClick={() => setEditingPostId(null)} className="text-primary-300 hover:text-white px-3 py-1 rounded-lg text-[10px] uppercase tracking-widest font-black transition-colors">{translations[lang].cancel}</button>
                                                </div>
                                              </div>
                                            ) : (
-                                             <p className="text-sm text-gray-700 leading-relaxed">{entry.content}</p>
+                                             <p className="text-sm text-primary-100 font-medium leading-relaxed">{entry.content}</p>
                                            )}
                                          </div>
                                        ))}
                                      </div>
 
                                      {/* Add New Post Box */}
-                                     <div className="bg-white/40 rounded-2xl p-4 border border-dashed border-gray-200">
+                                     <div className="bg-white/5 rounded-2xl p-4 border border-dashed border-white/10">
                                        <textarea
                                          value={editingAppId === app.id ? appNoteEdit : ''}
                                          onFocus={() => setEditingAppId(app.id)}
                                          onChange={e => setAppNoteEdit(e.target.value)}
                                          placeholder={translations[lang].add_comment_placeholder}
-                                         className="w-full bg-transparent text-sm border-none focus:ring-0 resize-none placeholder-gray-400 min-h-[40px] leading-relaxed"
+                                         className="w-full bg-transparent text-sm font-medium text-white border-none focus:ring-0 resize-none placeholder-primary-400 min-h-[40px] leading-relaxed outline-none"
                                          rows={editingAppId === app.id ? 3 : 1}
                                        />
                                        {editingAppId === app.id && (
@@ -873,11 +874,11 @@ export default function ClientsPage() {
                                            <button
                                              onClick={() => handleAddAppPost(app.id)}
                                              disabled={isSavingAppNote || !appNoteEdit.trim()}
-                                             className="bg-primary-600 hover:bg-primary-700 text-white px-4 py-1.5 rounded-xl text-xs font-bold transition-all disabled:opacity-50"
+                                             className="bg-accent-500 hover:bg-accent-400 text-primary-950 px-4 py-1.5 rounded-xl text-[10px] uppercase tracking-widest font-black transition-all disabled:opacity-50 shadow-[0_0_10px_rgba(245,158,11,0.2)]"
                                            >
                                              {isSavingAppNote ? '...' : translations[lang].save_note}
                                            </button>
-                                           <button onClick={() => setEditingAppId(null)} className="text-gray-400 text-xs font-bold px-3">{translations[lang].cancel}</button>
+                                           <button onClick={() => setEditingAppId(null)} className="text-primary-300 hover:text-white transition-colors text-[10px] uppercase tracking-widest font-black px-3">{translations[lang].cancel}</button>
                                          </div>
                                        )}
                                      </div>

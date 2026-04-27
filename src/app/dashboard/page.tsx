@@ -209,10 +209,10 @@ export default function DashboardPage() {
                   {t.system_active}
                 </span>
             </div>
-            <h1 className="text-3xl md:text-4xl font-black text-slate-900 dark:text-white tracking-[-0.04em] leading-tight flex items-wrap items-center gap-x-4">
+            <h1 className="text-3xl md:text-4xl font-black text-white tracking-[-0.04em] leading-tight flex items-wrap items-center gap-x-4">
                {t.welcome} <span className="gradient-text">{tenantName}</span> 
-               <div className="inline-flex h-12 w-12 bg-amber-500 rounded-xl items-center justify-center shadow-2xl shadow-amber-500/20 animate-float-subtle">
-                 <Zap className="h-6 w-6 text-slate-950 fill-slate-950" />
+               <div className="inline-flex h-12 w-12 bg-accent-500 rounded-xl items-center justify-center shadow-2xl shadow-accent-500/20 animate-float-subtle">
+                 <Zap className="h-6 w-6 text-primary-950 fill-primary-950" />
                </div>
             </h1>
             <p className="text-sm font-bold text-slate-400 mt-4 uppercase tracking-[0.3em] pl-1">
@@ -225,7 +225,7 @@ export default function DashboardPage() {
                 {t.export_report}
             </button>
             <Link href="/dashboard/appointments?new=true" 
-              className="h-14 px-8 rounded-2xl bg-slate-900 dark:bg-amber-500 text-[10px] font-black uppercase tracking-[0.2em] text-white dark:text-slate-900 shadow-2xl shadow-amber-500/10 hover:shadow-amber-500/30 transition-all hover:scale-105 active:scale-95 flex items-center gap-3 group">
+              className="h-14 px-8 rounded-2xl bg-accent-500 text-[10px] font-black uppercase tracking-[0.2em] text-primary-950 shadow-2xl shadow-accent-500/10 hover:shadow-accent-500/30 transition-all hover:scale-105 active:scale-95 flex items-center gap-3 group">
                 <Plus className="h-5 w-5 group-hover:rotate-90 transition-transform duration-500" /> {t.new_appointment}
             </Link>
         </div>
@@ -240,15 +240,15 @@ export default function DashboardPage() {
       </div>
 
       {/* Booking Portal Link Section */}
-      <div className="bg-gradient-to-br from-slate-900 to-indigo-950 rounded-[2.5rem] p-8 md:p-10 border border-white/10 shadow-2xl relative overflow-hidden group">
+      <div className="bg-gradient-to-br from-primary-900 to-primary-950 rounded-[2.5rem] p-8 md:p-10 border border-white/10 shadow-2xl relative overflow-hidden group">
           <div className="absolute top-0 right-0 p-12 opacity-10 group-hover:opacity-20 transition-opacity">
-              <Zap className="h-40 w-40 text-amber-500 rotate-12" />
+              <Zap className="h-40 w-40 text-accent-500 rotate-12" />
           </div>
           
           <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8">
               <div className="max-w-xl">
-                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-500 text-[10px] font-black uppercase tracking-widest mb-6">
-                      <Star className="h-3 w-3 fill-amber-500" /> {t.booking_portal}
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent-500/10 border border-accent-500/20 text-accent-500 text-[10px] font-black uppercase tracking-widest mb-6">
+                      <Star className="h-3 w-3 fill-accent-500" /> {t.booking_portal}
                   </div>
                   <h2 className="text-2xl md:text-3xl font-black text-white uppercase tracking-tight mb-4">
                       {t.booking_portal_desc}
@@ -360,14 +360,14 @@ export default function DashboardPage() {
 
             <div className="flex items-center justify-between px-2">
                 <h3 className="text-xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-3">
-                    <Target className="h-6 w-6 text-amber-500" /> {t.upcoming_appointments}
+                    <Target className="h-6 w-6 text-accent-500" /> {t.upcoming_appointments}
                 </h3>
-                <a href="/dashboard/appointments" className="text-[10px] font-black text-amber-600 dark:text-amber-400 uppercase tracking-widest flex items-center gap-1.5 group hover:tracking-widest transition-all">
+                <a href="/dashboard/appointments" className="text-[10px] font-black text-accent-600 dark:text-accent-400 uppercase tracking-widest flex items-center gap-1.5 group hover:tracking-widest transition-all">
                     {t.see_full_calendar} <ChevronRight className="h-3 w-3 group-hover:translate-x-1 transition-all" />
                 </a>
             </div>
 
-            <div className="bg-white/40 backdrop-blur-xl rounded-[2.5rem] border border-white/60 shadow-[0_32px_64px_-16px_rgba(31,38,135,0.07)] overflow-hidden noise">
+            <div className="bg-primary-900/40 backdrop-blur-xl rounded-[2.5rem] border border-white/10 shadow-2xl overflow-hidden noise">
                 {appointments.length === 0 ? (
                    <div className="p-20 text-center flex flex-col items-center">
                        <div className="h-20 w-20 rounded-[2rem] bg-gray-50 flex items-center justify-center mb-6 border border-gray-100/50">
@@ -383,40 +383,40 @@ export default function DashboardPage() {
                 ) : (
                   <div className="stagger-children p-2 flex flex-col gap-2">
                     {appointments.map((app, i) => (
-                    <div key={app.id} className="group glass-card btn-magnetic flex items-center p-6 rounded-[2rem] bg-white border border-transparent hover:border-indigo-100/50">
+                    <div key={app.id} className="group glass-card btn-magnetic flex items-center p-6 rounded-[2.5rem] bg-primary-800/20 border border-white/5 hover:bg-primary-800/40 transition-all duration-500">
                         <div className="relative mr-8">
-                            <div className="h-16 w-16 rounded-[1.5rem] bg-slate-50/50 border border-slate-100 flex flex-col items-center justify-center shadow-inner group-hover:bg-primary-50 transition-all duration-500">
-                                <span className="text-[10px] font-black text-slate-400 uppercase leading-none mb-1">{format(parseISO(app.start_at), 'MMM', { locale: dateLocale })}</span>
-                                <span className="text-xl font-black text-slate-800 leading-none group-hover:text-primary-600 transition-colors">{format(parseISO(app.start_at), 'dd')}</span>
+                            <div className="h-16 w-16 rounded-2xl bg-primary-950/50 border border-white/5 flex flex-col items-center justify-center shadow-inner group-hover:bg-accent-500 transition-all duration-500">
+                                <span className="text-[10px] font-black text-primary-400 uppercase leading-none mb-1 group-hover:text-primary-950">{format(parseISO(app.start_at), 'MMM', { locale: dateLocale })}</span>
+                                <span className="text-xl font-black text-white leading-none group-hover:text-primary-950 transition-colors">{format(parseISO(app.start_at), 'dd')}</span>
                             </div>
-                            <div className="absolute -bottom-2 -right-2 h-7 w-7 rounded-lg bg-indigo-600 text-white flex items-center justify-center text-[10px] font-black ring-4 ring-white shadow-lg">
+                            <div className="absolute -bottom-2 -right-2 h-7 w-7 rounded-lg bg-accent-500 text-primary-950 flex items-center justify-center text-[10px] font-black ring-4 ring-primary-900 shadow-lg">
                                 {format(parseISO(app.start_at), 'HH')}
                             </div>
                         </div>
 
                         <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-3 mb-1">
-                                <p className="truncate text-lg font-black text-slate-800 leading-tight">
+                                <p className="truncate text-lg font-black text-white leading-tight">
                                     {app.clients?.first_name} {app.clients?.last_name}
                                 </p>
-                                <span className="h-4 px-2 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700 text-[8px] font-black uppercase tracking-[0.2em] flex items-center">
+                                <span className="h-4 px-2 rounded-full bg-primary-900/50 text-primary-300 border border-white/5 text-[8px] font-black uppercase tracking-[0.2em] flex items-center">
                                     {app.services?.name}
                                 </span>
                             </div>
-                            <p className="truncate text-sm font-bold text-slate-400 group-hover:text-amber-500 transition-colors">
+                            <p className="truncate text-sm font-bold text-slate-400 group-hover:text-accent-500 transition-colors">
                                 con {app.professionals?.full_name} · {app.clients?.phone}
                             </p>
                         </div>
 
                         <div className="ml-4 flex items-center gap-4">
                             <div className={`px-4 py-2 rounded-full text-[9px] font-black tracking-widest uppercase shadow-sm transition-all
-                                ${app.status === 'confirmed' ? 'bg-emerald-50 text-emerald-600 border border-emerald-100/50' : 
-                                  app.status === 'cancelled' ? 'bg-red-50 text-red-600 border border-red-100/50' : 'bg-amber-50 text-amber-600 border border-amber-100/50'}`}>
+                                ${app.status === 'confirmed' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 
+                                  app.status === 'cancelled' ? 'bg-red-500/10 text-red-400 border border-red-500/20' : 'bg-accent-500/10 text-accent-500 border border-accent-500/20'}`}>
                                 {app.status === 'confirmed' ? t.confirmed : 
                                  app.status === 'cancelled' ? t.canceled : 
                                  t.awaiting}
                             </div>
-                            <button className="h-10 w-10 bg-white dark:bg-slate-800 rounded-2xl flex items-center justify-center shadow-sm border border-slate-100 dark:border-slate-700 hover:bg-amber-500 hover:text-slate-900 hover:border-amber-500 transition-all duration-300">
+                            <button className="h-10 w-10 bg-primary-900 rounded-2xl flex items-center justify-center shadow-sm border border-white/5 hover:bg-accent-500 hover:text-primary-950 transition-all duration-300">
                                 <ArrowUpRight className="h-4 w-4" />
                             </button>
                         </div>
@@ -429,12 +429,12 @@ export default function DashboardPage() {
 
         {/* Quick Context Panel */}
         <div className="lg:col-span-4 space-y-8">
-            <div className="relative overflow-hidden bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 p-8 rounded-[2.5rem] shadow-xl h-full min-h-[460px] max-h-[500px]">
+            <div className="relative overflow-hidden bg-primary-900/40 backdrop-blur-xl border border-white/10 p-8 rounded-[2.5rem] shadow-xl h-full min-h-[460px] max-h-[500px] noise">
                 <div className="relative z-10 flex flex-col h-full items-center justify-center text-center">
-                    <div className="h-24 w-24 rounded-full bg-indigo-50 dark:bg-indigo-500/10 flex items-center justify-center mb-6">
-                       <Target className="h-10 w-10 text-indigo-500" />
+                    <div className="h-24 w-24 rounded-full bg-primary-50 dark:bg-primary-500/10 flex items-center justify-center mb-6">
+                       <Target className="h-10 w-10 text-primary-500" />
                     </div>
-                    <h4 className="text-2xl font-black text-slate-800 dark:text-white tracking-tighter mb-2">
+                    <h4 className="text-2xl font-black text-white tracking-tighter mb-2">
                       {t.activity_progress}
                     </h4>
                     <p className="text-slate-500 text-sm font-semibold leading-relaxed mb-8">
@@ -444,11 +444,11 @@ export default function DashboardPage() {
                     {/* Ring Visualizer */}
                     <div className="relative h-32 w-32 flex-shrink-0">
                         <svg className="h-full w-full -rotate-90 pointer-events-none" viewBox="0 0 36 36">
-                            <circle stroke="rgba(99,102,241,0.1)" strokeWidth="4" fill="transparent" r="16" cx="18" cy="18" />
-                            <circle className="text-indigo-500 animate-[count-up_1.5s_ease-out_forwards]" stroke="currentColor" strokeWidth="4" fill="transparent" strokeDasharray="100, 100" strokeLinecap="round" r="16" cx="18" cy="18" style={{ strokeDashoffset: 100 - (stats.total > 0 ? (stats.completed / (stats.total || 1)) * 100 : 0) }} />
+                            <circle stroke="rgba(30,58,138,0.1)" strokeWidth="4" fill="transparent" r="16" cx="18" cy="18" />
+                            <circle className="text-primary-500 animate-[count-up_1.5s_ease-out_forwards]" stroke="currentColor" strokeWidth="4" fill="transparent" strokeDasharray="100, 100" strokeLinecap="round" r="16" cx="18" cy="18" style={{ strokeDashoffset: 100 - (stats.total > 0 ? (stats.completed / (stats.total || 1)) * 100 : 0) }} />
                         </svg>
                         <div className="absolute inset-0 flex items-center justify-center">
-                            <span className="text-3xl font-black text-slate-800 dark:text-white">{stats.total > 0 ? Math.round((stats.completed / stats.total) * 100) : 0}%</span>
+                            <span className="text-3xl font-black text-white">{stats.total > 0 ? Math.round((stats.completed / stats.total) * 100) : 0}%</span>
                         </div>
                     </div>
                 </div>
