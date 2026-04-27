@@ -10,42 +10,55 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
 
 :root {
-  /* Color tokens (The Midnight Amber Sanctuary - Blue & Amber) */
-  --primary-sidebar: #1e3a8a; /* Sapphire Blue - Deep & Trustworthy */
-  --active-accent: #f59e0b;   /* Amber - Warm & Attentive */
-  --background: #f8fafc;      /* Slate 50 - Clean & Clinical */
-  --foreground: #0f172a;
-  --panel-bg: #ffffff;
-  
-  --primary-hsl: 226 64% 33%;
-  --accent-hsl: 38 92% 50%;
+  /* =========================================================
+     THE CLINICAL CURATOR (Midnight Amber)
+     Atmospheric Authority - Structural Tonal Layering
+     ========================================================= */
 
-  /* Glass tokens */
-  --glass-bg: rgba(255, 255, 255, 0.7);
-  --glass-border: rgba(255, 255, 255, 0.8);
-  --glass-shadow: 0 8px 32px rgba(30, 58, 138, 0.05);
-  --glass-blur: blur(12px);
+  /* Surface Hierarchy (The "No-Line" Foundation) */
+  --background: #f7f9fb;
+  --surface: #f7f9fb;
+  --surface-container-low: #f2f4f6;
+  --surface-container-high: #e6e8ea;
+  --surface-container-highest: #e0e3e5;
+  --surface-container-lowest: #ffffff;
+  
+  /* Brand Accents */
+  --primary: #00236f;
+  --primary-container: #1e3a8a;
+  --on-primary: #ffffff;
+  
+  --secondary: #855300;
+  --secondary-container: #fea619;
+  --on-secondary-container: #684000;
+  
+  /* Typography & Structure */
+  --on-surface: #191c1e;
+  --foreground: #191c1e;
+  --outline-variant: #c5c5d3; /* For Ghost Borders */
+
+  /* Glass tokens (Atmospheric Depth) */
+  --glass-bg: rgba(224, 227, 229, 0.7); /* surface-container-highest with opacity */
+  --glass-border: rgba(255, 255, 255, 0.4);
+  --glass-shadow: 0 20px 40px rgba(25, 28, 30, 0.06); /* Ambient shadow */
+  --glass-blur: blur(24px);
 
   /* Radius tokens */
-  --radius-3xl: 2rem; /* 32px */
+  --radius-lg: 16px;
+  --radius-3xl: 2rem;
 
   /* Animation */
   --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
-  --ease-in-out-circ: cubic-bezier(0.85, 0, 0.15, 1);
 
   /* Spatial Shadows */
-  --shadow-weightless: 0 32px 64px -16px rgba(30, 58, 138, 0.08);
-  --shadow-spatial: 0 50px 100px -20px rgba(30, 58, 138, 0.12), 0 30px 60px -30px rgba(0, 0, 0, 0.15);
+  --shadow-ambient: 0 20px 40px rgba(25, 28, 30, 0.06);
+  --shadow-spatial: 0 32px 64px rgba(25, 28, 30, 0.08);
 }
 
 .dark {
-  --background: #020617; /* Slate 950 */
-  --foreground: #f8fafc;
-  --panel-bg: #0f172a;    /* Slate 900 */
-  --glass-bg: rgba(15, 23, 42, 0.8);
-  --glass-border: rgba(255, 255, 255, 0.05);
-  --glass-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+  /* Reverting to default light mode logic as per design system requirements */
+  /* This system explicitly rejects dark mode in favor of "Clinical Light" */
 }
 
 /* === BASE === */

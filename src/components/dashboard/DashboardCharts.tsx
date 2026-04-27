@@ -48,14 +48,14 @@ export function DashboardCharts({ chartData, statusData, revenue, lang = 'es' }:
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
       {/* Activity Chart */}
-      <div className="lg:col-span-8 bg-white/40 dark:bg-slate-900/40 backdrop-blur-xl rounded-[2.5rem] border border-white/60 dark:border-white/10 p-8 shadow-[0_32px_64px_-16px_rgba(31,38,135,0.07)] noise">
+      <div className="lg:col-span-8 bg-surface-container-lowest rounded-[2.5rem] p-8 shadow-sm hover:shadow-ambient transition-all duration-700">
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h3 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">{t.weekly_activity}</h3>
-            <p className="text-sm font-bold text-slate-400 uppercase tracking-widest mt-1">{t.appointments_volume}</p>
+            <h3 className="text-xl font-black text-on-surface tracking-tight">{t.weekly_activity}</h3>
+            <p className="text-sm font-bold text-on-surface/50 uppercase tracking-widest mt-1">{t.appointments_volume}</p>
           </div>
-          <div className="h-12 w-12 rounded-2xl bg-primary-50 dark:bg-primary-500/10 flex items-center justify-center">
-            <div className="h-2 w-2 rounded-full bg-primary-500 animate-pulse" />
+          <div className="h-12 w-12 rounded-2xl bg-surface flex items-center justify-center shadow-ambient">
+            <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
           </div>
         </div>
         
@@ -99,9 +99,9 @@ export function DashboardCharts({ chartData, statusData, revenue, lang = 'es' }:
 
       {/* Distribution & Revenue */}
       <div className="lg:col-span-4 space-y-8">
-        <div className="bg-white/40 dark:bg-slate-900/40 backdrop-blur-xl rounded-[2.5rem] border border-white/60 dark:border-white/10 p-8 shadow-[0_32px_64px_-16px_rgba(31,38,135,0.07)] h-full noise flex flex-col justify-between">
+        <div className="bg-surface-container-lowest rounded-[2.5rem] p-8 shadow-sm hover:shadow-ambient transition-all duration-700 h-full flex flex-col justify-between">
           <div>
-            <h3 className="text-xl font-black text-slate-900 dark:text-white tracking-tight mb-6">{t.distribution}</h3>
+            <h3 className="text-xl font-black text-on-surface tracking-tight mb-6">{t.distribution}</h3>
             <div className="h-[200px] w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
@@ -131,23 +131,23 @@ export function DashboardCharts({ chartData, statusData, revenue, lang = 'es' }:
                 <div key={item.name} className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <div className="h-2 w-2 rounded-full" style={{ backgroundColor: COLORS[index % COLORS.length] }} />
-                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">
+                    <span className="text-[10px] font-black uppercase tracking-widest text-on-surface/50">
                       {item.name === 'completed' ? t.confirmed : (item.name === 'cancelled' ? t.canceled : (item.name === 'pending' ? t.pending : item.name))}
                     </span>
                   </div>
-                  <span className="text-sm font-black text-slate-800 dark:text-white">{item.value}</span>
+                  <span className="text-sm font-black text-on-surface">{item.value}</span>
                 </div>
               ))}
             </div>
           </div>
 
-          <div className="mt-8 pt-8 border-t border-slate-200/50 dark:border-white/5">
-            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1 text-center">{t.estimated_revenue}</p>
-            <h4 className="text-4xl font-black text-slate-900 dark:text-white text-center tracking-tighter">
+          <div className="mt-8 pt-8 border-t border-surface-container-highest">
+            <p className="text-[10px] font-black uppercase tracking-widest text-on-surface/50 mb-1 text-center">{t.estimated_revenue}</p>
+            <h4 className="text-4xl font-black text-on-surface text-center tracking-tighter">
               ${revenue.toLocaleString()}
             </h4>
-            <div className="mt-4 px-4 py-2 rounded-2xl bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-100 dark:border-emerald-500/20 text-center">
-              <span className="text-[10px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-widest">{t.appointments_completed}</span>
+            <div className="mt-4 px-4 py-2 rounded-2xl bg-surface-container-low text-center shadow-sm">
+              <span className="text-[10px] font-black text-primary uppercase tracking-widest">{t.appointments_completed}</span>
             </div>
           </div>
         </div>

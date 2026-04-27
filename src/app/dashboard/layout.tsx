@@ -42,28 +42,28 @@ function DashboardHeader({ lang = 'es', onMenuClick }: { lang?: Language; onMenu
   }
 
   return (
-    <header className="flex h-16 md:h-20 items-center justify-between px-4 md:px-10 border-b border-slate-200 dark:border-white/5 flex-shrink-0">
+    <header className="flex h-16 md:h-20 items-center justify-between px-4 md:px-10 flex-shrink-0 relative z-20 bg-surface/80 backdrop-blur-xl">
       {/* Menu / Tenant Identity */}
       <div className="flex items-center gap-3">
         {/* Mobile Menu Button */}
         <button 
           onClick={onMenuClick}
-          className="md:hidden p-2 -ml-1 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400"
+          className="md:hidden p-2 -ml-1 rounded-xl bg-surface-container-high text-on-surface hover:bg-surface-container-highest transition-colors"
         >
           <Menu className="h-5 w-5" />
         </button>
 
         <div className="flex items-center gap-2 md:gap-3">
-          <div className="h-8 w-8 md:h-10 md:w-10 rounded-xl md:rounded-2xl bg-accent-500 flex items-center justify-center shadow-lg shadow-accent-500/20 flex-shrink-0">
-            <span className="text-slate-900 font-black text-xs md:text-sm">
+          <div className="h-8 w-8 md:h-10 md:w-10 rounded-xl md:rounded-2xl bg-secondary-container flex items-center justify-center shadow-lg shadow-secondary-container/20 flex-shrink-0">
+            <span className="text-on-secondary-container font-black text-xs md:text-sm">
               {tenantName ? tenantName.slice(0, 2).toUpperCase() : '··'}
             </span>
           </div>
           <div className="min-w-0">
-            <p className="text-sm md:text-base font-black text-slate-900 dark:text-white tracking-tight leading-none truncate max-w-[120px] md:max-w-none">
+            <p className="text-sm md:text-base font-black text-on-surface tracking-tight leading-none truncate max-w-[120px] md:max-w-none">
               {tenantName || '—'}
             </p>
-            <p className="hidden xs:block text-[10px] md:text-xs text-slate-400 dark:text-slate-500 font-medium leading-tight mt-0.5 truncate max-w-[140px] md:max-w-[180px]">
+            <p className="hidden xs:block text-[10px] md:text-xs text-on-surface/60 font-medium leading-tight mt-0.5 truncate max-w-[140px] md:max-w-[180px]">
               {tenantEmail}
             </p>
           </div>
@@ -75,7 +75,7 @@ function DashboardHeader({ lang = 'es', onMenuClick }: { lang?: Language; onMenu
         {/* Sign Out */}
         <button
           onClick={handleSignOut}
-          className="h-9 md:h-10 px-3 md:px-5 rounded-xl md:rounded-2xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 flex items-center gap-2 text-xs md:text-sm font-semibold text-slate-600 dark:text-slate-300 transition-all"
+          className="h-9 md:h-10 px-3 md:px-5 rounded-xl md:rounded-2xl bg-surface-container-highest hover:bg-surface-container-lowest flex items-center gap-2 text-xs md:text-sm font-semibold text-primary transition-all shadow-sm"
         >
           <LogOut className="h-3.5 w-3.5 md:h-4 w-4" />
           <span className="hidden sm:inline">{t.sign_out}</span>
@@ -158,7 +158,7 @@ export default function DashboardLayout({
   }
 
   return (
-    <div className="flex h-screen bg-primary-950 dark:bg-black overflow-hidden font-sans relative">
+    <div className="flex h-screen bg-surface-container-low overflow-hidden font-sans relative text-on-surface">
       
       {/* Mobile Sidebar Overlay */}
       <AnimatePresence>
@@ -217,15 +217,15 @@ export default function DashboardLayout({
       )}
 
       {/* Desktop Sidebar Section */}
-      <div className="hidden md:flex flex-shrink-0 p-4 md:p-6 pr-0">
+      <div className="hidden md:flex flex-shrink-0 p-4 md:p-6 pr-0 w-72">
         <Sidebar lang={tenantInfo?.lang} />
       </div>
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col p-2 md:p-6 bg-primary-950 dark:bg-black overflow-hidden w-full">
+      <div className="flex-1 flex flex-col p-2 md:p-6 overflow-hidden w-full relative z-10">
 
-        {/* The White/Blue Panel */}
-        <div className="flex-1 flex flex-col bg-slate-50 dark:bg-primary-950/80 rounded-[2rem] md:rounded-[3rem] shadow-2xl relative overflow-hidden border border-white/10">
+        {/* The Surface Panel */}
+        <div className="flex-1 flex flex-col bg-surface rounded-[2rem] md:rounded-[3rem] shadow-ambient relative overflow-hidden">
 
           {tenantInfo && (
             <TrialBanner 
@@ -241,12 +241,12 @@ export default function DashboardLayout({
           />
 
           {/* Page Content */}
-          <main className="flex-1 overflow-y-auto p-4 md:p-10 custom-scrollbar relative z-10" style={{ zoom: 0.9 }}>
+          <main className="flex-1 overflow-y-auto p-4 md:p-10 custom-scrollbar relative z-10">
             {children}
           </main>
 
-          {/* Decorative Subtle Glow in Panel */}
-          <div className="absolute top-0 right-0 w-64 h-64 bg-accent-500/5 blur-[100px] pointer-events-none" />
+          {/* Decorative Subtle Glow in Panel - Kept minimal for Atmospheric Depth */}
+          <div className="absolute top-0 right-0 w-96 h-96 bg-primary-container/5 blur-[120px] pointer-events-none" />
         </div>
       </div>
     </div>
