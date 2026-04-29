@@ -382,7 +382,12 @@ export const translations = {
     network_error: 'Network error',
     subscription_active_label: 'Subscription Active',
     plan_monthly_price: 'Monthly $70 (Unlimited Access)',
-    next_billing: 'Next billing'
+    next_billing: 'Next billing',
+    total_active: 'Active Patients',
+    since: 'Member Since',
+    first_name: 'First Name',
+    settings: 'Settings',
+    body: 'Body'
   },
   es: {
     // General
@@ -757,7 +762,12 @@ export const translations = {
     network_error: 'Error de red',
     subscription_active_label: 'Suscripción Activa',
     plan_monthly_price: 'Mensual $70 (Acceso Ilimitado)',
-    next_billing: 'Próximo cobro'
+    next_billing: 'Próximo cobro',
+    total_active: 'Pacientes Activos',
+    since: 'Miembro Desde',
+    first_name: 'Nombre',
+    settings: 'Ajustes',
+    body: 'Cuerpo'
   },
   it: {
     // General
@@ -1132,6 +1142,11 @@ export const translations = {
     network_error: 'Errore di rete',
     subscription_active_label: 'Abbonamento Attivo',
     plan_monthly_price: 'Mensile $70 (Accesso Illimitato)',
-    next_billing: 'Prossimo addebito'
+    next_billing: 'Prossimo addebito',
+    total_active: 'Pazienti Attivi',
+    since: 'Membro dal',
+    first_name: 'Nome',
+    settings: 'Impostazioni',
+    body: 'Corpo'
   }
 };

@@ -39,7 +39,7 @@ function DashboardHeader({ lang = 'es', onMenuClick }: { lang?: Language; onMenu
   }
 
   return (
-    <header className="flex h-16 items-center justify-between px-6 flex-shrink-0 bg-white border-b border-border-subtle">
+    <header className="flex h-20 items-center justify-between px-8 flex-shrink-0 bg-surface z-40 relative">
       {/* Left: Mobile menu + tenant name */}
       <div className="flex items-center gap-3">
         <button
@@ -141,7 +141,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   }
 
   return (
-    <div className="flex h-screen bg-background overflow-hidden text-on-surface">
+    <div className="flex h-screen bg-surface overflow-hidden text-on-surface">
 
       {/* Mobile sidebar overlay */}
       <AnimatePresence>

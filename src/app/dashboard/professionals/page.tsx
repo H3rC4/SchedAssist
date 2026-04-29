@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from 'react'
-import { Users, UserPlus, Loader2 } from 'lucide-react'
+import { Users, UserPlus, Loader2, Search, ArrowRight } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useProfessionals, AvailabilityRule } from '@/hooks/useProfessionals'
 import { AddProfessionalModal } from '@/components/professionals/AddProfessionalModal'
@@ -31,6 +31,7 @@ export default function ProfessionalsPage() {
   const [showAddForm, setShowAddForm] = useState(false)
   const [lang, setLang] = useState<Language>('es')
   const [editRules, setEditRules] = useState<AvailabilityRule[]>([])
+  const [searchQuery, setSearchQuery] = useState('')
 
   const supabase = createClient()
   const T_ui = translations[lang] || translations['en']
@@ -64,8 +65,8 @@ export default function ProfessionalsPage() {
 
   if (loading) {
     return (
-      <div className="flex h-[70vh] items-center justify-center">
-        <Loader2 className="h-10 w-10 animate-spin text-accent-500" />
+      <div className="flex h-[70vh] items-center justify-center bg-surface">
+        <Loader2 className="h-10 w-10 animate-spin text-primary-600" />
       </div>
     )
   }
@@ -80,36 +81,82 @@ export default function ProfessionalsPage() {
     return res
   }
 
+  const filteredProfessionals = professionals.filter(p => 
+    p.full_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (p.specialty || '').toLowerCase().includes(searchQuery.toLowerCase())
+  )
+
   return (
-    <div className="space-y-4 md:space-y-6">
-      {/* HEADER SECTION */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-xl md:text-2xl font-black text-white tracking-tight uppercase">{T_ui.staff_title}</h1>
-          <p className="text-xs md:text-sm text-primary-300 font-bold uppercase tracking-widest">{T_ui.staff_subtitle}</p>
-        </div>
-        <button 
-          onClick={() => setShowAddForm(true)}
-          className="inline-flex items-center justify-center rounded-xl md:rounded-[1rem] bg-accent-500 px-4 py-3 md:py-2.5 text-sm font-black text-primary-950 shadow-[0_0_15px_rgba(245,158,11,0.2)] hover:bg-accent-400 uppercase tracking-widest transition-all w-full sm:w-auto"
-        >
-          <UserPlus className="-ml-1 mr-2 h-5 w-5" /> {T_ui.add_professional_btn}
-        </button>
+    <div className="flex-1 bg-surface min-h-screen p-4 md:p-12 animate-in fade-in duration-700">
+      {/* BACKGROUND DECOR */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden opacity-[0.03]">
+        <div className="absolute -top-[10%] -right-[10%] w-[60%] h-[60%] rounded-full bg-primary-600 blur-[120px]" />
+        <div className="absolute top-[40%] -left-[10%] w-[40%] h-[40%] rounded-full bg-primary-600 blur-[100px]" />
       </div>
 
-      {/* GRID SECTION */}
-      <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-        {professionals.length === 0 ? (
-          <div className="col-span-full py-12 text-center text-primary-300 bg-primary-900/20 rounded-[2rem] border-2 border-dashed border-white/10">
-            <Users className="mx-auto h-12 w-12 mb-3 opacity-50" />
-            <p className="px-4 font-bold uppercase tracking-widest">{T_ui.no_professionals_yet}</p>
+      {/* EDITORIAL HEADER */}
+      <div className="relative z-10 mb-16 md:mb-24">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
+          <div className="max-w-4xl">
+            <h1 className="text-7xl md:text-9xl font-black tracking-[calc(-0.06em)] text-slate-900 leading-[0.85] uppercase">
+              {T_ui.staff_title}
+            </h1>
+            <p className="mt-6 text-sm md:text-base font-bold text-slate-400 uppercase tracking-[0.3em] pl-1">
+              {T_ui.staff_subtitle}
+            </p>
+          </div>
+          <button 
+            onClick={() => setShowAddForm(true)}
+            className="group relative h-16 md:h-20 px-8 md:px-12 bg-primary-600 text-white rounded-2xl overflow-hidden shadow-spatial transition-all active:scale-95"
+          >
+            <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+            <div className="relative flex items-center gap-3">
+              <span className="text-sm md:text-base font-black uppercase tracking-widest">{T_ui.add_professional_btn}</span>
+              <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
+            </div>
+          </button>
+        </div>
+
+        {/* SEARCH BAR */}
+        <div className="mt-12 max-w-2xl">
+          <div className="relative group">
+            <div className="absolute inset-y-0 left-6 flex items-center pointer-events-none text-slate-400 group-focus-within:text-primary-600 transition-colors">
+              <Search className="h-5 w-5" />
+            </div>
+            <input
+              type="text"
+              placeholder={lang === 'es' ? 'Buscar profesional...' : 'Search staff...'}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full h-16 pl-16 pr-8 bg-precision-surface-lowest border-none rounded-2xl shadow-spatial focus:ring-2 focus:ring-primary-600 transition-all text-slate-900 font-bold placeholder:text-slate-300 placeholder:uppercase placeholder:tracking-widest placeholder:text-[10px]"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* ASYMMETRIC GRID SECTION */}
+      <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+        {filteredProfessionals.length === 0 ? (
+          <div className="col-span-full py-24 text-center bg-precision-surface-lowest/50 backdrop-blur-sm rounded-[3rem] border-2 border-dashed border-slate-200 shadow-spatial">
+            <div className="h-20 w-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <Users className="h-10 w-10 text-slate-300" />
+            </div>
+            <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight">{T_ui.no_professionals_yet}</h3>
+            <p className="mt-2 text-sm font-bold text-slate-400 uppercase tracking-widest">
+              {lang === 'es' ? 'Comienza agregando a tu equipo' : 'Start by adding your team'}
+            </p>
           </div>
         ) : (
-          professionals.map(prof => (
-            <ProfessionalCard 
-              key={prof.id} 
-              professional={prof} 
-              onClick={() => selectProfessional(prof)} 
-            />
+          filteredProfessionals.map((prof, idx) => (
+            <div 
+              key={prof.id}
+              className={`${idx % 5 === 0 ? 'md:col-span-2 lg:col-span-2' : ''} h-full`}
+            >
+              <ProfessionalCard 
+                professional={prof} 
+                onClick={() => selectProfessional(prof)} 
+              />
+            </div>
           ))
         )}
       </div>

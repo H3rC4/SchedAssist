@@ -56,7 +56,7 @@ export async function middleware(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser()
 
   const SUPERADMIN_EMAILS = ['hernanenriquecaballero@gmail.com']
-  const userEmail = user?.email || ''
+  const userEmail = (user?.email || '').toLowerCase().trim()
   const isSuperAdmin = SUPERADMIN_EMAILS.includes(userEmail)
 
   // Protect /superadmin - only superadmins
@@ -67,6 +67,7 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(new URL('/login', request.url))
     }
     if (!isSuperAdmin) {
+      // LOG: Unauthorized access attempt to superadmin
       return NextResponse.redirect(new URL('/dashboard', request.url))
     }
 

@@ -1,9 +1,10 @@
 "use client"
 
 import { useState, useEffect, useCallback } from 'react'
-import { Clock, CheckCircle, Trash2, MessageSquare, Calendar, UserCheck, Loader2, Bell, RefreshCw, AlertCircle } from 'lucide-react'
+import { Clock, CheckCircle, Trash2, MessageSquare, Calendar, UserCheck, Loader2, Bell, RefreshCw, AlertCircle, ExternalLink, User, MoreHorizontal, ArrowRight, Layers } from 'lucide-react'
 import { Language, translations } from '@/lib/i18n'
 import { format, parseISO } from 'date-fns'
+import { motion, AnimatePresence } from 'framer-motion'
 
 interface WaitlistEntry {
   id: string
@@ -34,12 +35,12 @@ export default function WaitlistView({ tenantId, lang }: WaitlistViewProps) {
 
   const T = translations[lang] || translations['es']
 
-  const STATUS_CONFIG: Record<string, { label: string; color: string; icon: React.ElementType }> = {
-    pending:       { label: T.waitlist_status_pending,       color: 'bg-accent-500/10 text-accent-500',   icon: Clock },
-    notified:      { label: T.waitlist_status_notified,      color: 'bg-blue-500/10 text-blue-400',        icon: Bell },
-    offer_expired: { label: T.waitlist_status_offer_expired, color: 'bg-orange-500/10 text-orange-400', icon: AlertCircle },
-    resolved:      { label: T.waitlist_status_resolved,      color: 'bg-emerald-500/10 text-emerald-400', icon: CheckCircle },
-    cancelled:     { label: T.waitlist_status_cancelled,     color: 'bg-primary-800 text-primary-400',        icon: Trash2 },
+  const STATUS_CONFIG: Record<string, { label: string; bg: string; text: string; icon: React.ElementType }> = {
+    pending:       { label: T.waitlist_status_pending,       bg: 'bg-emerald-50',   text: 'text-emerald-600',   icon: Clock },
+    notified:      { label: T.waitlist_status_notified,      bg: 'bg-blue-50',      text: 'text-blue-600',      icon: Bell },
+    offer_expired: { label: T.waitlist_status_offer_expired, bg: 'bg-orange-50',    text: 'text-orange-600',    icon: AlertCircle },
+    resolved:      { label: T.waitlist_status_resolved,      bg: 'bg-slate-50',     text: 'text-slate-400',     icon: CheckCircle },
+    cancelled:     { label: T.waitlist_status_cancelled,     bg: 'bg-red-50',       text: 'text-red-400',       icon: Trash2 },
   }
 
   const fetchWaitlist = useCallback(async () => {
@@ -70,6 +71,7 @@ export default function WaitlistView({ tenantId, lang }: WaitlistViewProps) {
   }
 
   const deleteEntry = async (id: string) => {
+    if (!confirm(lang === 'es' ? '¿Eliminar de la lista?' : 'Delete from waitlist?')) return
     setUpdatingId(id)
     try {
       await fetch(`/api/waitlists?id=${id}&tenant_id=${tenantId}`, { method: 'DELETE' })
@@ -93,54 +95,80 @@ export default function WaitlistView({ tenantId, lang }: WaitlistViewProps) {
   const notifiedCount = entries.filter(e => e.status === 'notified').length
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="flex items-center gap-3 flex-wrap">
-          <h2 className="text-lg md:text-xl font-black uppercase tracking-tight text-white">
+    <div className="space-y-12 animate-in fade-in duration-1000">
+      {/* Header & Stats */}
+      <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8 pb-12 border-b border-slate-50">
+        <div>
+          <div className="flex items-center gap-3 mb-6">
+            <div className="h-1.5 w-8 bg-primary rounded-full" />
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em]">REGISTRO DE ESPERA</p>
+          </div>
+          <h2 className="text-5xl md:text-6xl font-black text-slate-900 tracking-tighter uppercase leading-none">
             {T.waitlist_title}
           </h2>
-          {pendingCount > 0 && (
-            <span className="inline-flex items-center gap-1 bg-accent-500/10 text-accent-500 text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-wider">
-              <Clock className="h-3 w-3" />{pendingCount} {T.waitlist_waiting}
-            </span>
-          )}
-          {notifiedCount > 0 && (
-            <span className="inline-flex items-center gap-1 bg-blue-500/10 text-blue-400 text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-wider">
-              <Bell className="h-3 w-3" />{notifiedCount} {T.waitlist_notified}
-            </span>
-          )}
         </div>
-        <div className="flex items-center gap-2">
-          <div className="flex items-center bg-primary-950/50 rounded-2xl p-1 gap-1 border border-white/5">
-            <button onClick={() => setFilter('active')} className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${filter === 'active' ? 'bg-accent-500 shadow-xl shadow-accent-500/20 text-primary-950' : 'text-primary-400 hover:text-white'}`}>
+
+        <div className="flex flex-wrap items-center gap-4">
+          <div className="flex items-center bg-slate-50 rounded-[2rem] p-1.5 border border-slate-100 shadow-inner">
+            <button 
+              onClick={() => setFilter('active')} 
+              className={`px-8 py-3 rounded-[1.5rem] text-[10px] font-black uppercase tracking-widest transition-all ${filter === 'active' ? 'bg-white shadow-spatial text-primary' : 'text-slate-400 hover:text-slate-600'}`}
+            >
               {T.waitlist_active}
             </button>
-            <button onClick={() => setFilter('all')} className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${filter === 'all' ? 'bg-accent-500 shadow-xl shadow-accent-500/20 text-primary-950' : 'text-primary-400 hover:text-white'}`}>
+            <button 
+              onClick={() => setFilter('all')} 
+              className={`px-8 py-3 rounded-[1.5rem] text-[10px] font-black uppercase tracking-widest transition-all ${filter === 'all' ? 'bg-white shadow-spatial text-primary' : 'text-slate-400 hover:text-slate-600'}`}
+            >
               {T.waitlist_all}
             </button>
           </div>
-          <button onClick={fetchWaitlist} disabled={isLoading} className="h-9 w-9 rounded-xl bg-primary-950/50 border border-white/5 flex items-center justify-center text-primary-400 hover:text-white transition-colors active:scale-95">
-            <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+          <button 
+            onClick={fetchWaitlist} 
+            disabled={isLoading} 
+            className="h-14 w-14 rounded-2xl bg-white border border-slate-100 shadow-ambient flex items-center justify-center text-slate-400 hover:text-primary transition-all active:scale-95"
+          >
+            <RefreshCw className={`h-5 w-5 ${isLoading ? 'animate-spin' : ''}`} />
           </button>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="bg-emerald-50/50 rounded-[2.5rem] p-8 border border-emerald-100 flex items-center justify-between">
+          <div>
+            <p className="text-[10px] font-black text-emerald-600/60 uppercase tracking-widest mb-1">EN ESPERA</p>
+            <p className="text-4xl font-black text-emerald-600">{pendingCount}</p>
+          </div>
+          <Clock className="h-10 w-10 text-emerald-200" />
+        </div>
+        <div className="bg-blue-50/50 rounded-[2.5rem] p-8 border border-blue-100 flex items-center justify-between">
+          <div>
+            <p className="text-[10px] font-black text-blue-600/60 uppercase tracking-widest mb-1">NOTIFICADOS</p>
+            <p className="text-4xl font-black text-blue-600">{notifiedCount}</p>
+          </div>
+          <Bell className="h-10 w-10 text-blue-200" />
         </div>
       </div>
 
       {/* List */}
       {isLoading ? (
-        <div className="flex items-center justify-center py-16">
-          <Loader2 className="h-8 w-8 animate-spin text-primary-800" />
+        <div className="grid grid-cols-1 gap-6">
+          {[1, 2, 3].map(i => (
+            <div key={i} className="h-40 bg-slate-50 rounded-[3rem] animate-pulse border border-slate-100" />
+          ))}
         </div>
       ) : entries.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20 text-center">
-          <div className="h-16 w-16 rounded-2xl bg-primary-950/50 border border-white/5 flex items-center justify-center mb-4">
-            <Clock className="h-8 w-8 text-primary-800" />
+        <div className="flex flex-col items-center justify-center py-24 text-center bg-white rounded-[4rem] border border-slate-100 shadow-spatial">
+          <div className="h-24 w-24 rounded-[2rem] bg-slate-50 flex items-center justify-center mb-8 text-slate-200 shadow-inner">
+            <Clock className="h-12 w-12" />
           </div>
-          <p className="text-sm font-bold text-primary-500 uppercase tracking-wider">{T.waitlist_empty}</p>
+          <p className="text-xl font-black text-slate-300 uppercase tracking-widest leading-relaxed">
+            {T.waitlist_empty}
+          </p>
         </div>
       ) : (
-        <div className="space-y-3">
-          {entries.map(entry => {
+        <div className="grid grid-cols-1 gap-8">
+          {entries.map((entry, idx) => {
             const dateInfo = formatDateRange(entry)
             const statusCfg = STATUS_CONFIG[entry.status] || STATUS_CONFIG.pending
             const StatusIcon = statusCfg.icon
@@ -149,65 +177,109 @@ export default function WaitlistView({ tenantId, lang }: WaitlistViewProps) {
               && (new Date(entry.offer_expires_at).getTime() - Date.now()) < 5 * 60 * 1000
 
             return (
-              <div key={entry.id} className={`group relative bg-primary-900/40 backdrop-blur-xl border border-white/5 rounded-2xl p-5 transition-all hover:border-accent-500/30 ${isUpdating ? 'opacity-60 pointer-events-none' : ''} ${isExpiringSoon ? 'ring-1 ring-orange-500/50 shadow-[0_0_20px_rgba(249,115,22,0.1)]' : ''}`}>
-                <div className="flex flex-col md:flex-row md:items-center gap-4">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <p className="text-sm font-black text-white truncate">
+              <motion.div 
+                key={entry.id}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: idx * 0.05 }}
+                className={`group relative bg-white border border-slate-100 rounded-[3rem] p-8 transition-all hover:shadow-spatial hover:translate-x-2 ${isUpdating ? 'opacity-40 pointer-events-none' : ''} ${isExpiringSoon ? 'ring-2 ring-orange-500 ring-offset-4' : ''}`}
+              >
+                <div className="flex flex-col lg:flex-row lg:items-center gap-8">
+                  {/* Status Indicator Bar */}
+                  <div className={`hidden lg:block w-1.5 h-16 rounded-full ${statusCfg.bg.replace('/10', '')} opacity-20`} />
+
+                  <div className="flex-1">
+                    <div className="flex items-center gap-4 flex-wrap mb-4">
+                      <h3 className="text-2xl font-black text-slate-900 tracking-tighter uppercase leading-none">
                         {entry.clients.first_name} {entry.clients.last_name}
-                      </p>
-                      <span className={`inline-flex items-center gap-1 text-[10px] font-black px-2 py-0.5 rounded-lg uppercase tracking-wider ${statusCfg.color}`}>
-                        <StatusIcon className="h-2.5 w-2.5" />
+                      </h3>
+                      <div className={`flex items-center gap-2 px-4 py-1.5 rounded-full ${statusCfg.bg} ${statusCfg.text} text-[10px] font-black uppercase tracking-widest shadow-sm`}>
+                        <StatusIcon className="h-3 w-3" />
                         {statusCfg.label}
-                      </span>
+                      </div>
                     </div>
-                    <div className="mt-1.5 flex items-center gap-4 flex-wrap">
-                      <span className="flex items-center gap-1.5 text-[11px] font-bold text-primary-400">
-                        <UserCheck className="h-3 w-3 text-accent-500" />{entry.professionals.full_name}
-                      </span>
+
+                    <div className="flex items-center gap-8 flex-wrap">
+                      <div className="flex items-center gap-3">
+                        <div className="h-8 w-8 rounded-xl bg-slate-50 flex items-center justify-center">
+                          <UserCheck className="h-4 w-4 text-primary" />
+                        </div>
+                        <span className="text-xs font-bold text-slate-500 uppercase tracking-tight">{entry.professionals.full_name}</span>
+                      </div>
+                      
                       {entry.services && (
-                        <span className="flex items-center gap-1.5 text-[11px] font-bold text-primary-400">
-                          <CheckCircle className="h-3 w-3 text-accent-500" />{entry.services.name}
-                        </span>
+                        <div className="flex items-center gap-3">
+                          <div className="h-8 w-8 rounded-xl bg-slate-50 flex items-center justify-center">
+                            <Layers className="h-4 w-4 text-primary" />
+                          </div>
+                          <span className="text-xs font-bold text-slate-500 uppercase tracking-tight">{entry.services.name}</span>
+                        </div>
                       )}
-                      <span className="flex items-center gap-1.5 text-[11px] font-bold text-primary-400">
-                        <Calendar className="h-3 w-3 text-accent-500" />
-                        <span className="text-[10px] text-primary-500 uppercase tracking-wider">{dateInfo.label}:</span>
-                        <span className="text-white/80">{dateInfo.value}</span>
-                      </span>
+
+                      <div className="flex items-center gap-3">
+                        <div className="h-8 w-8 rounded-xl bg-slate-50 flex items-center justify-center">
+                          <Calendar className="h-4 w-4 text-primary" />
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="text-[9px] font-black text-slate-300 uppercase tracking-widest leading-none mb-1">{dateInfo.label}</span>
+                          <span className="text-xs font-black text-slate-900 uppercase tracking-tighter">{dateInfo.value}</span>
+                        </div>
+                      </div>
                     </div>
-                    {entry.notes && <p className="mt-1.5 text-[11px] text-primary-500 italic truncate border-l-2 border-white/5 pl-2">{entry.notes}</p>}
+
+                    {entry.notes && (
+                      <div className="mt-6 flex items-start gap-3 p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                        <MessageSquare className="h-4 w-4 text-slate-300 mt-0.5 shrink-0" />
+                        <p className="text-[11px] font-medium text-slate-500 leading-relaxed italic">{entry.notes}</p>
+                      </div>
+                    )}
+
                     {entry.notified_at && (
-                      <p className="mt-2 text-[10px] text-blue-400 font-bold uppercase tracking-wider flex items-center gap-1">
-                        <Bell className="h-3 w-3" />
-                        {T.waitlist_notified_on} {format(parseISO(entry.notified_at), 'dd/MM/yyyy HH:mm')}
+                      <div className="mt-6 flex items-center gap-6">
+                        <div className="flex items-center gap-2 text-[10px] text-blue-500 font-black uppercase tracking-[0.2em]">
+                          <Bell className="h-4 w-4" />
+                          NOTIFICADO EL {format(parseISO(entry.notified_at), 'dd/MM/yyyy HH:mm')}
+                        </div>
                         {entry.offer_expires_at && entry.status === 'notified' && (
-                          <span className={`ml-2 px-2 py-0.5 rounded-md ${isExpiringSoon ? 'bg-orange-500/20 text-orange-400 animate-pulse' : 'bg-primary-950/50 text-primary-400'}`}>
-                            · {lang === 'es' ? 'Expira' : lang === 'it' ? 'Scade' : 'Expires'} {format(parseISO(entry.offer_expires_at), 'HH:mm')}
-                          </span>
+                          <div className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${isExpiringSoon ? 'bg-red-500 text-white animate-pulse' : 'bg-slate-900 text-white shadow-ambient'}`}>
+                            EXPIRA {format(parseISO(entry.offer_expires_at), 'HH:mm')}
+                          </div>
                         )}
-                      </p>
+                      </div>
                     )}
                   </div>
 
-                  {/* Actions */}
-                  <div className="flex items-center gap-2 shrink-0 flex-wrap">
+                  {/* Actions Area */}
+                  <div className="flex lg:flex-col items-center gap-3 shrink-0 pt-6 lg:pt-0 lg:pl-8 lg:border-l border-slate-50">
                     {!entry.clients.phone.startsWith('tg_') && (
-                      <button onClick={() => openWhatsApp(entry.clients.phone)} className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-[#25D366]/10 text-[#25D366] text-[10px] font-black uppercase tracking-wider border border-[#25D366]/20 hover:bg-[#25D366]/20 transition-all active:scale-95">
-                        <MessageSquare className="h-3 w-3" />WhatsApp
+                      <button 
+                        onClick={() => openWhatsApp(entry.clients.phone)} 
+                        className="h-14 w-14 lg:h-16 lg:w-40 flex items-center justify-center lg:justify-between px-5 bg-white border border-[#25D366]/30 text-[#25D366] rounded-2xl shadow-ambient hover:bg-[#25D366] hover:text-white transition-all group"
+                      >
+                        <MessageSquare className="h-6 w-6" />
+                        <span className="hidden lg:block text-[10px] font-black uppercase tracking-widest">WHATSAPP</span>
                       </button>
                     )}
+                    
                     {(entry.status === 'pending' || entry.status === 'notified' || entry.status === 'offer_expired') && (
-                      <button onClick={() => updateStatus(entry.id, 'resolved')} className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-accent-500 text-primary-950 text-[10px] font-black uppercase tracking-wider shadow-lg shadow-accent-500/20 hover:scale-[1.02] active:scale-95 transition-all">
-                        <CheckCircle className="h-3 w-3" />{T.waitlist_resolve}
+                      <button 
+                        onClick={() => updateStatus(entry.id, 'resolved')} 
+                        className="h-14 lg:h-16 flex-1 lg:flex-none lg:w-40 flex items-center justify-center lg:justify-between px-5 bg-slate-900 text-white rounded-2xl shadow-spatial hover:bg-primary transition-all active:scale-95 group"
+                      >
+                        <span className="hidden lg:block text-[10px] font-black uppercase tracking-widest">{T.waitlist_resolve}</span>
+                        <CheckCircle className="h-6 w-6" />
                       </button>
                     )}
-                    <button onClick={() => deleteEntry(entry.id)} className="h-9 w-9 rounded-xl bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20 flex items-center justify-center transition-all active:scale-95">
-                      <Trash2 className="h-3.5 w-3.5" />
+
+                    <button 
+                      onClick={() => deleteEntry(entry.id)} 
+                      className="h-14 w-14 lg:h-16 lg:w-16 flex items-center justify-center bg-red-50 text-red-400 rounded-2xl hover:bg-red-500 hover:text-white transition-all"
+                    >
+                      <Trash2 className="h-6 w-6" />
                     </button>
                   </div>
                 </div>
-              </div>
+              </motion.div>
             )
           })}
         </div>

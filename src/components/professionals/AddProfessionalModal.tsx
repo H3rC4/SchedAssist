@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from 'react'
-import { X, UserPlus, CheckCircle, Loader2 } from 'lucide-react'
+import { X, UserPlus, CheckCircle, Loader2, ArrowRight, Sparkles } from 'lucide-react'
 
 interface AddProfessionalModalProps {
   isOpen: boolean;
@@ -34,70 +34,123 @@ export function AddProfessionalModal({ isOpen, onClose, onConfirm, t, locations 
   }
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-300">
-      <div className="bg-primary-950/80 backdrop-blur-xl rounded-[2.5rem] shadow-2xl w-full max-w-lg overflow-hidden border border-white/10" onClick={e => e.stopPropagation()}>
-        <div className="p-8 md:p-10">
-          <div className="flex items-center justify-between mb-8">
-            <div className="h-14 w-14 rounded-2xl bg-[#0B1120] border-2 border-accent-500/30 flex items-center justify-center text-accent-500 shadow-[0_0_15px_rgba(245,158,11,0.2)]">
-              <UserPlus className="h-7 w-7" />
+    <div className="fixed inset-0 z-[100] overflow-hidden" onClick={onClose}>
+      {/* OVERLAY */}
+      <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-500" />
+
+      {/* DRAWER CONTENT */}
+      <div 
+        className="absolute top-0 right-0 h-full w-full max-w-2xl bg-surface shadow-spatial animate-in slide-in-from-right duration-700 flex flex-col"
+        onClick={e => e.stopPropagation()}
+      >
+        {/* HEADER SECTION */}
+        <div className="bg-surface-container-lowest p-8 md:p-12 border-b border-slate-100 flex-shrink-0">
+          <div className="flex items-start justify-between mb-10">
+            <div className="h-20 w-20 rounded-[2rem] bg-primary flex items-center justify-center text-white shadow-spatial">
+              <UserPlus className="h-8 w-8" />
             </div>
-            <button onClick={onClose} className="p-2 rounded-full hover:bg-white/10 transition-colors">
-              <X className="h-6 w-6 text-primary-400" />
+            <button 
+              onClick={onClose}
+              className="p-4 rounded-2xl bg-slate-50 text-slate-400 hover:text-slate-900 hover:bg-slate-100 transition-all active:scale-95 shadow-ambient"
+            >
+              <X className="h-6 w-6" />
             </button>
           </div>
 
-          <h3 className="text-2xl font-black text-white mb-2 uppercase tracking-tight">{t.newProf}</h3>
-          <p className="text-sm font-bold text-primary-300 uppercase tracking-widest mb-8">{t.subtitle}</p>
+          <div className="space-y-4">
+            <h2 className="text-5xl md:text-6xl font-black text-slate-900 tracking-tighter leading-none uppercase">
+              {t.newProf}
+            </h2>
+            <p className="text-xs font-black text-slate-400 uppercase tracking-[0.3em] flex items-center gap-2">
+              <Sparkles className="h-4 w-4 text-primary" /> {t.subtitle}
+            </p>
+          </div>
+        </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="space-y-2">
-              <label className="text-[10px] font-black text-primary-400 uppercase tracking-widest ml-2">{t.fullName}</label>
+        {/* BODY SECTION / FORM */}
+        <div className="flex-1 overflow-y-auto p-8 md:p-12 custom-scrollbar">
+          <form id="add-prof-form" onSubmit={handleSubmit} className="space-y-12 max-w-lg">
+            
+            <div className="space-y-3">
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">
+                {t.fullName}
+              </label>
               <input
                 required
+                autoFocus
                 value={data.full_name}
                 onChange={e => setData({ ...data, full_name: e.target.value })}
-                className="w-full rounded-2xl bg-primary-900/50 border border-white/10 px-6 py-4 text-sm font-black text-white focus:bg-primary-900 focus:ring-4 focus:ring-accent-500/20 focus:border-accent-500 transition-all outline-none placeholder-primary-500"
+                className="w-full h-20 bg-white rounded-[2rem] border-2 border-slate-100 px-8 font-black text-slate-900 text-lg focus:border-primary focus:ring-0 transition-all shadow-ambient outline-none placeholder:text-slate-200"
                 placeholder={t.fullNamePH}
               />
             </div>
-            <div className="space-y-2">
-              <label className="text-[10px] font-black text-primary-400 uppercase tracking-widest ml-2">{t.specialty}</label>
+
+            <div className="space-y-3">
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">
+                {t.specialty}
+              </label>
               <input
                 value={data.specialty}
                 onChange={e => setData({ ...data, specialty: e.target.value })}
-                className="w-full rounded-2xl bg-primary-900/50 border border-white/10 px-6 py-4 text-sm font-black text-white focus:bg-primary-900 focus:ring-4 focus:ring-accent-500/20 focus:border-accent-500 transition-all outline-none placeholder-primary-500"
+                className="w-full h-20 bg-white rounded-[2rem] border-2 border-slate-100 px-8 font-black text-slate-900 text-lg focus:border-primary focus:ring-0 transition-all shadow-ambient outline-none placeholder:text-slate-200"
                 placeholder={t.specialtyPH}
               />
             </div>
 
             {locations.length > 0 && (
-              <div className="space-y-2">
-                <label className="text-[10px] font-black text-primary-400 uppercase tracking-widest ml-2">{t.locationLabel}</label>
-                <select
-                  value={data.location_id}
-                  onChange={e => setData({ ...data, location_id: e.target.value })}
-                  className="w-full rounded-2xl bg-primary-900/50 border border-white/10 px-6 py-4 text-sm font-black text-white focus:bg-primary-900 focus:ring-4 focus:ring-accent-500/20 focus:border-accent-500 transition-all outline-none"
-                >
-                  <option value="" className="bg-primary-900 text-white">{t.selectLocationOptional}</option>
-                  {locations.map(loc => (
-                    <option key={loc.id} value={loc.id} className="bg-primary-900 text-white">{loc.name}</option>
-                  ))}
-                </select>
+              <div className="space-y-3">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">
+                  {t.locationLabel}
+                </label>
+                <div className="relative">
+                  <select
+                    value={data.location_id}
+                    onChange={e => setData({ ...data, location_id: e.target.value })}
+                    className="w-full h-20 bg-white rounded-[2rem] border-2 border-slate-100 px-8 font-black text-slate-900 text-lg focus:border-primary focus:ring-0 transition-all shadow-ambient outline-none appearance-none"
+                  >
+                    <option value="">{t.selectLocationOptional}</option>
+                    {locations.map(loc => (
+                      <option key={loc.id} value={loc.id}>{loc.name}</option>
+                    ))}
+                  </select>
+                  <div className="absolute right-8 top-1/2 -translate-y-1/2 pointer-events-none">
+                    <ArrowRight className="h-6 w-6 text-slate-300 rotate-90" />
+                  </div>
+                </div>
               </div>
             )}
-
-            <button
-              type="submit"
-              disabled={loading || success}
-              className="w-full h-16 rounded-2xl bg-accent-500 text-primary-950 font-black uppercase tracking-widest shadow-[0_0_15px_rgba(245,158,11,0.3)] hover:bg-accent-400 active:scale-95 transition-all disabled:opacity-50 flex items-center justify-center gap-3 mt-4"
-            >
-              {success ? (
-                <><CheckCircle className="h-6 w-6 animate-in zoom-in" /> {t.created}</>
-              ) : loading ? (
-                <Loader2 className="h-6 w-6 animate-spin text-primary-950" />
-              ) : t.createBtn}
-            </button>
           </form>
+        </div>
+
+        {/* FOOTER ACTION BAR */}
+        <div className="p-8 md:p-12 bg-white border-t border-slate-100 flex items-center justify-between flex-shrink-0 z-30 shadow-[0_-20px_50px_rgba(0,0,0,0.02)]">
+          <button 
+            type="button"
+            onClick={onClose}
+            className="py-6 px-10 rounded-full text-xs font-black uppercase tracking-widest text-slate-400 hover:text-slate-900 transition-all hover:bg-slate-50"
+          >
+            {t.cancel || 'Cancelar'}
+          </button>
+          
+          <button
+            form="add-prof-form"
+            type="submit"
+            disabled={loading || success}
+            className={`group flex items-center justify-center gap-4 py-6 px-16 rounded-full font-black uppercase tracking-[0.2em] text-xs transition-all active:scale-95 disabled:opacity-50 shadow-spatial
+              ${success ? 'bg-emerald-500 text-white' : 'bg-primary text-white hover:bg-slate-900'}
+            `}
+          >
+            {success ? (
+              <><CheckCircle className="h-5 w-5 animate-in zoom-in" /> <span>{t.created}</span></>
+            ) : loading ? (
+              <Loader2 className="h-5 w-5 animate-spin" />
+            ) : (
+              <>
+                <span>{t.createBtn}</span>
+                <ArrowRight className="h-5 w-5 group-hover:translate-x-2 transition-transform" />
+              </>
+            )}
+          </button>
         </div>
       </div>
     </div>
