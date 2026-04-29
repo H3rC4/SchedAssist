@@ -20,8 +20,8 @@ export function Logo({ className = "h-10 w-10", iconOnly = false }: { className?
       </div>
 
       {!iconOnly && (
-        <span className="text-xl font-black text-white tracking-tight uppercase select-none">
-          Sched<span className="text-accent-500 group-hover:text-accent-400 transition-colors">Assist</span>
+        <span className="text-xl font-black text-on-surface tracking-tight uppercase select-none">
+          Sched<span className="text-primary group-hover:opacity-80 transition-opacity">Assist</span>
         </span>
       )}
     </div>

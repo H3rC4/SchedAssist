@@ -4,9 +4,9 @@ import { useEffect, useState, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Calendar, ChevronLeft, ChevronRight, Clock, User, Phone, Stethoscope, Plus, MessageSquare, CheckCircle } from 'lucide-react'
 import { format, parseISO, isSameDay, isToday, startOfMonth, endOfMonth, eachDayOfInterval, addMonths, subMonths } from 'date-fns'
-import { translations, dateLocales } from '@/lib/i18n'
+import { translations, dateLocales, getTranslations } from '@/lib/i18n'
 import { useLandingTranslation } from '@/components/LanguageContext'
-import { NewAppointmentModal } from '@/components/appointments/NewAppointmentModal'
+import { QuickAppointmentDrawer } from '@/components/appointments/QuickAppointmentDrawer'
 
 interface Appointment {
   id: string
@@ -428,9 +428,9 @@ export default function DoctorDashboard() {
           )}
         </div>
       </div>
-      {/* New Appointment Modal */}
+      {/* New Appointment Drawer */}
       {showNewModal && tenantId && (
-        <NewAppointmentModal 
+        <QuickAppointmentDrawer 
           tenantId={tenantId}
           lang={language}
           services={services}
@@ -441,26 +441,7 @@ export default function DoctorDashboard() {
             setShowNewModal(false)
           }}
           selectedDate={selectedDate}
-          translations={{
-            modalTitle: translations[language]?.schedule_appointment,
-            modalSubtitle: translations[language]?.manual_entry,
-            searchPatient: translations[language]?.search_patient,
-            searchPlaceholder: translations[language]?.search_placeholder,
-            orNew: translations[language]?.or_new_patient,
-            whenLabel: translations[language]?.when,
-            nameLabel: translations[language]?.name,
-            lastNameLabel: translations[language]?.last_name,
-            phoneLabel: translations[language]?.phone,
-            serviceLabel: translations[language]?.service,
-            profLabel: translations[language]?.professional,
-            slotsLabel: translations[language]?.available_slots,
-            noSlots: translations[language]?.no_slots,
-            reserving: translations[language]?.reserving,
-            confirm: translations[language]?.confirm_booking,
-            ready: translations[language]?.ready,
-            errGeneric: translations[language]?.err_generic,
-            selectOption: language === 'es' ? 'Selecciona...' : (language === 'it' ? 'Seleziona...' : 'Select...')
-          }}
+          translations={getTranslations(language)}
           availableSlots={availableSlots}
           slotLoading={slotLoading}
           onFetchSlots={fetchSlots}
