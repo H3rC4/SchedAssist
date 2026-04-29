@@ -20,7 +20,10 @@ interface Service {
   active: boolean;
 }
 
+import { useLandingTranslation } from '@/components/LanguageContext'
+
 export default function ServicesPage() {
+  const { language: lang, fullT: t } = useLandingTranslation()
   const supabase = createClient()
   const [services, setServices] = useState<Service[]>([])
   const [tenantId, setTenantId] = useState('')
@@ -28,12 +31,9 @@ export default function ServicesPage() {
   const [saving, setSaving] = useState(false)
   const [showAddForm, setShowAddForm] = useState(false)
   const [editService, setEditService] = useState<Service | null>(null)
-  const [lang, setLang] = useState<Language>('es')
   const [savedId, setSavedId] = useState<string | null>(null)
 
   const [formData, setFormData] = useState({ name: '', duration_minutes: 30, price: 0 })
-
-  const t = translations[lang] || translations['en']
 
   useEffect(() => { initTenant() }, [])
   useEffect(() => { if (tenantId) fetchServices() }, [tenantId])
@@ -49,7 +49,6 @@ export default function ServicesPage() {
     if (tuData?.tenants) {
       const tenant = tuData.tenants as any
       setTenantId(tenant.id)
-      setLang((tenant.settings?.language as Language) || 'es')
     }
   }
 
@@ -111,29 +110,32 @@ export default function ServicesPage() {
   const duration_labels: Record<number, string> = { 15: '15m', 30: '30m', 45: '45m', 60: '1h', 90: '1.5h', 120: '2h' }
 
   return (
-    <div className="flex-1 min-h-screen bg-surface p-4 md:p-6 animate-in fade-in duration-1000 overflow-x-hidden">
+    <div className="flex-1 min-h-screen bg-surface p-4 md:p-8 animate-in fade-in duration-1000 overflow-x-hidden">
       
-      {/* MASSIVE EDITORIAL HEADER */}
-      <div className="mb-8 md:mb-10">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="h-1.5 w-8 bg-primary rounded-full" />
-          <p className="text-[10px] font-black text-on-surface-muted uppercase tracking-[0.4em]">
-            CATÁLOGO OPERATIVO
+      {/* COMPACT HEADER */}
+      <div className="mb-6 md:mb-10">
+        <div className="flex items-center gap-2 mb-2">
+          <div className="h-1 w-6 bg-primary rounded-full" />
+          <p className="text-[8px] font-black text-on-surface-muted uppercase tracking-[0.3em]">
+            {t.onboarding.services_title}
           </p>
         </div>
-        <h1 className="precision-header text-3xl md:text-4xl uppercase break-words">
-          SERVICIOS
-        </h1>
-        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8 mt-8">
-          <p className="text-sm font-medium text-on-surface-muted max-w-2xl leading-relaxed">
-            Define los procedimientos clínicos y estéticos de tu centro con precisión atómica. Controla duraciones, precios y disponibilidad.
-          </p>
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-xl md:text-2xl font-black text-on-surface tracking-tighter uppercase leading-tight">
+              {t.nav_services}
+            </h1>
+            <p className="text-[10px] font-bold text-on-surface/40 uppercase tracking-widest mt-1">
+              {t.onboarding.services_desc}
+            </p>
+          </div>
+          
           <button 
             onClick={() => setShowAddForm(true)}
-            className="precision-button-primary h-12 md:h-13 shrink-0 flex items-center gap-4"
+            className="precision-button-primary h-11 px-6 text-[10px] uppercase tracking-widest flex items-center gap-3 shrink-0"
           >
-            <span className="text-[10px] tracking-[0.3em] uppercase font-black">REGISTRAR SERVICIO</span>
-            <Plus className="h-5 w-5" />
+            <span>{t.create.toUpperCase()}</span>
+            <Plus className="h-4 w-4" />
           </button>
         </div>
       </div>
@@ -147,23 +149,23 @@ export default function ServicesPage() {
             ))}
           </div>
         ) : services.length === 0 ? (
-          <div className="precision-surface-lowest p-20 text-center max-w-4xl mx-auto">
-            <div className="h-32 w-32 bg-surface-container-low rounded-[3rem] flex items-center justify-center mx-auto mb-10 text-on-surface-muted">
-              <Layers className="h-16 w-16" />
+          <div className="precision-surface-lowest p-12 text-center max-w-xl mx-auto rounded-3xl">
+            <div className="h-16 w-16 bg-surface-container-low rounded-2xl flex items-center justify-center mx-auto mb-6 text-on-surface-muted">
+              <Layers className="h-8 w-8" />
             </div>
-            <h2 className="text-4xl font-black text-on-surface tracking-tight uppercase mb-6">SIN SERVICIOS DEFINIDOS</h2>
-            <p className="text-on-surface-muted font-medium mb-12 max-w-md mx-auto leading-relaxed">
-              Comienza a construir tu catálogo operativo agregando tu primer servicio clínico o estético.
+            <h2 className="text-lg font-black text-on-surface tracking-tight uppercase mb-3">{t.onboarding.services_title_empty}</h2>
+            <p className="text-[11px] text-on-surface-muted font-medium mb-8 max-w-xs mx-auto leading-relaxed">
+              {t.onboarding.services_desc_empty}
             </p>
             <button 
               onClick={() => setShowAddForm(true)}
-              className="precision-button-primary text-[10px] tracking-widest"
+              className="precision-button-primary py-2 px-6 text-[10px] tracking-widest uppercase"
             >
-              CREAR PRIMER SERVICIO
+              {t.create}
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 items-start">
             {services.map((service, idx) => (
               <ServicePrecisionCard
                 key={service.id}
@@ -198,90 +200,90 @@ export default function ServicesPage() {
               className="relative h-full w-full max-w-2xl precision-surface-lowest md:rounded-[4rem] flex flex-col overflow-hidden"
               onClick={e => e.stopPropagation()}
             >
-              <div className="p-8 md:p-12 overflow-y-auto custom-scrollbar flex-1">
-                <div className="flex items-start justify-between mb-12">
-                  <div className="space-y-3">
-                    <div className="h-1.5 w-10 bg-primary rounded-full" />
-                    <p className="text-[9px] font-black text-on-surface-muted uppercase tracking-[0.4em]">SISTEMA DE SERVICIOS</p>
-                    <h2 className="text-3xl font-black text-on-surface tracking-tighter uppercase leading-[0.9]">
-                      {editService ? 'ACTUALIZAR' : 'DEFINIR'} <br /> 
-                      <span className="text-primary">PROCEDIMIENTO</span>
+              <div className="p-6 md:p-8 overflow-y-auto custom-scrollbar flex-1">
+                <div className="flex items-start justify-between mb-8">
+                  <div className="space-y-2">
+                    <div className="h-1 w-8 bg-primary rounded-full" />
+                    <p className="text-[8px] font-black text-on-surface-muted uppercase tracking-[0.3em]">{t.operational_intelligence.toUpperCase()}</p>
+                    <h2 className="text-xl font-black text-on-surface tracking-tighter uppercase leading-none">
+                      {editService ? t.edit : t.create} <br /> 
+                      <span className="text-primary">{t.service}</span>
                     </h2>
                   </div>
                   <button 
                     onClick={() => { setShowAddForm(false); setEditService(null) }} 
-                    className="h-12 w-12 flex items-center justify-center bg-surface-container-low rounded-full hover:bg-surface-container-highest transition-colors"
+                    className="h-9 w-9 flex items-center justify-center bg-surface-container-low rounded-full hover:bg-surface-container-highest transition-colors"
                   >
-                    <X className="h-6 w-6 text-on-surface-muted" />
+                    <X className="h-4 w-4 text-on-surface-muted" />
                   </button>
                 </div>
 
-                <div className="space-y-16">
+                <div className="space-y-10">
                   {/* NAME INPUT */}
-                  <div className="space-y-6">
-                    <label className="text-[10px] font-black text-on-surface-muted uppercase tracking-[0.3em] ml-2">NOMBRE DEL SERVICIO</label>
+                  <div className="space-y-4">
+                    <label className="text-[8px] font-black text-on-surface-muted uppercase tracking-[0.3em] ml-1">{t.onboarding.service_name}</label>
                     <input 
                       autoFocus
                       value={editService ? editService.name : formData.name}
                       onChange={e => editService ? setEditService({...editService, name: e.target.value}) : setFormData({...formData, name: e.target.value})}
-                      className="w-full text-3xl font-black text-on-surface bg-transparent border-none focus:ring-0 placeholder:text-surface-container-highest p-0 uppercase tracking-tighter"
-                      placeholder="EJ: LIMPIEZA FACIAL" 
+                      className="w-full text-xl font-black text-on-surface bg-transparent border-none focus:ring-0 placeholder:text-surface-container-highest p-0 uppercase tracking-tighter"
+                      placeholder={t.onboarding.service_name} 
                     />
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {/* DURATION SELECT */}
-                    <div className="space-y-3">
-                      <label className="text-[9px] font-black text-on-surface-muted uppercase tracking-[0.3em] ml-2">DURACIÓN ESTIMADA</label>
+                    <div className="space-y-2">
+                      <label className="text-[8px] font-black text-on-surface-muted uppercase tracking-[0.3em] ml-1">{t.onboarding.duration}</label>
                       <div className="relative">
                         <select 
                           value={editService ? editService.duration_minutes : formData.duration_minutes}
                           onChange={e => editService ? setEditService({...editService, duration_minutes: parseInt(e.target.value)}) : setFormData({...formData, duration_minutes: parseInt(e.target.value)})}
-                          className="w-full h-14 bg-surface-container-low border-2 border-transparent rounded-2xl px-6 font-black text-on-surface text-lg focus:bg-surface-container-lowest focus:border-primary transition-all appearance-none outline-none shadow-inner"
+                          className="w-full h-11 bg-surface-container-low border-2 border-transparent rounded-xl px-4 font-bold text-on-surface text-sm focus:bg-surface-container-lowest focus:border-primary transition-all appearance-none outline-none shadow-inner"
                         >
                           {duration_options.map(d => <option key={d} value={d}>{duration_labels[d]}</option>)}
                         </select>
-                        <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none">
-                          <Clock className="h-5 w-5 text-on-surface-muted" />
+                        <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
+                          <Clock className="h-4 w-4 text-on-surface-muted" />
                         </div>
                       </div>
                     </div>
 
                     {/* PRICE INPUT */}
-                    <div className="space-y-3">
-                      <label className="text-[9px] font-black text-on-surface-muted uppercase tracking-[0.3em] ml-2">VALOR BASE (ARS)</label>
+                    <div className="space-y-2">
+                      <label className="text-[8px] font-black text-on-surface-muted uppercase tracking-[0.3em] ml-1">{t.onboarding.price}</label>
                       <div className="relative">
-                        <div className="absolute left-6 top-1/2 -translate-y-1/2 font-black text-primary/40 text-xl">$</div>
+                        <div className="absolute left-4 top-1/2 -translate-y-1/2 font-black text-primary/40 text-base">$</div>
                         <input 
                           type="number"
                           value={editService ? editService.price : formData.price}
                           onChange={e => editService ? setEditService({...editService, price: parseFloat(e.target.value)}) : setFormData({...formData, price: parseFloat(e.target.value)})}
-                          className="w-full h-14 bg-surface-container-low border-2 border-transparent rounded-2xl pl-14 pr-6 font-black text-on-surface text-lg focus:bg-surface-container-lowest focus:border-primary transition-all shadow-inner outline-none"
+                          className="w-full h-11 bg-surface-container-low border-2 border-transparent rounded-xl pl-10 pr-4 font-bold text-on-surface text-sm focus:bg-surface-container-lowest focus:border-primary transition-all shadow-inner outline-none"
                           placeholder="0.00"
                         />
                       </div>
                     </div>
                   </div>
 
-                  <div className="p-8 bg-secondary-container rounded-3xl flex gap-6 items-start">
-                    <div className="h-12 w-12 bg-surface-container-lowest rounded-2xl flex items-center justify-center text-secondary shadow-ambient shrink-0">
-                      <Info className="h-6 w-6" />
+                  <div className="p-5 bg-secondary-container rounded-2xl flex gap-4 items-start">
+                    <div className="h-8 w-8 bg-surface-container-lowest rounded-xl flex items-center justify-center text-secondary shadow-sm shrink-0">
+                      <Info className="h-4 w-4" />
                     </div>
-                    <p className="text-sm font-medium text-on-secondary-container leading-relaxed">
-                      La duración seleccionada determina los intervalos disponibles en el calendario de reservas para este servicio.
+                    <p className="text-[11px] font-medium text-on-secondary-container leading-relaxed">
+                      {lang === 'es' ? 'La duración seleccionada determina los intervalos disponibles en el calendario.' : lang === 'it' ? 'La durata selezionata determina gli intervalli disponibili nel calendario.' : 'The selected duration determines the available slots in the calendar.'}
                     </p>
                   </div>
                 </div>
               </div>
 
-              <div className="p-8 md:p-12 pt-0">
+              <div className="p-6 md:p-8 pt-0">
                 <button 
                   onClick={editService ? handleEditService : handleAddService}
                   disabled={saving || (editService ? !editService.name : !formData.name)}
-                  className="w-full h-16 bg-primary hover:brightness-110 disabled:opacity-30 transition-all text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.4em] shadow-spatial flex items-center justify-center gap-4 active:scale-95"
+                  className="w-full h-12 bg-primary hover:brightness-110 disabled:opacity-30 transition-all text-white rounded-xl text-[9px] font-black uppercase tracking-[0.3em] shadow-sm flex items-center justify-center gap-3 active:scale-95"
                 >
-                  {saving ? <Loader2 className="h-6 w-6 animate-spin" /> : editService ? 'GUARDAR CAMBIOS' : 'INICIALIZAR SERVICIO'}
-                  <CheckCircle className="h-5 w-5" />
+                  {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : editService ? t.save_changes : t.create}
+                  <CheckCircle className="h-4 w-4" />
                 </button>
               </div>
             </motion.div>

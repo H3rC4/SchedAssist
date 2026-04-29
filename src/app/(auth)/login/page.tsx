@@ -91,7 +91,7 @@ export default function LoginPage({
               Welcome <br />
               <span className="text-primary italic font-serif lowercase">Back</span>
             </h1>
-            <p className="text-[10px] font-black text-on-surface/30 uppercase tracking-[0.4em]">
+            <p className="text-[10px] font-black text-on-surface/60 uppercase tracking-[0.4em]">
               Precision Identity Access
             </p>
           </header>
@@ -131,7 +131,7 @@ export default function LoginPage({
 
             <form action={handleSubmit} method="POST" className="space-y-10">
               <div className="space-y-4">
-                <label htmlFor="email" className="text-[10px] font-black text-on-surface/40 uppercase tracking-[0.3em] ml-2">
+                <label htmlFor="email" className="text-[10px] font-black text-on-surface/70 uppercase tracking-[0.3em] ml-2">
                   Email Address
                 </label>
                 <div className="relative group">
@@ -150,7 +150,7 @@ export default function LoginPage({
 
               <div className="space-y-4">
                 <div className="flex items-center justify-between px-2">
-                  <label htmlFor="password" className="text-[10px] font-black text-on-surface/40 uppercase tracking-[0.3em]">
+                  <label htmlFor="password" className="text-[10px] font-black text-on-surface/70 uppercase tracking-[0.3em]">
                     Secret Key
                   </label>
                   <Link href="/forgot-password" className="text-[10px] font-black text-primary uppercase tracking-widest hover:tracking-[0.2em] transition-all">
@@ -186,7 +186,7 @@ export default function LoginPage({
 
         <Link
           href="/"
-          className="flex items-center justify-center gap-4 text-[10px] font-black text-on-surface/40 uppercase tracking-[0.4em] mt-12 hover:text-primary transition-colors group"
+          className="flex items-center justify-center gap-4 text-[10px] font-black text-on-surface/70 uppercase tracking-[0.4em] mt-12 hover:text-primary transition-colors group"
         >
           <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-2" />
           Back to Portal

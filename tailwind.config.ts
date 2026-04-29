@@ -17,6 +17,7 @@ const config: Config = {
           container: "#ecf5fb", // Light Tonal Container
           on: "#ffffff",
           "on-container": "#00201e",
+          950: "#00201e",
         },
         secondary: {
           DEFAULT: "#4a6360",
@@ -42,6 +43,10 @@ const config: Config = {
           muted: "#6e7977",
         },
         accent: {
+          DEFAULT: "#f59e0b",
+          400: "#fbbf24",
+          500: "#f59e0b",
+          600: "#d97706",
           gold: "#f59e0b",
           teal: "#0d9488",
           rose: "#e11d48",

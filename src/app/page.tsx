@@ -32,7 +32,7 @@ export default function LandingPage() {
          
          <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-12">
             <div className="flex flex-col items-center md:items-start gap-4 scale-110 md:origin-left">
-               <Logo />
+               <Logo textColor="text-white" />
                <p className="text-slate-500 text-sm font-medium text-center md:text-left max-w-xs leading-relaxed">
                   Taking appointment automation to the next level with WhatsApp and Artificial Intelligence.
                </p>

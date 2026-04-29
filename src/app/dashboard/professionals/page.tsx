@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from 'react'
-import { Users, UserPlus, Loader2, Search, ArrowRight } from 'lucide-react'
+import { Users, UserPlus, Loader2, Search, ArrowRight, Plus } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useProfessionals, AvailabilityRule } from '@/hooks/useProfessionals'
 import { AddProfessionalModal } from '@/components/professionals/AddProfessionalModal'
@@ -9,7 +9,10 @@ import { ProfessionalDetailDrawer } from '@/components/professionals/Professiona
 import { ProfessionalCard } from '@/components/professionals/ProfessionalCard'
 import { translations, Language } from '@/lib/i18n'
 
+import { useLandingTranslation } from '@/components/LanguageContext'
+
 export default function ProfessionalsPage() {
+  const { language: lang, fullT: T_ui } = useLandingTranslation()
   const {
     professionals,
     loading,
@@ -29,24 +32,10 @@ export default function ProfessionalsPage() {
   } = useProfessionals()
 
   const [showAddForm, setShowAddForm] = useState(false)
-  const [lang, setLang] = useState<Language>('es')
   const [editRules, setEditRules] = useState<AvailabilityRule[]>([])
   const [searchQuery, setSearchQuery] = useState('')
 
   const supabase = createClient()
-  const T_ui = translations[lang] || translations['en']
-
-  useEffect(() => {
-    async function fetchLang() {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return
-      const { data: tuData } = await supabase.from('tenant_users').select('tenants(settings)').eq('user_id', user.id).single()
-      if (tuData?.tenants) {
-        setLang(((tuData.tenants as any).settings?.language as Language) || 'es')
-      }
-    }
-    fetchLang()
-  }, [])
 
   useEffect(() => {
     if (selectedProf) {
@@ -66,7 +55,7 @@ export default function ProfessionalsPage() {
   if (loading) {
     return (
       <div className="flex h-[70vh] items-center justify-center bg-surface">
-        <Loader2 className="h-10 w-10 animate-spin text-primary-600" />
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     )
   }
@@ -87,78 +76,74 @@ export default function ProfessionalsPage() {
   )
 
   return (
-    <div className="flex-1 bg-surface min-h-screen p-4 md:p-6 animate-in fade-in duration-700">
+    <div className="flex-1 bg-surface min-h-screen p-2 md:p-3 animate-in fade-in duration-700">
       {/* BACKGROUND DECOR */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden opacity-[0.03]">
-        <div className="absolute -top-[10%] -right-[10%] w-[60%] h-[60%] rounded-full bg-primary-600 blur-[120px]" />
-        <div className="absolute top-[40%] -left-[10%] w-[40%] h-[40%] rounded-full bg-primary-600 blur-[100px]" />
+      <div className="fixed inset-0 pointer-events-none overflow-hidden opacity-[0.02]">
+        <div className="absolute -top-[10%] -right-[10%] w-[60%] h-[60%] rounded-full bg-primary blur-[120px]" />
+        <div className="absolute top-[40%] -left-[10%] w-[40%] h-[40%] rounded-full bg-primary blur-[100px]" />
       </div>
 
-      {/* EDITORIAL HEADER */}
-      <div className="relative z-10 mb-10 md:mb-16">
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
-          <div className="max-w-4xl">
-            <h1 className="text-3xl md:text-4xl font-bold tracking-[calc(-0.04em)] text-slate-900 leading-[0.9] uppercase">
-              {T_ui.staff_title}
-            </h1>
-            <p className="mt-4 text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-[0.3em] pl-1">
-              {T_ui.staff_subtitle}
-            </p>
-          </div>
-          <button 
-            onClick={() => setShowAddForm(true)}
-            className="group relative h-12 md:h-13 px-6 md:px-8 bg-primary-600 text-white rounded-xl overflow-hidden shadow-spatial transition-all active:scale-95"
-          >
-            <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity" />
-            <div className="relative flex items-center gap-3">
-              <span className="text-sm md:text-base font-black uppercase tracking-widest">{T_ui.add_professional_btn}</span>
-              <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
+      <div className="max-w-[1400px] mx-auto">
+        {/* COMPACT HEADER */}
+        <div className="relative z-10 mb-4 md:mb-6">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-3">
+            <div className="max-w-2xl">
+              <h1 className="text-lg md:text-xl font-black tracking-tighter text-on-surface leading-tight uppercase">
+                {T_ui.staff_title}
+              </h1>
+              <p className="mt-0.5 text-[7px] font-black text-on-surface-muted uppercase tracking-[0.3em]">
+                {T_ui.staff_subtitle}
+              </p>
             </div>
-          </button>
-        </div>
-
-        {/* SEARCH BAR */}
-        <div className="mt-12 max-w-2xl">
-          <div className="relative group">
-            <div className="absolute inset-y-0 left-6 flex items-center pointer-events-none text-slate-400 group-focus-within:text-primary-600 transition-colors">
-              <Search className="h-5 w-5" />
-            </div>
-            <input
-              type="text"
-              placeholder={lang === 'es' ? 'Buscar profesional...' : 'Search staff...'}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full h-12 pl-14 pr-6 bg-precision-surface-lowest border-none rounded-xl shadow-spatial focus:ring-2 focus:ring-primary-600 transition-all text-slate-900 font-bold placeholder:text-slate-300 placeholder:uppercase placeholder:tracking-widest placeholder:text-[9px]"
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* ASYMMETRIC GRID SECTION */}
-      <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-        {filteredProfessionals.length === 0 ? (
-          <div className="col-span-full py-24 text-center bg-precision-surface-lowest/50 backdrop-blur-sm rounded-[3rem] border-2 border-dashed border-slate-200 shadow-spatial">
-            <div className="h-20 w-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-6">
-              <Users className="h-10 w-10 text-slate-300" />
-            </div>
-            <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight">{T_ui.no_professionals_yet}</h3>
-            <p className="mt-2 text-sm font-bold text-slate-400 uppercase tracking-widest">
-              {lang === 'es' ? 'Comienza agregando a tu equipo' : 'Start by adding your team'}
-            </p>
-          </div>
-        ) : (
-          filteredProfessionals.map((prof, idx) => (
-            <div 
-              key={prof.id}
-              className={`${idx % 5 === 0 ? 'md:col-span-2 lg:col-span-2' : ''} h-full`}
+            <button 
+              onClick={() => setShowAddForm(true)}
+              className="precision-button-primary py-1.5 px-4 text-[9px] group flex items-center gap-2 h-fit"
             >
-              <ProfessionalCard 
-                professional={prof} 
-                onClick={() => selectProfessional(prof)} 
+              <span>{T_ui.add_professional_btn}</span>
+              <Plus className="h-3 w-3 group-hover:rotate-90 transition-transform" />
+            </button>
+          </div>
+
+          {/* COMPACT SEARCH BAR */}
+          <div className="mt-4 max-w-sm">
+            <div className="relative group">
+              <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none text-on-surface-muted group-focus-within:text-primary transition-colors">
+                <Search className="h-3 w-3" />
+              </div>
+              <input
+                type="text"
+                placeholder={T_ui.search_placeholder}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full h-8 pl-9 pr-3 bg-precision-surface-lowest border border-on-surface/5 rounded-xl shadow-sm focus:ring-1 focus:ring-primary focus:border-primary transition-all text-[10px] font-bold text-on-surface placeholder:text-on-surface-muted/40 placeholder:text-[8px] placeholder:uppercase placeholder:tracking-widest"
               />
             </div>
-          ))
-        )}
+          </div>
+        </div>
+
+        {/* UNIFORM GRID SECTION */}
+        <div className="relative z-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4">
+          {filteredProfessionals.length === 0 ? (
+            <div className="col-span-full py-12 text-center bg-precision-surface-lowest/50 backdrop-blur-sm rounded-xl border border-dashed border-on-surface/10">
+              <div className="h-10 w-10 bg-surface-container-low rounded-full flex items-center justify-center mx-auto mb-3">
+                <Users className="h-5 w-5 text-on-surface-muted" />
+              </div>
+              <h3 className="text-sm font-black text-on-surface uppercase tracking-tight">{T_ui.no_professionals_yet}</h3>
+              <p className="mt-0.5 text-[8px] font-bold text-on-surface-muted uppercase tracking-widest">
+                {lang === 'es' ? 'COMIENZA AGREGANDO A TU EQUIPO' : lang === 'it' ? 'INIZIA AGGIUNGENDO IL TUO TEAM' : 'START BY ADDING YOUR TEAM'}
+              </p>
+            </div>
+          ) : (
+            filteredProfessionals.map((prof) => (
+              <div key={prof.id} className="h-full">
+                <ProfessionalCard 
+                  professional={prof} 
+                  onClick={() => selectProfessional(prof)} 
+                />
+              </div>
+            ))
+          )}
+        </div>
       </div>
 
       {/* MODALS SECTION */}

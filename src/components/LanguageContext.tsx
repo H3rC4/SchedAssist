@@ -19,7 +19,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   // Load from local storage or detect via IP
   useEffect(() => {
     const detectLanguage = async () => {
-      const saved = localStorage.getItem('landing_lang') as Language;
+      const saved = typeof window !== 'undefined' ? localStorage.getItem('landing_lang') as Language : null;
       if (saved && ['en', 'es', 'it'].includes(saved)) {
         setLanguage(saved);
         setMounted(true);

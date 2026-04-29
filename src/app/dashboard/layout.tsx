@@ -39,27 +39,27 @@ function DashboardHeader({ lang = 'es', onMenuClick }: { lang?: Language; onMenu
   }
 
   return (
-    <header className="flex h-20 items-center justify-between px-8 flex-shrink-0 bg-surface z-40 relative">
+    <header className="flex h-14 items-center justify-between px-4 md:px-6 flex-shrink-0 bg-surface z-40 relative border-b border-on-surface/5">
       {/* Left: Mobile menu + tenant name */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2.5">
         <button
           onClick={onMenuClick}
-          className="md:hidden p-2 rounded-lg text-on-surface-muted hover:bg-surface-container-low transition-colors"
+          className="md:hidden p-1.5 rounded-lg text-on-surface-muted hover:bg-surface-container-low transition-colors"
         >
-          <Menu className="h-5 w-5" />
+          <Menu className="h-4.5 w-4.5" />
         </button>
 
-        <div className="flex items-center gap-2.5">
-          <div className="h-8 w-8 rounded-lg bg-primary-light flex items-center justify-center flex-shrink-0">
-            <span className="text-primary font-bold text-xs">
+        <div className="flex items-center gap-2">
+          <div className="h-7 w-7 rounded-md bg-primary-light flex items-center justify-center flex-shrink-0">
+            <span className="text-primary font-bold text-[10px]">
               {tenantName ? tenantName.slice(0, 2).toUpperCase() : '··'}
             </span>
           </div>
           <div className="hidden sm:block min-w-0">
-            <p className="text-sm font-semibold text-on-surface leading-none truncate max-w-[140px]">
+            <p className="text-xs font-bold text-on-surface leading-none truncate max-w-[140px]">
               {tenantName || '—'}
             </p>
-            <p className="text-[11px] text-on-surface-muted leading-tight mt-0.5 truncate max-w-[160px]">
+            <p className="text-[10px] text-on-surface-muted leading-tight mt-0.5 truncate max-w-[160px]">
               {tenantEmail}
             </p>
           </div>
@@ -67,15 +67,15 @@ function DashboardHeader({ lang = 'es', onMenuClick }: { lang?: Language; onMenu
       </div>
 
       {/* Right: actions */}
-      <div className="flex items-center gap-2">
-        <button className="p-2 rounded-lg text-on-surface-muted hover:bg-surface-container-low transition-colors">
-          <Bell className="h-5 w-5" />
+      <div className="flex items-center gap-1.5">
+        <button className="p-1.5 rounded-lg text-on-surface-muted hover:bg-surface-container-low transition-colors">
+          <Bell className="h-4.5 w-4.5" />
         </button>
         <button
           onClick={handleSignOut}
-          className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-on-surface-muted hover:bg-surface-container-low hover:text-on-surface transition-colors"
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-on-surface-muted hover:bg-surface-container-low hover:text-on-surface transition-colors"
         >
-          <LogOut className="h-4 w-4" />
+          <LogOut className="h-3.5 w-3.5" />
           <span className="hidden sm:inline">{t.sign_out}</span>
         </button>
       </div>
@@ -159,7 +159,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               animate={{ x: 0 }}
               exit={{ x: '-100%' }}
               transition={{ type: 'spring', damping: 28, stiffness: 220 }}
-              className="fixed inset-y-0 left-0 z-[70] w-72 p-3 md:hidden"
+              className="fixed inset-y-0 left-0 z-[70] w-64 p-3 md:hidden"
             >
               <Sidebar lang={tenantInfo?.lang} />
               <button
@@ -185,7 +185,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       )}
 
       {/* Desktop sidebar */}
-      <div className="hidden md:flex flex-shrink-0 w-72 p-4 pr-0">
+      <div className="hidden md:flex flex-shrink-0 w-64 p-4 pr-0">
         <Sidebar lang={tenantInfo?.lang} />
       </div>
 
@@ -197,7 +197,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <DashboardHeader lang={tenantInfo?.lang} onMenuClick={() => setIsSidebarOpen(true)} />
 
         {/* Page scroll container */}
-        <main className="flex-1 overflow-y-auto p-6 md:p-8 custom-scrollbar">
+        <main className="flex-1 overflow-y-auto custom-scrollbar">
           {children}
         </main>
       </div>

@@ -2,11 +2,11 @@
 
 import React from 'react'
 
-export function Logo({ className = "h-10 w-10", iconOnly = false }: { className?: string, iconOnly?: boolean }) {
+export function Logo({ className = "h-10 w-10", iconOnly = false, textColor = "text-on-surface" }: { className?: string, iconOnly?: boolean, textColor?: string }) {
   return (
     <div className={`flex items-center gap-2 group ${!iconOnly ? '' : 'justify-center'}`}>
       <div className={`relative ${className} transition-all duration-500 group-hover:scale-110 active:scale-95`}>
-        <div className="absolute inset-0 bg-accent-500/10 blur-xl rounded-full -z-10 opacity-60" />
+        <div className="absolute inset-0 bg-accent/10 blur-xl rounded-full -z-10 opacity-60" />
         
         <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full drop-shadow-sm">
           <circle cx="45" cy="45" r="33" stroke="#f59e0b" strokeWidth="4" />
@@ -20,7 +20,7 @@ export function Logo({ className = "h-10 w-10", iconOnly = false }: { className?
       </div>
 
       {!iconOnly && (
-        <span className="text-xl font-black text-on-surface tracking-tight uppercase select-none">
+        <span className={`text-xl font-black tracking-tight uppercase select-none ${textColor}`}>
           Sched<span className="text-primary group-hover:opacity-80 transition-opacity">Assist</span>
         </span>
       )}

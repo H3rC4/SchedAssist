@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from 'react'
-import { X, UserPlus, CheckCircle, Loader2, ArrowRight, Sparkles } from 'lucide-react'
+import { X, UserPlus, CheckCircle, Loader2, ArrowRight, Sparkles, ChevronDown } from 'lucide-react'
 
 interface AddProfessionalModalProps {
   isOpen: boolean;
@@ -36,43 +36,43 @@ export function AddProfessionalModal({ isOpen, onClose, onConfirm, t, locations 
   return (
     <div className="fixed inset-0 z-[100] overflow-hidden" onClick={onClose}>
       {/* OVERLAY */}
-      <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-500" />
+      <div className="absolute inset-0 bg-on-surface/40 backdrop-blur-sm animate-in fade-in duration-500" />
 
       {/* DRAWER CONTENT */}
       <div 
-        className="absolute top-0 right-0 h-full w-full max-w-2xl bg-surface shadow-spatial animate-in slide-in-from-right duration-700 flex flex-col"
+        className="absolute top-0 right-0 h-full w-full max-w-md bg-surface shadow-spatial animate-in slide-in-from-right duration-700 flex flex-col border-l border-on-surface/5"
         onClick={e => e.stopPropagation()}
       >
         {/* HEADER SECTION */}
-        <div className="bg-surface-container-lowest p-8 md:p-12 border-b border-slate-100 flex-shrink-0">
-          <div className="flex items-start justify-between mb-10">
-            <div className="h-20 w-20 rounded-[2rem] bg-primary flex items-center justify-center text-white shadow-spatial">
-              <UserPlus className="h-8 w-8" />
+        <div className="bg-precision-surface-lowest p-6 border-b border-on-surface/5 flex-shrink-0">
+          <div className="flex items-start justify-between mb-6">
+            <div className="h-12 w-12 rounded-xl bg-primary flex items-center justify-center text-white shadow-md">
+              <UserPlus className="h-5 w-5" />
             </div>
             <button 
               onClick={onClose}
-              className="p-4 rounded-2xl bg-slate-50 text-slate-400 hover:text-slate-900 hover:bg-slate-100 transition-all active:scale-95 shadow-ambient"
+              className="h-8 w-8 rounded-lg bg-surface-container-low text-on-surface-muted hover:text-on-surface hover:bg-surface-container-high transition-all active:scale-95"
             >
-              <X className="h-6 w-6" />
+              <X className="h-4 w-4 mx-auto" />
             </button>
           </div>
 
-          <div className="space-y-4">
-            <h2 className="text-5xl md:text-6xl font-black text-slate-900 tracking-tighter leading-none uppercase">
+          <div className="space-y-2">
+            <h2 className="text-2xl font-black text-on-surface tracking-tighter leading-none uppercase">
               {t.newProf}
             </h2>
-            <p className="text-xs font-black text-slate-400 uppercase tracking-[0.3em] flex items-center gap-2">
-              <Sparkles className="h-4 w-4 text-primary" /> {t.subtitle}
+            <p className="text-[8px] font-black text-on-surface-muted uppercase tracking-widest flex items-center gap-1.5">
+              <Sparkles className="h-3 w-3 text-primary" /> {t.subtitle}
             </p>
           </div>
         </div>
 
         {/* BODY SECTION / FORM */}
-        <div className="flex-1 overflow-y-auto p-8 md:p-12 custom-scrollbar">
-          <form id="add-prof-form" onSubmit={handleSubmit} className="space-y-12 max-w-lg">
+        <div className="flex-1 overflow-y-auto p-6 custom-scrollbar bg-surface">
+          <form id="add-prof-form" onSubmit={handleSubmit} className="space-y-6">
             
-            <div className="space-y-3">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">
+            <div className="space-y-1.5">
+              <label className="text-[8px] font-black text-on-surface-muted uppercase tracking-widest ml-1">
                 {t.fullName}
               </label>
               <input
@@ -80,41 +80,41 @@ export function AddProfessionalModal({ isOpen, onClose, onConfirm, t, locations 
                 autoFocus
                 value={data.full_name}
                 onChange={e => setData({ ...data, full_name: e.target.value })}
-                className="w-full h-20 bg-white rounded-[2rem] border-2 border-slate-100 px-8 font-black text-slate-900 text-lg focus:border-primary focus:ring-0 transition-all shadow-ambient outline-none placeholder:text-slate-200"
+                className="w-full h-10 bg-surface border border-on-surface/10 rounded-lg px-4 text-sm font-bold text-on-surface focus:border-primary outline-none transition-all"
                 placeholder={t.fullNamePH}
               />
             </div>
 
-            <div className="space-y-3">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">
+            <div className="space-y-1.5">
+              <label className="text-[8px] font-black text-on-surface-muted uppercase tracking-widest ml-1">
                 {t.specialty}
               </label>
               <input
                 value={data.specialty}
                 onChange={e => setData({ ...data, specialty: e.target.value })}
-                className="w-full h-20 bg-white rounded-[2rem] border-2 border-slate-100 px-8 font-black text-slate-900 text-lg focus:border-primary focus:ring-0 transition-all shadow-ambient outline-none placeholder:text-slate-200"
+                className="w-full h-10 bg-surface border border-on-surface/10 rounded-lg px-4 text-sm font-bold text-on-surface focus:border-primary outline-none transition-all"
                 placeholder={t.specialtyPH}
               />
             </div>
 
             {locations.length > 0 && (
-              <div className="space-y-3">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">
+              <div className="space-y-1.5">
+                <label className="text-[8px] font-black text-on-surface-muted uppercase tracking-widest ml-1">
                   {t.locationLabel}
                 </label>
                 <div className="relative">
                   <select
                     value={data.location_id}
                     onChange={e => setData({ ...data, location_id: e.target.value })}
-                    className="w-full h-20 bg-white rounded-[2rem] border-2 border-slate-100 px-8 font-black text-slate-900 text-lg focus:border-primary focus:ring-0 transition-all shadow-ambient outline-none appearance-none"
+                    className="w-full h-10 bg-surface border border-on-surface/10 rounded-lg px-4 text-sm font-bold text-on-surface focus:border-primary outline-none transition-all appearance-none"
                   >
                     <option value="">{t.selectLocationOptional}</option>
                     {locations.map(loc => (
                       <option key={loc.id} value={loc.id}>{loc.name}</option>
                     ))}
                   </select>
-                  <div className="absolute right-8 top-1/2 -translate-y-1/2 pointer-events-none">
-                    <ArrowRight className="h-6 w-6 text-slate-300 rotate-90" />
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                    <ChevronDown className="h-4 w-4 text-on-surface-muted" />
                   </div>
                 </div>
               </div>
@@ -123,11 +123,11 @@ export function AddProfessionalModal({ isOpen, onClose, onConfirm, t, locations 
         </div>
 
         {/* FOOTER ACTION BAR */}
-        <div className="p-8 md:p-12 bg-white border-t border-slate-100 flex items-center justify-between flex-shrink-0 z-30 shadow-[0_-20px_50px_rgba(0,0,0,0.02)]">
+        <div className="p-6 bg-precision-surface-lowest border-t border-on-surface/5 flex items-center justify-between flex-shrink-0 z-30">
           <button 
             type="button"
             onClick={onClose}
-            className="py-6 px-10 rounded-full text-xs font-black uppercase tracking-widest text-slate-400 hover:text-slate-900 transition-all hover:bg-slate-50"
+            className="px-6 py-2.5 rounded-lg text-[9px] font-black uppercase tracking-widest text-on-surface-muted hover:text-on-surface hover:bg-on-surface/5 transition-all"
           >
             {t.cancel || 'Cancelar'}
           </button>
@@ -136,18 +136,18 @@ export function AddProfessionalModal({ isOpen, onClose, onConfirm, t, locations 
             form="add-prof-form"
             type="submit"
             disabled={loading || success}
-            className={`group flex items-center justify-center gap-4 py-6 px-16 rounded-full font-black uppercase tracking-[0.2em] text-xs transition-all active:scale-95 disabled:opacity-50 shadow-spatial
-              ${success ? 'bg-emerald-500 text-white' : 'bg-primary text-white hover:bg-slate-900'}
+            className={`flex items-center justify-center gap-2 px-8 py-2.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all active:scale-95 disabled:opacity-50 shadow-sm
+              ${success ? 'bg-emerald-500 text-white' : 'bg-on-surface text-surface hover:bg-primary hover:text-white'}
             `}
           >
             {success ? (
-              <><CheckCircle className="h-5 w-5 animate-in zoom-in" /> <span>{t.created}</span></>
+              <><CheckCircle className="h-4 w-4 animate-in zoom-in" /> <span>{t.created}</span></>
             ) : loading ? (
-              <Loader2 className="h-5 w-5 animate-spin" />
+              <Loader2 className="h-4 w-4 animate-spin" />
             ) : (
               <>
                 <span>{t.createBtn}</span>
-                <ArrowRight className="h-5 w-5 group-hover:translate-x-2 transition-transform" />
+                <ArrowRight className="h-4 w-4 ml-1" />
               </>
             )}
           </button>

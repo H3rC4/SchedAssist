@@ -20,10 +20,9 @@ export function Navbar() {
       <div className="max-w-7xl mx-auto">
         <div className="bg-primary-950/60 backdrop-blur-2xl h-20 rounded-[2.5rem] px-8 flex items-center justify-between border border-white/5 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.5)] relative">
           
-          {/* Logo */}
-          <Link href="/" className="relative z-10 scale-110 md:scale-125 transition-transform origin-left">
-            <Logo />
-          </Link>
+        <Link href="/" className="hover:scale-105 transition-transform active:scale-95">
+          <Logo textColor="text-white" />
+        </Link>
 
           {/* Desktop Right Actions */}
           <div className="hidden md:flex items-center gap-4 relative z-10">
