@@ -198,6 +198,7 @@ export default function ServicesPage() {
               className="relative h-full w-full max-w-2xl precision-surface-lowest md:rounded-[4rem] flex flex-col overflow-hidden"
               onClick={e => e.stopPropagation()}
             >
+              <div className="p-8 md:p-12 overflow-y-auto custom-scrollbar flex-1">
                 <div className="flex items-start justify-between mb-12">
                   <div className="space-y-3">
                     <div className="h-1.5 w-10 bg-primary rounded-full" />
@@ -247,15 +248,15 @@ export default function ServicesPage() {
                     </div>
 
                     {/* PRICE INPUT */}
-                    <div className="space-y-4">
-                      <label className="text-[10px] font-black text-on-surface-muted uppercase tracking-[0.3em] ml-2">VALOR BASE (ARS)</label>
+                    <div className="space-y-3">
+                      <label className="text-[9px] font-black text-on-surface-muted uppercase tracking-[0.3em] ml-2">VALOR BASE (ARS)</label>
                       <div className="relative">
-                        <div className="absolute left-8 top-1/2 -translate-y-1/2 font-black text-primary/40 text-2xl">$</div>
+                        <div className="absolute left-6 top-1/2 -translate-y-1/2 font-black text-primary/40 text-xl">$</div>
                         <input 
                           type="number"
                           value={editService ? editService.price : formData.price}
                           onChange={e => editService ? setEditService({...editService, price: parseFloat(e.target.value)}) : setFormData({...formData, price: parseFloat(e.target.value)})}
-                          className="w-full h-20 bg-surface-container-low border-2 border-transparent rounded-3xl pl-16 pr-8 font-black text-on-surface text-2xl focus:bg-surface-container-lowest focus:border-primary transition-all shadow-inner outline-none"
+                          className="w-full h-14 bg-surface-container-low border-2 border-transparent rounded-2xl pl-14 pr-6 font-black text-on-surface text-lg focus:bg-surface-container-lowest focus:border-primary transition-all shadow-inner outline-none"
                           placeholder="0.00"
                         />
                       </div>
