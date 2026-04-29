@@ -86,15 +86,15 @@ export function PatientMedicalRecordDrawer({
             className="fixed right-0 top-0 h-full w-full max-w-2xl bg-white shadow-2xl z-[101] flex flex-col"
           >
             {/* Header */}
-            <div className="p-8 border-b border-surface-container-low flex items-center justify-between">
-              <h2 className="text-2xl font-black text-secondary-900 tracking-tight">
+            <div className="p-6 border-b border-surface-container-low flex items-center justify-between">
+              <h2 className="text-xl font-black text-secondary-900 tracking-tight">
                 {t.medical_record}: <span className="text-primary-600">{patient.first_name} {patient.last_name}</span>
               </h2>
               <button
                 onClick={onClose}
                 className="p-2 rounded-xl bg-surface-container-low text-secondary-400 hover:text-secondary-900 transition-colors"
               >
-                <X className="h-6 w-6" />
+                <X className="h-5 w-5" />
               </button>
             </div>
 
@@ -120,7 +120,7 @@ export function PatientMedicalRecordDrawer({
             </div>
 
             {/* Tabs */}
-            <nav className="px-8 border-b border-surface-container-low flex gap-8">
+            <nav className="px-6 border-b border-surface-container-low flex gap-6">
               {[
                 { id: 'history', label: t.history, icon: HistoryIcon },
                 { id: 'files', label: t.files, icon: FileText },
@@ -129,11 +129,11 @@ export function PatientMedicalRecordDrawer({
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id as any)}
-                  className={`py-6 flex items-center gap-2 text-[10px] font-black uppercase tracking-widest transition-all relative ${
+                  className={`py-4 flex items-center gap-2 text-[10px] font-black uppercase tracking-widest transition-all relative ${
                     activeTab === tab.id ? 'text-primary-600' : 'text-secondary-300 hover:text-secondary-900'
                   }`}
                 >
-                  <tab.icon className="h-4 w-4" />
+                  <tab.icon className="h-3 w-3" />
                   {tab.label}
                   {activeTab === tab.id && (
                     <motion.div
@@ -263,19 +263,19 @@ export function PatientMedicalRecordDrawer({
             </div>
 
             {/* Footer Actions */}
-            <div className="p-8 border-t border-surface-container-low bg-white grid grid-cols-2 gap-4">
+            <div className="p-6 border-t border-surface-container-low bg-white grid grid-cols-2 gap-4">
               <button
                 onClick={onAddNote}
-                className="flex items-center justify-center gap-2 bg-surface-container-low hover:bg-surface-container-mid text-secondary-900 py-4 rounded-xl text-xs font-black uppercase tracking-widest transition-all shadow-sm"
+                className="flex items-center justify-center gap-2 bg-surface-container-low hover:bg-surface-container-mid text-secondary-900 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all shadow-sm"
               >
-                <Plus className="h-4 w-4" />
+                <Plus className="h-3 w-3" />
                 {t.add_note}
               </button>
               <button
                 onClick={onScheduleAppointment}
-                className="flex items-center justify-center gap-2 bg-secondary-900 hover:bg-secondary-800 text-white py-4 rounded-xl text-xs font-black uppercase tracking-widest transition-all shadow-lg"
+                className="flex items-center justify-center gap-2 bg-secondary-900 hover:bg-secondary-800 text-white py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all shadow-lg"
               >
-                <Calendar className="h-4 w-4" />
+                <Calendar className="h-3 w-3" />
                 {t.schedule_appointment}
               </button>
             </div>

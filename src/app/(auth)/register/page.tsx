@@ -88,7 +88,7 @@ export default function RegisterPage() {
         <div className="bg-white rounded-[4rem] shadow-spatial border border-on-surface/5 p-12 md:p-20 relative overflow-hidden">
           {/* Subtle Background Text */}
           <div className="absolute top-0 right-0 p-12 opacity-[0.02] pointer-events-none select-none">
-            <span className="text-9xl font-black uppercase tracking-tighter">Join</span>
+            <span className="text-7xl font-black uppercase tracking-tighter">Join</span>
           </div>
 
           <header className="mb-16 relative z-10 text-center">

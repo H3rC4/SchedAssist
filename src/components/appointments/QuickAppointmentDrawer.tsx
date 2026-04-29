@@ -123,7 +123,7 @@ export function QuickAppointmentDrawer({
         onClick={e => e.stopPropagation()}
       >
         {/* Editorial Header */}
-        <div className="p-8 md:p-12 pb-0 flex items-start justify-between">
+        <div className="p-6 md:p-8 pb-0 flex items-start justify-between">
           <div>
             <div className="flex items-center gap-3 mb-6">
               <div className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
@@ -131,7 +131,7 @@ export function QuickAppointmentDrawer({
                 {T.quick_appointment}
               </span>
             </div>
-            <h2 className="precision-header text-4xl leading-tight">
+            <h2 className="precision-header text-3xl leading-tight">
               {T.create_appointment?.split(' ')[0] || 'Schedule'} <br />
               <span className="text-primary italic font-serif">
                 {T.create_appointment?.split(' ').slice(1).join(' ') || 'Appointment'}
@@ -146,7 +146,7 @@ export function QuickAppointmentDrawer({
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-8 md:p-12 space-y-12">
+        <div className="flex-1 overflow-y-auto p-6 md:p-8 space-y-8">
           {/* Patient Selection & Data */}
           <section className="space-y-8">
             <div className="flex items-center gap-4 border-b border-on-surface/5 pb-4">
@@ -234,7 +234,7 @@ export function QuickAppointmentDrawer({
           </section>
 
           {/* Date & Time Picker */}
-          <section className="space-y-8">
+          <section className="space-y-6">
             <div className="flex items-center gap-4 border-b border-on-surface/5 pb-4">
               <CalendarIcon className="h-4 w-4 text-primary" />
               <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-on-surface">
@@ -318,11 +318,11 @@ export function QuickAppointmentDrawer({
         </div>
 
         {/* Action Button */}
-        <div className="p-8 md:p-12 border-t border-on-surface/5 bg-surface/80 backdrop-blur-md">
+        <div className="p-6 md:p-8 border-t border-on-surface/5 bg-surface/80 backdrop-blur-md">
           <button 
             onClick={handleCreateAppointment}
             disabled={loading || saveSuccess || !formData.first_name || !formData.professional_id || !formData.time || !formData.service_id}
-            className={`w-full py-6 rounded-full font-black text-[11px] uppercase tracking-[0.4em] shadow-xl transition-all duration-500 flex items-center justify-center gap-3 active:scale-[0.98] disabled:opacity-30 disabled:cursor-not-allowed
+            className={`w-full py-5 rounded-full font-black text-[11px] uppercase tracking-[0.4em] shadow-xl transition-all duration-500 flex items-center justify-center gap-3 active:scale-[0.98] disabled:opacity-30 disabled:cursor-not-allowed
               ${saveSuccess ? 'bg-success text-white' : 'bg-primary text-white hover:shadow-primary/20 hover:-translate-y-0.5'}`}
           >
             {saveSuccess ? (

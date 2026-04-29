@@ -132,7 +132,7 @@ export default function ClientsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-surface p-8 max-w-[1600px] mx-auto">
+    <div className="min-h-screen bg-surface p-6 md:p-8 max-w-[1600px] mx-auto">
       {/* Editorial Header */}
       <header className="mb-12 flex items-start justify-between">
         <div>
@@ -171,11 +171,11 @@ export default function ClientsPage() {
         <table className="w-full text-left">
           <thead>
             <tr className="border-b border-surface-container-low bg-precision-surface-lowest">
-              <th className="px-6 py-4 text-[10px] font-black text-secondary-400 uppercase tracking-widest">{t.name}</th>
-              <th className="px-6 py-4 text-[10px] font-black text-secondary-400 uppercase tracking-widest">{t.id}</th>
-              <th className="px-6 py-4 text-[10px] font-black text-secondary-400 uppercase tracking-widest">{t.phone}</th>
-              <th className="px-6 py-4 text-[10px] font-black text-secondary-400 uppercase tracking-widest">{t.last_visit}</th>
-              <th className="px-6 py-4 text-[10px] font-black text-secondary-400 uppercase tracking-widest">{t.status}</th>
+              <th className="px-4 py-4 text-[10px] font-black text-secondary-400 uppercase tracking-widest">{t.name}</th>
+              <th className="px-4 py-4 text-[10px] font-black text-secondary-400 uppercase tracking-widest">{t.id}</th>
+              <th className="px-4 py-4 text-[10px] font-black text-secondary-400 uppercase tracking-widest">{t.phone}</th>
+              <th className="px-4 py-4 text-[10px] font-black text-secondary-400 uppercase tracking-widest">{t.last_visit}</th>
+              <th className="px-4 py-4 text-[10px] font-black text-secondary-400 uppercase tracking-widest">{t.status}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-surface-container-low">
@@ -221,7 +221,7 @@ export default function ClientsPage() {
                     <td className="px-6 py-5 text-sm font-bold text-secondary-500">
                       {getLastVisit(client)}
                     </td>
-                    <td className="px-6 py-5">
+                    <td className="px-4 py-4">
                       <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${
                         status === 'active' 
                           ? 'bg-emerald-100 text-emerald-700' 

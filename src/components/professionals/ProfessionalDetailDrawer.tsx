@@ -196,14 +196,14 @@ export function ProfessionalDetailDrawer({
         onClick={e => e.stopPropagation()}
       >
         {/* HEADER SECTION */}
-        <div className="bg-precision-surface-lowest p-12 md:p-20 border-b border-slate-100 flex-shrink-0">
-          <div className="flex items-start justify-between mb-12">
-            <div className="flex items-center gap-10">
-              <div className="h-32 w-32 rounded-[3rem] bg-primary flex items-center justify-center text-white text-4xl font-black shadow-spatial">
+        <div className="bg-precision-surface-lowest p-6 md:p-10 border-b border-slate-100 flex-shrink-0">
+          <div className="flex items-start justify-between mb-8">
+            <div className="flex items-center gap-8">
+              <div className="h-20 w-20 rounded-[2rem] bg-primary flex items-center justify-center text-white text-2xl font-black shadow-spatial">
                 {professional.full_name.split(' ').map((w: string) => w[0]).join('').slice(0, 2).toUpperCase()}
               </div>
               <div>
-                <h2 className="text-6xl md:text-[5.5rem] font-black text-slate-900 tracking-tighter leading-[0.8] uppercase">
+                <h2 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tighter leading-[0.8] uppercase">
                   {professional.full_name}
                 </h2>
                 <div className="mt-6 flex items-center gap-4">
@@ -220,9 +220,9 @@ export function ProfessionalDetailDrawer({
             </div>
             <button 
               onClick={onClose}
-              className="h-16 w-16 flex items-center justify-center rounded-[2rem] bg-slate-50 hover:bg-slate-100 text-slate-300 hover:text-slate-900 transition-all active:scale-95"
+              className="h-12 w-12 flex items-center justify-center rounded-[1.5rem] bg-slate-50 hover:bg-slate-100 text-slate-300 hover:text-slate-900 transition-all active:scale-95"
             >
-              <X className="h-8 w-8" />
+              <X className="h-6 w-6" />
             </button>
           </div>
 
@@ -236,7 +236,7 @@ export function ProfessionalDetailDrawer({
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as any)}
-                className={`px-10 py-5 rounded-[2rem] text-[10px] font-black uppercase tracking-[0.3em] transition-all ${
+                className={`px-6 py-3 rounded-[1.5rem] text-[10px] font-black uppercase tracking-[0.3em] transition-all ${
                   activeTab === tab.id 
                     ? 'bg-white text-primary shadow-spatial -translate-y-0.5' 
                     : 'text-slate-400 hover:text-slate-900'
@@ -249,7 +249,7 @@ export function ProfessionalDetailDrawer({
         </div>
 
         {/* BODY SECTION */}
-        <div className="flex-1 overflow-y-auto p-12 md:p-20 custom-scrollbar">
+        <div className="flex-1 overflow-y-auto p-6 md:p-10 custom-scrollbar">
           <AnimatePresence mode="wait">
             {activeTab === 'schedule' && (
               <motion.div 
@@ -262,13 +262,13 @@ export function ProfessionalDetailDrawer({
                 <div className="grid gap-6">
                   {editRules.map((rule) => (
                     <div key={rule.day_of_week}
-                      className={`rounded-[3rem] p-10 transition-all duration-500 border-2 ${
+                      className={`rounded-[2rem] p-6 transition-all duration-500 border-2 ${
                         rule.active 
                           ? 'bg-white border-slate-100 shadow-spatial' 
                           : 'bg-slate-50/50 border-transparent opacity-50'
                       }`}
                     >
-                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-10">
+                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                         <div className="flex items-center gap-8">
                           <button
                             onClick={() => updateRule(rule.day_of_week, 'active', !rule.active)}
@@ -276,7 +276,7 @@ export function ProfessionalDetailDrawer({
                           >
                             <div className={`h-8 w-8 bg-white rounded-full shadow-sm transition-transform duration-500 ${rule.active ? 'translate-x-6' : 'translate-x-0'}`} />
                           </button>
-                          <span className="text-3xl font-black text-slate-900 uppercase tracking-tighter">
+                          <span className="text-xl font-black text-slate-900 uppercase tracking-tighter">
                             {days[rule.day_of_week]}
                           </span>
                         </div>
@@ -336,11 +336,11 @@ export function ProfessionalDetailDrawer({
                 </div>
 
                 <div className="pt-20 border-t border-slate-100">
-                  <div className="flex items-center gap-6 mb-12">
-                    <div className="h-12 w-12 rounded-2xl bg-slate-50 flex items-center justify-center text-primary shadow-inner">
-                      <Users className="h-6 w-6" />
+                  <div className="flex items-center gap-4 mb-8">
+                    <div className="h-10 w-10 rounded-xl bg-slate-50 flex items-center justify-center text-primary shadow-inner">
+                      <Users className="h-5 w-5" />
                     </div>
-                    <h3 className="text-3xl font-black text-slate-900 uppercase tracking-tighter">Core Definition</h3>
+                    <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tighter">Core Definition</h3>
                   </div>
                   
                   <div className="grid gap-10">
@@ -569,7 +569,7 @@ export function ProfessionalDetailDrawer({
         </div>
 
         {/* FOOTER ACTION BAR */}
-        <div className="p-12 md:p-16 bg-white/80 backdrop-blur-3xl border-t border-slate-100 flex items-center justify-between flex-shrink-0 z-30">
+        <div className="p-6 md:p-8 bg-white/80 backdrop-blur-3xl border-t border-slate-100 flex items-center justify-between flex-shrink-0 z-30">
           <div className="hidden md:flex items-center gap-4">
             <div className="h-3 w-3 rounded-full bg-primary animate-pulse" />
             <span className="text-[10px] font-black text-slate-300 uppercase tracking-[0.5em]">Synchronizing Precision</span>

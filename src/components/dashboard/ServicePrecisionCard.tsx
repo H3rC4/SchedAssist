@@ -35,53 +35,53 @@ export function ServicePrecisionCard({ service, index, savedId, durationLabels, 
       initial={{ opacity: 0, y: 30 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.1, duration: 0.6 }}
-      className={`precision-surface-lowest p-10 group relative transition-all hover:translate-y-[-8px] hover:shadow-spatial ${savedId === service.id ? 'ring-4 ring-primary ring-offset-4' : ''}`}
+      className={`precision-surface-lowest p-6 group relative transition-all hover:translate-y-[-4px] hover:shadow-spatial ${savedId === service.id ? 'ring-2 ring-primary ring-offset-2' : ''}`}
     >
-      <div className="flex items-start justify-between mb-12">
-        <div className={`h-24 w-24 rounded-3xl ${iconData.bg} flex items-center justify-center ${iconData.color} transition-transform duration-700 group-hover:scale-110 group-hover:rotate-6 shadow-ambient`}>
-          {iconData.icon}
+      <div className="flex items-start justify-between mb-8">
+        <div className={`h-16 w-16 rounded-2xl ${iconData.bg} flex items-center justify-center ${iconData.color} transition-transform duration-700 group-hover:scale-110 shadow-ambient`}>
+          {iconData.icon && <iconData.icon.type {...iconData.icon.props} className="h-6 w-6" />}
         </div>
-        <div className="flex gap-3">
+        <div className="flex gap-2">
           <button 
             onClick={() => onEdit(service)} 
-            className="h-14 w-14 flex items-center justify-center bg-surface-container-low rounded-2xl text-on-surface-muted hover:text-primary hover:bg-surface-container-highest transition-all"
+            className="h-10 w-10 flex items-center justify-center bg-surface-container-low rounded-xl text-on-surface-muted hover:text-primary hover:bg-surface-container-highest transition-all"
           >
-            <Pencil className="h-6 w-6" />
+            <Pencil className="h-4 w-4" />
           </button>
           <button 
             onClick={() => onDelete(service.id)} 
-            className="h-14 w-14 flex items-center justify-center bg-surface-container-low rounded-2xl text-on-surface-muted hover:text-accent-rose hover:bg-accent-rose/10 transition-all"
+            className="h-10 w-10 flex items-center justify-center bg-surface-container-low rounded-xl text-on-surface-muted hover:text-accent-rose hover:bg-accent-rose/10 transition-all"
           >
-            <Trash2 className="h-6 w-6" />
+            <Trash2 className="h-4 w-4" />
           </button>
         </div>
       </div>
 
       <div>
-        <div className="flex items-center gap-4 mb-4">
-          <div className="h-1.5 w-8 bg-primary/20 rounded-full" />
-          <p className="text-[10px] font-black text-on-surface-muted uppercase tracking-widest">
+        <div className="flex items-center gap-3 mb-3">
+          <div className="h-1 w-6 bg-primary/20 rounded-full" />
+          <p className="text-[8px] font-black text-on-surface-muted uppercase tracking-widest">
             {durationLabels[service.duration_minutes] || `${service.duration_minutes}m`} de sesión
           </p>
         </div>
-        <h3 className="text-4xl font-black text-on-surface tracking-tighter group-hover:text-primary transition-colors leading-none uppercase">
+        <h3 className="text-2xl font-black text-on-surface tracking-tighter group-hover:text-primary transition-colors leading-none uppercase">
           {service.name}
         </h3>
         
-        <div className="flex items-center justify-between mt-12 pt-8 border-t border-surface-container-highest">
-          <div className="flex items-center gap-3">
-            <Clock className="h-5 w-5 text-on-surface-muted" />
-            <span className="text-xs font-black text-on-surface uppercase tracking-widest">{durationLabels[service.duration_minutes] || `${service.duration_minutes}m`}</span>
+        <div className="flex items-center justify-between mt-8 pt-6 border-t border-surface-container-highest">
+          <div className="flex items-center gap-2">
+            <Clock className="h-3.5 w-3.5 text-on-surface-muted" />
+            <span className="text-[10px] font-black text-on-surface uppercase tracking-widest">{durationLabels[service.duration_minutes] || `${service.duration_minutes}m`}</span>
           </div>
           {service.price ? (
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-black text-primary/40">$</span>
-              <span className="text-3xl font-black text-on-surface tracking-tighter">{service.price}</span>
+            <div className="flex items-center gap-1.5">
+              <span className="text-xs font-black text-primary/40">$</span>
+              <span className="text-xl font-black text-on-surface tracking-tighter">{service.price}</span>
             </div>
           ) : (
-            <div className="flex items-center gap-2 px-4 py-2 bg-surface-container-low rounded-full">
-              <Info className="h-4 w-4 text-on-surface-muted" />
-              <span className="text-[10px] font-black text-on-surface-muted uppercase tracking-widest">A CONVENIR</span>
+            <div className="flex items-center gap-2 px-3 py-1 bg-surface-container-low rounded-full">
+              <Info className="h-3 w-3 text-on-surface-muted" />
+              <span className="text-[8px] font-black text-on-surface-muted uppercase tracking-widest">A CONVENIR</span>
             </div>
           )}
         </div>

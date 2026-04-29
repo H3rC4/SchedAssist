@@ -87,7 +87,7 @@ export default function ProfessionalsPage() {
   )
 
   return (
-    <div className="flex-1 bg-surface min-h-screen p-4 md:p-12 animate-in fade-in duration-700">
+    <div className="flex-1 bg-surface min-h-screen p-4 md:p-6 animate-in fade-in duration-700">
       {/* BACKGROUND DECOR */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden opacity-[0.03]">
         <div className="absolute -top-[10%] -right-[10%] w-[60%] h-[60%] rounded-full bg-primary-600 blur-[120px]" />
@@ -95,19 +95,19 @@ export default function ProfessionalsPage() {
       </div>
 
       {/* EDITORIAL HEADER */}
-      <div className="relative z-10 mb-16 md:mb-24">
+      <div className="relative z-10 mb-10 md:mb-16">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
           <div className="max-w-4xl">
-            <h1 className="text-7xl md:text-9xl font-black tracking-[calc(-0.06em)] text-slate-900 leading-[0.85] uppercase">
+            <h1 className="text-3xl md:text-4xl font-bold tracking-[calc(-0.04em)] text-slate-900 leading-[0.9] uppercase">
               {T_ui.staff_title}
             </h1>
-            <p className="mt-6 text-sm md:text-base font-bold text-slate-400 uppercase tracking-[0.3em] pl-1">
+            <p className="mt-4 text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-[0.3em] pl-1">
               {T_ui.staff_subtitle}
             </p>
           </div>
           <button 
             onClick={() => setShowAddForm(true)}
-            className="group relative h-16 md:h-20 px-8 md:px-12 bg-primary-600 text-white rounded-2xl overflow-hidden shadow-spatial transition-all active:scale-95"
+            className="group relative h-12 md:h-13 px-6 md:px-8 bg-primary-600 text-white rounded-xl overflow-hidden shadow-spatial transition-all active:scale-95"
           >
             <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity" />
             <div className="relative flex items-center gap-3">
@@ -128,7 +128,7 @@ export default function ProfessionalsPage() {
               placeholder={lang === 'es' ? 'Buscar profesional...' : 'Search staff...'}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full h-16 pl-16 pr-8 bg-precision-surface-lowest border-none rounded-2xl shadow-spatial focus:ring-2 focus:ring-primary-600 transition-all text-slate-900 font-bold placeholder:text-slate-300 placeholder:uppercase placeholder:tracking-widest placeholder:text-[10px]"
+              className="w-full h-12 pl-14 pr-6 bg-precision-surface-lowest border-none rounded-xl shadow-spatial focus:ring-2 focus:ring-primary-600 transition-all text-slate-900 font-bold placeholder:text-slate-300 placeholder:uppercase placeholder:tracking-widest placeholder:text-[9px]"
             />
           </div>
         </div>

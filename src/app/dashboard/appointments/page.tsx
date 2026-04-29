@@ -83,7 +83,7 @@ function AppointmentsContent() {
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
 
       {/* Header / Toolbar */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 p-8 md:p-12 border-b border-on-surface/5 bg-white z-20">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 p-6 border-b border-on-surface/5 bg-white z-20">
         <div>
           <div className="flex items-center gap-3 mb-4">
             <CalendarIcon className="h-4 w-4 text-primary" />
@@ -91,7 +91,7 @@ function AppointmentsContent() {
               Operations Center
             </span>
           </div>
-          <h1 className="precision-header text-5xl">
+          <h1 className="precision-header text-3xl">
             Management <br />
             <span className="text-primary italic font-serif">Registry</span>
           </h1>
@@ -129,7 +129,7 @@ function AppointmentsContent() {
       {/* Main Content Area */}
       <div className="flex flex-col lg:flex-row flex-1 overflow-hidden">
         {/* Sidebar: Mini Calendar & Operational Stats */}
-        <div className="w-full lg:w-96 p-8 md:p-12 border-r border-on-surface/5 space-y-12 bg-on-surface/[0.02] overflow-y-auto hidden md:block custom-scrollbar">
+        <div className="w-full lg:w-72 p-6 border-r border-on-surface/5 space-y-8 bg-on-surface/[0.02] overflow-y-auto hidden md:block custom-scrollbar">
           <div>
             <MiniCalendar 
               currentMonth={currentMonth}
@@ -148,7 +148,7 @@ function AppointmentsContent() {
             <div className="p-8 rounded-[2.5rem] bg-white border border-on-surface/5 shadow-sm space-y-4">
                <p className="text-[10px] font-black text-on-surface/20 uppercase tracking-[0.3em]">{T.today}</p>
                <div className="flex items-end justify-between">
-                  <span className="text-5xl font-black text-on-surface">{appointments.length}</span>
+                  <span className="text-4xl font-black text-on-surface">{appointments.length}</span>
                   <span className="text-[10px] font-black text-primary uppercase tracking-widest mb-2">Events</span>
                </div>
                <div className="h-1.5 w-full bg-on-surface/5 rounded-full overflow-hidden">
@@ -163,7 +163,7 @@ function AppointmentsContent() {
         </div>
 
         {/* Dynamic Feed / Grid */}
-        <div className="flex-1 overflow-y-auto p-8 md:p-12 lg:p-20 bg-on-surface/[0.01] custom-scrollbar">
+        <div className="flex-1 overflow-y-auto p-6 md:p-8 bg-on-surface/[0.01] custom-scrollbar">
           {/* Pending Notifications Alert (Restored with high-fidelity style) */}
           <AnimatePresence>
             {pendingCalls.length > 0 && (

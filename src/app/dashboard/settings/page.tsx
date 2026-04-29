@@ -106,9 +106,9 @@ export default function GeneralSettingsPage() {
   };
 
   return (
-    <div className="space-y-16 animate-in fade-in duration-700">
+    <div className="space-y-12 animate-in fade-in duration-700">
       <header>
-        <h1 className="text-4xl font-black text-on-surface tracking-tighter uppercase mb-2">
+        <h1 className="text-3xl font-black text-on-surface tracking-tighter uppercase mb-2">
           General <span className="text-primary italic font-serif lowercase">Settings</span>
         </h1>
         <p className="text-[10px] font-black text-on-surface/30 uppercase tracking-[0.4em]">
@@ -119,7 +119,7 @@ export default function GeneralSettingsPage() {
       <form onSubmit={handleSave} className="grid grid-cols-1 lg:grid-cols-12 gap-12">
         {/* Left: Clinic Info */}
         <div className="lg:col-span-7 space-y-8">
-          <section className="bg-white rounded-[2.5rem] border border-on-surface/5 p-10 shadow-spatial space-y-10">
+          <section className="bg-white rounded-[2.5rem] border border-on-surface/5 p-8 shadow-spatial space-y-8">
             <div className="flex items-center gap-4 mb-2">
               <Building2 className="h-5 w-5 text-primary" />
               <h2 className="text-lg font-black text-on-surface uppercase tracking-tight">Clinic Identity</h2>
@@ -170,7 +170,7 @@ export default function GeneralSettingsPage() {
 
           {/* Password Security */}
           {!isGoogleUser && (
-            <section className="bg-white rounded-[2.5rem] border border-on-surface/5 p-10 shadow-spatial space-y-10">
+            <section className="bg-white rounded-[2.5rem] border border-on-surface/5 p-8 shadow-spatial space-y-8">
               <div className="flex items-center gap-4 mb-2">
                 <KeyRound className="h-5 w-5 text-primary" />
                 <h2 className="text-lg font-black text-on-surface uppercase tracking-tight">Security</h2>
@@ -207,7 +207,7 @@ export default function GeneralSettingsPage() {
 
         {/* Right: Logo & Save */}
         <div className="lg:col-span-5 space-y-8">
-          <section className="bg-white rounded-[2.5rem] border border-on-surface/5 p-10 shadow-spatial">
+          <section className="bg-white rounded-[2.5rem] border border-on-surface/5 p-8 shadow-spatial">
             <div className="space-y-8">
               <div className="h-48 w-full rounded-3xl bg-on-surface/[0.02] border-2 border-dashed border-on-surface/10 flex flex-col items-center justify-center relative overflow-hidden group hover:border-primary transition-colors">
                 {logoUrl ? (
@@ -246,7 +246,7 @@ export default function GeneralSettingsPage() {
              <button
                 type="submit"
                 disabled={isSaving}
-                className="w-full h-20 bg-primary text-white rounded-[2rem] text-[10px] font-black uppercase tracking-[0.3em] shadow-lg shadow-primary/20 hover:-translate-y-1 transition-all active:scale-95 disabled:opacity-50"
+                className="w-full h-16 bg-primary text-white rounded-[2rem] text-[10px] font-black uppercase tracking-[0.3em] shadow-lg shadow-primary/20 hover:-translate-y-1 transition-all active:scale-95 disabled:opacity-50"
              >
                 {isSaving ? <Loader2 className="h-5 w-5 animate-spin mx-auto" /> : 'Save Changes'}
              </button>
