@@ -115,6 +115,10 @@ export const translations = {
     last_name: 'Last Name',
     phone: 'Phone',
     errGeneric: 'An error occurred. Please try again.',
+    open_medical_record: 'Open Medical Record',
+    view_all: 'View All',
+    next: 'Next',
+    previous: 'Previous',
     
     // Sidebar
     nav_home: 'Dashboard',
@@ -581,6 +585,10 @@ export const translations = {
     last_name: 'Apellido',
     phone: 'Teléfono',
     errGeneric: 'Ocurrió un error. Inténtalo de nuevo.',
+    open_medical_record: 'Abrir Expediente Médico',
+    view_all: 'Ver Todo',
+    next: 'Siguiente',
+    previous: 'Anterior',
 
     // Sidebar
     nav_home: 'Inicio',
@@ -1036,6 +1044,10 @@ export const translations = {
     last_name: 'Cognome',
     phone: 'Telefono',
     errGeneric: 'Si è verificato un errore. Riprova.',
+    open_medical_record: 'Apri Cartella Medica',
+    view_all: 'Vedi Tutto',
+    next: 'Successivo',
+    previous: 'Precedente',
 
     // Sidebar
     nav_home: 'Dashboard',
