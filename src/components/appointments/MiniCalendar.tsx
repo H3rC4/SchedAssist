@@ -28,10 +28,10 @@ export function MiniCalendar({
   const startDayOfWeek = startOfMonth(currentMonth).getDay()
 
   return (
-    <div className="h-fit">
-      <div className="flex items-center justify-between mb-12">
-        <h2 className="text-3xl font-black text-on-surface capitalize tracking-tighter">
-          {format(currentMonth, 'MMMM', { locale })} <span className="text-on-surface/20 font-medium italic">{format(currentMonth, 'yyyy')}</span>
+    <div className="h-fit px-1">
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-xl font-black text-on-surface capitalize tracking-tighter">
+          {format(currentMonth, 'MMMM', { locale })} <span className="text-on-surface/20 font-medium italic text-xs">{format(currentMonth, 'yyyy')}</span>
         </h2>
         <div className="flex items-center gap-2">
            <button onClick={() => onNavigate('prev')} className="p-3 rounded-2xl bg-on-surface/5 hover:bg-on-surface/10 transition-all">

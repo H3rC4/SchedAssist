@@ -54,7 +54,7 @@ export const DayActivityFeed: React.FC<DayActivityFeedProps> = ({
   return (
     <div className="min-h-screen bg-surface">
       {/* Editorial Header */}
-      <div className="flex items-center justify-between mb-16 px-4">
+      <div className="flex items-center justify-between mb-8 px-4">
         <div>
           <h2 className="text-4xl font-black text-on-surface tracking-tighter">
             {T.today_agenda || "Today's Agenda"}
@@ -94,9 +94,9 @@ export const DayActivityFeed: React.FC<DayActivityFeedProps> = ({
       ) : (
         <div className="flex flex-col lg:flex-row gap-12">
           {/* Timeline Column */}
-          <div className="flex-1 space-y-2 relative pl-16">
+          <div className="flex-1 space-y-4 relative pl-20">
             {/* Timeline Vertical Line */}
-            <div className="absolute left-[39px] top-0 bottom-0 w-0.5 bg-on-surface/5" />
+            <div className="absolute left-[55px] top-0 bottom-0 w-0.5 bg-on-surface/5" />
             
             {appointments.map((app, index) => {
               const start = format(parseISO(app.start_at.slice(0, 19)), 'hh:mm a')
@@ -107,7 +107,7 @@ export const DayActivityFeed: React.FC<DayActivityFeedProps> = ({
               return (
                 <div key={app.id} className="relative group">
                   {/* Timeline Node */}
-                  <div className={`absolute -left-16 top-1/2 -translate-y-1/2 flex items-center justify-center z-10`}>
+                  <div className={`absolute -left-20 top-1/2 -translate-y-1/2 flex items-center justify-center z-10 w-20`}>
                     <div className={`h-4 w-4 rounded-full border-4 bg-white transition-all duration-500 ${
                       isActive ? 'border-primary scale-125 shadow-lg shadow-primary/20' : 
                       isPast ? 'border-on-surface/10 bg-on-surface/5' : 'border-on-surface/10'

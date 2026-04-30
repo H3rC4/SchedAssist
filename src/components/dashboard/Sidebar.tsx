@@ -38,6 +38,7 @@ export function Sidebar({ lang = 'es' }: SidebarProps) {
   const [userRole, setUserRole] = useState<string | null>(null)
   const [showSupportModal, setShowSupportModal] = useState(false)
 
+  const [isHovered, setIsHovered] = useState(false)
   const t = translations[lang] || translations['es']
 
   useEffect(() => {
@@ -66,18 +67,35 @@ export function Sidebar({ lang = 'es' }: SidebarProps) {
 
   const groups = ['manage', 'configure'] as const
 
+  const isExpanded = isHovered
+
   return (
-    <div className="flex h-full w-[280px] flex-col bg-surface-container-lowest relative z-50">
+    <div 
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      className={`flex h-full flex-col bg-surface-container-lowest relative z-50 transition-all duration-500 ease-in-out border-r border-on-surface/5 ${
+        isExpanded ? 'w-[280px]' : 'w-[80px]'
+      }`}
+    >
       {/* Brand Section */}
-      <div className="p-8 pb-10">
+      <div className={`transition-all duration-500 ${isExpanded ? 'p-8 pb-10' : 'p-5 pb-10 flex justify-center'}`}>
         <Link href="/dashboard" className="flex items-center gap-3 group">
-          <div className="h-10 w-10 rounded-2xl bg-primary flex items-center justify-center transition-transform duration-500 group-hover:rotate-12 shadow-spatial">
+          <div className="h-10 w-10 rounded-2xl bg-primary flex items-center justify-center transition-transform duration-500 group-hover:rotate-12 shadow-spatial flex-shrink-0">
             <Zap className="h-5 w-5 text-white fill-white" />
           </div>
-          <div>
-            <span className="text-xl font-black text-on-surface tracking-tighter leading-none block font-display">SchedAssist</span>
-            <span className="text-[10px] font-black text-primary/40 uppercase tracking-[0.2em] mt-0.5 block">Precision OS</span>
-          </div>
+          <AnimatePresence>
+            {isExpanded && (
+              <motion.div
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -10 }}
+                className="overflow-hidden whitespace-nowrap"
+              >
+                <span className="text-xl font-black text-on-surface tracking-tighter leading-none block font-display">SchedAssist</span>
+                <span className="text-[10px] font-black text-primary/40 uppercase tracking-[0.2em] mt-0.5 block">Precision OS</span>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </Link>
       </div>
 
@@ -88,7 +106,7 @@ export function Sidebar({ lang = 'es' }: SidebarProps) {
           if (items.length === 0) return null
           return (
             <div key={group} className="space-y-4">
-              <p className="px-4 text-[10px] font-black text-on-surface/30 uppercase tracking-[0.3em] font-display">
+              <p className={`px-4 text-[10px] font-black text-on-surface/30 uppercase tracking-[0.3em] font-display transition-opacity duration-300 ${isExpanded ? 'opacity-100' : 'opacity-0 h-0 overflow-hidden'}`}>
                 {groupLabels[group][lang]}
               </p>
               <div className="space-y-1">
@@ -105,12 +123,18 @@ export function Sidebar({ lang = 'es' }: SidebarProps) {
                       }`}
                     >
                       <div className="flex items-center gap-4">
-                        <div className={`transition-colors duration-300 ${active ? 'text-primary' : 'text-on-surface/30 group-hover:text-on-surface/60'}`}>
+                        <div className={`transition-colors duration-300 flex-shrink-0 ${active ? 'text-primary' : 'text-on-surface/30 group-hover:text-on-surface/60'}`}>
                           <item.icon className="h-5 w-5" strokeWidth={active ? 2.5 : 2} />
                         </div>
-                        <span className={`text-[15px] font-bold tracking-tight ${active ? 'font-black' : 'font-semibold'}`}>
-                          {item[lang as keyof typeof item] as string}
-                        </span>
+                        {isExpanded && (
+                          <motion.span 
+                            initial={{ opacity: 0, x: -10 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            className={`text-[15px] font-bold tracking-tight whitespace-nowrap ${active ? 'font-black' : 'font-semibold'}`}
+                          >
+                            {item[lang as keyof typeof item] as string}
+                          </motion.span>
+                        )}
                       </div>
                       {active && (
                         <motion.div layoutId="active-pill" className="h-1.5 w-1.5 rounded-full bg-primary" />
@@ -124,22 +148,9 @@ export function Sidebar({ lang = 'es' }: SidebarProps) {
         })}
       </nav>
 
-      {/* Tenant / Profile Footer */}
+      {/* Footer Section */}
       <div className="p-4 mt-auto">
-        {activeTenant && (
-          <div className="bg-surface-container-low rounded-3xl p-4 flex items-center gap-3 group cursor-pointer hover:bg-surface-container-high transition-colors shadow-sm">
-            <div className="h-10 w-10 rounded-2xl bg-primary/10 flex items-center justify-center flex-shrink-0 text-primary font-black text-xs">
-              {activeTenant.name?.slice(0, 2).toUpperCase()}
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-[13px] font-black text-on-surface truncate tracking-tight">{activeTenant.name}</p>
-              <p className="text-[10px] font-bold text-on-surface/40 uppercase tracking-widest truncate">{activeTenant.slug}</p>
-            </div>
-            <ChevronRight className="h-4 w-4 text-on-surface/20 group-hover:text-on-surface/40 transition-colors" />
-          </div>
-        )}
-        
-        <div className="mt-4 flex items-center justify-between px-2">
+        <div className={`flex items-center justify-between px-2 ${isExpanded ? '' : 'flex-col gap-4'}`}>
             <button 
               onClick={() => setShowSupportModal(true)}
               className="p-3 text-on-surface/40 hover:text-primary hover:bg-primary/5 rounded-2xl transition-all"

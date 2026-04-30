@@ -92,8 +92,8 @@ function AppointmentsContent() {
               {T.operational_intelligence || 'OPERATIONS'}
             </span>
           </div>
-          <h1 className="text-lg md:text-xl font-black text-on-surface tracking-tighter uppercase leading-tight">
-            {T.nav_appointments} <span className="text-primary italic font-serif lowercase">{T.calendar || 'calendar'}</span>
+          <h1 className="text-xl md:text-2xl font-black text-on-surface tracking-tighter uppercase leading-tight">
+            {T.nav_appointments} <span className="text-primary italic font-serif lowercase ml-1">{T.calendar || 'calendar'}</span>
           </h1>
         </div>
 
@@ -129,7 +129,7 @@ function AppointmentsContent() {
       {/* Main Content Area */}
       <div className="flex flex-col lg:flex-row flex-1 overflow-hidden">
         {/* Sidebar: Mini Calendar & Operational Stats */}
-        <div className="w-full lg:w-64 p-5 border-r border-on-surface/5 space-y-6 bg-on-surface/[0.02] overflow-y-auto hidden md:block custom-scrollbar">
+        <div className="w-full lg:w-[320px] p-8 border-r border-on-surface/5 space-y-10 bg-on-surface/[0.02] overflow-y-auto hidden md:block custom-scrollbar flex-shrink-0">
           <div>
             <MiniCalendar 
               currentMonth={currentMonth}

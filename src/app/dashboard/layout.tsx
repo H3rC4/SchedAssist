@@ -55,11 +55,11 @@ function DashboardHeader({ lang = 'es', onMenuClick }: { lang?: Language; onMenu
               {tenantName ? tenantName.slice(0, 2).toUpperCase() : '··'}
             </span>
           </div>
-          <div className="hidden sm:block min-w-0">
-            <p className="text-xs font-bold text-on-surface leading-none truncate max-w-[140px]">
+          <div className="hidden lg:block min-w-0">
+            <p className="text-[11px] font-black text-on-surface leading-none truncate max-w-[120px]">
               {tenantName || '—'}
             </p>
-            <p className="text-[10px] text-on-surface-muted leading-tight mt-0.5 truncate max-w-[160px]">
+            <p className="text-[9px] font-bold text-on-surface-muted leading-tight mt-0.5 truncate max-w-[140px]">
               {tenantEmail}
             </p>
           </div>
@@ -185,7 +185,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       )}
 
       {/* Desktop sidebar */}
-      <div className="hidden md:flex flex-shrink-0 w-64 p-4 pr-0">
+      <div className="hidden md:flex flex-shrink-0 transition-all duration-500 ease-in-out p-4 pr-0">
         <Sidebar lang={tenantInfo?.lang} />
       </div>
 
