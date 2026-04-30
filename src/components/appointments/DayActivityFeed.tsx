@@ -12,7 +12,7 @@ import {
   CheckCircle2,
   CalendarClock
 } from 'lucide-react'
-import { format, parseISO, isAfter, isBefore, addMinutes } from 'date-fns'
+import { format, parseISO, isAfter, isBefore, addMinutes, isPast } from 'date-fns'
 import { Appointment } from '@/hooks/useAppointments'
 import { motion, AnimatePresence } from 'framer-motion'
 
