@@ -128,39 +128,41 @@ function AppointmentsContent() {
 
       {/* Main Content Area */}
       <div className="flex flex-col lg:flex-row flex-1 overflow-hidden">
-        {/* Sidebar: Mini Calendar & Operational Stats */}
-        <div className="w-full lg:w-[320px] p-8 border-r border-on-surface/5 space-y-10 bg-on-surface/[0.02] overflow-y-auto hidden md:block custom-scrollbar flex-shrink-0">
-          <div>
-            <MiniCalendar 
-              currentMonth={currentMonth}
-              selectedDate={selectedDate}
-              onSelectDate={setSelectedDate}
-              onNavigate={navigateMonth}
-              appointments={allMonthApps}
-              locale={dateLocales[lang]}
-              dayNames={dayNames}
-            />
-          </div>
+        {/* Sidebar: Mini Calendar & Operational Stats - ONLY IN WEEKLY VIEW */}
+        {viewMode === 'weekly' && (
+          <div className="w-full lg:w-[320px] p-8 border-r border-on-surface/5 space-y-10 bg-on-surface/[0.02] overflow-y-auto hidden md:block custom-scrollbar flex-shrink-0">
+            <div>
+              <MiniCalendar 
+                currentMonth={currentMonth}
+                selectedDate={selectedDate}
+                onSelectDate={setSelectedDate}
+                onNavigate={navigateMonth}
+                appointments={allMonthApps}
+                locale={dateLocales[lang]}
+                dayNames={dayNames}
+              />
+            </div>
 
-          {/* Operational Pulse */}
-          <div className="space-y-4 pt-8 border-t border-on-surface/10">
-            <h4 className="text-[8px] font-black text-on-surface/30 uppercase tracking-[0.3em] mb-2">{T.operational_intelligence || 'Operational Pulse'}</h4>
-            <div className="p-5 rounded-2xl bg-white border border-on-surface/5 shadow-sm space-y-3">
-               <p className="text-[8px] font-black text-on-surface/20 uppercase tracking-[0.2em]">{T.today}</p>
-               <div className="flex items-end justify-between">
-                  <span className="text-2xl font-black text-on-surface leading-none">{appointments.length}</span>
-                  <span className="text-[8px] font-black text-primary uppercase tracking-widest mb-0.5">{T.appointments || 'Events'}</span>
-               </div>
-               <div className="h-1 w-full bg-on-surface/5 rounded-full overflow-hidden">
-                  <motion.div 
-                    initial={{ width: 0 }}
-                    animate={{ width: `${Math.min(100, (appointments.length / 20) * 100)}%` }}
-                    className="h-full bg-primary" 
-                  />
-               </div>
+            {/* Operational Pulse */}
+            <div className="space-y-4 pt-8 border-t border-on-surface/10">
+              <h4 className="text-[8px] font-black text-on-surface/30 uppercase tracking-[0.3em] mb-2">{T.operational_intelligence || 'Operational Pulse'}</h4>
+              <div className="p-5 rounded-2xl bg-white border border-on-surface/5 shadow-sm space-y-3">
+                 <p className="text-[8px] font-black text-on-surface/20 uppercase tracking-[0.2em]">{T.today}</p>
+                 <div className="flex items-end justify-between">
+                    <span className="text-2xl font-black text-on-surface leading-none">{appointments.length}</span>
+                    <span className="text-[8px] font-black text-primary uppercase tracking-widest mb-0.5">{T.appointments || 'Events'}</span>
+                 </div>
+                 <div className="h-1 w-full bg-on-surface/5 rounded-full overflow-hidden">
+                    <motion.div 
+                      initial={{ width: 0 }}
+                      animate={{ width: `${Math.min(100, (appointments.length / 20) * 100)}%` }}
+                      className="h-full bg-primary" 
+                    />
+                 </div>
+              </div>
             </div>
           </div>
-        </div>
+        )}
 
         {/* Dynamic Feed / Grid */}
         <div className="flex-1 overflow-y-auto p-4 md:p-6 bg-on-surface/[0.01] custom-scrollbar">
