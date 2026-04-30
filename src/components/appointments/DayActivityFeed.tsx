@@ -94,7 +94,7 @@ export const DayActivityFeed: React.FC<DayActivityFeedProps> = ({
       ) : (
         <div className="flex flex-col lg:flex-row gap-12">
           {/* Timeline Column */}
-          <div className="flex-1 space-y-4 relative pl-20">
+          <div className="flex-1 space-y-4 relative pl-24">
             {/* Timeline Vertical Line */}
             <div className="absolute left-[55px] top-0 bottom-0 w-0.5 bg-on-surface/5" />
             
@@ -107,7 +107,7 @@ export const DayActivityFeed: React.FC<DayActivityFeedProps> = ({
               return (
                 <div key={app.id} className="relative group">
                   {/* Timeline Node */}
-                  <div className={`absolute -left-20 top-1/2 -translate-y-1/2 flex items-center justify-center z-10 w-20`}>
+                  <div className={`absolute -left-24 top-1/2 -translate-y-1/2 flex items-center justify-center z-10 w-24`}>
                     <div className={`h-4 w-4 rounded-full border-4 bg-white transition-all duration-500 ${
                       isActive ? 'border-primary scale-125 shadow-lg shadow-primary/20' : 
                       isPast ? 'border-on-surface/10 bg-on-surface/5' : 'border-on-surface/10'
@@ -116,7 +116,7 @@ export const DayActivityFeed: React.FC<DayActivityFeedProps> = ({
 
                   {/* Time Marker for Active */}
                   {isActive && (
-                    <div className="absolute -left-32 top-1/2 -translate-y-1/2 text-[10px] font-black text-primary uppercase tracking-widest whitespace-nowrap">
+                    <div className="absolute -left-36 top-1/2 -translate-y-1/2 text-[9px] font-black text-primary uppercase tracking-widest whitespace-nowrap hidden sm:block">
                        {format(now, 'hh:mm a')} —
                     </div>
                   )}
@@ -173,19 +173,19 @@ export const DayActivityFeed: React.FC<DayActivityFeedProps> = ({
                   className="bg-white rounded-[3rem] border border-on-surface/5 shadow-spatial overflow-hidden sticky top-8"
                 >
                   {/* Card Header */}
-                  <div className="bg-primary/5 p-8 border-b border-on-surface/5">
-                    <p className="text-[10px] font-black text-primary uppercase tracking-[0.4em] mb-4">
+                  <div className="bg-primary/5 p-6 border-b border-on-surface/5">
+                    <p className="text-[9px] font-black text-primary uppercase tracking-[0.4em] mb-3">
                       {isBefore(parseISO(selectedApp.end_at.slice(0, 19)), now) ? "Patient Summary" : "Next Patient"}
                     </p>
-                    <div className="flex items-center gap-6">
-                      <div className="h-20 w-20 rounded-[2rem] bg-primary flex items-center justify-center text-white text-3xl font-black shadow-lg shadow-primary/20">
+                    <div className="flex items-center gap-4">
+                      <div className="h-14 w-14 rounded-2xl bg-primary flex items-center justify-center text-white text-xl font-black shadow-lg shadow-primary/20">
                         {selectedApp.clients?.first_name[0]}
                       </div>
                       <div>
-                        <h3 className="text-3xl font-black text-on-surface tracking-tighter">
+                        <h3 className="text-xl font-black text-on-surface tracking-tighter">
                           {selectedApp.clients?.first_name} {selectedApp.clients?.last_name}
                         </h3>
-                        <p className="text-lg font-bold text-primary tracking-tight">
+                        <p className="text-sm font-bold text-primary tracking-tight">
                           {format(parseISO(selectedApp.start_at.slice(0, 19)), 'hh:mm a')}
                         </p>
                       </div>
@@ -193,22 +193,22 @@ export const DayActivityFeed: React.FC<DayActivityFeedProps> = ({
                   </div>
 
                   {/* Card Details */}
-                  <div className="p-8 space-y-8">
+                  <div className="p-6 space-y-6">
                     <div>
-                      <p className="text-[10px] font-black text-on-surface/30 uppercase tracking-widest mb-3">Reason for Visit</p>
-                      <p className="text-sm font-bold text-on-surface leading-relaxed">
+                      <p className="text-[9px] font-black text-on-surface/30 uppercase tracking-widest mb-2">Reason for Visit</p>
+                      <p className="text-xs font-bold text-on-surface leading-relaxed">
                         {selectedApp.notes || selectedApp.services?.name || "Regular check-up and follow-up consultation."}
                       </p>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-8 py-8 border-y border-on-surface/5">
+                    <div className="grid grid-cols-2 gap-6 py-6 border-y border-on-surface/5">
                       <div>
-                        <p className="text-[10px] font-black text-on-surface/30 uppercase tracking-widest mb-1">Age</p>
-                        <p className="text-xl font-black text-on-surface">45 <span className="text-xs font-medium text-on-surface/30">years</span></p>
+                        <p className="text-[9px] font-black text-on-surface/30 uppercase tracking-widest mb-1">Age</p>
+                        <p className="text-lg font-black text-on-surface">45 <span className="text-[10px] font-medium text-on-surface/30">years</span></p>
                       </div>
                       <div>
-                        <p className="text-[10px] font-black text-on-surface/30 uppercase tracking-widest mb-1">Status</p>
-                        <p className="text-sm font-black text-emerald-500 uppercase tracking-widest">Normal</p>
+                        <p className="text-[9px] font-black text-on-surface/30 uppercase tracking-widest mb-1">Status</p>
+                        <p className="text-xs font-black text-emerald-500 uppercase tracking-widest">Normal</p>
                       </div>
                     </div>
 

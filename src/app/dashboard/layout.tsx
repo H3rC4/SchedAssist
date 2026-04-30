@@ -185,7 +185,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       )}
 
       {/* Desktop sidebar */}
-      <div className="hidden md:flex flex-shrink-0 transition-all duration-500 ease-in-out p-4 pr-0">
+      <div className="hidden md:flex flex-shrink-0 transition-all duration-500 ease-in-out">
         <Sidebar lang={tenantInfo?.lang} />
       </div>
 

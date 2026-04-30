@@ -78,10 +78,10 @@ export function Sidebar({ lang = 'es' }: SidebarProps) {
       }`}
     >
       {/* Brand Section */}
-      <div className={`transition-all duration-500 ${isExpanded ? 'p-8 pb-10' : 'p-5 pb-10 flex justify-center'}`}>
+      <div className={`h-14 flex items-center border-b border-on-surface/5 transition-all duration-500 ${isExpanded ? 'px-8' : 'justify-center'}`}>
         <Link href="/dashboard" className="flex items-center gap-3 group">
-          <div className="h-10 w-10 rounded-2xl bg-primary flex items-center justify-center transition-transform duration-500 group-hover:rotate-12 shadow-spatial flex-shrink-0">
-            <Zap className="h-5 w-5 text-white fill-white" />
+          <div className="h-8 w-8 rounded-xl bg-primary flex items-center justify-center transition-transform duration-500 group-hover:rotate-12 shadow-spatial flex-shrink-0">
+            <Zap className="h-4 w-4 text-white fill-white" />
           </div>
           <AnimatePresence>
             {isExpanded && (
@@ -91,8 +91,8 @@ export function Sidebar({ lang = 'es' }: SidebarProps) {
                 exit={{ opacity: 0, x: -10 }}
                 className="overflow-hidden whitespace-nowrap"
               >
-                <span className="text-xl font-black text-on-surface tracking-tighter leading-none block font-display">SchedAssist</span>
-                <span className="text-[10px] font-black text-primary/40 uppercase tracking-[0.2em] mt-0.5 block">Precision OS</span>
+                <span className="text-lg font-black text-on-surface tracking-tighter leading-none block font-display">SchedAssist</span>
+                <span className="text-[9px] font-black text-primary/40 uppercase tracking-[0.2em] block">Precision OS</span>
               </motion.div>
             )}
           </AnimatePresence>
