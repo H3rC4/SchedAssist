@@ -78,7 +78,7 @@ export function useAppointments() {
       return;
     }
 
-    const { data } = await supabase.from('appointments').select('id, status, start_at, clients(id), professionals(id)')
+    const { data } = await supabase.from('appointments').select('id, status, start_at, end_at, notes, clients(id, first_name, last_name), services(name), professionals(id)')
       .eq('tenant_id', tenantId).neq('status', 'cancelled')
       .gte('start_at', `${start}T00:00:00Z`).lte('start_at', `${end}T23:59:59Z`)
     

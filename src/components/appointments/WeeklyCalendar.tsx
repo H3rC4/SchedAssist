@@ -1,18 +1,19 @@
 "use client"
 
 import { useMemo } from 'react'
-import { format, startOfWeek, addDays, isSameDay, parseISO } from 'date-fns'
+import { format, startOfWeek, addDays, isSameDay, parseISO, subDays } from 'date-fns'
 import { motion } from 'framer-motion'
-import { Clock, User } from 'lucide-react'
+import { Clock, User, ChevronLeft, ChevronRight } from 'lucide-react'
 
 interface WeeklyCalendarProps {
   selectedDate: Date;
   appointments: any[];
   lang: 'en' | 'es' | 'it';
   translations: any;
+  onNavigateDate: (date: Date) => void;
 }
 
-export function WeeklyCalendar({ selectedDate, appointments, lang, translations: T }: WeeklyCalendarProps) {
+export function WeeklyCalendar({ selectedDate, appointments, lang, translations: T, onNavigateDate }: WeeklyCalendarProps) {
   const weekDays = useMemo(() => {
     const start = startOfWeek(selectedDate, { weekStartsOn: 1 })
     return Array.from({ length: 7 }, (_, i) => addDays(start, i))
@@ -21,18 +22,39 @@ export function WeeklyCalendar({ selectedDate, appointments, lang, translations:
   const hours = Array.from({ length: 14 }, (_, i) => i + 8) // 8:00 to 21:00
 
   return (
-    <div className="bg-white rounded-[2.5rem] border border-on-surface/5 shadow-spatial overflow-hidden flex flex-col h-full min-h-[600px]">
+    <div className="flex flex-col h-full bg-white">
       {/* Week Header */}
-      <div className="grid grid-cols-8 border-b border-on-surface/5 bg-on-surface/2 px-4 py-6">
-        <div className="col-span-1" />
+      <div className="grid grid-cols-8 border-b border-on-surface/5 bg-surface/50">
+        <div className="col-span-1 flex items-center justify-center border-r border-on-surface/5">
+           <div className="flex items-center gap-1">
+              <button 
+                onClick={() => onNavigateDate(subDays(selectedDate, 7))}
+                className="p-2 hover:bg-on-surface/5 rounded-full transition-colors"
+              >
+                <ChevronLeft className="h-4 w-4 text-on-surface/40" />
+              </button>
+              <button 
+                onClick={() => onNavigateDate(addDays(selectedDate, 7))}
+                className="p-2 hover:bg-on-surface/5 rounded-full transition-colors"
+              >
+                <ChevronRight className="h-4 w-4 text-on-surface/40" />
+              </button>
+           </div>
+        </div>
         {weekDays.map((day, idx) => (
-          <div key={idx} className="text-center space-y-1">
-            <p className="text-[10px] font-black text-on-surface/30 uppercase tracking-widest">
+          <div key={idx} className={`text-center py-6 border-r border-on-surface/5 last:border-0 ${isSameDay(day, new Date()) ? 'bg-primary/[0.03]' : ''}`}>
+            <p className="text-[10px] font-black text-on-surface/30 uppercase tracking-[0.2em] mb-1">
               {format(day, 'EEE')}
             </p>
-            <p className={`text-sm font-black ${isSameDay(day, new Date()) ? 'text-primary' : 'text-on-surface'}`}>
+            <div className={`inline-flex items-center justify-center h-8 w-8 rounded-full text-sm font-black transition-all ${
+              isSameDay(day, new Date()) 
+                ? 'bg-primary text-white shadow-lg shadow-primary/30' 
+                : isSameDay(day, selectedDate)
+                ? 'bg-on-surface/10 text-on-surface'
+                : 'text-on-surface'
+            }`}>
               {format(day, 'dd')}
-            </p>
+            </div>
           </div>
         ))}
       </div>

@@ -74,7 +74,7 @@ export function Sidebar({ lang = 'es' }: SidebarProps) {
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       className={`flex h-full flex-col bg-surface-container-lowest relative z-50 transition-all duration-500 ease-in-out border-r border-on-surface/5 ${
-        isExpanded ? 'w-[280px]' : 'w-[80px]'
+        isExpanded ? 'w-[240px]' : 'w-[80px]'
       }`}
     >
       {/* Brand Section */}

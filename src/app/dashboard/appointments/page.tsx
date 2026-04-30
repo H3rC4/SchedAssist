@@ -130,7 +130,7 @@ function AppointmentsContent() {
       <div className="flex flex-col lg:flex-row flex-1 overflow-hidden">
         {/* Sidebar: Mini Calendar & Operational Stats - ONLY IN WEEKLY VIEW */}
         {viewMode === 'weekly' && (
-          <div className="w-full lg:w-[320px] p-8 border-r border-on-surface/5 space-y-10 bg-on-surface/[0.02] overflow-y-auto hidden md:block custom-scrollbar flex-shrink-0">
+          <div className="w-full lg:w-[260px] p-6 border-r border-on-surface/5 space-y-8 bg-on-surface/[0.02] overflow-y-auto hidden md:block custom-scrollbar flex-shrink-0">
             <div>
               <MiniCalendar 
                 currentMonth={currentMonth}
@@ -165,7 +165,7 @@ function AppointmentsContent() {
         )}
 
         {/* Dynamic Feed / Grid */}
-        <div className="flex-1 overflow-y-auto p-4 md:p-6 bg-on-surface/[0.01] custom-scrollbar">
+        <div className={`flex-1 overflow-y-auto bg-on-surface/[0.01] custom-scrollbar ${viewMode === 'daily' ? 'p-4 md:p-6' : 'p-0'}`}>
           {/* Pending Notifications Alert */}
           <AnimatePresence>
             {pendingCalls.length > 0 && (
@@ -247,7 +247,7 @@ function AppointmentsContent() {
                 exit={{ opacity: 0, y: -20 }}
               >
                 <DayActivityFeed 
-                  selectedDate={selectedDate}
+                  selectedDate={new Date()}
                   appointments={appointments}
                   translations={T}
                   locale={currentLocale}
@@ -266,9 +266,10 @@ function AppointmentsContent() {
               >
                 <WeeklyCalendar 
                   selectedDate={selectedDate}
-                  appointments={appointments}
+                  appointments={allMonthApps}
                   lang={lang}
                   translations={T}
+                  onNavigateDate={setSelectedDate}
                 />
               </motion.div>
             )}
