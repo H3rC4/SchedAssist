@@ -34,6 +34,7 @@ export default function ClientsPage() {
   const [tenantId, setTenantId] = useState('')
   const [lang, setLang] = useState<'en' | 'es' | 'it'>('es')
   const [loading, setLoading] = useState(true)
+  const [drawerLoading, setDrawerLoading] = useState(false)
 
   const fetchClinicalRecords = useCallback(async (clientId: string) => {
     if (!tenantId || !clientId) return
@@ -100,14 +101,19 @@ export default function ClientsPage() {
 
   async function openClientDetail(client: Client) {
     setSelectedClient(client)
-    const { data } = await supabase
-      .from('appointments')
-      .select(`id, status, start_at, end_at, notes, services(name), professionals(full_name)`)
-      .eq('client_id', client.id)
-      .order('start_at', { ascending: false })
-    
-    setClientApps(data || [])
-    fetchClinicalRecords(client.id)
+    setDrawerLoading(true)
+    try {
+      const { data } = await supabase
+        .from('appointments')
+        .select(`id, status, start_at, end_at, notes, services(name), professionals(full_name)`)
+        .eq('client_id', client.id)
+        .order('start_at', { ascending: false })
+      
+      setClientApps(data || [])
+      await fetchClinicalRecords(client.id)
+    } finally {
+      setDrawerLoading(false)
+    }
   }
 
   const t = translations[lang] || translations['en']
@@ -129,6 +135,27 @@ export default function ClientsPage() {
       return isAfter(parseISO(current.start_at), parseISO(latest.start_at)) ? current : latest
     }, client.appointments[0])
     return format(parseISO(lastApp.start_at), 'MMM d, yyyy', { locale: dateLocale })
+  }
+
+  async function handleAddNote(content: string) {
+    if (!selectedClient || !tenantId) return
+    
+    const res = await fetch('/api/clinical-records', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        tenant_id: tenantId,
+        client_id: selectedClient.id,
+        content: content,
+        record_type: 'medical_note'
+      })
+    })
+
+    if (res.ok) {
+      await fetchClinicalRecords(selectedClient.id)
+    } else {
+      throw new Error('Failed to save note')
+    }
   }
 
   return (
@@ -226,7 +253,7 @@ export default function ClientsPage() {
                         status === 'active' 
                           ? 'bg-emerald-100 text-emerald-700' 
                           : 'bg-surface-container-mid text-secondary-400'
-                      }`}>
+                       }`}>
                         {status === 'active' ? t.active_status : t.inactive_status}
                       </span>
                     </td>
@@ -248,14 +275,14 @@ export default function ClientsPage() {
           appointments={clientApps}
           lang={lang}
           translations={t}
-          onAddNote={() => {
-            // Future implementation for adding notes directly from drawer
-          }}
+          onAddNote={handleAddNote}
           onScheduleAppointment={() => {
             router.push('/dashboard/appointments')
           }}
+          isLoading={drawerLoading}
         />
       )}
+
     </div>
   )
 }
