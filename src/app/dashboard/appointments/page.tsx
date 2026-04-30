@@ -191,73 +191,53 @@ function AppointmentsContent() {
 
         {/* Dynamic Feed / Grid */}
         <div className={`flex-1 overflow-y-auto bg-on-surface/[0.01] custom-scrollbar ${viewMode === 'daily' ? 'p-4 md:p-6' : 'p-0'}`}>
-          {/* Pending Notifications Alert */}
+          {/* Pending Notifications Alert - Redesigned as a compact banner */}
           <AnimatePresence>
             {pendingCalls.length > 0 && (
               <motion.section 
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
-                className="mb-8 overflow-hidden"
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                className="mb-10 px-2"
               >
-                <div className="bg-error/5 border border-error/10 p-6 md:p-8 rounded-3xl relative overflow-hidden">
-                   <div className="absolute top-0 right-0 p-4">
-                     <Activity className="h-12 w-12 text-error/5 rotate-12" />
-                   </div>
-                   
-                   <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
-                      <div>
-                         <div className="flex items-center gap-3 mb-2">
-                            <Activity className="h-4 w-4 text-error animate-pulse" />
-                            <h3 className="text-sm font-black text-on-surface tracking-tighter uppercase">{T.sync_required}</h3>
-                         </div>
-                         <p className="text-[9px] font-bold text-on-surface/40 uppercase tracking-widest max-w-lg leading-relaxed">
-                           {T.pending_cancellations_desc(pendingCalls.length)}
-                         </p>
+                <div className="bg-amber-500/5 border border-amber-500/10 p-5 rounded-[2rem] relative overflow-hidden group">
+                   <div className="flex items-center justify-between gap-6 relative z-10">
+                      <div className="flex items-center gap-4">
+                        <div className="h-10 w-10 rounded-2xl bg-amber-500/10 flex items-center justify-center text-amber-600">
+                           <Activity className="h-5 w-5 animate-pulse" />
+                        </div>
+                        <div>
+                           <h3 className="text-[10px] font-black text-amber-700 tracking-[0.2em] uppercase">{T.sync_required || 'SINCRONIZACIÓN REQUERIDA'}</h3>
+                           <p className="text-[9px] font-bold text-amber-700/40 uppercase tracking-widest mt-0.5">
+                             {T.pending_cancellations_desc(pendingCalls.length)}
+                           </p>
+                        </div>
                       </div>
                       
-                      <div className="flex -space-x-3">
-                        {pendingCalls.slice(0, 3).map((call, i) => (
-                          <div key={call.id} className="h-9 w-9 rounded-full bg-white border border-error/20 flex items-center justify-center font-black text-error text-[10px] shadow-sm">
-                            {call.clients?.first_name[0]}
-                          </div>
-                        ))}
-                        {pendingCalls.length > 3 && (
-                          <div className="h-9 w-9 rounded-full bg-error text-white border border-white flex items-center justify-center font-black text-[8px] shadow-sm">
-                            +{pendingCalls.length - 3}
-                          </div>
-                        )}
+                      <div className="flex items-center gap-3">
+                        <div className="flex -space-x-2 mr-4">
+                          {pendingCalls.slice(0, 5).map((call) => (
+                            <div key={call.id} className="h-8 w-8 rounded-full bg-white border border-amber-500/20 flex items-center justify-center font-black text-amber-700 text-[10px] shadow-sm ring-2 ring-transparent group-hover:ring-amber-500/10 transition-all">
+                              {call.clients?.first_name[0]}
+                            </div>
+                          ))}
+                          {pendingCalls.length > 5 && (
+                            <div className="h-8 w-8 rounded-full bg-amber-500 text-white border border-white flex items-center justify-center font-black text-[8px] shadow-sm">
+                              +{pendingCalls.length - 5}
+                            </div>
+                          )}
+                        </div>
+                        <button 
+                           onClick={() => setSelectedDate(new Date())} // Example action or just scroll to view
+                           className="h-10 px-6 rounded-xl bg-amber-500 text-white text-[9px] font-black uppercase tracking-widest hover:brightness-110 transition-all shadow-lg shadow-amber-500/20"
+                        >
+                           {T.view_all || 'REVISAR'}
+                        </button>
                       </div>
                    </div>
 
-                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8">
-                      {pendingCalls.map(call => (
-                        <div key={call.id} className="bg-white p-5 rounded-2xl border border-error/10 hover:shadow-md transition-all group">
-                           <div className="flex items-center gap-4 mb-4">
-                              <div className="h-10 w-10 rounded-xl bg-error/5 flex items-center justify-center text-error font-black text-xs">
-                                 {call.clients?.first_name[0]}
-                              </div>
-                              <div>
-                                 <p className="text-sm font-black text-on-surface leading-none mb-1">{call.clients?.first_name} {call.clients?.last_name}</p>
-                                 <p className="text-[9px] font-bold text-on-surface/30 uppercase tracking-widest">{call.clients?.phone}</p>
-                              </div>
-                           </div>
-                           <div className="flex items-center justify-between gap-3">
-                              <span className="text-[9px] font-black text-on-surface/20 uppercase tracking-widest">
-                                 {format(parseISO(call.start_at), "MMM dd, HH:mm")}
-                              </span>
-                              <button 
-                                 onClick={() => markAsNotified(call.id, callNotes[call.id])}
-                                 disabled={notifyingId === call.id}
-                                 className="h-9 px-4 rounded-xl bg-error text-white text-[8px] font-black uppercase tracking-widest hover:brightness-110 transition-all flex items-center gap-2"
-                              >
-                                 {notifyingId === call.id ? <Clock className="h-3 w-3 animate-spin" /> : <ShieldCheck className="h-3 w-3" />}
-                                 {T.clear}
-                              </button>
-                           </div>
-                        </div>
-                      ))}
-                   </div>
+                   {/* Background Glow */}
+                   <div className="absolute -right-20 -top-20 h-64 w-64 bg-amber-500/5 rounded-full blur-[80px] pointer-events-none" />
                 </div>
               </motion.section>
             )}
