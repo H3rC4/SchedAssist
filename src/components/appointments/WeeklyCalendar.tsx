@@ -12,9 +12,10 @@ interface WeeklyCalendarProps {
   translations: any;
   onNavigateDate: (date: Date) => void;
   dateLocales: any;
+  onSelectAppointment: (apt: any) => void;
 }
 
-export function WeeklyCalendar({ selectedDate, appointments, lang, translations: T, onNavigateDate, dateLocales }: WeeklyCalendarProps) {
+export function WeeklyCalendar({ selectedDate, appointments, lang, translations: T, onNavigateDate, dateLocales, onSelectAppointment }: WeeklyCalendarProps) {
   const [expandedDay, setExpandedDay] = useState<number | null>(null)
 
   const weekDays = useMemo(() => {
@@ -114,26 +115,43 @@ export function WeeklyCalendar({ selectedDate, appointments, lang, translations:
                         x: 0
                       }}
                       key={apt.id}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        onSelectAppointment(apt)
+                      }}
                       style={{ top: `${top}px`, height: `${height}px` }}
-                      className={`absolute left-1 right-1 rounded-xl p-2 bg-primary/10 border-l-4 border-primary shadow-sm overflow-hidden group cursor-pointer hover:bg-primary hover:border-primary-700 transition-all z-10 ${isExpanded ? 'p-3' : 'p-1'}`}
+                      className={`absolute left-1 w-[85%] lg:w-[75%] rounded-xl p-2 bg-primary/10 border-l-4 border-primary shadow-sm overflow-hidden group cursor-pointer hover:bg-primary hover:border-primary-700 transition-all z-10 ${isExpanded ? 'p-3' : 'p-1'}`}
                     >
                       <div className="flex flex-col h-full justify-between">
                         <div className="min-w-0">
-                          <p className={`font-black text-primary group-hover:text-white uppercase truncate tracking-tighter ${isExpanded ? 'text-[10px]' : 'text-[8px]'}`}>
-                            {apt.clients?.first_name} {apt.clients?.last_name}
+                          <div className="flex items-center justify-between gap-1 mb-0.5">
+                             <p className={`font-black text-primary group-hover:text-white uppercase truncate tracking-tighter ${isExpanded ? 'text-[9px]' : 'text-[7px]'}`}>
+                               {apt.clients?.first_name} {apt.clients?.last_name}
+                             </p>
+                             <span className={`font-black group-hover:text-white text-primary/40 ${isExpanded ? 'text-[8px]' : 'text-[6px]'}`}>
+                               {format(startDate, 'HH:mm')}
+                             </span>
+                          </div>
+                          
+                          <p className="text-[6px] lg:text-[7px] font-bold text-on-surface/40 group-hover:text-white/60 uppercase truncate leading-none">
+                            {apt.services?.name}
                           </p>
+                          
                           {isExpanded && (
-                            <p className="text-[8px] font-bold text-on-surface/60 group-hover:text-white/80 uppercase truncate">
-                              {apt.services?.name}
+                            <p className="text-[7px] font-black text-primary/60 group-hover:text-white/80 uppercase truncate mt-1">
+                               Dr. {apt.professionals?.full_name?.split(' ').pop()}
                             </p>
                           )}
                         </div>
-                        <div className={`flex items-center gap-1 transition-opacity ${isExpanded ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
-                          <Clock className={`text-primary group-hover:text-white ${isExpanded ? 'h-3 w-3' : 'h-2 w-2'}`} />
-                          <span className={`font-black group-hover:text-white text-primary ${isExpanded ? 'text-[9px]' : 'text-[7px]'}`}>
-                            {format(startDate, 'HH:mm')}
-                          </span>
-                        </div>
+                        
+                        {!isExpanded && (
+                          <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                             <User className="h-1.5 w-1.5 text-white/50" />
+                             <span className="text-[5px] font-black text-white/70 uppercase">
+                               {apt.professionals?.full_name?.split(' ').pop()}
+                             </span>
+                          </div>
+                        )}
                       </div>
                     </motion.div>
                   )

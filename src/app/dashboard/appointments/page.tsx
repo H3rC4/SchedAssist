@@ -298,6 +298,7 @@ function AppointmentsContent() {
                   translations={T}
                   onNavigateDate={setSelectedDate}
                   dateLocales={dateLocales}
+                  onSelectAppointment={setSelectedAppointment}
                 />
               </motion.div>
             )}

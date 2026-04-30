@@ -157,7 +157,9 @@ export function AppointmentDetailDrawer({
                 </div>
                 <div>
                   <p className="text-[7px] font-black text-on-surface/30 uppercase tracking-widest leading-none mb-1">{T.contact}</p>
-                  <p className="text-[11px] font-black text-on-surface leading-none">{appointment.clients?.phone}</p>
+                  <a href={`tel:${appointment.clients?.phone}`} className="text-[11px] font-black text-on-surface leading-none hover:text-primary transition-colors">
+                    {appointment.clients?.phone}
+                  </a>
                 </div>
               </div>
             </div>
