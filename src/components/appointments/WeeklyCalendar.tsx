@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { format, startOfWeek, addDays, isSameDay, parseISO, subDays } from 'date-fns'
 import { motion } from 'framer-motion'
 import { Clock, User, ChevronLeft, ChevronRight } from 'lucide-react'
@@ -11,9 +11,12 @@ interface WeeklyCalendarProps {
   lang: 'en' | 'es' | 'it';
   translations: any;
   onNavigateDate: (date: Date) => void;
+  dateLocales: any;
 }
 
-export function WeeklyCalendar({ selectedDate, appointments, lang, translations: T, onNavigateDate }: WeeklyCalendarProps) {
+export function WeeklyCalendar({ selectedDate, appointments, lang, translations: T, onNavigateDate, dateLocales }: WeeklyCalendarProps) {
+  const [expandedDay, setExpandedDay] = useState<number | null>(null)
+
   const weekDays = useMemo(() => {
     const start = startOfWeek(selectedDate, { weekStartsOn: 1 })
     return Array.from({ length: 7 }, (_, i) => addDays(start, i))
@@ -24,8 +27,8 @@ export function WeeklyCalendar({ selectedDate, appointments, lang, translations:
   return (
     <div className="flex flex-col h-full bg-white">
       {/* Week Header */}
-      <div className="grid grid-cols-8 border-b border-on-surface/5 bg-surface/50">
-        <div className="col-span-1 flex items-center justify-center border-r border-on-surface/5">
+      <div className="flex border-b border-on-surface/5 bg-surface/50">
+        <div className="w-[100px] flex items-center justify-center border-r border-on-surface/5 flex-shrink-0">
            <div className="flex items-center gap-1">
               <button 
                 onClick={() => onNavigateDate(subDays(selectedDate, 7))}
@@ -42,9 +45,14 @@ export function WeeklyCalendar({ selectedDate, appointments, lang, translations:
            </div>
         </div>
         {weekDays.map((day, idx) => (
-          <div key={idx} className={`text-center py-6 border-r border-on-surface/5 last:border-0 ${isSameDay(day, new Date()) ? 'bg-primary/[0.03]' : ''}`}>
+          <motion.div 
+            key={idx} 
+            animate={{ flex: expandedDay === idx ? 2 : expandedDay !== null ? 0.5 : 1 }}
+            className={`text-center py-6 border-r border-on-surface/5 last:border-0 cursor-pointer transition-colors ${isSameDay(day, new Date()) ? 'bg-primary/[0.03]' : ''} ${expandedDay === idx ? 'bg-primary/[0.05]' : ''}`}
+            onClick={() => setExpandedDay(expandedDay === idx ? null : idx)}
+          >
             <p className="text-[10px] font-black text-on-surface/30 uppercase tracking-[0.2em] mb-1">
-              {format(day, 'EEE')}
+              {format(day, 'EEE', { locale: dateLocales[lang] })}
             </p>
             <div className={`inline-flex items-center justify-center h-8 w-8 rounded-full text-sm font-black transition-all ${
               isSameDay(day, new Date()) 
@@ -55,15 +63,15 @@ export function WeeklyCalendar({ selectedDate, appointments, lang, translations:
             }`}>
               {format(day, 'dd')}
             </div>
-          </div>
+          </motion.div>
         ))}
       </div>
 
       {/* Calendar Grid */}
       <div className="flex-1 overflow-y-auto relative custom-scrollbar">
-        <div className="grid grid-cols-8 divide-x divide-on-surface/5 min-h-full">
+        <div className="flex divide-x divide-on-surface/5 min-h-full">
           {/* Time Column */}
-          <div className="col-span-1 bg-on-surface/2">
+          <div className="w-[100px] bg-on-surface/2 flex-shrink-0">
             {hours.map(hour => (
               <div key={hour} className="h-24 px-4 py-2 border-b border-on-surface/5 last:border-0 flex justify-end">
                 <span className="text-[10px] font-black text-on-surface/20 uppercase">
@@ -75,7 +83,11 @@ export function WeeklyCalendar({ selectedDate, appointments, lang, translations:
 
           {/* Day Columns */}
           {weekDays.map((day, dayIdx) => (
-            <div key={dayIdx} className="col-span-1 relative h-full">
+            <motion.div 
+              key={dayIdx} 
+              animate={{ flex: expandedDay === dayIdx ? 2 : expandedDay !== null ? 0.5 : 1 }}
+              className="relative h-full transition-all overflow-hidden"
+            >
               {hours.map(hour => (
                 <div key={hour} className="h-24 border-b border-on-surface/5 last:border-0" />
               ))}
@@ -91,33 +103,42 @@ export function WeeklyCalendar({ selectedDate, appointments, lang, translations:
                   
                   const top = ((startHour - 8) * 96) + (startMin / 60 * 96)
                   const height = (duration / 60) * 96
+                  const isExpanded = expandedDay === dayIdx
 
                   return (
                     <motion.div
                       initial={{ opacity: 0, scale: 0.95 }}
-                      animate={{ opacity: 1, scale: 1 }}
+                      animate={{ 
+                        opacity: expandedDay !== null && !isExpanded ? 0.3 : 1,
+                        scale: 1,
+                        x: 0
+                      }}
                       key={apt.id}
                       style={{ top: `${top}px`, height: `${height}px` }}
-                      className="absolute left-1 right-1 rounded-xl p-2 bg-primary/10 border-l-4 border-primary shadow-sm overflow-hidden group cursor-pointer hover:bg-primary hover:border-primary-700 transition-all z-10"
+                      className={`absolute left-1 right-1 rounded-xl p-2 bg-primary/10 border-l-4 border-primary shadow-sm overflow-hidden group cursor-pointer hover:bg-primary hover:border-primary-700 transition-all z-10 ${isExpanded ? 'p-3' : 'p-1'}`}
                     >
                       <div className="flex flex-col h-full justify-between">
                         <div className="min-w-0">
-                          <p className="text-[9px] font-black text-primary group-hover:text-white uppercase truncate tracking-tighter">
+                          <p className={`font-black text-primary group-hover:text-white uppercase truncate tracking-tighter ${isExpanded ? 'text-[10px]' : 'text-[8px]'}`}>
                             {apt.clients?.first_name} {apt.clients?.last_name}
                           </p>
-                          <p className="text-[8px] font-bold text-on-surface/60 group-hover:text-white/80 uppercase truncate">
-                            {apt.services?.name}
-                          </p>
+                          {isExpanded && (
+                            <p className="text-[8px] font-bold text-on-surface/60 group-hover:text-white/80 uppercase truncate">
+                              {apt.services?.name}
+                            </p>
+                          )}
                         </div>
-                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <Clock className="h-2 w-2 text-white" />
-                          <span className="text-[7px] font-black text-white">{format(startDate, 'HH:mm')}</span>
+                        <div className={`flex items-center gap-1 transition-opacity ${isExpanded ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
+                          <Clock className={`text-primary group-hover:text-white ${isExpanded ? 'h-3 w-3' : 'h-2 w-2'}`} />
+                          <span className={`font-black group-hover:text-white text-primary ${isExpanded ? 'text-[9px]' : 'text-[7px]'}`}>
+                            {format(startDate, 'HH:mm')}
+                          </span>
                         </div>
                       </div>
                     </motion.div>
                   )
                 })}
-            </div>
+            </motion.div>
           ))}
         </div>
       </div>

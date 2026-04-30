@@ -23,6 +23,8 @@ interface DayActivityFeedProps {
   locale: any;
   onSelectAppointment: (app: Appointment) => void;
   onNewAppointment: () => void;
+  onStatusUpdate: (id: string, status: string) => void;
+  onReschedule: (app: Appointment) => void;
   lang: string;
 }
 
@@ -33,6 +35,8 @@ export const DayActivityFeed: React.FC<DayActivityFeedProps> = ({
   locale,
   onSelectAppointment,
   onNewAppointment,
+  onStatusUpdate,
+  onReschedule,
   lang
 }) => {
   const [activeId, setActiveId] = useState<string | null>(null)
@@ -59,7 +63,7 @@ export const DayActivityFeed: React.FC<DayActivityFeedProps> = ({
       <div className="flex items-center justify-between mb-8 px-4">
         <div>
           <h2 className="text-4xl font-black text-on-surface tracking-tighter">
-            {T.today_agenda || "Today's Agenda"}
+            {T.today_agenda}
           </h2>
           <p className="text-[10px] font-black text-on-surface/30 uppercase tracking-[0.4em] mt-2">
             {format(selectedDate, "MMMM d, yyyy", { locale })}
@@ -67,8 +71,8 @@ export const DayActivityFeed: React.FC<DayActivityFeedProps> = ({
         </div>
         <div className="flex items-center gap-4">
            <div className="text-right">
-              <p className="text-[10px] font-black text-on-surface/20 uppercase tracking-widest leading-none">Status</p>
-              <p className="text-sm font-black text-primary uppercase tracking-widest mt-1">Operational</p>
+              <p className="text-[10px] font-black text-on-surface/20 uppercase tracking-widest leading-none">{T.status}</p>
+              <p className="text-sm font-black text-primary uppercase tracking-widest mt-1">{T.active}</p>
            </div>
            <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
               <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
@@ -124,43 +128,43 @@ export const DayActivityFeed: React.FC<DayActivityFeedProps> = ({
                   )}
 
                   {/* Hour Label */}
-                  <div className="absolute -left-48 top-1/2 -translate-y-1/2 text-[9px] font-black text-on-surface/20 uppercase tracking-widest whitespace-nowrap group-hover:text-on-surface/40 transition-colors">
-                    {start.split(' ')[0]}
+                  <div className="absolute left-6 top-1/2 -translate-y-1/2 w-12 text-right">
+                    <span className="text-[9px] font-black text-on-surface/40 uppercase tracking-widest group-hover:text-primary transition-colors">
+                      {start.split(' ')[0]}
+                    </span>
                   </div>
 
                   <motion.button
-                    initial={{ opacity: 0, x: -20 }}
+                    initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: index * 0.1 }}
+                    transition={{ delay: index * 0.05 }}
                     onClick={() => setActiveId(app.id)}
-                    className={`w-full text-left p-5 rounded-2xl border transition-all duration-500 flex items-center justify-between gap-4 ${
+                    className={`w-full text-left p-3.5 rounded-xl border transition-all duration-300 flex items-center justify-between gap-4 ${
                       isActive 
-                        ? 'bg-white border-primary shadow-ambient ring-2 ring-primary/5' 
-                        : 'bg-white border-on-surface/5 hover:border-on-surface/20'
+                        ? 'bg-white border-primary shadow-sm ring-1 ring-primary/10' 
+                        : 'bg-white border-on-surface/5 hover:border-on-surface/10'
                     }`}
                   >
-                    <div className="flex flex-col">
-                      <span className={`text-[9px] font-black uppercase tracking-widest mb-0.5 ${isActive ? 'text-primary' : 'text-on-surface/30'}`}>
+                    <div className="flex flex-col min-w-0">
+                      <span className={`text-[8px] font-black uppercase tracking-widest mb-0.5 ${isActive ? 'text-primary' : 'text-on-surface/20'}`}>
                         {start} - {end}
                       </span>
-                      <h4 className={`text-base font-black tracking-tight ${isActive ? 'text-primary' : 'text-on-surface'}`}>
+                      <h4 className={`text-sm font-black tracking-tight truncate ${isActive ? 'text-primary' : 'text-on-surface'}`}>
                         {app.clients?.first_name} {app.clients?.last_name}
                       </h4>
-                      <span className="text-[9px] font-bold text-on-surface/40 uppercase tracking-[0.1em] mt-0.5">
+                      <span className="text-[8px] font-bold text-on-surface/30 uppercase tracking-[0.1em] truncate">
                         {app.services?.name}
                       </span>
                     </div>
 
-                    <div className="flex items-center gap-4">
-                      <span className={`text-[10px] font-black uppercase tracking-widest ${
-                        isPast ? 'text-emerald-500' : 'text-on-surface/20'
-                      }`}>
-                        {isPast ? (
-                          <span className="flex items-center gap-2">
-                            <CheckCircle2 className="h-3 w-3" /> Attended
-                          </span>
-                        ) : 'Upcoming'}
-                      </span>
+                    <div className="flex-shrink-0">
+                      {isPast || app.status === 'attended' ? (
+                        <div className="h-6 w-6 rounded-full bg-emerald-50 text-emerald-500 flex items-center justify-center">
+                          <CheckCircle2 className="h-3.5 w-3.5" />
+                        </div>
+                      ) : (
+                        <div className="h-2 w-2 rounded-full bg-on-surface/10" />
+                      )}
                     </div>
                   </motion.button>
                 </div>
@@ -179,90 +183,95 @@ export const DayActivityFeed: React.FC<DayActivityFeedProps> = ({
                   exit={{ opacity: 0, scale: 0.95 }}
                   className="bg-white rounded-[3rem] border border-on-surface/5 shadow-spatial overflow-hidden sticky top-8"
                 >
-                  {/* Card Header */}
-                  <div className="bg-primary/5 p-5 border-b border-on-surface/5">
-                    <p className="text-[8px] font-black text-primary uppercase tracking-[0.4em] mb-2">
-                      {isBefore(parseISO(selectedApp.end_at.slice(0, 19)), now) ? "Patient Summary" : "Next Patient"}
+                  {/* Card Header - Very Compact */}
+                  <div className="bg-on-surface/[0.02] p-6 border-b border-on-surface/5">
+                    <p className="text-[7px] font-black text-on-surface/30 uppercase tracking-[0.4em] mb-3">
+                      {isBefore(parseISO(selectedApp.end_at.slice(0, 19)), now) ? T.visit_summary : T.focus_module}
                     </p>
-                    <div className="flex items-center gap-3">
-                      <div className="h-10 w-10 rounded-xl bg-primary flex items-center justify-center text-white text-base font-black shadow-lg shadow-primary/20">
+                    <div className="flex items-center gap-4">
+                      <div className="h-12 w-12 rounded-xl bg-primary flex items-center justify-center text-white text-lg font-black shadow-lg shadow-primary/20 flex-shrink-0">
                         {selectedApp.clients?.first_name[0]}
                       </div>
-                      <div>
-                        <h3 className="text-lg font-black text-on-surface tracking-tighter">
+                      <div className="min-w-0">
+                        <h3 className="text-xl font-black text-on-surface tracking-tighter truncate leading-none mb-1">
                           {selectedApp.clients?.first_name} {selectedApp.clients?.last_name}
                         </h3>
-                        <p className="text-[10px] font-bold text-primary tracking-tight">
-                          {format(parseISO(selectedApp.start_at.slice(0, 19)), 'hh:mm a')}
+                        <p className="text-[9px] font-black text-primary uppercase tracking-widest">
+                          {format(parseISO(selectedApp.start_at.slice(0, 19)), 'hh:mm a')} • {selectedApp.services?.name}
                         </p>
                       </div>
                     </div>
                   </div>
 
-                  {/* Card Details */}
-                  <div className="p-5 space-y-5">
-                    <div>
-                      <p className="text-[8px] font-black text-on-surface/30 uppercase tracking-widest mb-1.5">Reason for Visit</p>
-                      <p className="text-[11px] font-bold text-on-surface leading-relaxed">
-                        {selectedApp.notes || selectedApp.services?.name || "Regular check-up and follow-up consultation."}
-                      </p>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4 py-4 border-y border-on-surface/5">
-                      <div>
-                        <p className="text-[8px] font-black text-on-surface/30 uppercase tracking-widest mb-0.5">Age</p>
-                        <p className="text-base font-black text-on-surface">45 <span className="text-[9px] font-medium text-on-surface/30">years</span></p>
+                  {/* Card Details - Dense */}
+                  <div className="p-6 space-y-6">
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="p-4 rounded-2xl bg-on-surface/5 border border-on-surface/5">
+                        <p className="text-[7px] font-black text-on-surface/30 uppercase tracking-widest mb-1">{T.status}</p>
+                        <p className={`text-[10px] font-black uppercase tracking-widest ${selectedApp.status === 'attended' ? 'text-emerald-500' : 'text-primary'}`}>
+                          {selectedApp.status === 'attended' ? T.attended : T.pending}
+                        </p>
                       </div>
-                      <div>
-                        <p className="text-[8px] font-black text-on-surface/30 uppercase tracking-widest mb-0.5">History</p>
-                        <p className="text-[11px] font-black text-emerald-500 uppercase tracking-widest">Normal</p>
+                      <div className="p-4 rounded-2xl bg-on-surface/5 border border-on-surface/5">
+                        <p className="text-[7px] font-black text-on-surface/30 uppercase tracking-widest mb-1">{T.history}</p>
+                        <p className="text-[10px] font-black text-on-surface uppercase tracking-widest">{T.system_verified}</p>
                       </div>
                     </div>
 
-                    <div>
-                      <div className="flex items-center justify-between mb-2">
-                        <p className="text-[8px] font-black text-on-surface/30 uppercase tracking-widest">Medical Alerts</p>
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between px-1">
+                        <p className="text-[7px] font-black text-on-surface/30 uppercase tracking-widest">{T.medical_record}</p>
                         <button 
                           onClick={() => setIsEditingAlerts(!isEditingAlerts)}
-                          className="text-[8px] font-black text-primary hover:text-primary/70 transition-colors uppercase tracking-widest"
+                          className="text-[7px] font-black text-primary hover:opacity-70 uppercase tracking-widest"
                         >
-                          {isEditingAlerts ? 'Save' : 'Edit'}
+                          {isEditingAlerts ? T.done : T.edit}
                         </button>
                       </div>
                       
-                      {isEditingAlerts ? (
-                        <textarea
-                          autoFocus
-                          value={medicalAlerts[selectedApp.clients?.id || ''] || "No known allergies. Penicillin safe. Controlled hypertension."}
-                          onChange={(e) => setMedicalAlerts({
-                            ...medicalAlerts,
-                            [selectedApp.clients?.id || '']: e.target.value
-                          })}
-                          className="w-full p-3 rounded-xl bg-amber-50 border border-amber-200 text-[10px] font-bold text-amber-900 focus:outline-none focus:ring-1 focus:ring-amber-400 min-h-[60px] resize-none"
-                        />
-                      ) : (
-                        <div className="p-3 rounded-xl bg-amber-50 border border-amber-100 group/alert cursor-pointer" onClick={() => setIsEditingAlerts(true)}>
-                           <p className="text-[10px] font-bold text-amber-700 leading-tight">
-                            {medicalAlerts[selectedApp.clients?.id || ''] || "No known allergies. Penicillin safe. Controlled hypertension."}
+                      <div className={`p-4 rounded-2xl transition-all border ${isEditingAlerts ? 'bg-amber-50 border-amber-200' : 'bg-error/5 border-error/10'}`}>
+                        {isEditingAlerts ? (
+                          <textarea
+                            autoFocus
+                            value={medicalAlerts[selectedApp.clients?.id || ''] || "No known allergies. Penicillin safe."}
+                            onChange={(e) => setMedicalAlerts({
+                              ...medicalAlerts,
+                              [selectedApp.clients?.id || '']: e.target.value
+                            })}
+                            className="w-full bg-transparent text-[10px] font-bold text-amber-900 focus:outline-none min-h-[60px] resize-none"
+                          />
+                        ) : (
+                           <p className="text-[10px] font-bold text-on-surface leading-tight">
+                            {medicalAlerts[selectedApp.clients?.id || ''] || "No known allergies. Penicillin safe."}
                            </p>
-                        </div>
-                      )}
+                        )}
+                      </div>
                     </div>
 
-                    {/* Actions */}
-                    <div className="pt-4 space-y-4">
+                    {/* Actions - Modern & Compact */}
+                    <div className="pt-2 space-y-3">
                       <button 
                         onClick={() => onSelectAppointment(selectedApp)}
-                        className="w-full bg-primary text-white py-5 rounded-[1.5rem] text-[10px] font-black uppercase tracking-widest hover:bg-primary-700 transition-all shadow-lg shadow-primary/20"
+                        className="w-full bg-on-surface text-white py-4 rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-on-surface/90 transition-all"
                       >
-                        Open Medical Record Drawer
+                        {T.medical_record}
                       </button>
-                      <div className="grid grid-cols-2 gap-4">
-                        <button className="bg-emerald-600 text-white py-4 rounded-[1.2rem] text-[10px] font-black uppercase tracking-widest hover:bg-emerald-700 transition-all shadow-md shadow-emerald-500/10">
-                          Mark as Attended
+                      <div className="grid grid-cols-2 gap-3">
+                        <button 
+                          onClick={() => onStatusUpdate(selectedApp.id, selectedApp.status === 'attended' ? 'confirmed' : 'attended')}
+                          className={`py-3.5 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all border ${
+                            selectedApp.status === 'attended' 
+                              ? 'bg-on-surface/5 text-on-surface/40 border-transparent' 
+                              : 'bg-emerald-600 text-white border-emerald-600 shadow-lg shadow-emerald-500/10'
+                          }`}
+                        >
+                          {selectedApp.status === 'attended' ? T.undo : T.mark_attended}
                         </button>
-                        <button className="bg-orange-500 text-white py-4 rounded-[1.2rem] text-[10px] font-black uppercase tracking-widest hover:bg-orange-600 transition-all shadow-md shadow-orange-500/20">
-                          Reschedule
+                        <button 
+                          onClick={() => onReschedule(selectedApp)}
+                          className="bg-orange-500 text-white py-3.5 rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-orange-600 transition-all shadow-lg shadow-orange-500/10"
+                        >
+                          {T.reschedule}
                         </button>
                       </div>
                     </div>

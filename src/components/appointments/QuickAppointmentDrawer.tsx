@@ -19,6 +19,7 @@ interface QuickAppointmentDrawerProps {
   availableSlots: string[];
   slotLoading: boolean;
   onFetchSlots: (profId: string, date: string) => void;
+  initialPatient?: { first_name: string; last_name: string; phone: string };
 }
 
 export function QuickAppointmentDrawer({
@@ -32,12 +33,13 @@ export function QuickAppointmentDrawer({
   translations: T,
   availableSlots,
   slotLoading,
-  onFetchSlots
+  onFetchSlots,
+  initialPatient
 }: QuickAppointmentDrawerProps) {
   const [formData, setFormData] = useState({
-    first_name: '', 
-    last_name: '', 
-    phone: '', 
+    first_name: initialPatient?.first_name || '', 
+    last_name: initialPatient?.last_name || '', 
+    phone: initialPatient?.phone || '', 
     service_id: '', 
     professional_id: '',
     date: format(selectedDate, 'yyyy-MM-dd'), 
@@ -132,9 +134,9 @@ export function QuickAppointmentDrawer({
               </span>
             </div>
             <h2 className="precision-header text-3xl leading-tight">
-              {T.create_appointment?.split(' ')[0] || 'Schedule'} <br />
+              {T.create_appointment_p1} <br />
               <span className="text-primary italic font-serif">
-                {T.create_appointment?.split(' ').slice(1).join(' ') || 'Appointment'}
+                {T.create_appointment_p2}
               </span>
             </h2>
           </div>
@@ -169,7 +171,7 @@ export function QuickAppointmentDrawer({
                 <input 
                   value={formData.first_name}
                   onChange={e => setFormData({ ...formData, first_name: e.target.value })}
-                  placeholder="e.g. John"
+                  placeholder={T.name}
                   className="w-full bg-on-surface/5 border-none rounded-2xl px-6 py-4 text-sm font-bold text-on-surface focus:bg-white focus:ring-2 focus:ring-primary/20 transition-all outline-none"
                 />
               </div>
@@ -178,7 +180,7 @@ export function QuickAppointmentDrawer({
                 <input 
                   value={formData.last_name}
                   onChange={e => setFormData({ ...formData, last_name: e.target.value })}
-                  placeholder="e.g. Doe"
+                  placeholder={T.last_name}
                   className="w-full bg-on-surface/5 border-none rounded-2xl px-6 py-4 text-sm font-bold text-on-surface focus:bg-white focus:ring-2 focus:ring-primary/20 transition-all outline-none"
                 />
               </div>
@@ -191,7 +193,7 @@ export function QuickAppointmentDrawer({
                 <input 
                   value={formData.phone}
                   onChange={e => setFormData({ ...formData, phone: e.target.value })}
-                  placeholder="+39 333 123 4567"
+                  placeholder={T.phone}
                   className="w-full bg-on-surface/5 border-none rounded-2xl pl-14 pr-6 py-4 text-sm font-bold text-on-surface focus:bg-white focus:ring-2 focus:ring-primary/20 transition-all outline-none"
                 />
               </div>
@@ -215,7 +217,7 @@ export function QuickAppointmentDrawer({
                   onChange={e => setFormData({ ...formData, service_id: e.target.value })}
                   className="w-full bg-on-surface/5 border-none rounded-2xl px-6 py-4 text-sm font-bold text-on-surface focus:bg-white focus:ring-2 focus:ring-primary/20 transition-all outline-none appearance-none"
                 >
-                  <option value="">{T.selectOption || 'Select...'}</option>
+                  <option value="">{T.selectOption}</option>
                   {services.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
                 </select>
               </div>
@@ -226,7 +228,7 @@ export function QuickAppointmentDrawer({
                   onChange={e => setFormData({ ...formData, professional_id: e.target.value, time: '' })}
                   className="w-full bg-on-surface/5 border-none rounded-2xl px-6 py-4 text-sm font-bold text-on-surface focus:bg-white focus:ring-2 focus:ring-primary/20 transition-all outline-none appearance-none"
                 >
-                  <option value="">{T.selectOption || 'Select...'}</option>
+                  <option value="">{T.selectOption}</option>
                   {professionals.map(p => <option key={p.id} value={p.id}>{p.full_name}</option>)}
                 </select>
               </div>
@@ -263,7 +265,7 @@ export function QuickAppointmentDrawer({
                 {!formData.professional_id ? (
                   <div className="p-8 rounded-3xl bg-on-surface/5 border border-dashed border-on-surface/10 text-center">
                     <p className="text-[10px] font-bold text-on-surface/40 uppercase tracking-widest">
-                      Select a professional to see availability
+                      {T.select_professional_to_see_availability}
                     </p>
                   </div>
                 ) : slotLoading ? (
@@ -275,7 +277,7 @@ export function QuickAppointmentDrawer({
                 ) : availableSlots.length === 0 ? (
                   <div className="p-8 rounded-3xl bg-orange-500/5 border border-orange-500/10 text-center">
                     <p className="text-[10px] font-black text-orange-600 uppercase tracking-widest">
-                      {T.no_slots || 'No slots available'}
+                      {T.no_slots}
                     </p>
                   </div>
                 ) : (
@@ -310,7 +312,7 @@ export function QuickAppointmentDrawer({
             <textarea 
               value={formData.notes}
               onChange={e => setFormData({ ...formData, notes: e.target.value })}
-              placeholder={T.notes_ph || 'Optional notes...'}
+              placeholder={T.notes_ph}
               rows={3}
               className="w-full bg-on-surface/5 border-none rounded-2xl px-6 py-4 text-sm font-medium text-on-surface focus:bg-white focus:ring-2 focus:ring-primary/20 transition-all outline-none resize-none"
             />
@@ -326,7 +328,7 @@ export function QuickAppointmentDrawer({
               ${saveSuccess ? 'bg-success text-white' : 'bg-primary text-white hover:shadow-primary/20 hover:-translate-y-0.5'}`}
           >
             {saveSuccess ? (
-              <><CheckCircle className="h-4 w-4" /> {T.ready || 'DONE!'}</>
+              <><CheckCircle className="h-4 w-4" /> {T.ready}</>
             ) : loading ? (
               <><Clock className="h-4 w-4 animate-spin" /> {T.reserving}</>
             ) : (

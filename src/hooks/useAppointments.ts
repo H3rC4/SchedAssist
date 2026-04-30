@@ -232,6 +232,24 @@ export function useAppointments() {
     return !error
   }
 
+  const refresh = useCallback(() => {
+    if (tenantId) {
+      // Clear cache for current month and day to force reload
+      appointmentsCache.days = {};
+      appointmentsCache.months = {};
+      fetchDayAppointments(tenantId, selectedDate, true)
+      fetchMonthAppointments(tenantId, currentMonth, true)
+    }
+  }, [tenantId, selectedDate, currentMonth, fetchDayAppointments, fetchMonthAppointments])
+
+  const updateStatus = async (id: string, status: string) => {
+    const { error } = await supabase.from('appointments').update({ status }).eq('id', id)
+    if (!error) {
+      refresh()
+    }
+    return !error
+  }
+
   return {
     appointments,
     allMonthApps,
@@ -251,11 +269,7 @@ export function useAppointments() {
     fetchSlots,
     cancelAppointment,
     markAsNotified,
-    refresh: () => { 
-      appointmentsCache.days = {};
-      appointmentsCache.months = {};
-      fetchDayAppointments(tenantId, selectedDate, true); 
-      fetchMonthAppointments(tenantId, currentMonth, true) 
-    }
+    updateStatus,
+    refresh
   }
 }

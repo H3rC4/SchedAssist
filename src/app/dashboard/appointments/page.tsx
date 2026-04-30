@@ -55,14 +55,39 @@ function AppointmentsContent() {
     pendingCalls,
     notifyingId,
     markAsNotified,
-    refresh
+    refresh,
+    updateStatus,
+    cancelAppointment
   } = useAppointments()
 
   const [showNewModal, setShowNewModal] = useState(false)
+  const [reschedulePatient, setReschedulePatient] = useState<{first_name: string, last_name: string, phone: string} | undefined>(undefined)
   const [selectedAppointment, setSelectedAppointment] = useState<any>(null)
   const [viewMode, setViewMode] = useState<'daily' | 'weekly'>('daily')
   const [toast, setToast] = useState<{ message: string; type: 'error' | 'success' } | null>(null)
   const [callNotes, setCallNotes] = useState<{[key: string]: string}>({})
+
+  const handleStatusUpdate = async (id: string, status: string) => {
+    const success = await updateStatus(id, status)
+    if (success) {
+      setToast({ message: T.success, type: 'success' })
+      setTimeout(() => setToast(null), 3000)
+    }
+  }
+
+  const handleReschedule = async (app: Appointment) => {
+    const success = await cancelAppointment(app.id)
+    if (success) {
+      setReschedulePatient({
+        first_name: app.clients?.first_name || '',
+        last_name: app.clients?.last_name || '',
+        phone: app.clients?.phone || ''
+      })
+      setShowNewModal(true)
+      setToast({ message: T.rescheduleSuccess, type: 'success' })
+      setTimeout(() => setToast(null), 3000)
+    }
+  }
 
   const T = t // Use global translation
   const locales = { es, en: enUS, it }
@@ -88,12 +113,12 @@ function AppointmentsContent() {
         <div className="flex flex-col gap-1">
           <div className="flex items-center gap-2">
             <div className="h-0.5 w-4 bg-primary rounded-full" />
-            <span className="text-[8px] font-black tracking-[0.3em] text-on-surface/30 uppercase">
-              {T.operational_intelligence || 'OPERATIONS'}
+            <span className="text-[8px] font-black tracking-[0.3em] text-on-surface/40 uppercase">
+              {T.operational_intelligence}
             </span>
           </div>
           <h1 className="text-xl md:text-2xl font-black text-on-surface tracking-tighter uppercase leading-tight">
-            {T.nav_appointments} <span className="text-primary italic font-serif lowercase ml-1">{T.calendar || 'calendar'}</span>
+            {T.nav_appointments} <span className="text-primary italic font-serif lowercase ml-1">{T.calendar}</span>
           </h1>
         </div>
 
@@ -145,12 +170,12 @@ function AppointmentsContent() {
 
             {/* Operational Pulse */}
             <div className="space-y-4 pt-8 border-t border-on-surface/10">
-              <h4 className="text-[8px] font-black text-on-surface/30 uppercase tracking-[0.3em] mb-2">{T.operational_intelligence || 'Operational Pulse'}</h4>
+              <h4 className="text-[8px] font-black text-on-surface/30 uppercase tracking-[0.3em] mb-2">{T.operational_intelligence}</h4>
               <div className="p-5 rounded-2xl bg-white border border-on-surface/5 shadow-sm space-y-3">
                  <p className="text-[8px] font-black text-on-surface/20 uppercase tracking-[0.2em]">{T.today}</p>
                  <div className="flex items-end justify-between">
                     <span className="text-2xl font-black text-on-surface leading-none">{appointments.length}</span>
-                    <span className="text-[8px] font-black text-primary uppercase tracking-widest mb-0.5">{T.appointments || 'Events'}</span>
+                    <span className="text-[8px] font-black text-primary uppercase tracking-widest mb-0.5">{T.appointments}</span>
                  </div>
                  <div className="h-1 w-full bg-on-surface/5 rounded-full overflow-hidden">
                     <motion.div 
@@ -184,10 +209,10 @@ function AppointmentsContent() {
                       <div>
                          <div className="flex items-center gap-3 mb-2">
                             <Activity className="h-4 w-4 text-error animate-pulse" />
-                            <h3 className="text-sm font-black text-on-surface tracking-tighter uppercase">{T.sync_required || 'Synchronization Required'}</h3>
+                            <h3 className="text-sm font-black text-on-surface tracking-tighter uppercase">{T.sync_required}</h3>
                          </div>
                          <p className="text-[9px] font-bold text-on-surface/40 uppercase tracking-widest max-w-lg leading-relaxed">
-                           {lang === 'es' ? `Sistema detectó ${pendingCalls.length} cancelaciones pendientes.` : `System detected ${pendingCalls.length} pending cancellations.`}
+                           {T.pending_cancellations_desc(pendingCalls.length)}
                          </p>
                       </div>
                       
@@ -227,7 +252,7 @@ function AppointmentsContent() {
                                  className="h-9 px-4 rounded-xl bg-error text-white text-[8px] font-black uppercase tracking-widest hover:brightness-110 transition-all flex items-center gap-2"
                               >
                                  {notifyingId === call.id ? <Clock className="h-3 w-3 animate-spin" /> : <ShieldCheck className="h-3 w-3" />}
-                                 {T.clear || 'Clear'}
+                                 {T.clear}
                               </button>
                            </div>
                         </div>
@@ -253,6 +278,8 @@ function AppointmentsContent() {
                   locale={currentLocale}
                   onSelectAppointment={setSelectedAppointment}
                   onNewAppointment={() => setShowNewModal(true)}
+                  onStatusUpdate={handleStatusUpdate}
+                  onReschedule={handleReschedule}
                   lang={lang}
                 />
               </motion.div>
@@ -270,6 +297,7 @@ function AppointmentsContent() {
                   lang={lang}
                   translations={T}
                   onNavigateDate={setSelectedDate}
+                  dateLocales={dateLocales}
                 />
               </motion.div>
             )}
@@ -285,13 +313,22 @@ function AppointmentsContent() {
             lang={lang}
             services={services}
             professionals={professionals}
-            onClose={() => setShowNewModal(false)}
-            onSuccess={() => { refresh(); setShowNewModal(false); setToast({ message: T.success || 'Appointment Created', type: 'success' }) }}
+            onClose={() => {
+              setShowNewModal(false)
+              setReschedulePatient(undefined)
+            }}
+            onSuccess={() => { 
+              refresh(); 
+              setShowNewModal(false); 
+              setReschedulePatient(undefined);
+              setToast({ message: T.success, type: 'success' }) 
+            }}
             selectedDate={selectedDate}
             translations={T}
             availableSlots={availableSlots}
             slotLoading={slotLoading}
             onFetchSlots={fetchSlots}
+            initialPatient={reschedulePatient}
           />
         )}
 
@@ -302,6 +339,17 @@ function AppointmentsContent() {
             onClose={() => setSelectedAppointment(null)}
             onSuccess={() => { refresh(); setSelectedAppointment(null); setToast({ message: T.success || 'Updated', type: 'success' }) }}
             tenantId={tenantId}
+            translations={T}
+            onReschedule={(app) => {
+              setReschedulePatient({
+                first_name: app.clients?.first_name || '',
+                last_name: app.clients?.last_name || '',
+                phone: app.clients?.phone || ''
+              })
+              setShowNewModal(true)
+              setSelectedAppointment(null)
+            }}
+            onUpdateStatus={updateStatus}
           />
         )}
       </AnimatePresence>
