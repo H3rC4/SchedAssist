@@ -10,6 +10,7 @@ import { es } from 'date-fns/locale/es'
 import { it } from 'date-fns/locale/it'
 import { enUS } from 'date-fns/locale/en-US'
 import { PatientMedicalRecordDrawer } from '@/components/clients/PatientMedicalRecordDrawer'
+import { NewPatientDrawer } from '@/components/clients/NewPatientDrawer'
 import { useRouter } from 'next/navigation'
 
 interface Client {
@@ -35,6 +36,8 @@ export default function ClientsPage() {
   const [lang, setLang] = useState<'en' | 'es' | 'it'>('es')
   const [loading, setLoading] = useState(true)
   const [drawerLoading, setDrawerLoading] = useState(false)
+  const [isNewPatientOpen, setIsNewPatientOpen] = useState(false)
+  const [filterActive, setFilterActive] = useState(false)
 
   const fetchClinicalRecords = useCallback(async (clientId: string) => {
     if (!tenantId || !clientId) return
@@ -86,18 +89,26 @@ export default function ClientsPage() {
   useEffect(() => { fetchClients() }, [fetchClients])
 
   useEffect(() => {
-    if (!searchTerm.trim()) {
-      setFilteredClients(clients)
-    } else {
+    let filtered = clients
+    
+    // Search Filter
+    if (searchTerm.trim()) {
       const term = searchTerm.toLowerCase()
-      setFilteredClients(clients.filter(c => 
+      filtered = filtered.filter(c => 
         c.first_name.toLowerCase().includes(term) || 
         c.last_name.toLowerCase().includes(term) || 
         c.phone.includes(term) ||
         (c.notes && c.notes.toLowerCase().includes(term))
-      ))
+      )
     }
-  }, [searchTerm, clients])
+
+    // Active Status Filter
+    if (filterActive) {
+      filtered = filtered.filter(c => getStatus(c) === 'active')
+    }
+
+    setFilteredClients(filtered)
+  }, [searchTerm, clients, filterActive])
 
   async function openClientDetail(client: Client) {
     setSelectedClient(client)
@@ -158,6 +169,51 @@ export default function ClientsPage() {
     }
   }
 
+  async function handleCreatePatient(data: { first_name: string; last_name: string; phone: string; notes: string }) {
+    if (!tenantId) return
+    
+    const res = await fetch('/api/clients', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        tenant_id: tenantId,
+        ...data
+      })
+    })
+
+    if (res.ok) {
+      await fetchClients()
+    } else {
+      const err = await res.json()
+      throw new Error(err.error || 'Failed to create patient')
+    }
+  }
+
+  async function handleUpdatePatient(id: string, data: any) {
+    if (!tenantId) return
+    
+    const res = await fetch('/api/clients', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        id,
+        tenant_id: tenantId,
+        data
+      })
+    })
+
+    if (res.ok) {
+      const updated = await res.json()
+      if (selectedClient?.id === id) {
+        setSelectedClient({ ...selectedClient, ...updated.client })
+      }
+      await fetchClients()
+    } else {
+      const err = await res.json()
+      throw new Error(err.error || 'Failed to update patient')
+    }
+  }
+
   return (
     <div className="min-h-screen bg-surface p-6 md:p-8 max-w-[1600px] mx-auto">
       {/* Editorial Header */}
@@ -166,11 +222,14 @@ export default function ClientsPage() {
           <h1 className="text-4xl font-black text-secondary-900 tracking-tight mb-2">
             {t.patient_management}
           </h1>
-          <p className="text-secondary-400 font-bold uppercase tracking-widest text-[10px]">
+          <p className="text-secondary-600 font-bold uppercase tracking-widest text-[10px] bg-secondary-50 px-3 py-1 rounded-full inline-block">
             {clients.length} {t.active_patients}
           </p>
         </div>
-        <button className="flex items-center gap-2 bg-primary-600 text-white px-6 py-3 rounded-xl font-black uppercase tracking-widest text-[10px] hover:bg-primary-700 transition-all shadow-lg shadow-primary-600/20 active:scale-95">
+        <button 
+          onClick={() => setIsNewPatientOpen(true)}
+          className="flex items-center gap-2 bg-primary-600 text-white px-6 py-3 rounded-xl font-black uppercase tracking-widest text-[10px] hover:bg-primary-700 transition-all shadow-lg shadow-primary-600/20 active:scale-95"
+        >
           <Plus className="h-4 w-4" />
           {t.new_patient}
         </button>
@@ -179,7 +238,7 @@ export default function ClientsPage() {
       {/* Action Bar */}
       <div className="flex items-center gap-4 mb-8">
         <div className="relative flex-1 group">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-secondary-300 group-focus-within:text-primary-600 transition-colors" />
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-secondary-500 group-focus-within:text-primary-600 transition-colors" />
           <input
             type="text"
             value={searchTerm}
@@ -188,7 +247,14 @@ export default function ClientsPage() {
             className="w-full bg-white border border-surface-container-low rounded-xl py-4 pl-12 pr-4 text-sm font-bold text-secondary-900 focus:ring-4 focus:ring-primary-600/5 focus:border-primary-600 transition-all outline-none"
           />
         </div>
-        <button className="p-4 bg-white border border-surface-container-low rounded-xl text-secondary-400 hover:text-primary-600 hover:border-primary-600 transition-all">
+        <button 
+          onClick={() => setFilterActive(!filterActive)}
+          className={`p-4 border rounded-xl transition-all shadow-sm ${
+            filterActive 
+              ? 'bg-primary-600 border-primary-600 text-white' 
+              : 'bg-white border-surface-container-low text-secondary-600 hover:text-primary-600 hover:border-primary-600'
+          }`}
+        >
           <Filter className="h-5 w-5" />
         </button>
       </div>
@@ -198,11 +264,11 @@ export default function ClientsPage() {
         <table className="w-full text-left">
           <thead>
             <tr className="border-b border-surface-container-low bg-precision-surface-lowest">
-              <th className="px-4 py-4 text-[10px] font-black text-secondary-400 uppercase tracking-widest">{t.name}</th>
-              <th className="px-4 py-4 text-[10px] font-black text-secondary-400 uppercase tracking-widest">{t.id}</th>
-              <th className="px-4 py-4 text-[10px] font-black text-secondary-400 uppercase tracking-widest">{t.phone}</th>
-              <th className="px-4 py-4 text-[10px] font-black text-secondary-400 uppercase tracking-widest">{t.last_visit}</th>
-              <th className="px-4 py-4 text-[10px] font-black text-secondary-400 uppercase tracking-widest">{t.status}</th>
+              <th className="px-4 py-4 text-[10px] font-black text-secondary-600 uppercase tracking-widest">{t.name}</th>
+              <th className="px-4 py-4 text-[10px] font-black text-secondary-600 uppercase tracking-widest">{t.id}</th>
+              <th className="px-4 py-4 text-[10px] font-black text-secondary-600 uppercase tracking-widest">{t.phone}</th>
+              <th className="px-4 py-4 text-[10px] font-black text-secondary-600 uppercase tracking-widest">{t.last_visit}</th>
+              <th className="px-4 py-4 text-[10px] font-black text-secondary-600 uppercase tracking-widest">{t.status}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-surface-container-low">
@@ -238,21 +304,21 @@ export default function ClientsPage() {
                       </p>
                     </td>
                     <td className="px-6 py-5">
-                      <p className="text-xs font-bold text-secondary-400 uppercase tracking-widest">
+                      <p className="text-xs font-bold text-secondary-600 uppercase tracking-widest">
                         {client.id.slice(0, 8).toUpperCase()}
                       </p>
                     </td>
-                    <td className="px-6 py-5 text-sm font-bold text-secondary-500">
+                    <td className="px-6 py-5 text-sm font-bold text-secondary-700">
                       {client.phone}
                     </td>
-                    <td className="px-6 py-5 text-sm font-bold text-secondary-500">
+                    <td className="px-6 py-5 text-sm font-bold text-secondary-700">
                       {getLastVisit(client)}
                     </td>
                     <td className="px-4 py-4">
                       <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${
                         status === 'active' 
                           ? 'bg-emerald-100 text-emerald-700' 
-                          : 'bg-surface-container-mid text-secondary-400'
+                          : 'bg-surface-container-mid text-secondary-600'
                        }`}>
                         {status === 'active' ? t.active_status : t.inactive_status}
                       </span>
@@ -265,23 +331,36 @@ export default function ClientsPage() {
         </table>
       </div>
 
-      {/* Patient Drawer */}
-      {selectedClient && (
-        <PatientMedicalRecordDrawer
-          patient={selectedClient}
-          isOpen={!!selectedClient}
-          onClose={() => setSelectedClient(null)}
-          history={clinicalRecords}
-          appointments={clientApps}
-          lang={lang}
-          translations={t}
-          onAddNote={handleAddNote}
-          onScheduleAppointment={() => {
-            router.push('/dashboard/appointments')
-          }}
-          isLoading={drawerLoading}
-        />
-      )}
+      {/* Patient Drawers */}
+      <AnimatePresence>
+        {selectedClient && (
+          <PatientMedicalRecordDrawer
+            patient={selectedClient}
+            isOpen={!!selectedClient}
+            onClose={() => setSelectedClient(null)}
+            history={clinicalRecords}
+            appointments={clientApps}
+            lang={lang}
+            translations={t}
+            onAddNote={handleAddNote}
+            onUpdatePatient={handleUpdatePatient}
+            onScheduleAppointment={() => {
+              router.push('/dashboard/appointments')
+            }}
+            isLoading={drawerLoading}
+          />
+        )}
+
+        {isNewPatientOpen && (
+          <NewPatientDrawer
+            isOpen={isNewPatientOpen}
+            onClose={() => setIsNewPatientOpen(false)}
+            lang={lang}
+            translations={t}
+            onCreatePatient={handleCreatePatient}
+          />
+        )}
+      </AnimatePresence>
 
     </div>
   )

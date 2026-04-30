@@ -43,3 +43,42 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ error: err.message || 'Internal Server Error' }, { status: 500 });
   }
 }
+
+export async function POST(req: NextRequest) {
+  try {
+    const { tenant_id, first_name, last_name, phone, notes } = await req.json();
+
+    if (!tenant_id || !first_name || !last_name || !phone) {
+      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+    }
+
+    const supabase = createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    
+    const access = await verifyTenantAccess(supabase, user, tenant_id);
+    if (!access.authorized) {
+      return NextResponse.json({ error: access.error }, { status: access.status });
+    }
+
+    const result = await supabase
+      .from('clients')
+      .insert({
+        tenant_id,
+        first_name,
+        last_name,
+        phone,
+        notes
+      })
+      .select()
+      .single();
+
+    if (result.error) {
+      return NextResponse.json({ error: result.error.message }, { status: 500 });
+    }
+
+    return NextResponse.json({ success: true, client: result.data });
+  } catch (err: any) {
+    console.error('[API Clients POST] Unexpected error:', err);
+    return NextResponse.json({ error: err.message || 'Internal Server Error' }, { status: 500 });
+  }
+}

@@ -38,6 +38,7 @@ interface PatientMedicalRecordDrawerProps {
   lang: 'en' | 'es' | 'it';
   translations: any;
   onAddNote: (content: string) => Promise<void>;
+  onUpdatePatient: (id: string, data: any) => Promise<void>;
   onScheduleAppointment: () => void;
   isLoading?: boolean;
 }
@@ -51,13 +52,20 @@ export function PatientMedicalRecordDrawer({
   lang,
   translations: t,
   onAddNote,
+  onUpdatePatient,
   onScheduleAppointment,
   isLoading = false
 }: PatientMedicalRecordDrawerProps) {
   const [activeTab, setActiveTab] = useState<'history' | 'files' | 'upcoming'>('history')
   const [isAddingNote, setIsAddingNote] = useState(false)
+  const [isEditingPatient, setIsEditingPatient] = useState(false)
   const [newNoteContent, setNewNoteContent] = useState('')
   const [isSaving, setIsSaving] = useState(false)
+  
+  // Edit form state
+  const [editFirstName, setEditFirstName] = useState(patient.first_name)
+  const [editLastName, setEditLastName] = useState(patient.last_name)
+  const [editPhone, setEditPhone] = useState(patient.phone)
   
   const dateLocale = lang === 'it' ? it : (lang === 'es' ? es : enUS)
 
@@ -70,6 +78,22 @@ export function PatientMedicalRecordDrawer({
       setIsAddingNote(false);
     } catch (error) {
       console.error('Error saving note:', error);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleUpdatePatientInfo = async () => {
+    setIsSaving(true);
+    try {
+      await onUpdatePatient(patient.id, {
+        first_name: editFirstName,
+        last_name: editLastName,
+        phone: editPhone
+      });
+      setIsEditingPatient(false);
+    } catch (error) {
+      console.error('Error updating patient:', error);
     } finally {
       setIsSaving(false);
     }
@@ -108,31 +132,80 @@ export function PatientMedicalRecordDrawer({
                 <h2 className="text-2xl font-black text-secondary-900 tracking-tight leading-none mb-2">
                   {patient.first_name} {patient.last_name}
                 </h2>
-                <div className="flex items-center gap-4 text-xs font-bold text-secondary-400">
-                  <span className="flex items-center gap-1.5 uppercase tracking-widest">
-                    {patient.phone}
-                  </span>
+                <div className="flex items-center gap-3">
+                  <div className="text-xs font-bold text-secondary-600">
+                    <span className="flex items-center gap-1.5 uppercase tracking-widest bg-secondary-100 px-2 py-0.5 rounded-md">
+                      {patient.phone}
+                    </span>
+                  </div>
+                  <button 
+                    onClick={() => setIsEditingPatient(!isEditingPatient)}
+                    className="text-[10px] font-black text-primary-600 uppercase tracking-widest hover:underline"
+                  >
+                    {isEditingPatient ? t.cancel : t.edit}
+                  </button>
                 </div>
               </div>
-              <button
-                onClick={onClose}
-                className="p-2 rounded-xl bg-surface-container-low text-secondary-400 hover:text-secondary-900 transition-colors"
-              >
-                <X className="h-5 w-5" />
-              </button>
+              <div className="flex gap-2">
+                <button
+                  onClick={onClose}
+                  className="p-2 rounded-xl bg-surface-container-low text-secondary-600 hover:text-secondary-900 transition-colors border border-surface-container-mid"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
             </div>
+
+            <AnimatePresence>
+              {isEditingPatient && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: 'auto', opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  className="overflow-hidden mb-6 space-y-4 bg-primary-50/30 p-4 rounded-2xl border border-primary-100"
+                >
+                  <div className="grid grid-cols-2 gap-4">
+                    <input 
+                      value={editFirstName}
+                      onChange={e => setEditFirstName(e.target.value)}
+                      placeholder={t.first_name}
+                      className="bg-white p-3 rounded-xl text-sm font-bold border border-primary-100 outline-none focus:ring-2 focus:ring-primary-500"
+                    />
+                    <input 
+                      value={editLastName}
+                      onChange={e => setEditLastName(e.target.value)}
+                      placeholder={t.last_name}
+                      className="bg-white p-3 rounded-xl text-sm font-bold border border-primary-100 outline-none focus:ring-2 focus:ring-primary-500"
+                    />
+                  </div>
+                  <input 
+                    value={editPhone}
+                    onChange={e => setEditPhone(e.target.value)}
+                    placeholder={t.phone}
+                    className="w-full bg-white p-3 rounded-xl text-sm font-bold border border-primary-100 outline-none focus:ring-2 focus:ring-primary-500"
+                  />
+                  <button
+                    onClick={handleUpdatePatientInfo}
+                    disabled={isSaving}
+                    className="w-full bg-primary-600 text-white py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest active:scale-95 transition-all shadow-md"
+                  >
+                    {isSaving ? '...' : t.save_changes || t.save}
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
             <div className="grid grid-cols-2 gap-3">
               <div className="bg-surface-container-low/50 rounded-2xl p-4 border border-surface-container-low">
-                <p className="text-[10px] font-black text-secondary-300 uppercase tracking-widest mb-1">{t.last_visit}</p>
+                <p className="text-[10px] font-black text-secondary-500 uppercase tracking-widest mb-1">{t.last_visit}</p>
                 <p className="text-sm font-bold text-secondary-900">
                   {patient.last_visit ? format(new Date(patient.last_visit), 'dd MMM yyyy') : '---'}
                 </p>
               </div>
               <div className="bg-surface-container-low/50 rounded-2xl p-4 border border-surface-container-low">
-                <p className="text-[10px] font-black text-secondary-300 uppercase tracking-widest mb-1">{t.status}</p>
+                <p className="text-[10px] font-black text-secondary-500 uppercase tracking-widest mb-1">{t.status}</p>
                 <div className="flex items-center gap-2">
-                  <div className={`h-2 w-2 rounded-full ${patient.is_active !== false ? 'bg-success-500' : 'bg-secondary-300'}`} />
+                  <div className={`h-2 w-2 rounded-full ${patient.is_active !== false ? 'bg-success-500' : 'bg-secondary-400'}`} />
                   <p className="text-sm font-bold text-secondary-900">{patient.is_active !== false ? t.active_status : t.inactive_status}</p>
                 </div>
               </div>
@@ -147,7 +220,7 @@ export function PatientMedicalRecordDrawer({
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id as any)}
                   className={`py-4 flex items-center gap-2 text-[10px] font-black uppercase tracking-widest transition-all relative ${
-                    activeTab === tab.id ? 'text-primary-600' : 'text-secondary-300 hover:text-secondary-900'
+                    activeTab === tab.id ? 'text-primary-600' : 'text-secondary-500 hover:text-secondary-900'
                   }`}
                 >
                   <tab.icon className="h-3 w-3" />
@@ -215,7 +288,7 @@ export function PatientMedicalRecordDrawer({
                                 setIsAddingNote(false);
                                 setNewNoteContent('');
                               }}
-                              className="text-secondary-400 hover:text-secondary-900 px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all"
+                              className="text-secondary-600 hover:text-secondary-900 px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all"
                             >
                               {t.cancel}
                             </button>
@@ -226,21 +299,21 @@ export function PatientMedicalRecordDrawer({
                       {history.length === 0 ? (
                         <div className="py-12 text-center">
                           <div className="h-12 w-12 bg-surface-container-low rounded-2xl flex items-center justify-center mx-auto mb-4">
-                            <AlertCircle className="h-6 w-6 text-secondary-300" />
+                            <AlertCircle className="h-6 w-6 text-secondary-400" />
                           </div>
-                          <p className="text-sm font-medium text-secondary-400">{t.no_remarks_yet}</p>
+                          <p className="text-sm font-medium text-secondary-600">{t.no_remarks_yet}</p>
                         </div>
                       ) : (
                         <div className="relative pl-6 space-y-12 before:absolute before:left-0 before:top-2 before:bottom-0 before:w-px before:bg-surface-container-low">
                           {history.map((record) => (
                             <div key={record.id} className="relative">
                               <div className="absolute -left-[25px] top-1.5 h-2 w-2 rounded-full bg-primary-600 ring-4 ring-surface-container-lowest" />
-                              <div className="flex items-center gap-2 text-[10px] font-black text-secondary-300 uppercase tracking-widest mb-3">
+                              <div className="flex items-center gap-2 text-[10px] font-black text-secondary-500 uppercase tracking-widest mb-3">
                                 <Clock className="h-3 w-3" />
                                 {format(new Date(record.created_at), 'dd MMM yyyy, HH:mm')}
                               </div>
                               <div className="bg-white rounded-[2rem] p-6 shadow-sm border border-surface-container-low">
-                                <p className="text-sm font-medium text-secondary-600 leading-relaxed whitespace-pre-wrap">
+                                <p className="text-sm font-medium text-secondary-800 leading-relaxed whitespace-pre-wrap">
                                   {record.record_type === 'medical_note' 
                                     ? (typeof record.content === 'string' ? record.content : JSON.stringify(record.content))
                                     : (typeof record.content === 'string' ? record.content : (record.content?.observations || JSON.stringify(record.content)))}
@@ -253,9 +326,9 @@ export function PatientMedicalRecordDrawer({
                                         href={file.url}
                                         target="_blank"
                                         rel="noreferrer"
-                                        className="flex items-center gap-2 px-3 py-1.5 bg-surface-container-low/50 hover:bg-surface-container-low rounded-xl text-[10px] font-bold text-secondary-600 transition-colors border border-surface-container-low"
+                                        className="flex items-center gap-2 px-3 py-1.5 bg-surface-container-low/80 hover:bg-surface-container-low rounded-xl text-[10px] font-bold text-secondary-700 transition-colors border border-surface-container-mid"
                                       >
-                                        <Paperclip className="h-3 w-3" />
+                                        <Paperclip className="h-3 w-3 text-secondary-500" />
                                         {file.name || `File ${fidx + 1}`}
                                       </a>
                                     ))}
@@ -280,9 +353,9 @@ export function PatientMedicalRecordDrawer({
                       {history.flatMap(h => h.attachments || []).length === 0 ? (
                         <div className="py-12 text-center">
                           <div className="h-12 w-12 bg-surface-container-low rounded-2xl flex items-center justify-center mx-auto mb-4">
-                            <Paperclip className="h-6 w-6 text-secondary-300" />
+                            <Paperclip className="h-6 w-6 text-secondary-400" />
                           </div>
-                          <p className="text-sm font-medium text-secondary-400">No files found.</p>
+                          <p className="text-sm font-medium text-secondary-600">No files found.</p>
                         </div>
                       ) : (
                         history.flatMap(h => h.attachments || []).map((file, idx) => (
@@ -298,11 +371,11 @@ export function PatientMedicalRecordDrawer({
                             </div>
                             <div className="flex-1 min-w-0">
                               <p className="text-sm font-bold text-secondary-900 truncate">{file.name || 'Untitled File'}</p>
-                              <p className="text-[10px] font-black text-secondary-300 uppercase tracking-widest mt-0.5">
+                              <p className="text-[10px] font-black text-secondary-500 uppercase tracking-widest mt-0.5">
                                 {file.type || 'Document'}
                               </p>
                             </div>
-                            <ExternalLink className="h-4 w-4 text-secondary-300 group-hover:text-primary-600 transition-colors" />
+                            <ExternalLink className="h-4 w-4 text-secondary-400 group-hover:text-primary-600 transition-colors" />
                           </a>
                         ))
                       )}
@@ -334,7 +407,7 @@ export function PatientMedicalRecordDrawer({
                               </div>
                               <div>
                                 <p className="text-xs font-black text-secondary-900 uppercase tracking-widest">{app.services?.name}</p>
-                                <p className="text-[10px] font-bold text-secondary-400 uppercase tracking-widest">
+                                <p className="text-[10px] font-bold text-secondary-600 uppercase tracking-widest">
                                   {format(parseISO(app.start_at), 'EEEE, MMMM d', { locale: dateLocale })} @ {format(parseISO(app.start_at), 'HH:mm')}
                                 </p>
                               </div>
