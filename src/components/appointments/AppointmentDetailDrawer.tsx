@@ -58,7 +58,7 @@ export function AppointmentDetailDrawer({
           <div>
             <div className="flex items-center gap-3 mb-6">
               <div className={`h-2 w-2 rounded-full ${
-                appointment.status === 'confirmed' ? 'bg-success' : 'bg-warning animate-pulse'
+                appointment.status === 'confirmed' ? 'bg-emerald-500' : 'bg-orange-500 animate-pulse'
               }`} />
               <span className="text-[10px] font-black tracking-[0.4em] text-on-surface/40 uppercase">
                 {appointment.status?.replace('_', ' ')}

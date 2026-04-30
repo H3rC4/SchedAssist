@@ -235,10 +235,10 @@ export const DayActivityFeed: React.FC<DayActivityFeedProps> = ({
                         Open Medical Record Drawer
                       </button>
                       <div className="grid grid-cols-2 gap-4">
-                        <button className="bg-emerald-500 text-white py-4 rounded-[1.2rem] text-[10px] font-black uppercase tracking-widest hover:bg-emerald-600 transition-all">
+                        <button className="bg-emerald-600 text-white py-4 rounded-[1.2rem] text-[10px] font-black uppercase tracking-widest hover:bg-emerald-700 transition-all shadow-md shadow-emerald-500/10">
                           Mark as Attended
                         </button>
-                        <button className="bg-warning text-white py-4 rounded-[1.2rem] text-[10px] font-black uppercase tracking-widest hover:bg-orange-600 transition-all">
+                        <button className="bg-orange-500 text-white py-4 rounded-[1.2rem] text-[10px] font-black uppercase tracking-widest hover:bg-orange-600 transition-all shadow-md shadow-orange-500/20">
                           Reschedule
                         </button>
                       </div>

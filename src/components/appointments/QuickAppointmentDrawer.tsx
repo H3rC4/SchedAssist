@@ -273,8 +273,8 @@ export function QuickAppointmentDrawer({
                     ))}
                   </div>
                 ) : availableSlots.length === 0 ? (
-                  <div className="p-8 rounded-3xl bg-warning/5 border border-warning/10 text-center">
-                    <p className="text-[10px] font-black text-warning uppercase tracking-widest">
+                  <div className="p-8 rounded-3xl bg-orange-500/5 border border-orange-500/10 text-center">
+                    <p className="text-[10px] font-black text-orange-600 uppercase tracking-widest">
                       {T.no_slots || 'No slots available'}
                     </p>
                   </div>
