@@ -247,7 +247,7 @@ export const DayActivityFeed: React.FC<DayActivityFeedProps> = ({
           </div>
 
           {/* Next Patient Card Column */}
-          <div className="lg:w-[480px]">
+          <div className="lg:w-[480px] lg:sticky lg:top-8 lg:self-start max-h-[calc(100vh-100px)] flex">
             <AnimatePresence mode="wait">
               {selectedApp && (
                 <motion.div
@@ -255,7 +255,7 @@ export const DayActivityFeed: React.FC<DayActivityFeedProps> = ({
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -20 }}
-                  className="bg-white rounded-[3.5rem] border border-on-surface/5 shadow-2xl overflow-hidden sticky top-8"
+                  className="bg-white rounded-[3.5rem] border border-on-surface/5 shadow-2xl overflow-hidden flex flex-col w-full"
                 >
                   {/* Card Header */}
                   <div className="bg-primary/5 p-8 border-b border-primary/5 relative">
@@ -286,7 +286,7 @@ export const DayActivityFeed: React.FC<DayActivityFeedProps> = ({
                   </div>
 
                   {/* Card Content */}
-                  <div className="p-8 space-y-8">
+                  <div className="p-8 space-y-8 overflow-y-auto custom-scrollbar flex-1">
                     <div className="grid grid-cols-2 gap-4">
                       <div className="p-5 rounded-3xl bg-on-surface/[0.02] border border-on-surface/5">
                         <p className="text-[8px] font-black text-on-surface/20 uppercase tracking-[0.2em] mb-2">{T.reason_visit || 'MOTIVO DE VISITA'}</p>
