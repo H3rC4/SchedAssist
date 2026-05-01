@@ -102,7 +102,7 @@ export async function POST(req: NextRequest) {
       client = newClient
     }
 
-    // 2. Use service for creation (Includes availability and overlap checks)
+  // 2. Use service for creation (Includes availability and overlap checks)
     const data = await AppointmentService.createAppointment(supabaseAdmin, {
       tenant_id,
       client_id: client!.id,
@@ -111,8 +111,20 @@ export async function POST(req: NextRequest) {
       start_at,
       end_at,
       source: 'dashboard',
-      notes: notes || null
+      notes: notes || null,
+      rescheduled_from_appointment_id: body.rescheduled_from_appointment_id || null
     })
+
+    // If it's a reschedule, mark the original as notified/handled
+    if (body.rescheduled_from_appointment_id) {
+      await supabaseAdmin
+        .from('appointments')
+        .update({ 
+          cancellation_notified: true,
+          cancellation_notified_notes: `Re-agendada automáticamente (Nueva cita: ${data.id})`
+        })
+        .eq('id', body.rescheduled_from_appointment_id)
+    }
 
     // Fetch tenant settings for language
     const { data: tData } = await supabaseAdmin.from('tenants').select('settings').eq('id', tenant_id).single();

@@ -129,9 +129,13 @@ export function ProfessionalDetailDrawer({
     try {
       if (overrideForm.type === 'block') {
          const supabase = createClient()
-         for (const app of overrideConflicts) {
-           await supabase.from('appointments').update({ status: 'cancelled', cancellation_notified: false }).eq('id', app.id)
-         }
+          for (const app of overrideConflicts) {
+            await supabase.from('appointments').update({ 
+              status: 'cancelled', 
+              cancellation_notified: false,
+              cancellation_reason: 'professional_cancellation' 
+            }).eq('id', app.id)
+          }
       }
       await (addOverride as any)(overrideModal.date, overrideForm)
       setOverrideModal(null)

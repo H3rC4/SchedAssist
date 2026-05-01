@@ -15,6 +15,7 @@ interface AppointmentDetailDrawerProps {
   translations: any;
   onReschedule: (app: Appointment) => void;
   onUpdateStatus: (id: string, status: string) => Promise<boolean>;
+  onMarkAsNotified?: (id: string) => Promise<boolean>;
 }
 
 export function AppointmentDetailDrawer({
@@ -25,7 +26,8 @@ export function AppointmentDetailDrawer({
   tenantId,
   translations: T,
   onReschedule,
-  onUpdateStatus
+  onUpdateStatus,
+  onMarkAsNotified
 }: AppointmentDetailDrawerProps) {
   const [updating, setUpdating] = useState(false)
 
@@ -35,6 +37,17 @@ export function AppointmentDetailDrawer({
     const success = await onUpdateStatus(appointment.id, newStatus)
     if (success) {
       onSuccess()
+    }
+    setUpdating(false)
+  }
+
+  const handleMarkNotified = async () => {
+    if (!onMarkAsNotified) return
+    setUpdating(true)
+    const success = await onMarkAsNotified(appointment.id)
+    if (success) {
+      onSuccess()
+      onClose()
     }
     setUpdating(false)
   }
@@ -59,9 +72,11 @@ export function AppointmentDetailDrawer({
     if (status === 'attended') return T.attended || 'Attended'
     if (status === 'confirmed') return T.confirmed || 'Confirmed'
     if (status === 'pending') return T.pending || 'Pending'
-    if (status === 'canceled') return T.canceled || 'Canceled'
+    if (status === 'cancelled' || status === 'canceled') return T.canceled || 'Cancelada'
     return status.replace('_', ' ')
   }
+
+  const isCancelled = appointment.status === 'cancelled' || appointment.status === 'canceled'
 
   return (
     <div className="fixed inset-0 z-[100] flex justify-end" onClick={onClose}>
@@ -85,9 +100,9 @@ export function AppointmentDetailDrawer({
           <div>
             <div className="flex items-center gap-2 mb-2">
               <div className={`h-1.5 w-1.5 rounded-full ${
-                appointment.status === 'attended' ? 'bg-emerald-500' : 'bg-primary animate-pulse'
+                appointment.status === 'attended' ? 'bg-emerald-500' : isCancelled ? 'bg-error' : 'bg-primary animate-pulse'
               }`} />
-              <span className="text-[8px] font-black tracking-[0.3em] text-on-surface/40 uppercase">
+              <span className={`text-[8px] font-black tracking-[0.3em] uppercase ${isCancelled ? 'text-error' : 'text-on-surface/40'}`}>
                 {getStatusLabel(appointment.status)}
               </span>
             </div>
@@ -176,34 +191,55 @@ export function AppointmentDetailDrawer({
               </div>
             </div>
           )}
+
+          {appointment.cancellation_reason && (
+            <div className="space-y-2">
+              <h4 className="text-[8px] font-black text-error/40 uppercase tracking-[0.3em] ml-1">{T.cancellation_reason || 'MOTIVO DE CANCELACIÓN'}</h4>
+              <div className="p-4 rounded-2xl bg-error/5 border border-error/10">
+                <p className="text-[10px] font-bold text-error/70 leading-relaxed">
+                  {appointment.cancellation_reason}
+                </p>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Footer Actions */}
         <div className="p-6 bg-on-surface/[0.02] border-t border-on-surface/5 space-y-3">
           <div className="grid grid-cols-2 gap-3">
-            <button 
-              onClick={handleToggleAttended}
-              disabled={updating}
-              className={`py-4 rounded-xl font-black text-[9px] uppercase tracking-[0.2em] transition-all duration-300 flex items-center justify-center gap-2 border overflow-hidden ${
-                appointment.status === 'attended' 
-                  ? 'bg-emerald-500 text-white border-emerald-600 scale-[0.98]' 
-                  : 'bg-white text-emerald-600 border-emerald-100 hover:bg-emerald-50'
-              }`}
-            >
-              <AnimatePresence mode="wait">
-                {appointment.status === 'attended' ? (
-                  <motion.div key="undo" initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: -20, opacity: 0 }} className="flex items-center gap-2">
-                    <CheckCircle className="h-3.5 w-3.5" /> 
-                    {T.undo || 'DESHACER'}
-                  </motion.div>
-                ) : (
-                  <motion.div key="mark" initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: -20, opacity: 0 }} className="flex items-center gap-2">
-                    <CheckCircle className="h-3.5 w-3.5" /> 
-                    {T.mark_attended}
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </button>
+            {!isCancelled ? (
+              <button 
+                onClick={handleToggleAttended}
+                disabled={updating}
+                className={`py-4 rounded-xl font-black text-[9px] uppercase tracking-[0.2em] transition-all duration-300 flex items-center justify-center gap-2 border overflow-hidden ${
+                  appointment.status === 'attended' 
+                    ? 'bg-emerald-500 text-white border-emerald-600 scale-[0.98]' 
+                    : 'bg-white text-emerald-600 border-emerald-100 hover:bg-emerald-50'
+                }`}
+              >
+                <AnimatePresence mode="wait">
+                  {appointment.status === 'attended' ? (
+                    <motion.div key="undo" initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: -20, opacity: 0 }} className="flex items-center gap-2">
+                      <CheckCircle className="h-3.5 w-3.5" /> 
+                      {T.undo || 'DESHACER'}
+                    </motion.div>
+                  ) : (
+                    <motion.div key="mark" initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: -20, opacity: 0 }} className="flex items-center gap-2">
+                      <CheckCircle className="h-3.5 w-3.5" /> 
+                      {T.mark_attended}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </button>
+            ) : (
+              <button 
+                onClick={handleMarkNotified}
+                disabled={updating}
+                className="py-4 rounded-xl bg-emerald-500 text-white font-black text-[9px] uppercase tracking-[0.2em] hover:opacity-90 transition-all flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20"
+              >
+                <CheckCircle className="h-3.5 w-3.5" /> {T.mark_rescheduled || 'MARCAR REAGENDADA'}
+              </button>
+            )}
 
             <button 
               onClick={() => onReschedule(appointment)}
@@ -213,12 +249,14 @@ export function AppointmentDetailDrawer({
             </button>
           </div>
 
-          <button 
-            onClick={cancelAppointment}
-            className="w-full py-4 rounded-xl bg-error/5 text-error font-black text-[9px] uppercase tracking-[0.2em] hover:bg-error hover:text-white transition-all flex items-center justify-center gap-2"
-          >
-            <Trash2 className="h-3.5 w-3.5" /> {T.cancel_btn}
-          </button>
+          {!isCancelled && (
+            <button 
+              onClick={cancelAppointment}
+              className="w-full py-4 rounded-xl bg-error/5 text-error font-black text-[9px] uppercase tracking-[0.2em] hover:bg-error hover:text-white transition-all flex items-center justify-center gap-2"
+            >
+              <Trash2 className="h-3.5 w-3.5" /> {T.cancel_btn}
+            </button>
+          )}
           
           <button 
             onClick={onClose}
@@ -229,5 +267,6 @@ export function AppointmentDetailDrawer({
         </div>
       </motion.div>
     </div>
+
   )
 }

@@ -20,6 +20,7 @@ interface QuickAppointmentDrawerProps {
   slotLoading: boolean;
   onFetchSlots: (profId: string, date: string) => void;
   initialPatient?: { first_name: string; last_name: string; phone: string };
+  rescheduledFromId?: string | null;
 }
 
 export function QuickAppointmentDrawer({
@@ -34,7 +35,8 @@ export function QuickAppointmentDrawer({
   availableSlots,
   slotLoading,
   onFetchSlots,
-  initialPatient
+  initialPatient,
+  rescheduledFromId
 }: QuickAppointmentDrawerProps) {
   const [formData, setFormData] = useState({
     first_name: initialPatient?.first_name || '', 
@@ -79,7 +81,8 @@ export function QuickAppointmentDrawer({
           tenant_id: tenantId, 
           ...formData, 
           start_at, 
-          end_at 
+          end_at,
+          rescheduled_from_appointment_id: rescheduledFromId
         })
       })
 

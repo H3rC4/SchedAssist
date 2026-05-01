@@ -62,6 +62,7 @@ function AppointmentsContent() {
 
   const [showNewModal, setShowNewModal] = useState(false)
   const [showPendingModal, setShowPendingModal] = useState(false)
+  const [rescheduledFromId, setRescheduledFromId] = useState<string | null>(null)
   const [reschedulePatient, setReschedulePatient] = useState<{first_name: string, last_name: string, phone: string} | undefined>(undefined)
   const [selectedAppointment, setSelectedAppointment] = useState<any>(null)
   const [viewMode, setViewMode] = useState<'daily' | 'weekly'>('daily')
@@ -300,6 +301,7 @@ function AppointmentsContent() {
               refresh(); 
               setShowNewModal(false); 
               setReschedulePatient(undefined);
+              setRescheduledFromId(null);
               setToast({ message: T.success, type: 'success' }) 
             }}
             selectedDate={selectedDate}
@@ -308,6 +310,7 @@ function AppointmentsContent() {
             slotLoading={slotLoading}
             onFetchSlots={fetchSlots}
             initialPatient={reschedulePatient}
+            rescheduledFromId={rescheduledFromId}
           />
         )}
 
@@ -325,10 +328,12 @@ function AppointmentsContent() {
                 last_name: app.clients?.last_name || '',
                 phone: app.clients?.phone || ''
               })
+              setRescheduledFromId(app.id)
               setShowNewModal(true)
               setSelectedAppointment(null)
             }}
             onUpdateStatus={updateStatus}
+            onMarkAsNotified={markAsNotified}
           />
         )}
 
@@ -367,7 +372,12 @@ function AppointmentsContent() {
               
               <div className="p-6 overflow-y-auto space-y-3">
                 {pendingCalls.map(app => (
-                  <div key={app.id} className="p-4 rounded-2xl border border-border/50 bg-surface-hover/50 hover:bg-surface-hover transition-colors group cursor-pointer" onClick={() => { setSelectedAppointment(app); setShowPendingModal(false); }}>
+                  <div key={app.id} className="p-4 rounded-2xl border border-border/50 bg-surface-hover/50 hover:bg-surface-hover transition-colors group cursor-pointer" 
+                    onClick={() => { 
+                      setSelectedAppointment(app); 
+                      setShowPendingModal(false); 
+                    }}
+                  >
                     <div className="flex items-center justify-between mb-3">
                       <span className="text-[10px] font-black text-foreground tracking-widest uppercase">{app.clients?.first_name} {app.clients?.last_name}</span>
                       <span className="text-[9px] font-bold text-amber-500 tracking-widest uppercase bg-amber-500/10 px-2 py-1 rounded-md">{T.pending_cancellation || 'Pte. Cancelación'}</span>

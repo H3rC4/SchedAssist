@@ -90,9 +90,10 @@ export function useAppointments() {
 
     // Fetch pending notifications (any cancelled app where cancellation_notified is false)
     const { data: pending } = await supabase.from('appointments')
-      .select('id, status, start_at, clients(first_name, last_name, phone), services(name)')
+      .select('*, clients(*), services(name), professionals(full_name)')
       .eq('tenant_id', tenantId)
       .eq('status', 'cancelled')
+      .eq('cancellation_reason', 'professional_cancellation')
       .eq('cancellation_notified', false)
       .order('start_at', { ascending: true })
     if (pending) setPendingCalls(pending as any[])
