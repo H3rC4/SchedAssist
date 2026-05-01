@@ -305,32 +305,30 @@ export const translations = {
 
     // Landing Page
     landing: {
-      hero_badge: 'Multi-Tenant System Active',
-      hero_title_1: 'The Power of WhatsApp,',
-      hero_title_2: 'Fully Automated.',
-      hero_subtitle: 'Schedule appointments, reduce no-shows, and serve your patients 24/7 autonomously. The ultimate infrastructure for your clinic.',
-      hero_cta: 'Register Now!',
+      hero_badge: "NEW: Next.js 14 & Shadcn/ui Powering Your Clinic",
+      hero_title_1: 'Precision in Patient Care,',
+      hero_title_2: 'Fluidity in Clinic Flow',
+      hero_description: 'The definitive clinical management platform built for speed. Experience lightning-fast scheduling and elegant patient records in one unified workspace.',
+      hero_cta_primary: 'Start Free Trial',
+      hero_cta_secondary: 'Watch Demo',
+      features_section_title: 'Engineered for Medical Excellence',
+      agenda_title: 'Intelligent Interactive Agenda',
+      agenda_desc: 'Our proprietary calendar system allows doctors to maintain clinical context at all times. Side-drawers slide in with patient history, ensuring you never lose your place in the schedule while reviewing vital data.',
+      records_title: 'Comprehensive Patient Records',
+      records_desc: 'A centralized hub for every patient. Access medical history, uploaded files, and consultation notes in a single, high-performance view. Designed for rapid data entry without the clutter.',
+      whatsapp_title: 'The WhatsApp Advantage',
+      whatsapp_desc: 'Reduce "no-shows" by up to 45% with automatic reminders. SchedAssist integrates directly with WhatsApp to send patient confirmations, follow-ups, and arrival alerts—all managed from your dashboard.',
+      whatsapp_feature_1_title: 'Smart Reminders',
+      whatsapp_feature_1_desc: 'Automatically ping patients 24 hours before their visit.',
+      whatsapp_feature_2_title: 'Instant Sync',
+      whatsapp_feature_2_desc: 'Patients can confirm or reschedule via chat—synced instantly.',
+      tech_title: 'Built with Modern Foundations',
+      final_cta_title: 'Ready to Transform Your Clinic?',
+      final_cta_desc: 'Join 500+ clinics that have improved their operational efficiency by 30% in the first month.',
+      no_card_required: 'No credit card required. 14-day full access.',
       nav_login: 'Login',
-      feature_1_title: 'Native WhatsApp',
-      feature_1_desc: 'Direct integration with your number. No high costs or Meta API restrictions. 100% autonomous.',
-      feature_2_title: 'Conversational AI',
-      feature_2_desc: 'Advanced state machine. Auto-skip specialists, user recognition, and dynamic cancellations.',
-      feature_3_title: 'Omni-Dashboard',
-      feature_3_desc: 'Master control for unlimited clinics. Manage staff, schedules, and real-time revenue control.',
-      
-      // New Customization Section
-      custom_title: 'Full Scheduling Control',
-      custom_subtitle: 'Flexibility that adapts to your workflow.',
-      custom_feature_1: 'Personalized Schedules',
-      custom_feature_1_desc: 'Each specialist defines their own work days and time slots.',
-      custom_feature_2: 'Service durations',
-      custom_feature_2_desc: 'Define how long each type of appointment takes to optimize your agenda.',
-      custom_feature_3: 'Instant Blockers',
-      custom_feature_3_desc: 'Block holidays or time-off in one click directly from the dashboard.',
-      
-      final_cta: 'Ready to automate your clinic?',
-      
-      // Login Form Specific
+
+      // Login Form Specific (Retained for compatibility)
       login_card_title: 'Sign In',
       email_label: 'Email Address',
       password_label: 'Password',
@@ -765,32 +763,30 @@ export const translations = {
 
     // Landing Page
     landing: {
-      hero_badge: 'Sistema Multi-Tenant Activo',
-      hero_title_1: 'El Poder de WhatsApp,',
-      hero_title_2: 'Totalmente Automatizado.',
-      hero_subtitle: 'Agenda citas, reduce ausencias y atiende a tus pacientes 24/7 de forma autónoma. La infraestructura definitiva para tu clínica.',
-      hero_cta: '¡Regístrate Ahora!',
+      hero_badge: "NUEVO: Next.js 14 y Shadcn/ui Impulsando tu Clínica",
+      hero_title_1: 'Precisión en la Atención,',
+      hero_title_2: 'Fluidez en el Flujo Clínico',
+      hero_description: 'La plataforma de gestión clínica definitiva diseñada para la velocidad. Experimente una programación ultrarrápida y registros de pacientes elegantes en un espacio de trabajo unificado.',
+      hero_cta_primary: 'Iniciar Prueba Gratuita',
+      hero_cta_secondary: 'Ver Demo',
+      features_section_title: 'Diseñado para la Excelencia Médica',
+      agenda_title: 'Agenda Interactiva Inteligente',
+      agenda_desc: 'Nuestro sistema de calendario patentado permite a los médicos mantener el contexto clínico en todo momento. Los cajones laterales se deslizan con el historial del paciente, asegurando que nunca pierda su lugar en la agenda mientras revisa datos vitales.',
+      records_title: 'Registros Completos de Pacientes',
+      records_desc: 'Un centro centralizado para cada paciente. Acceda al historial médico, archivos cargados y notas de consulta en una vista única de alto rendimiento. Diseñado para una entrada rápida de datos sin desorden.',
+      whatsapp_title: 'La Ventaja de WhatsApp',
+      whatsapp_desc: 'Reduzca el ausentismo hasta en un 45% con recordatorios automáticos. SchedAssist se integra directamente con WhatsApp para enviar confirmaciones, seguimientos y alertas de llegada, todo gestionado desde su panel.',
+      whatsapp_feature_1_title: 'Recordatorios Inteligentes',
+      whatsapp_feature_1_desc: 'Notifique automáticamente a los pacientes 24 horas antes de su visita.',
+      whatsapp_feature_2_title: 'Sincronización Instantánea',
+      whatsapp_feature_2_desc: 'Los pacientes pueden confirmar o reprogramar vía chat, sincronizado al instante.',
+      tech_title: 'Construido con Bases Modernas',
+      final_cta_title: '¿Listo para Transformar tu Clínica?',
+      final_cta_desc: 'Únete a más de 500 clínicas que han mejorado su eficiencia operativa en un 30% en el primer mes.',
+      no_card_required: 'Sin tarjeta de crédito. 14 días de acceso total.',
       nav_login: 'Iniciar Sesión',
-      feature_1_title: 'WhatsApp Nativo',
-      feature_1_desc: 'Integración directa con tu número. Sin costes elevados ni restricciones de Meta API. 100% autónomo.',
-      feature_2_title: 'IA Conversacional',
-      feature_2_desc: 'Máquina de estados avanzada. Auto-skip de médicos, reconocimiento de usuarios y cancelaciones dinámicas.',
-      feature_3_title: 'Omni-Dashboard',
-      feature_3_desc: 'Control maestro para clínicas ilimitadas. Gestor de médicos, horarios y control de ingresos en tiempo real.',
-      
-      // Nueva sección de personalización
-      custom_title: 'Control Total de Agendamiento',
-      custom_subtitle: 'Flexibilidad que se adapta a tu flujo de trabajo.',
-      custom_feature_1: 'Horarios Personalizados',
-      custom_feature_1_desc: 'Cada especialista define sus propios días y rangos horarios de atención.',
-      custom_feature_2: 'Duración por Servicio',
-      custom_feature_2_desc: 'Define cuánto tiempo toma cada tipo de cita para optimizar tu agenda.',
-      custom_feature_3: 'Bloqueos al Instante',
-      custom_feature_3_desc: 'Bloquea vacaciones o descansos con un clic directamente desde el panel.',
-      
-      final_cta: '¿Listo para automatizar tu clínica?',
-      
-      // Login Form Specific
+
+      // Login Form Specific (Retained for compatibility)
       login_card_title: 'Iniciar Sesión',
       email_label: 'Correo electrónico',
       password_label: 'Contraseña',
@@ -1192,32 +1188,30 @@ export const translations = {
     
     // Landing Page
     landing: {
-      hero_badge: 'Sistema Multi-Tenant Attivo',
-      hero_title_1: 'Il Potere di WhatsApp,',
-      hero_title_2: 'Completamente Automatizzato.',
-      hero_subtitle: 'Prenota appuntamenti, riduci le assenze e servi i tuoi pazienti 24/7 in modo autonomo. L\'infrastruttura definitiva per la tua clinica.',
-      hero_cta: 'Registrati ora!',
+      hero_badge: "NUOVO: Next.js 14 e Shadcn/ui per la tua Clinica",
+      hero_title_1: 'Precisione nella Cura,',
+      hero_title_2: 'Fluidità nel Flusso Clinico',
+      hero_description: 'La piattaforma definitiva per la gestione clinica progettata per la velocità. Sperimenta una programmazione fulminea e record pazienti eleganti in un unico spazio di lavoro.',
+      hero_cta_primary: 'Inizia Prova Gratuita',
+      hero_cta_secondary: 'Guarda la Demo',
+      features_section_title: 'Progettato per l\'Eccellenza Medica',
+      agenda_title: 'Agenda Interattiva Inteligente',
+      agenda_desc: 'Il nostro sistema di calendario proprietario consente ai medici di mantenere il contesto clinico in ogni momento. I cassetti laterali scorrono con la storia del paziente, assicurando di non perdere mai il posto nel programma mentre si revisionano i dati vitali.',
+      records_title: 'Record Pazienti Completi',
+      records_desc: 'Un hub centralizzato per ogni paziente. Accedi alla storia medica, ai file caricati e alle note di consultazione in un\'unica vista ad alte prestazioni. Progettato per un inserimento rapido dei dati senza confusione.',
+      whatsapp_title: 'Il Vantaggio di WhatsApp',
+      whatsapp_desc: 'Riduci il "no-show" fino al 45% con promemoria automatici. SchedAssist si integra direttamente con WhatsApp per inviare conferme, follow-up e avvisi di arrivo ai pazienti, tutto gestito dalla tua dashboard.',
+      whatsapp_feature_1_title: 'Promemoria Intelligenti',
+      whatsapp_feature_1_desc: 'Avvisa automaticamente i pazienti 24 ore prima della loro visita.',
+      whatsapp_feature_2_title: 'Sincronizzazione Istantanea',
+      whatsapp_feature_2_desc: 'I pazienti possono confermare o riprogrammare tramite chat, sincronizzati istantaneamente.',
+      tech_title: 'Costruito con Fondamenta Moderne',
+      final_cta_title: 'Pronto a Trasformare la tua Clinica?',
+      final_cta_desc: 'Unisciti a oltre 500 cliniche che hanno migliorato la loro efficienza operativa del 30% nel primo mese.',
+      no_card_required: 'Nessuna carta di credito richiesta. 14 giorni di accesso completo.',
       nav_login: 'Accedi',
-      feature_1_title: 'WhatsApp Nativo',
-      feature_1_desc: 'Integrazione diretta con il tuo numero. Senza costi elevati o restrizioni di Meta API. 100% autonomo.',
-      feature_2_title: 'IA Conversacional',
-      feature_2_desc: 'Macchina a stati avanzata. Auto-skip degli specialisti, riconoscimento utenti e cancellazioni dinamiche.',
-      feature_3_title: 'Omni-Dashboard',
-      feature_3_desc: 'Controllo master per cliniche illimitate. Gestione staff, orari e controllo ricavi in tempo reale.',
-      
-      // Nuova sezione di personalización
-      custom_title: 'Controllo Totale della Pianificazione',
-      custom_subtitle: 'Flessibilità che si adatta al tuo flusso di lavoro.',
-      custom_feature_1: 'Orari Personalizzati',
-      custom_feature_1_desc: 'Ogni specialista definisce i propri giorni e fasce orarie di ricezione.',
-      custom_feature_2: 'Durata per Servizio',
-      custom_feature_2_desc: 'Definisci la durata di ogni tipo di appuntamento per ottimizzare l\'agenda.',
-      custom_feature_3: 'Blocchi Istantanei',
-      custom_feature_3_desc: 'Blocca vacanze o pause con un clic direttamente dal pannello.',
-      
-      final_cta: 'Pronto ad automatizzare la tua clinica?',
-      
-      // Login Form Specific
+
+      // Login Form Specific (Retained for compatibility)
       login_card_title: 'Accedere',
       email_label: 'Indirizzo e-mail',
       password_label: 'Password',

@@ -11,36 +11,57 @@ const config: Config = {
       colors: {
         background: "var(--background)",
         foreground: "var(--foreground)",
-        // --- Oasis Precision (Stitch Project 3429793674685852019) ---
+        // --- Clinical Premium Palette (New Identity) ---
         primary: {
-          DEFAULT: "#005c55", // Deep Teal
-          container: "#ecf5fb", // Light Tonal Container
+          DEFAULT: "#00236f", // Dark Blue
+          container: "#1e3a8a",
           on: "#ffffff",
-          "on-container": "#00201e",
-          950: "#00201e",
+          "on-container": "#90a8ff",
+          950: "#00164e",
         },
         secondary: {
-          DEFAULT: "#4a6360",
-          container: "#cde9e2",
+          DEFAULT: "#855300", // Deep Amber
+          container: "#fea619",
           on: "#ffffff",
-          "on-container": "#07201e",
+          "on-container": "#684000",
+        },
+        tertiary: {
+          DEFAULT: "#4b1c00",
+          container: "#6e2c00",
+          on: "#ffffff",
+          "on-container": "#f39461",
         },
         surface: {
-          DEFAULT: "#f4faff", // Low Depth
-          bright: "#ffffff",
-          variant: "#dbe4ea",
+          DEFAULT: "#f7f9fb", // Light Gray/Blue
+          bright: "#f7f9fb",
+          dim: "#d8dadc",
+          variant: "#e0e3e5",
           container: {
-            lowest: "#ffffff", // Pure White
-            low: "#f0f4f8",
-            DEFAULT: "#e6eff5",
-            high: "#e0e9ef",
-            highest: "#dbe4ea",
+            lowest: "#ffffff",
+            low: "#f2f4f6",
+            DEFAULT: "#eceef0",
+            high: "#e6e8ea",
+            highest: "#e0e3e5",
           },
         },
         "on-surface": {
-          DEFAULT: "#191c1c",
-          variant: "#3f4948",
-          muted: "#6e7977",
+          DEFAULT: "#191c1e",
+          variant: "#444651",
+        },
+        outline: {
+          DEFAULT: "#757682",
+          variant: "#c5c5d3",
+        },
+        error: {
+          DEFAULT: "#ba1a1a",
+          container: "#ffdad6",
+          on: "#ffffff",
+          "on-container": "#93000a",
+        },
+        // --- Legacy Oasis Precision (Keeping for Dashboard Compatibility) ---
+        oasis: {
+          primary: "#005c55",
+          secondary: "#4a6360",
         },
         accent: {
           DEFAULT: "#f59e0b",
