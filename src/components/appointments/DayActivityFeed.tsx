@@ -161,13 +161,11 @@ export const DayActivityFeed: React.FC<DayActivityFeedProps> = ({
                 style={{ top: `${getTimelineTop()}%` }}
               >
                 <div className="w-[70px] text-right pr-2">
-                  <span className="text-[10px] font-black text-primary bg-primary/10 px-2 py-1 rounded-md">
-                    {format(now, 'HH:mm')}
+                  <span className="text-[10px] font-bold text-primary">
+                    {format(now, 'hh:mm a')}
                   </span>
                 </div>
-                <div className="h-[2px] w-[10px] bg-primary relative">
-                  <div className="absolute right-[-5px] top-1/2 -translate-y-1/2 h-2.5 w-2.5 rounded-full bg-primary ring-4 ring-white shadow-sm" />
-                </div>
+                <div className="h-[1.5px] w-[30px] bg-primary relative" />
               </div>
             )}
 
@@ -175,21 +173,23 @@ export const DayActivityFeed: React.FC<DayActivityFeedProps> = ({
               {appointments.map((app, index) => {
                 const startDate = parseISO(app.start_at.slice(0, 19))
                 const endDate = parseISO(app.end_at.slice(0, 19))
-                const start = format(startDate, 'HH:mm')
-                const end = format(endDate, 'HH:mm')
+                const start = format(startDate, 'hh:mm a')
+                const end = format(endDate, 'hh:mm a')
                 const isActive = activeId === app.id
                 const isPast = isBefore(endDate, now)
                 const isOngoing = isBefore(startDate, now) && isAfter(endDate, now)
 
                 return (
                   <div key={app.id} className="relative">
+                    {/* Horizontal Connection Line */}
+                    <div className="absolute -left-[32px] top-1/2 -translate-y-1/2 w-[32px] h-[1.5px] bg-on-surface/[0.08] z-0" />
+                    
                     {/* Timeline Node Point */}
-                    <div className="absolute -left-[45px] top-1/2 -translate-y-1/2 z-10">
-                      <div className={`h-4 w-4 rounded-full border-2 transition-all duration-500 flex items-center justify-center ${
-                        isActive ? 'bg-primary border-white ring-4 ring-primary/10 shadow-lg' : 
+                    <div className="absolute -left-[44px] top-1/2 -translate-y-1/2 z-10">
+                      <div className={`h-3 w-3 rounded-full border-[1.5px] transition-all duration-500 flex items-center justify-center ${
+                        isActive ? 'bg-primary border-white ring-4 ring-primary/10 shadow-lg scale-125' : 
                         isPast ? 'bg-on-surface/10 border-white' : 'bg-white border-on-surface/20'
-                      }`}>
-                      </div>
+                      }`} />
                     </div>
 
                     <motion.div
