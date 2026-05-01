@@ -373,8 +373,8 @@ function AppointmentsContent() {
                       <span className="text-[9px] font-bold text-amber-500 tracking-widest uppercase bg-amber-500/10 px-2 py-1 rounded-md">{T.pending_cancellation || 'Pte. Cancelación'}</span>
                     </div>
                     <div className="flex items-center gap-4 text-[10px] font-medium text-muted-foreground">
-                      <span className="flex items-center gap-1.5"><CalendarIcon className="h-3 w-3" /> {format(parseISO(app.start_time), "d MMM", { locale: currentLocale })}</span>
-                      <span className="flex items-center gap-1.5"><Clock className="h-3 w-3" /> {format(parseISO(app.start_time), "HH:mm")}</span>
+                      <span className="flex items-center gap-1.5"><CalendarIcon className="h-3 w-3" /> {format(parseISO(app.start_at), "d MMM", { locale: currentLocale })}</span>
+                      <span className="flex items-center gap-1.5"><Clock className="h-3 w-3" /> {format(parseISO(app.start_at), "HH:mm")}</span>
                     </div>
                   </div>
                 ))}
