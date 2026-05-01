@@ -25,6 +25,7 @@ interface DayActivityFeedProps {
   onNewAppointment: () => void;
   onStatusUpdate: (id: string, status: string) => void;
   onReschedule: (app: Appointment) => void;
+  onDeleteAppointment: (id: string) => void;
   lang: string;
 }
 
@@ -42,8 +43,37 @@ export const DayActivityFeed: React.FC<DayActivityFeedProps> = ({
   const [activeId, setActiveId] = useState<string | null>(null)
   const [isEditingAlerts, setIsEditingAlerts] = useState(false)
   const [medicalAlerts, setMedicalAlerts] = useState<Record<string, string>>({})
-  const [currentTime, setCurrentTime] = useState(new Date())
+  const [showRescheduleModal, setShowRescheduleModal] = useState(false);
+  const [isRescheduling, setIsRescheduling] = useState(false);
+  // Toast notification state
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  // Helper to display toast messages
+  const triggerToast = (msg: string) => {
+    setToastMessage(msg);
+    setTimeout(() => setToastMessage(null), 3000);
+  };
+
+  // Open the modal (no backend call yet)
+  const openRescheduleModal = () => setShowRescheduleModal(true);
+  // Confirm button inside modal: calls backend and handles loading
+  const confirmReschedule = async (app: Appointment) => {
+    setIsRescheduling(true);
+    try {
+      await onReschedule(app);
+      // Close modal after successful backend response
+      setShowRescheduleModal(false);
+    } catch (e) {
+      console.error(e);
+      // Show toast on error
+      triggerToast('Error re‑agendando la cita. Por favor, intente de nuevo.');
+    } finally {
+      setIsRescheduling(false);
+    }
+  };
   
+  const [currentTime, setCurrentTime] = useState(new Date())
+
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 60000)
     return () => clearInterval(timer)
@@ -158,7 +188,6 @@ export const DayActivityFeed: React.FC<DayActivityFeedProps> = ({
                         isActive ? 'bg-primary border-white ring-4 ring-primary/10 shadow-lg' : 
                         isPast ? 'bg-on-surface/10 border-white' : 'bg-white border-on-surface/20'
                       }`}>
-                        {isPast && <CheckCircle2 className="h-2 w-2 text-white" />}
                       </div>
                     </div>
 
@@ -238,7 +267,7 @@ export const DayActivityFeed: React.FC<DayActivityFeedProps> = ({
                     
                     <div className="flex items-center gap-6 relative z-10">
                       <div className="h-20 w-20 rounded-[2rem] bg-white flex items-center justify-center text-primary text-3xl font-black shadow-xl shadow-primary/10 flex-shrink-0 border border-primary/5">
-                        {selectedApp.clients?.first_name[0]}
+                        {selectedApp.clients?.first_name?.[0]}
                       </div>
                       <div className="min-w-0">
                         <h3 className="text-3xl font-black text-on-surface tracking-tighter truncate leading-tight">
@@ -270,22 +299,30 @@ export const DayActivityFeed: React.FC<DayActivityFeedProps> = ({
                       </div>
                     </div>
 
+                    {/* Latest Visits Section */}
+                    {selectedApp.last_visits && selectedApp.last_visits.length > 0 && (
+                      <div className="p-5 rounded-3xl bg-on-surface/[0.02] border border-on-surface/5 mt-4">
+                        <p className="text-[8px] font-black text-on-surface/20 uppercase tracking-[0.2em] mb-2">{T.latest_visits || 'ÚLTIMAS VISITAS'}</p>
+                        <ul className="space-y-2">
+                          {selectedApp.last_visits.slice(0, 3).map((visit, idx) => (
+                            <li key={idx} className="text-xs text-on-surface">
+                              {visit.service_name} - {format(parseISO(visit.date.slice(0, 19)), 'dd MMM yyyy')}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
                     <div className="space-y-4">
                       <div className="flex items-center justify-between px-2">
                         <p className="text-[8px] font-black text-on-surface/20 uppercase tracking-[0.3em]">{T.medical_record}</p>
-                        <button 
-                          onClick={() => setIsEditingAlerts(!isEditingAlerts)}
-                          className="text-[8px] font-black text-primary hover:opacity-70 uppercase tracking-widest"
-                        >
-                          {isEditingAlerts ? T.done : T.edit}
-                        </button>
                       </div>
                       
                       <div className={`p-6 rounded-[2rem] transition-all border-2 ${isEditingAlerts ? 'bg-amber-50 border-amber-200' : 'bg-error/5 border-error/10'}`}>
                         {isEditingAlerts ? (
                           <textarea
                             autoFocus
-                            value={medicalAlerts[selectedApp.clients?.id || ''] || "No known allergies. Penicillin safe."}
+                            value={medicalAlerts[selectedApp.clients?.id || ''] || T.no_allergies_placeholder}
                             onChange={(e) => setMedicalAlerts({
                               ...medicalAlerts,
                               [selectedApp.clients?.id || '']: e.target.value
@@ -296,7 +333,7 @@ export const DayActivityFeed: React.FC<DayActivityFeedProps> = ({
                            <div className="flex gap-4">
                               <Activity className="h-5 w-5 text-error flex-shrink-0" />
                               <p className="text-sm font-bold text-on-surface leading-snug">
-                                {medicalAlerts[selectedApp.clients?.id || ''] || "No known allergies. Penicillin safe."}
+                                {medicalAlerts[selectedApp.clients?.id || ''] || T.no_allergies_placeholder || "No known allergies. Penicillin safe."}
                               </p>
                            </div>
                         )}
@@ -323,10 +360,29 @@ export const DayActivityFeed: React.FC<DayActivityFeedProps> = ({
                           {selectedApp.status === 'attended' ? T.undo : T.mark_attended}
                         </button>
                         <button 
-                          onClick={() => onReschedule(selectedApp)}
+                          onClick={() => openRescheduleModal()}
+                          disabled={isRescheduling}
+                          aria-disabled={isRescheduling}
                           className="bg-orange-50 text-orange-600 py-4 rounded-2xl text-[9px] font-black uppercase tracking-[0.2em] hover:bg-orange-100 transition-all border-2 border-orange-100"
                         >
-                          {T.reschedule}
+                          {isRescheduling ? (
+                            <span className="flex items-center gap-2">
+                              <span className="w-4 h-4 border-2 border-orange-600 border-t-transparent rounded-full animate-spin" />
+                              {T.rescheduling || 'REAGENDANDO…'}
+                            </span>
+                          ) : (
+                            T.reschedule
+                          )}
+                        </button>
+                        <button 
+                          onClick={() => {
+                            if (confirm(T.confirm_delete || '¿Eliminar cita?')) {
+                              onDeleteAppointment(selectedApp.id);
+                            }
+                          }}
+                          className="col-span-2 bg-red-50 text-red-600 py-4 rounded-2xl text-[9px] font-black uppercase tracking-[0.2em] hover:bg-red-100 transition-all border-2 border-red-100"
+                        >
+                          {T.delete || 'Eliminar'}
                         </button>
                       </div>
                     </div>
@@ -334,7 +390,34 @@ export const DayActivityFeed: React.FC<DayActivityFeedProps> = ({
                 </motion.div>
               )}
             </AnimatePresence>
+          {showRescheduleModal && (
+        <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-lg">
+            <h2 className="text-lg font-bold mb-4">{T.reschedule}</h2>
+            <p className="mb-4">{T.confirm_reschedule || '¿Confirmar re‑agendar esta cita?'}</p>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setShowRescheduleModal(false)}
+                disabled={isRescheduling}
+                className="px-4 py-2 bg-gray-200 text-gray-800 rounded disabled:opacity-50"
+              >
+                {T.cancel || 'Cancelar'}
+              </button>
+              <button
+                onClick={() => confirmReschedule(selectedApp)}
+                disabled={isRescheduling}
+                className="px-4 py-2 bg-primary text-white rounded flex items-center gap-2 disabled:opacity-50"
+              >
+                {isRescheduling && (
+                  <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                )}
+                {isRescheduling ? (T.rescheduling || 'Reagendando…') : (T.confirm || 'Confirmar')}
+              </button>
+            </div>
           </div>
+        </div>
+      )}
+
         </div>
       )}
     </div>
