@@ -140,7 +140,7 @@ export function WeeklyCalendar({ selectedDate, appointments, lang, translations:
                           setExpandedDay(dayIdx)
                         }}
                         style={{ top: `${top}px`, height: `${height}px` }}
-                        className={`absolute left-1 w-[85%] lg:w-[75%] rounded-xl p-2 bg-primary/20 border-l-4 border-primary shadow-sm flex items-center justify-center cursor-pointer hover:bg-primary/30 transition-all z-10`}
+                        className={`absolute left-1 w-[85%] lg:w-[75%] rounded-xl p-2 bg-primary/20 border-l-4 border-primary shadow-sm flex items-center justify-center cursor-pointer hover:bg-primary/30 transition-all z-20`}
                       >
                         <span className="text-[10px] font-black text-primary uppercase tracking-wider text-center leading-tight">
                           {group.length}<br/>{lang === 'es' ? 'Citas' : lang === 'it' ? 'Appuntamenti' : 'Appointments'}
@@ -152,29 +152,34 @@ export function WeeklyCalendar({ selectedDate, appointments, lang, translations:
                   return group.map((apt: any, index: number) => {
                     const count = group.length;
                     const isGrouped = count > 1 && isExpandedSlot;
-                    const widthStyle = isGrouped ? `calc(${100 / count}% - 6px)` : undefined;
-                    const leftStyle = isGrouped ? `calc(${index * (100 / count)}% + 3px)` : undefined;
-                    const responsiveClasses = isGrouped ? '' : 'left-1 w-[85%] lg:w-[75%]';
+                    
+                    let aptTop = top;
+                    if (isGrouped) {
+                      const GAP = 4;
+                      const stackTotalHeight = (count * height) + ((count - 1) * GAP);
+                      const originalCenter = top + (height / 2);
+                      const stackTop = originalCenter - (stackTotalHeight / 2);
+                      aptTop = stackTop + (index * (height + GAP));
+                    }
+
+                    const responsiveClasses = isGrouped ? 'left-1 w-[90%]' : 'left-1 w-[85%] lg:w-[75%]';
 
                     return (
                       <motion.div
-                        initial={{ opacity: 0, scale: 0.95 }}
+                        initial={{ opacity: 0, scale: 0.95, top: top }}
                         animate={{ 
                           opacity: expandedDay !== null && !isExpandedDay ? 0.3 : 1,
                           scale: 1,
-                          x: 0
+                          x: 0,
+                          top: aptTop
                         }}
                         key={apt.id}
                         onClick={(e) => {
                           e.stopPropagation()
                           onSelectAppointment(apt)
                         }}
-                        style={{ 
-                          top: `${top}px`, 
-                          height: `${height}px`, 
-                          ...(isGrouped ? { width: widthStyle, left: leftStyle } : {})
-                        }}
-                        className={`absolute ${responsiveClasses} rounded-xl p-2 bg-primary/10 border-l-4 border-primary shadow-sm overflow-hidden group cursor-pointer hover:bg-primary hover:border-primary-700 transition-all z-10 ${isExpandedDay ? 'p-3' : 'p-1'}`}
+                        style={{ height: `${height}px` }}
+                        className={`absolute ${responsiveClasses} rounded-xl p-2 bg-primary/10 border-l-4 border-primary shadow-sm overflow-hidden group cursor-pointer hover:bg-primary hover:border-primary-700 transition-all z-20 ${isExpandedDay ? 'p-3' : 'p-1'} ${isGrouped ? 'z-30 shadow-lg' : ''}`}
                       >
                         <div className="flex flex-col h-full justify-between">
                           <div className="min-w-0">
