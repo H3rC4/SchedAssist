@@ -17,6 +17,7 @@ interface WeeklyCalendarProps {
 
 export function WeeklyCalendar({ selectedDate, appointments, lang, translations: T, onNavigateDate, dateLocales, onSelectAppointment }: WeeklyCalendarProps) {
   const [expandedDay, setExpandedDay] = useState<number | null>(null)
+  const [expandedSlot, setExpandedSlot] = useState<string | null>(null)
 
   const weekDays = useMemo(() => {
     const start = startOfWeek(selectedDate, { weekStartsOn: 1 })
@@ -50,7 +51,10 @@ export function WeeklyCalendar({ selectedDate, appointments, lang, translations:
             key={idx} 
             animate={{ flex: expandedDay === idx ? 2 : expandedDay !== null ? 0.5 : 1 }}
             className={`text-center py-6 border-r border-on-surface/5 last:border-0 cursor-pointer transition-colors ${isSameDay(day, new Date()) ? 'bg-primary/[0.03]' : ''} ${expandedDay === idx ? 'bg-primary/[0.05]' : ''}`}
-            onClick={() => setExpandedDay(expandedDay === idx ? null : idx)}
+            onClick={() => {
+              setExpandedDay(expandedDay === idx ? null : idx)
+              if (expandedDay === idx) setExpandedSlot(null)
+            }}
           >
             <p className="text-[10px] font-black text-on-surface/30 uppercase tracking-[0.2em] mb-1">
               {format(day, 'EEE', { locale: dateLocales[lang] })}
@@ -87,75 +91,127 @@ export function WeeklyCalendar({ selectedDate, appointments, lang, translations:
             <motion.div 
               key={dayIdx} 
               animate={{ flex: expandedDay === dayIdx ? 2 : expandedDay !== null ? 0.5 : 1 }}
-              className="relative h-full transition-all overflow-hidden"
+              className="relative h-full transition-all overflow-hidden cursor-default"
+              onClick={() => {
+                if (expandedDay === dayIdx && expandedSlot) {
+                  setExpandedSlot(null)
+                }
+              }}
             >
               {hours.map(hour => (
                 <div key={hour} className="h-24 border-b border-on-surface/5 last:border-0" />
               ))}
 
               {/* Appointments for this day */}
-              {appointments
-                .filter(apt => isSameDay(parseISO(apt.start_at), day))
-                .map((apt, aptIdx) => {
-                  const startDate = parseISO(apt.start_at)
+              {(() => {
+                const dayAppointments = appointments.filter(apt => isSameDay(parseISO(apt.start_at), day));
+                
+                const groupedApts = dayAppointments.reduce((acc: any, apt) => {
+                  const timeKey = format(parseISO(apt.start_at), 'HH:mm');
+                  if (!acc[timeKey]) acc[timeKey] = [];
+                  acc[timeKey].push(apt);
+                  return acc;
+                }, {});
+
+                return Object.entries(groupedApts).map(([timeKey, group]: [string, any]) => {
+                  const startDate = parseISO(group[0].start_at)
                   const startHour = startDate.getHours()
                   const startMin = startDate.getMinutes()
                   const duration = 30 // Assuming 30m for visualization if not present
                   
                   const top = ((startHour - 8) * 96) + (startMin / 60 * 96)
                   const height = (duration / 60) * 96
-                  const isExpanded = expandedDay === dayIdx
+                  const isExpandedDay = expandedDay === dayIdx
+                  const isExpandedSlot = expandedSlot === `${dayIdx}-${timeKey}` && isExpandedDay
 
-                  return (
-                    <motion.div
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      animate={{ 
-                        opacity: expandedDay !== null && !isExpanded ? 0.3 : 1,
-                        scale: 1,
-                        x: 0
-                      }}
-                      key={apt.id}
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        onSelectAppointment(apt)
-                      }}
-                      style={{ top: `${top}px`, height: `${height}px` }}
-                      className={`absolute left-1 w-[85%] lg:w-[75%] rounded-xl p-2 bg-primary/10 border-l-4 border-primary shadow-sm overflow-hidden group cursor-pointer hover:bg-primary hover:border-primary-700 transition-all z-10 ${isExpanded ? 'p-3' : 'p-1'}`}
-                    >
-                      <div className="flex flex-col h-full justify-between">
-                        <div className="min-w-0">
-                          <div className="flex items-center justify-between gap-1 mb-0.5">
-                             <p className={`font-black text-primary group-hover:text-white uppercase truncate tracking-tighter ${isExpanded ? 'text-[9px]' : 'text-[7px]'}`}>
-                               {apt.clients?.first_name} {apt.clients?.last_name}
-                             </p>
-                             <span className={`font-black group-hover:text-white text-primary/40 ${isExpanded ? 'text-[8px]' : 'text-[6px]'}`}>
-                               {format(startDate, 'HH:mm')}
-                             </span>
+                  if (group.length > 1 && !isExpandedSlot) {
+                    return (
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ 
+                          opacity: expandedDay !== null && !isExpandedDay ? 0.3 : 1,
+                          scale: 1,
+                          x: 0
+                        }}
+                        key={`group-${dayIdx}-${timeKey}`}
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setExpandedSlot(`${dayIdx}-${timeKey}`)
+                          setExpandedDay(dayIdx)
+                        }}
+                        style={{ top: `${top}px`, height: `${height}px` }}
+                        className={`absolute left-1 w-[85%] lg:w-[75%] rounded-xl p-2 bg-primary/20 border-l-4 border-primary shadow-sm flex items-center justify-center cursor-pointer hover:bg-primary/30 transition-all z-10`}
+                      >
+                        <span className="text-[10px] font-black text-primary uppercase tracking-wider text-center leading-tight">
+                          {group.length}<br/>{lang === 'es' ? 'Citas' : lang === 'it' ? 'Appuntamenti' : 'Appointments'}
+                        </span>
+                      </motion.div>
+                    )
+                  }
+
+                  return group.map((apt: any, index: number) => {
+                    const count = group.length;
+                    const isGrouped = count > 1 && isExpandedSlot;
+                    const widthStyle = isGrouped ? `calc(${100 / count}% - 6px)` : undefined;
+                    const leftStyle = isGrouped ? `calc(${index * (100 / count)}% + 3px)` : undefined;
+                    const responsiveClasses = isGrouped ? '' : 'left-1 w-[85%] lg:w-[75%]';
+
+                    return (
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ 
+                          opacity: expandedDay !== null && !isExpandedDay ? 0.3 : 1,
+                          scale: 1,
+                          x: 0
+                        }}
+                        key={apt.id}
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          onSelectAppointment(apt)
+                        }}
+                        style={{ 
+                          top: `${top}px`, 
+                          height: `${height}px`, 
+                          ...(isGrouped ? { width: widthStyle, left: leftStyle } : {})
+                        }}
+                        className={`absolute ${responsiveClasses} rounded-xl p-2 bg-primary/10 border-l-4 border-primary shadow-sm overflow-hidden group cursor-pointer hover:bg-primary hover:border-primary-700 transition-all z-10 ${isExpandedDay ? 'p-3' : 'p-1'}`}
+                      >
+                        <div className="flex flex-col h-full justify-between">
+                          <div className="min-w-0">
+                            <div className="flex items-center justify-between gap-1 mb-0.5">
+                               <p className={`font-black text-primary group-hover:text-white uppercase truncate tracking-tighter ${isExpandedDay ? 'text-[9px]' : 'text-[7px]'}`}>
+                                 {apt.clients?.first_name} {apt.clients?.last_name}
+                               </p>
+                               <span className={`font-black group-hover:text-white text-primary/40 ${isExpandedDay ? 'text-[8px]' : 'text-[6px]'}`}>
+                                 {format(startDate, 'HH:mm')}
+                               </span>
+                            </div>
+                            
+                            <p className="text-[6px] lg:text-[7px] font-bold text-on-surface/40 group-hover:text-white/60 uppercase truncate leading-none">
+                              {apt.services?.name}
+                            </p>
+                            
+                            {isExpandedDay && (
+                              <p className="text-[7px] font-black text-primary/60 group-hover:text-white/80 uppercase truncate mt-1">
+                                 Dr. {apt.professionals?.full_name?.split(' ').pop()}
+                              </p>
+                            )}
                           </div>
                           
-                          <p className="text-[6px] lg:text-[7px] font-bold text-on-surface/40 group-hover:text-white/60 uppercase truncate leading-none">
-                            {apt.services?.name}
-                          </p>
-                          
-                          {isExpanded && (
-                            <p className="text-[7px] font-black text-primary/60 group-hover:text-white/80 uppercase truncate mt-1">
-                               Dr. {apt.professionals?.full_name?.split(' ').pop()}
-                            </p>
+                          {!isExpandedDay && (
+                            <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                               <User className="h-1.5 w-1.5 text-white/50" />
+                               <span className="text-[5px] font-black text-white/70 uppercase">
+                                 {apt.professionals?.full_name?.split(' ').pop()}
+                               </span>
+                            </div>
                           )}
                         </div>
-                        
-                        {!isExpanded && (
-                          <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                             <User className="h-1.5 w-1.5 text-white/50" />
-                             <span className="text-[5px] font-black text-white/70 uppercase">
-                               {apt.professionals?.full_name?.split(' ').pop()}
-                             </span>
-                          </div>
-                        )}
-                      </div>
-                    </motion.div>
-                  )
-                })}
+                      </motion.div>
+                    )
+                  })
+                })
+              })()}
             </motion.div>
           ))}
         </div>
