@@ -108,9 +108,9 @@ export const DayActivityFeed: React.FC<DayActivityFeedProps> = ({
   return (
     <div className="min-h-screen bg-surface">
       {/* Editorial Header */}
-      <div className="flex items-end justify-between mb-12 px-4">
+      <div className="flex items-end justify-between mb-6 px-4">
         <div>
-          <h2 className="text-5xl font-black text-on-surface tracking-tighter leading-none mb-3">
+          <h2 className="text-3xl md:text-4xl font-black text-on-surface tracking-tighter leading-none mb-2">
             {T.today_agenda}
           </h2>
           <div className="flex items-center gap-3">
@@ -258,26 +258,26 @@ export const DayActivityFeed: React.FC<DayActivityFeedProps> = ({
                   className="bg-white rounded-[3.5rem] border border-on-surface/5 shadow-2xl overflow-hidden flex flex-col w-full"
                 >
                   {/* Card Header */}
-                  <div className="bg-primary/5 p-5 md:p-6 border-b border-primary/5 relative">
-                    <div className="absolute top-0 right-0 p-6 opacity-[0.03]">
-                      <Stethoscope className="h-24 w-24 -rotate-12" />
+                  <div className="bg-primary/5 p-4 md:p-5 border-b border-primary/5 relative">
+                    <div className="absolute top-0 right-0 p-4 opacity-[0.03]">
+                      <Stethoscope className="h-16 w-16 -rotate-12" />
                     </div>
                     
-                    <p className="text-[8px] font-black text-primary uppercase tracking-[0.4em] mb-6">
+                    <p className="text-[8px] font-black text-primary uppercase tracking-[0.4em] mb-4">
                       {isPast(parseISO(selectedApp.end_at.slice(0, 19))) ? T.visit_summary : T.next_patient || 'PACIENTE EN ENFOQUE'}
                     </p>
                     
-                    <div className="flex items-center gap-6 relative z-10">
-                      <div className="h-20 w-20 rounded-[2rem] bg-white flex items-center justify-center text-primary text-3xl font-black shadow-xl shadow-primary/10 flex-shrink-0 border border-primary/5">
+                    <div className="flex items-center gap-4 relative z-10">
+                      <div className="h-14 w-14 rounded-2xl bg-white flex items-center justify-center text-primary text-xl font-black shadow-lg shadow-primary/5 flex-shrink-0 border border-primary/5">
                         {selectedApp.clients?.first_name?.[0]}
                       </div>
                       <div className="min-w-0">
-                        <h3 className="text-3xl font-black text-on-surface tracking-tighter truncate leading-tight">
+                        <h3 className="text-xl md:text-2xl font-black text-on-surface tracking-tighter truncate leading-tight">
                           {selectedApp.clients?.first_name} {selectedApp.clients?.last_name}
                         </h3>
-                        <div className="flex items-center gap-2 mt-2">
+                        <div className="flex items-center gap-2 mt-1">
                            <Clock className="h-3 w-3 text-primary" />
-                           <p className="text-sm font-black text-primary uppercase tracking-widest">
+                           <p className="text-xs font-black text-primary uppercase tracking-widest">
                              {format(parseISO(selectedApp.start_at.slice(0, 19)), 'HH:mm')}
                            </p>
                         </div>
