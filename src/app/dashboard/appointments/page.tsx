@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, Suspense } from 'react'
+import { useState, Suspense, useEffect } from 'react'
 import { format, parseISO } from 'date-fns'
 import { es, enUS, it } from 'date-fns/locale'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -17,6 +17,15 @@ import { useLandingTranslation } from '@/components/LanguageContext'
 
 function Toast({ message, type, onClose }: { message: string; type: 'error' | 'success'; onClose: () => void }) {
   const [visible, setVisible] = useState(true)
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setVisible(false);
+      setTimeout(onClose, 300);
+    }, 3000);
+    return () => clearTimeout(timer);
+  }, [onClose]);
+
   return (
     <AnimatePresence>
       {visible && (

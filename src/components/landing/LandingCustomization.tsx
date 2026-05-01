@@ -89,7 +89,7 @@ export function LandingCustomization() {
              href="/register" 
              className="px-12 py-6 rounded-[2rem] bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-black uppercase tracking-[0.2em] transition-all shadow-2xl shadow-amber-500/30 hover:scale-105 active:scale-95 flex items-center gap-4 group"
            >
-             Empieza Ahora <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
+             {t.final_cta_btn || "Empieza Ahora"} <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
            </Link>
         </motion.div>
       </div>

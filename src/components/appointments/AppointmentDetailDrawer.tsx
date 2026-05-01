@@ -206,36 +206,12 @@ export function AppointmentDetailDrawer({
 
         {/* Footer Actions */}
         <div className="p-6 bg-on-surface/[0.02] border-t border-on-surface/5 space-y-3">
-          <div className="grid grid-cols-2 gap-3">
-            {!isCancelled ? (
-              <button 
-                onClick={handleToggleAttended}
-                disabled={updating}
-                className={`py-4 rounded-xl font-black text-[9px] uppercase tracking-[0.2em] transition-all duration-300 flex items-center justify-center gap-2 border overflow-hidden ${
-                  appointment.status === 'attended' 
-                    ? 'bg-emerald-500 text-white border-emerald-600 scale-[0.98]' 
-                    : 'bg-white text-emerald-600 border-emerald-100 hover:bg-emerald-50'
-                }`}
-              >
-                <AnimatePresence mode="wait">
-                  {appointment.status === 'attended' ? (
-                    <motion.div key="undo" initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: -20, opacity: 0 }} className="flex items-center gap-2">
-                      <CheckCircle className="h-3.5 w-3.5" /> 
-                      {T.undo || 'DESHACER'}
-                    </motion.div>
-                  ) : (
-                    <motion.div key="mark" initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: -20, opacity: 0 }} className="flex items-center gap-2">
-                      <CheckCircle className="h-3.5 w-3.5" /> 
-                      {T.mark_attended}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </button>
-            ) : (
+          <div className="flex flex-col gap-3">
+            {isCancelled && (
               <button 
                 onClick={handleMarkNotified}
                 disabled={updating}
-                className="py-4 rounded-xl bg-emerald-500 text-white font-black text-[9px] uppercase tracking-[0.2em] hover:opacity-90 transition-all flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20"
+                className="w-full py-4 rounded-xl bg-emerald-500 text-white font-black text-[9px] uppercase tracking-[0.2em] hover:opacity-90 transition-all flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20"
               >
                 <CheckCircle className="h-3.5 w-3.5" /> {T.mark_rescheduled || 'MARCAR REAGENDADA'}
               </button>
@@ -243,7 +219,7 @@ export function AppointmentDetailDrawer({
 
             <button 
               onClick={() => onReschedule(appointment)}
-              className="py-4 rounded-xl bg-primary text-white font-black text-[9px] uppercase tracking-[0.2em] hover:opacity-90 transition-all flex items-center justify-center gap-2"
+              className="w-full py-4 rounded-xl bg-primary text-white font-black text-[9px] uppercase tracking-[0.2em] hover:opacity-90 transition-all flex items-center justify-center gap-2"
             >
               <RotateCcw className="h-3.5 w-3.5" /> {T.reschedule}
             </button>
@@ -257,13 +233,6 @@ export function AppointmentDetailDrawer({
               <Trash2 className="h-3.5 w-3.5" /> {T.cancel_btn}
             </button>
           )}
-          
-          <button 
-            onClick={onClose}
-            className="w-full py-2 text-[9px] font-black text-on-surface/30 uppercase tracking-[0.2em] hover:text-on-surface transition-all"
-          >
-            {T.close_viewer}
-          </button>
         </div>
       </motion.div>
     </div>

@@ -66,8 +66,8 @@ export function LandingFeatures() {
 
             {/* Stripe & Payments (New) */}
             <FeatureCard 
-                title="Cobros con Stripe" 
-                desc="Reduce ausencias cobrando señas o el total de la cita por adelantado de forma automática." 
+                title={t.feature_4_title || "Cobros con Stripe"} 
+                desc={t.feature_4_desc || "Reduce ausencias cobrando señas o el total de la cita por adelantado de forma automática."} 
                 icon={CreditCard} 
                 className="md:col-span-4"
                 delay={0.3}
@@ -75,8 +75,8 @@ export function LandingFeatures() {
 
             {/* Security / Multi-tenant */}
             <FeatureCard 
-                title="Espacio Seguro" 
-                desc="Plataforma multi-usuario diseñada para clínicas y profesionales independientes con total privacidad." 
+                title={t.feature_5_title || "Espacio Seguro"} 
+                desc={t.feature_5_desc || "Plataforma multi-usuario diseñada para clínicas y profesionales independientes con total privacidad."} 
                 icon={ShieldCheck} 
                 className="md:col-span-4"
                 delay={0.4}
@@ -84,8 +84,8 @@ export function LandingFeatures() {
 
             {/* Automation */}
             <FeatureCard 
-                title="Automatización" 
-                desc="Recordatorios, confirmaciones y reprogramaciones sin intervención humana, 24/7." 
+                title={t.feature_6_title || "Automatización"} 
+                desc={t.feature_6_desc || "Recordatorios, confirmaciones y reprogramaciones sin intervención humana, 24/7."} 
                 icon={Zap} 
                 className="md:col-span-4"
                 delay={0.5}

@@ -44,7 +44,7 @@ export function LandingHero() {
         transition={{ duration: 1, delay: 0.3 }}
         className="text-lg text-slate-400 max-w-2xl mb-12 leading-relaxed"
       >
-         {t.hero_subtitle}
+         {t.hero_description || t.hero_subtitle}
       </motion.p>
 
       {/* CTAs */}
@@ -58,10 +58,10 @@ export function LandingHero() {
           href="/register" 
           className="px-10 py-5 rounded-[2rem] bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-black uppercase tracking-[0.2em] transition-all shadow-xl shadow-amber-500/20 hover:scale-105 active:scale-95 flex items-center gap-3 group"
         >
-          {t.hero_cta} <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+          {t.hero_cta_primary || t.hero_cta} <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
         </Link>
         <button className="px-10 py-5 rounded-[2rem] bg-white/5 border border-white/10 text-white text-xs font-black uppercase tracking-[0.2em] hover:bg-white/10 transition-all">
-            Watch Video Demo
+            {t.hero_cta_secondary || "Watch Video Demo"}
         </button>
       </motion.div>
 
