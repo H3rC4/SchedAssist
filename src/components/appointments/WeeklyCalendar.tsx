@@ -26,6 +26,35 @@ export function WeeklyCalendar({ selectedDate, appointments, lang, translations:
 
   const hours = Array.from({ length: 14 }, (_, i) => i + 8) // 8:00 to 21:00
 
+  // Calculate dynamic grid expansions
+  let expandedTimeVal = -1;
+  let addedHeight = 0;
+  
+  if (expandedSlot && expandedDay !== null) {
+    const [dayIdxStr, timeStr] = expandedSlot.split('-');
+    const [hourStr, minStr] = timeStr.split(':');
+    expandedTimeVal = (parseInt(hourStr, 10) - 8) * 60 + parseInt(minStr, 10);
+
+    const targetDay = weekDays[parseInt(dayIdxStr, 10)];
+    const group = appointments.filter(apt => isSameDay(parseISO(apt.start_at), targetDay) && format(parseISO(apt.start_at), 'HH:mm') === timeStr);
+    
+    if (group.length > 1) {
+      const heightPerApt = 48; // (30 / 60) * 96
+      const GAP = 4;
+      const stackTotalHeight = group.length * heightPerApt + (group.length - 1) * GAP;
+      addedHeight = stackTotalHeight - heightPerApt;
+    }
+  }
+
+  const getTop = (startHour: number, startMin: number) => {
+    const timeVal = (startHour - 8) * 60 + startMin;
+    let y = (timeVal / 60) * 96;
+    if (expandedTimeVal !== -1 && timeVal > expandedTimeVal) {
+      y += addedHeight;
+    }
+    return y;
+  };
+
   return (
     <div className="flex flex-col h-full bg-white">
       {/* Week Header */}
@@ -77,13 +106,17 @@ export function WeeklyCalendar({ selectedDate, appointments, lang, translations:
         <div className="flex divide-x divide-on-surface/5 min-h-full">
           {/* Time Column */}
           <div className="w-[100px] bg-on-surface/2 flex-shrink-0">
-            {hours.map(hour => (
-              <div key={hour} className="h-24 px-4 py-2 border-b border-on-surface/5 last:border-0 flex justify-end">
-                <span className="text-[10px] font-black text-on-surface/20 uppercase">
-                  {hour}:00
-                </span>
-              </div>
-            ))}
+            {hours.map(hour => {
+              const isExpandedRow = expandedTimeVal !== -1 && Math.floor(expandedTimeVal / 60) + 8 === hour;
+              const h = isExpandedRow ? 96 + addedHeight : 96;
+              return (
+                <motion.div key={hour} animate={{ height: h }} className="px-4 py-2 border-b border-on-surface/5 last:border-0 flex justify-end overflow-hidden">
+                  <span className="text-[10px] font-black text-on-surface/20 uppercase">
+                    {hour}:00
+                  </span>
+                </motion.div>
+              )
+            })}
           </div>
 
           {/* Day Columns */}
@@ -98,9 +131,11 @@ export function WeeklyCalendar({ selectedDate, appointments, lang, translations:
                 }
               }}
             >
-              {hours.map(hour => (
-                <div key={hour} className="h-24 border-b border-on-surface/5 last:border-0" />
-              ))}
+              {hours.map(hour => {
+                const isExpandedRow = expandedTimeVal !== -1 && Math.floor(expandedTimeVal / 60) + 8 === hour;
+                const h = isExpandedRow ? 96 + addedHeight : 96;
+                return <motion.div key={hour} animate={{ height: h }} className="border-b border-on-surface/5 last:border-0" />
+              })}
 
               {/* Appointments for this day */}
               {(() => {
@@ -119,7 +154,7 @@ export function WeeklyCalendar({ selectedDate, appointments, lang, translations:
                   const startMin = startDate.getMinutes()
                   const duration = 30 // Assuming 30m for visualization if not present
                   
-                  const top = ((startHour - 8) * 96) + (startMin / 60 * 96)
+                  const top = getTop(startHour, startMin)
                   const height = (duration / 60) * 96
                   const isExpandedDay = expandedDay === dayIdx
                   const isExpandedSlot = expandedSlot === `${dayIdx}-${timeKey}` && isExpandedDay
@@ -156,10 +191,7 @@ export function WeeklyCalendar({ selectedDate, appointments, lang, translations:
                     let aptTop = top;
                     if (isGrouped) {
                       const GAP = 4;
-                      const stackTotalHeight = (count * height) + ((count - 1) * GAP);
-                      const originalCenter = top + (height / 2);
-                      const stackTop = originalCenter - (stackTotalHeight / 2);
-                      aptTop = stackTop + (index * (height + GAP));
+                      aptTop = top + (index * (height + GAP));
                     }
 
                     const responsiveClasses = isGrouped ? 'left-1 w-[90%]' : 'left-1 w-[85%] lg:w-[75%]';
