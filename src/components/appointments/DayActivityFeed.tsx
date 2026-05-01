@@ -154,7 +154,22 @@ export const DayActivityFeed: React.FC<DayActivityFeedProps> = ({
             {/* Vertical Thread (Hilo) */}
             <div className="absolute left-[80px] top-4 bottom-4 w-[1.5px] bg-on-surface/[0.08] rounded-full" />
             
-            {/* Removed absolute floating clock indicator to prevent overlapping cards */}
+            {/* Current Time Indicator */}
+            {isSameDay(selectedDate, now) && (
+              <div 
+                className="absolute left-0 z-20 flex items-center pointer-events-none transition-all duration-1000"
+                style={{ top: `${getTimelineTop()}%` }}
+              >
+                <div className="w-[70px] text-right pr-2">
+                  <span className="text-[10px] font-black text-primary bg-primary/10 px-2 py-1 rounded-md">
+                    {format(now, 'HH:mm')}
+                  </span>
+                </div>
+                <div className="h-[2px] w-[10px] bg-primary relative">
+                  <div className="absolute right-[-5px] top-1/2 -translate-y-1/2 h-2.5 w-2.5 rounded-full bg-primary ring-4 ring-white shadow-sm" />
+                </div>
+              </div>
+            )}
 
             <div className="space-y-4 pl-[120px]">
               {appointments.map((app, index) => {
