@@ -13,11 +13,11 @@ const config: Config = {
         foreground: "var(--foreground)",
         // --- Clinical Premium Palette (New Identity) ---
         primary: {
-          DEFAULT: "#00236f", // Dark Blue
-          container: "#1e3a8a",
+          DEFAULT: "#005c55", // Deep Green
+          container: "#004b46",
           on: "#ffffff",
-          "on-container": "#90a8ff",
-          950: "#00164e",
+          "on-container": "#90ffeb",
+          950: "#001f1c",
         },
         secondary: {
           DEFAULT: "#855300", // Deep Amber

@@ -258,8 +258,8 @@ export const DayActivityFeed: React.FC<DayActivityFeedProps> = ({
                   className="bg-white rounded-[3.5rem] border border-on-surface/5 shadow-2xl overflow-hidden flex flex-col w-full"
                 >
                   {/* Card Header */}
-                  <div className="bg-primary/5 p-8 border-b border-primary/5 relative">
-                    <div className="absolute top-0 right-0 p-8 opacity-[0.03]">
+                  <div className="bg-primary/5 p-5 md:p-6 border-b border-primary/5 relative">
+                    <div className="absolute top-0 right-0 p-6 opacity-[0.03]">
                       <Stethoscope className="h-24 w-24 -rotate-12" />
                     </div>
                     
@@ -286,7 +286,7 @@ export const DayActivityFeed: React.FC<DayActivityFeedProps> = ({
                   </div>
 
                   {/* Card Content */}
-                  <div className="p-8 space-y-8 overflow-y-auto custom-scrollbar flex-1">
+                  <div className="p-5 md:p-6 space-y-6 overflow-y-auto custom-scrollbar flex-1">
                     <div className="grid grid-cols-2 gap-4">
                       <div className="p-5 rounded-3xl bg-on-surface/[0.02] border border-on-surface/5">
                         <p className="text-[8px] font-black text-on-surface/20 uppercase tracking-[0.2em] mb-2">{T.reason_visit || 'MOTIVO DE VISITA'}</p>

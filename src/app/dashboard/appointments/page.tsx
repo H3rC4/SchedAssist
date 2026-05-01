@@ -359,21 +359,21 @@ function AppointmentsContent() {
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               className="relative w-full max-w-md bg-surface border border-border/50 rounded-[2rem] shadow-spatial overflow-hidden flex flex-col max-h-[80vh]"
             >
-              <div className="p-6 border-b border-border/50 flex items-center justify-between sticky top-0 bg-surface/80 backdrop-blur-md z-10">
-                <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-2xl bg-amber-500/10 flex items-center justify-center text-amber-600">
-                    <Activity className="h-5 w-5" />
+              <div className="p-4 border-b border-border/50 flex items-center justify-between sticky top-0 bg-surface/80 backdrop-blur-md z-10">
+                <div className="flex items-center gap-2">
+                  <div className="h-8 w-8 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-600">
+                    <Activity className="h-4 w-4" />
                   </div>
                   <div>
-                    <h2 className="text-[11px] font-black text-foreground tracking-[0.2em] uppercase">{T.sync_required || 'SINCRONIZACIÓN REQUERIDA'}</h2>
-                    <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest mt-0.5">
+                    <h2 className="text-[10px] font-black text-foreground tracking-[0.2em] uppercase leading-none">{T.sync_required || 'SINCRONIZACIÓN REQUERIDA'}</h2>
+                    <p className="text-[8px] font-bold text-muted-foreground uppercase tracking-widest mt-0.5 leading-none">
                       {T.pending_cancellations_desc(pendingCalls.length)}
                     </p>
                   </div>
                 </div>
                 <button 
                   onClick={() => setShowPendingModal(false)}
-                  className="h-10 w-10 rounded-full bg-surface-hover flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+                  className="h-8 w-8 rounded-full bg-surface-hover flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
                 >
                   <X className="h-4 w-4" />
                 </button>
