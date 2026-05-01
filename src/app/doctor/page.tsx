@@ -12,6 +12,8 @@ interface Appointment {
   id: string
   status: string
   start_at: string
+  notes?: string
+  cancellation_reason?: string
   cancellation_notified: boolean
   clients: { first_name: string; last_name: string; phone: string } | null
   services: { name: string } | null

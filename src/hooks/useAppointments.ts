@@ -10,6 +10,9 @@ export interface Appointment {
   start_at: string;
   end_at: string;
   notes?: string;
+  cancellation_reason?: string;
+  cancellation_notified?: boolean;
+  rescheduled_from_appointment_id?: string;
   clients: { id: string; first_name: string; last_name: string; phone: string } | null;
   services: { name: string } | null;
   professionals: { id: string; full_name: string } | null;
