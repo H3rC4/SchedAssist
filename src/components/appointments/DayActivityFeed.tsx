@@ -10,7 +10,8 @@ import {
   Activity, 
   History,
   CheckCircle2,
-  CalendarClock
+  CalendarClock,
+  ShieldCheck
 } from 'lucide-react'
 import { format, parseISO, isAfter, isBefore, addMinutes, isPast } from 'date-fns'
 import { Appointment } from '@/hooks/useAppointments'
