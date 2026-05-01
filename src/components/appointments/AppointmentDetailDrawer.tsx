@@ -184,14 +184,25 @@ export function AppointmentDetailDrawer({
             <button 
               onClick={handleToggleAttended}
               disabled={updating}
-              className={`py-4 rounded-xl font-black text-[9px] uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-2 border ${
+              className={`py-4 rounded-xl font-black text-[9px] uppercase tracking-[0.2em] transition-all duration-300 flex items-center justify-center gap-2 border overflow-hidden ${
                 appointment.status === 'attended' 
-                  ? 'bg-emerald-500 text-white border-emerald-600' 
+                  ? 'bg-emerald-500 text-white border-emerald-600 scale-[0.98]' 
                   : 'bg-white text-emerald-600 border-emerald-100 hover:bg-emerald-50'
               }`}
             >
-              <CheckCircle className="h-3.5 w-3.5" /> 
-              {appointment.status === 'attended' ? T.undo : T.mark_attended}
+              <AnimatePresence mode="wait">
+                {appointment.status === 'attended' ? (
+                  <motion.div key="undo" initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: -20, opacity: 0 }} className="flex items-center gap-2">
+                    <CheckCircle className="h-3.5 w-3.5" /> 
+                    {T.undo || 'DESHACER'}
+                  </motion.div>
+                ) : (
+                  <motion.div key="mark" initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: -20, opacity: 0 }} className="flex items-center gap-2">
+                    <CheckCircle className="h-3.5 w-3.5" /> 
+                    {T.mark_attended}
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </button>
 
             <button 

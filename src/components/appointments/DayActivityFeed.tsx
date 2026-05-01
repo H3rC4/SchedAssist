@@ -154,22 +154,7 @@ export const DayActivityFeed: React.FC<DayActivityFeedProps> = ({
             {/* Vertical Thread (Hilo) */}
             <div className="absolute left-[80px] top-4 bottom-4 w-[1.5px] bg-on-surface/[0.08] rounded-full" />
             
-            {/* Current Time Indicator */}
-            {isSameDay(selectedDate, now) && (
-              <div 
-                className="absolute left-0 z-20 flex items-center pointer-events-none transition-all duration-1000"
-                style={{ top: `${getTimelineTop()}%` }}
-              >
-                <div className="w-[70px] text-right pr-2">
-                  <span className="text-[10px] font-black text-primary bg-primary/10 px-2 py-1 rounded-md">
-                    {format(now, 'HH:mm')}
-                  </span>
-                </div>
-                <div className="h-[2px] w-[10px] bg-primary relative">
-                  <div className="absolute right-[-5px] top-1/2 -translate-y-1/2 h-2.5 w-2.5 rounded-full bg-primary ring-4 ring-white shadow-sm" />
-                </div>
-              </div>
-            )}
+            {/* Removed absolute floating clock indicator to prevent overlapping cards */}
 
             <div className="space-y-4 pl-[120px]">
               {appointments.map((app, index) => {
@@ -346,13 +331,24 @@ export const DayActivityFeed: React.FC<DayActivityFeedProps> = ({
                       <div className="grid grid-cols-2 gap-4">
                         <button 
                           onClick={() => onStatusUpdate(selectedApp.id, selectedApp.status === 'attended' ? 'confirmed' : 'attended')}
-                          className={`py-4 rounded-2xl text-[9px] font-black uppercase tracking-[0.2em] transition-all border-2 ${
+                          className={`flex items-center justify-center py-4 rounded-2xl text-[9px] font-black uppercase tracking-[0.2em] transition-all duration-300 border-2 overflow-hidden ${
                             selectedApp.status === 'attended' 
-                              ? 'bg-emerald-500 text-white border-emerald-500' 
+                              ? 'bg-emerald-500 text-white border-emerald-500 scale-[0.98]' 
                               : 'bg-emerald-50 text-emerald-600 border-emerald-100 hover:bg-emerald-100'
                           }`}
                         >
-                          {selectedApp.status === 'attended' ? T.undo : T.mark_attended}
+                          <AnimatePresence mode="wait">
+                            {selectedApp.status === 'attended' ? (
+                              <motion.div key="undo" initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: -20, opacity: 0 }} className="flex items-center gap-2">
+                                <ShieldCheck className="h-4 w-4" />
+                                {T.undo || 'DESHACER'}
+                              </motion.div>
+                            ) : (
+                              <motion.div key="mark" initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: -20, opacity: 0 }} className="flex items-center gap-2">
+                                {T.mark_attended}
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
                         </button>
                         <button 
                           onClick={() => openRescheduleModal()}

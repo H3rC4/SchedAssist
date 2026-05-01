@@ -206,13 +206,11 @@ export function useAppointments() {
   }, [tenantId, supabase])
 
   const cancelAppointment = async (id: string) => {
+    setAppointments(prev => prev.map(app => app.id === id ? { ...app, status: 'cancelled' as any } : app))
+    setAllMonthApps(prev => prev.map(app => app.id === id ? { ...app, status: 'cancelled' as any } : app))
+    
     const res = await fetch(`/api/appointments?id=${id}&tenant_id=${tenantId}`, { method: 'DELETE' })
-    if (res.ok) {
-      await Promise.all([
-        fetchDayAppointments(tenantId, selectedDate),
-        fetchMonthAppointments(tenantId, currentMonth)
-      ])
-    }
+    refresh()
     return res.ok
   }
 
@@ -244,10 +242,11 @@ export function useAppointments() {
   }, [tenantId, selectedDate, currentMonth, fetchDayAppointments, fetchMonthAppointments])
 
   const updateStatus = async (id: string, status: string) => {
+    setAppointments(prev => prev.map(app => app.id === id ? { ...app, status: status as any } : app))
+    setAllMonthApps(prev => prev.map(app => app.id === id ? { ...app, status: status as any } : app))
+
     const { error } = await supabase.from('appointments').update({ status }).eq('id', id)
-    if (!error) {
-      refresh()
-    }
+    refresh()
     return !error
   }
 

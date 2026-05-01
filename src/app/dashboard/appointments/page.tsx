@@ -4,7 +4,7 @@ import { useState, Suspense } from 'react'
 import { format, parseISO } from 'date-fns'
 import { es, enUS, it } from 'date-fns/locale'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Plus, Calendar as CalendarIcon, List, LayoutGrid, Clock, ShieldCheck, Activity, Target, ArrowRight } from 'lucide-react'
+import { Plus, Calendar as CalendarIcon, List, LayoutGrid, Clock, ShieldCheck, Activity, Target, ArrowRight, X } from 'lucide-react'
 
 import { useAppointments, Appointment } from '@/hooks/useAppointments'
 import { MiniCalendar } from '@/components/appointments/MiniCalendar'
@@ -61,6 +61,7 @@ function AppointmentsContent() {
   } = useAppointments()
 
   const [showNewModal, setShowNewModal] = useState(false)
+  const [showPendingModal, setShowPendingModal] = useState(false)
   const [reschedulePatient, setReschedulePatient] = useState<{first_name: string, last_name: string, phone: string} | undefined>(undefined)
   const [selectedAppointment, setSelectedAppointment] = useState<any>(null)
   const [viewMode, setViewMode] = useState<'daily' | 'weekly'>('daily')
@@ -224,7 +225,7 @@ function AppointmentsContent() {
                           )}
                         </div>
                         <button 
-                           onClick={() => setSelectedDate(new Date())} // Example action or just scroll to view
+                           onClick={() => setShowPendingModal(true)}
                            className="h-10 px-6 rounded-xl bg-amber-500 text-white text-[9px] font-black uppercase tracking-widest hover:brightness-110 transition-all shadow-lg shadow-amber-500/20"
                         >
                            {T.view_all || 'REVISAR'}
@@ -329,6 +330,57 @@ function AppointmentsContent() {
             }}
             onUpdateStatus={updateStatus}
           />
+        )}
+
+        {showPendingModal && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-background/80 backdrop-blur-sm"
+              onClick={() => setShowPendingModal(false)}
+            />
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="relative w-full max-w-md bg-surface border border-border/50 rounded-[2rem] shadow-spatial overflow-hidden flex flex-col max-h-[80vh]"
+            >
+              <div className="p-6 border-b border-border/50 flex items-center justify-between sticky top-0 bg-surface/80 backdrop-blur-md z-10">
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-2xl bg-amber-500/10 flex items-center justify-center text-amber-600">
+                    <Activity className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <h2 className="text-[11px] font-black text-foreground tracking-[0.2em] uppercase">{T.sync_required || 'SINCRONIZACIÓN REQUERIDA'}</h2>
+                    <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest mt-0.5">
+                      {T.pending_cancellations_desc(pendingCalls.length)}
+                    </p>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => setShowPendingModal(false)}
+                  className="h-10 w-10 rounded-full bg-surface-hover flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+              
+              <div className="p-6 overflow-y-auto space-y-3">
+                {pendingCalls.map(app => (
+                  <div key={app.id} className="p-4 rounded-2xl border border-border/50 bg-surface-hover/50 hover:bg-surface-hover transition-colors group cursor-pointer" onClick={() => { setSelectedAppointment(app); setShowPendingModal(false); }}>
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="text-[10px] font-black text-foreground tracking-widest uppercase">{app.clients?.first_name} {app.clients?.last_name}</span>
+                      <span className="text-[9px] font-bold text-amber-500 tracking-widest uppercase bg-amber-500/10 px-2 py-1 rounded-md">{T.pending_cancellation || 'Pte. Cancelación'}</span>
+                    </div>
+                    <div className="flex items-center gap-4 text-[10px] font-medium text-muted-foreground">
+                      <span className="flex items-center gap-1.5"><CalendarIcon className="h-3 w-3" /> {format(parseISO(app.start_time), "d MMM", { locale: currentLocale })}</span>
+                      <span className="flex items-center gap-1.5"><Clock className="h-3 w-3" /> {format(parseISO(app.start_time), "HH:mm")}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+          </div>
         )}
       </AnimatePresence>
     </div>
