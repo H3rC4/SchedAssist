@@ -13,6 +13,7 @@ export interface Appointment {
   clients: { id: string; first_name: string; last_name: string; phone: string } | null;
   services: { name: string } | null;
   professionals: { id: string; full_name: string } | null;
+  last_visits?: { service_name: string; date: string }[];
 }
 
 export interface Client {

@@ -260,6 +260,7 @@ function AppointmentsContent() {
                   onNewAppointment={() => setShowNewModal(true)}
                   onStatusUpdate={handleStatusUpdate}
                   onReschedule={handleReschedule}
+                  onDeleteAppointment={cancelAppointment}
                   lang={lang}
                 />
               </motion.div>

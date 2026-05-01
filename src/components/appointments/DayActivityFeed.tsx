@@ -38,6 +38,7 @@ export const DayActivityFeed: React.FC<DayActivityFeedProps> = ({
   onNewAppointment,
   onStatusUpdate,
   onReschedule,
+  onDeleteAppointment,
   lang
 }) => {
   const [activeId, setActiveId] = useState<string | null>(null)
@@ -418,6 +419,7 @@ export const DayActivityFeed: React.FC<DayActivityFeedProps> = ({
         </div>
       )}
 
+        </div>
         </div>
       )}
     </div>
