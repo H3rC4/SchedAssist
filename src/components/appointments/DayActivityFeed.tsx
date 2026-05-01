@@ -157,16 +157,16 @@ export const DayActivityFeed: React.FC<DayActivityFeedProps> = ({
             {/* Current Time Indicator */}
             {isSameDay(selectedDate, now) && (
               <div 
-                className="absolute left-0 right-0 z-20 flex items-center pointer-events-none transition-all duration-1000"
+                className="absolute left-0 z-20 flex items-center pointer-events-none transition-all duration-1000"
                 style={{ top: `${getTimelineTop()}%` }}
               >
-                <div className="w-[75px] text-right pr-3">
-                  <span className="text-[10px] font-black text-primary bg-white px-1.5 py-0.5 rounded-md shadow-sm">
+                <div className="w-[70px] text-right pr-2">
+                  <span className="text-[10px] font-black text-primary bg-primary/10 px-2 py-1 rounded-md">
                     {format(now, 'HH:mm')}
                   </span>
                 </div>
-                <div className="h-[2px] flex-1 bg-primary/20 relative">
-                  <div className="absolute left-0 top-1/2 -translate-y-1/2 h-2.5 w-2.5 rounded-full bg-primary border-2 border-white shadow-sm" />
+                <div className="h-[2px] w-[10px] bg-primary relative">
+                  <div className="absolute right-[-5px] top-1/2 -translate-y-1/2 h-2.5 w-2.5 rounded-full bg-primary ring-4 ring-white shadow-sm" />
                 </div>
               </div>
             )}
@@ -343,12 +343,6 @@ export const DayActivityFeed: React.FC<DayActivityFeedProps> = ({
 
                     {/* Footer Actions */}
                     <div className="space-y-4 pt-4">
-                      <button 
-                        onClick={() => onSelectAppointment(selectedApp)}
-                        className="w-full bg-on-surface text-white py-5 rounded-[1.5rem] text-[10px] font-black uppercase tracking-[0.3em] hover:bg-on-surface/90 transition-all shadow-xl shadow-on-surface/10"
-                      >
-                        {T.open_medical_record || 'ABRIR EXPEDIENTE MÉDICO'}
-                      </button>
                       <div className="grid grid-cols-2 gap-4">
                         <button 
                           onClick={() => onStatusUpdate(selectedApp.id, selectedApp.status === 'attended' ? 'confirmed' : 'attended')}

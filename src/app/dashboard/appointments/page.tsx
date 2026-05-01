@@ -68,11 +68,7 @@ function AppointmentsContent() {
   const [callNotes, setCallNotes] = useState<{[key: string]: string}>({})
 
   const handleStatusUpdate = async (id: string, status: string) => {
-    const success = await updateStatus(id, status)
-    if (success) {
-      setToast({ message: T.success, type: 'success' })
-      setTimeout(() => setToast(null), 3000)
-    }
+    await updateStatus(id, status)
   }
 
   const handleReschedule = async (app: Appointment) => {
