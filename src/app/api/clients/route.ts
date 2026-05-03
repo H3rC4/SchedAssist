@@ -48,7 +48,7 @@ export async function PATCH(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    const { tenant_id, first_name, last_name, phone, notes, allergies } = await req.json();
+    const { tenant_id, first_name, last_name, phone, email, notes, allergies } = await req.json();
 
     if (!tenant_id || !first_name || !last_name || !phone) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
@@ -69,6 +69,7 @@ export async function POST(req: NextRequest) {
         first_name,
         last_name,
         phone,
+        email,
         notes,
         allergies
       })

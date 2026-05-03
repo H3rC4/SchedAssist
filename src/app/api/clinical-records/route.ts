@@ -36,20 +36,23 @@ export async function GET(req: NextRequest) {
   }
 
   // Generate signed URLs for private files
+  const enrichedData = await enrichRecordsWithSignedUrls(data || []);
+
+  return NextResponse.json(enrichedData);
+}
+
+async function enrichRecordsWithSignedUrls(records: any[]) {
   const adminClient = createAdminClient();
-  const enrichedData = await Promise.all((data || []).map(async (record: any) => {
+  return Promise.all(records.map(async (record: any) => {
     if (record.attachments && Array.isArray(record.attachments)) {
       const enrichedAttachments = await Promise.all(record.attachments.map(async (att: any) => {
-        // Si el bucket es privado, necesitamos una URL firmada.
-        // Extraemos el path relativo al bucket clinical_files.
-        // El formato actual guardado es una URL completa.
         try {
           const urlParts = att.url.split('/clinical_files/');
           if (urlParts.length > 1) {
             const path = urlParts[1];
             const { data: signedData } = await adminClient.storage
               .from('clinical_files')
-              .createSignedUrl(path, 3600); // 1 hora de validez
+              .createSignedUrl(path, 3600);
             return { ...att, url: signedData?.signedUrl || att.url };
           }
         } catch (e) {
@@ -61,8 +64,6 @@ export async function GET(req: NextRequest) {
     }
     return record;
   }));
-
-  return NextResponse.json(enrichedData);
 }
 
 export async function POST(req: NextRequest) {
@@ -110,7 +111,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  return NextResponse.json(data, { status: 201 });
+  const [enrichedRecord] = await enrichRecordsWithSignedUrls([data]);
+  return NextResponse.json(enrichedRecord, { status: 201 });
 }
 
 export async function PATCH(req: NextRequest) {

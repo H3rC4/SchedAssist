@@ -21,6 +21,7 @@ interface QuickAppointmentDrawerProps {
   onFetchSlots: (profId: string, date: string) => void;
   initialPatient?: { first_name: string; last_name: string; phone: string };
   rescheduledFromId?: string | null;
+  variant?: 'drawer' | 'modal';
 }
 
 export function QuickAppointmentDrawer({
@@ -36,7 +37,8 @@ export function QuickAppointmentDrawer({
   slotLoading,
   onFetchSlots,
   initialPatient,
-  rescheduledFromId
+  rescheduledFromId,
+  variant = 'drawer'
 }: QuickAppointmentDrawerProps) {
   const [formData, setFormData] = useState({
     first_name: initialPatient?.first_name || '', 
@@ -111,7 +113,7 @@ export function QuickAppointmentDrawer({
   }, [formData.professional_id, formData.date, onFetchSlots])
 
   return (
-    <div className="fixed inset-0 z-[100] flex justify-end" onClick={onClose}>
+    <div className={`fixed inset-0 z-[100] flex ${variant === 'drawer' ? 'justify-end' : 'items-center justify-center p-4'}`} onClick={onClose}>
       <motion.div 
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -120,46 +122,79 @@ export function QuickAppointmentDrawer({
       />
       
       <motion.div 
-        initial={{ x: '100%' }}
-        animate={{ x: 0 }}
-        exit={{ x: '100%' }}
+        initial={variant === 'drawer' ? { x: '100%' } : { scale: 0.95, opacity: 0 }}
+        animate={variant === 'drawer' ? { x: 0 } : { scale: 1, opacity: 1 }}
+        exit={variant === 'drawer' ? { x: '100%' } : { scale: 0.95, opacity: 0 }}
         transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-        className="relative w-full max-w-xl bg-surface h-full shadow-2xl overflow-hidden flex flex-col"
+        className={`relative bg-surface overflow-hidden flex flex-col ${
+          variant === 'drawer' 
+            ? 'w-full max-w-xl h-full shadow-2xl' 
+            : 'w-full max-w-2xl max-h-[90vh] rounded-none border-2 border-slate-800 shadow-[8px_8px_0_0_#1e293b]'
+        }`}
         onClick={e => e.stopPropagation()}
       >
-        {/* Editorial Header */}
-        <div className="p-6 md:p-8 pb-0 flex items-start justify-between">
-          <div>
-            <div className="flex items-center gap-3 mb-6">
-              <div className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
-              <span className="text-[10px] font-black tracking-[0.4em] text-on-surface/40 uppercase">
-                {T.quick_appointment}
-              </span>
-            </div>
-            <h2 className="precision-header text-3xl leading-tight">
-              {T.create_appointment_p1} <br />
-              <span className="text-primary italic font-serif">
-                {T.create_appointment_p2}
-              </span>
-            </h2>
+        {saveSuccess ? (
+          <div className="flex-1 flex flex-col items-center justify-center p-8 bg-surface min-h-[400px]">
+            <motion.div
+              initial={{ scale: 0.5, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ type: "spring", stiffness: 300, damping: 20 }}
+              className="h-20 w-20 bg-emerald-50 rounded-full flex items-center justify-center mb-6"
+            >
+              <CheckCircle className="h-10 w-10 text-emerald-500" />
+            </motion.div>
+            <motion.h2 
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="text-2xl font-black text-on-surface uppercase tracking-tight text-center mb-2"
+            >
+              {rescheduledFromId ? (T.mark_rescheduled || 'Cita Reagendada') : (T.ready || 'Cita Creada')}
+            </motion.h2>
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.2 }}
+              className="text-xs font-bold text-on-surface/40 uppercase tracking-widest text-center"
+            >
+              {formData.first_name} {formData.last_name}
+            </motion.p>
           </div>
-          <button 
-            onClick={onClose}
-            className="p-3 bg-on-surface/5 rounded-full hover:bg-on-surface/10 transition-colors group"
-          >
-            <X className="h-5 w-5 text-on-surface/40 group-hover:text-on-surface group-hover:rotate-90 transition-all" />
-          </button>
-        </div>
-
-        <div className="flex-1 overflow-y-auto p-6 md:p-8 space-y-8">
-          {/* Patient Selection & Data */}
-          <section className="space-y-8">
-            <div className="flex items-center gap-4 border-b border-on-surface/5 pb-4">
-              <User className="h-4 w-4 text-primary" />
-              <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-on-surface">
-                {T.patient_search}
-              </h3>
+        ) : (
+          <>
+            {/* Editorial Header */}
+            <div className="p-6 md:p-8 pb-0 flex items-start justify-between">
+              <div>
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
+                  <span className="text-[10px] font-black tracking-[0.4em] text-on-surface/40 uppercase">
+                    {rescheduledFromId ? (T.reschedule || 'Reagendar Cita') : T.quick_appointment}
+                  </span>
+                </div>
+                <h2 className="precision-header text-3xl leading-tight">
+                  {rescheduledFromId ? (T.reschedule || 'Reagendar') : T.create_appointment_p1} <br />
+                  <span className="text-primary italic font-serif lowercase pr-2">
+                    {rescheduledFromId ? (T.appointment || 'cita') : T.create_appointment_p2}
+                  </span>
+                </h2>
+              </div>
+              <button 
+                onClick={onClose}
+                className="p-3 hover:bg-on-surface/5 rounded-full transition-colors group"
+              >
+                <X className="h-5 w-5 text-on-surface/40 group-hover:text-on-surface transition-colors" />
+              </button>
             </div>
+
+            <div className="flex-1 overflow-y-auto p-6 md:p-8 space-y-8">
+              {/* Patient Selection & Data */}
+              <section className="space-y-8">
+                <div className="flex items-center gap-4 border-b border-on-surface/5 pb-4">
+                  <User className="h-4 w-4 text-primary" />
+                  <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-on-surface">
+                    {T.patient_search}
+                  </h3>
+                </div>
             
             <PatientSearch 
               tenantId={tenantId} 
@@ -328,7 +363,9 @@ export function QuickAppointmentDrawer({
             onClick={handleCreateAppointment}
             disabled={loading || saveSuccess || !formData.first_name || !formData.professional_id || !formData.time || !formData.service_id}
             className={`w-full py-5 rounded-full font-black text-[11px] uppercase tracking-[0.4em] shadow-xl transition-all duration-500 flex items-center justify-center gap-3 active:scale-[0.98] disabled:opacity-30 disabled:cursor-not-allowed
-              ${saveSuccess ? 'bg-success text-white' : 'bg-primary text-white hover:shadow-primary/20 hover:-translate-y-0.5'}`}
+              ${saveSuccess ? 'bg-success text-white' : 'bg-primary text-white hover:shadow-primary/20 hover:-translate-y-0.5'}
+              ${variant === 'modal' ? 'rounded-none border-2 border-slate-900 shadow-[4px_4px_0_0_#0f172a] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0_0_#0f172a]' : ''}
+            `}
           >
             {saveSuccess ? (
               <><CheckCircle className="h-4 w-4" /> {T.ready}</>
@@ -339,6 +376,8 @@ export function QuickAppointmentDrawer({
             )}
           </button>
         </div>
+        </>
+        )}
       </motion.div>
     </div>
   )

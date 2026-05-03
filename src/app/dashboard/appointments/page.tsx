@@ -14,6 +14,7 @@ import { QuickAppointmentDrawer } from '@/components/appointments/QuickAppointme
 import { AppointmentDetailDrawer } from '@/components/appointments/AppointmentDetailDrawer'
 import { getTranslations, dateLocales } from '@/lib/i18n'
 import { useLandingTranslation } from '@/components/LanguageContext'
+import { useSearchParams } from 'next/navigation'
 
 function Toast({ message, type, onClose }: { message: string; type: 'error' | 'success'; onClose: () => void }) {
   const [visible, setVisible] = useState(true)
@@ -77,6 +78,29 @@ function AppointmentsContent() {
   const [viewMode, setViewMode] = useState<'daily' | 'weekly'>('daily')
   const [toast, setToast] = useState<{ message: string; type: 'error' | 'success' } | null>(null)
   const [callNotes, setCallNotes] = useState<{[key: string]: string}>({})
+  
+  const searchParams = useSearchParams()
+
+  useEffect(() => {
+    const action = searchParams.get('action')
+    if (action === 'reschedule' || action === 'new_appointment') {
+      const firstName = searchParams.get('first_name')
+      const lastName = searchParams.get('last_name') || ''
+      const phone = searchParams.get('phone') || ''
+      
+      if (firstName) {
+        setReschedulePatient({
+          first_name: firstName,
+          last_name: lastName,
+          phone: phone
+        })
+        setShowNewModal(true)
+        // Keep the variant parameter in URL so QuickAppointmentDrawer knows to render as modal, but clear others if we wanted to. 
+        // Actually we don't need to clear URL if we use the URL to determine variant.
+        window.history.replaceState({}, '', `/dashboard/appointments?variant=${action === 'new_appointment' ? 'modal' : 'drawer'}`)
+      }
+    }
+  }, [searchParams])
 
   const handleStatusUpdate = async (id: string, status: string) => {
     await updateStatus(id, status)
@@ -318,8 +342,9 @@ function AppointmentsContent() {
             availableSlots={availableSlots}
             slotLoading={slotLoading}
             onFetchSlots={fetchSlots}
-            initialPatient={reschedulePatient}
+            initialPatient={reschedulePatient || undefined}
             rescheduledFromId={rescheduledFromId}
+            variant={searchParams.get('variant') === 'modal' ? 'modal' : 'drawer'}
           />
         )}
 

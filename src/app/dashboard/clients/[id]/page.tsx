@@ -7,7 +7,7 @@ import {
   Calendar, Clock, FileText, Plus, ChevronRight,
   History as HistoryIcon, CalendarDays, Paperclip,
   ExternalLink, AlertCircle, ArrowLeft, Edit2,
-  Upload, User, Phone, Mail, ShieldAlert, X, Check
+  Upload, User, Phone, Mail, ShieldAlert, X, Check, Trash2
 } from 'lucide-react'
 import { format, parseISO } from 'date-fns'
 import { es } from 'date-fns/locale/es'
@@ -16,6 +16,7 @@ import { enUS } from 'date-fns/locale/en-US'
 import { createClient } from '@/lib/supabase/client'
 import { translations } from '@/lib/i18n'
 import { AppointmentDetailDrawer } from '@/components/appointments/AppointmentDetailDrawer'
+import { QuickAppointmentDrawer } from '@/components/appointments/QuickAppointmentDrawer'
 
 interface MedicalEntry {
   id: string;
@@ -136,6 +137,11 @@ export default function PatientProfilePage() {
   const [uploadProgress, setUploadProgress] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [selectedAppointment, setSelectedAppointment] = useState<any | null>(null)
+  const [showNewAppointment, setShowNewAppointment] = useState(false)
+  const [services, setServices] = useState<any[]>([])
+  const [professionals, setProfessionals] = useState<any[]>([])
+  const [availableSlots, setAvailableSlots] = useState<string[]>([])
+  const [slotLoading, setSlotLoading] = useState(false)
 
   const lang = (tenant?.settings?.language as 'en' | 'es' | 'it') || 'es'
   const t = translations[lang] || translations['en']
@@ -169,6 +175,14 @@ export default function PatientProfilePage() {
       setPatient(patientData.client)
       setHistory(await historyRes.json())
       setAppointments(await appointmentsRes.json())
+      
+      // Also fetch metadata for the appointment drawer
+      const [srvRes, profRes] = await Promise.all([
+        fetch(`/api/services?tenant_id=${tenant.id}`),
+        fetch(`/api/professionals?tenant_id=${tenant.id}`)
+      ])
+      setServices(await srvRes.json())
+      setProfessionals(await profRes.json())
     } catch (e) {
       console.error(e)
     } finally {
@@ -228,19 +242,23 @@ export default function PatientProfilePage() {
 
     try {
       const filePath = `${tenant.id}/${patient.id}/${Date.now()}_${file.name}`
-      const { error: storageError } = await supabase.storage
-        .from('studies')
-        .upload(filePath, file, { upsert: false })
+      
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('filePath', filePath)
+      formData.append('bucket', 'clinical_files')
 
-      if (storageError && storageError.message.includes('Bucket not found')) {
-        await supabase.storage.createBucket('studies', { public: true })
-        await supabase.storage.from('studies').upload(filePath, file, { upsert: false })
-      } else if (storageError) {
-        throw new Error(storageError.message)
+      const uploadRes = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData
+      })
+
+      if (!uploadRes.ok) {
+        const errorData = await uploadRes.json()
+        throw new Error(errorData.error || 'Error uploading file')
       }
 
-      const { data: urlData } = supabase.storage.from('studies').getPublicUrl(filePath)
-      const fileUrl = urlData?.publicUrl || ''
+      const { url: fileUrl } = await uploadRes.json()
 
       setUploadProgress('Registrando estudio...')
 
@@ -272,6 +290,49 @@ export default function PatientProfilePage() {
     }
   }
 
+  const handleDeleteFile = async (recordId: string, fileUrl: string) => {
+    const confirmMsg = lang === 'es' ? '¿Estás seguro de eliminar este archivo?' : (lang === 'it' ? 'Sei sicuro di voler eliminare questo file?' : 'Are you sure you want to delete this file?')
+    if (!window.confirm(confirmMsg)) return
+
+    setIsUploading(true)
+    setUploadProgress(lang === 'es' ? 'Eliminando...' : 'Deleting...')
+
+    try {
+      // 1. Delete from storage if possible
+      const pathPart = fileUrl.split('/clinical_files/')[1]?.split('?')[0]
+      if (pathPart) {
+        await fetch(`/api/upload?filePath=${pathPart}&bucket=clinical_files`, { method: 'DELETE' })
+      }
+
+      // 2. Update database
+      const record = history.find(h => h.id === recordId)
+      if (!record) return
+
+      const updatedAttachments = (record.attachments || []).filter(a => a.url !== fileUrl)
+      
+      if (updatedAttachments.length === 0) {
+        await fetch(`/api/clinical-records?id=${recordId}`, { method: 'DELETE' })
+        setHistory(prev => prev.filter(h => h.id !== recordId))
+      } else {
+        await fetch(`/api/clinical-records?id=${recordId}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ attachments: updatedAttachments })
+        })
+        setHistory(prev => prev.map(h => h.id === recordId ? { ...h, attachments: updatedAttachments } : h))
+      }
+
+      setUploadProgress(lang === 'es' ? '✓ Eliminado correctamente' : '✓ Deleted successfully')
+      setTimeout(() => setUploadProgress(null), 3000)
+    } catch (err: any) {
+      console.error('[DeleteFile]', err)
+      setUploadProgress(`Error: ${err.message}`)
+      setTimeout(() => setUploadProgress(null), 3000)
+    } finally {
+      setIsUploading(false)
+    }
+  }
+
   const updateAppointmentStatus = async (id: string, status: string): Promise<boolean> => {
     if (!tenant) return false
     try {
@@ -293,7 +354,16 @@ export default function PatientProfilePage() {
       return false
     }
   }
-
+  const fetchSlots = async (profId: string, date: string) => {
+    setSlotLoading(true)
+    try {
+      const res = await fetch(`/api/appointments/availability?tenant_id=${tenant.id}&professional_id=${profId}&date=${date}`)
+      const data = await res.json()
+      setAvailableSlots(data.slots || [])
+    } finally {
+      setSlotLoading(false)
+    }
+  }
 
   if (isLoading) {
     return (
@@ -336,7 +406,7 @@ export default function PatientProfilePage() {
           </div>
           <div className="flex-1 min-w-0">
             <h1 className="text-base font-black text-slate-900 leading-none truncate">
-              {patient.first_name} {patient.last_name}
+              {patient.first_name || ''} {patient.last_name || ''}
             </h1>
             <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-0.5">{t.medical_record}</p>
           </div>
@@ -344,12 +414,12 @@ export default function PatientProfilePage() {
           {/* Right actions — fill the empty orange area */}
           <div className="flex items-center gap-3 shrink-0">
             <span className="hidden md:block text-[10px] font-black text-slate-400 uppercase tracking-widest">
-              {t.phone || 'Tel'}: {patient.phone}
+              {t.phone || 'Tel'}: {patient.phone || ''}
             </span>
             <button
-              onClick={() => router.push('/dashboard/appointments')}
-              className="flex items-center gap-2 px-4 py-2 bg-slate-900 text-white rounded-lg text-[10px] font-black uppercase tracking-widest shadow active:scale-95 transition-all">
-              <Plus className="h-3 w-3" />
+              onClick={() => setShowNewAppointment(true)}
+              className="flex items-center gap-1.5 bg-primary text-white px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-primary-600 transition-all shadow-sm active:scale-95">
+              <Plus className="h-4 w-4" />
               {t.new_appointment || 'Nueva Cita'}
             </button>
           </div>
@@ -360,7 +430,7 @@ export default function PatientProfilePage() {
       <div className="flex flex-1 overflow-hidden">
 
         {/* LEFT PANEL — straight edges, no rounded corners */}
-        <aside className="w-72 shrink-0 bg-white border-r border-slate-200 overflow-y-auto flex flex-col">
+        <aside className="w-72 shrink-0 bg-white border-r border-slate-200 overflow-y-auto flex flex-col rounded-none">
 
           {/* Allergies — danger zone */}
           <div className="bg-red-50 border-b border-red-200 p-5">
@@ -382,24 +452,24 @@ export default function PatientProfilePage() {
 
             <InlineEdit
               label={t.first_name || 'Nombre'}
-              value={patient.first_name}
+              value={patient.first_name || ''}
               onSave={v => saveField('first_name', v)}
               icon={<User className="h-3 w-3" />}
             />
             <InlineEdit
               label={t.last_name || 'Apellido'}
-              value={patient.last_name}
+              value={patient.last_name || ''}
               onSave={v => saveField('last_name', v)}
               icon={<User className="h-3 w-3" />}
             />
             <InlineEdit
               label={t.phone || 'Teléfono'}
-              value={patient.phone}
+              value={patient.phone || ''}
               onSave={v => saveField('phone', v)}
               icon={<Phone className="h-3 w-3" />}
             />
             <InlineEdit
-              label="Email"
+              label={t.email || 'Email'}
               value={patient.email || ''}
               onSave={v => saveField('email', v)}
               icon={<Mail className="h-3 w-3" />}
@@ -422,7 +492,7 @@ export default function PatientProfilePage() {
         </aside>
 
         {/* RIGHT PANEL — tabs */}
-        <main className="flex-1 overflow-y-auto flex flex-col">
+        <main className="flex-1 overflow-y-auto flex flex-col bg-slate-50">
 
           {/* Tab bar */}
           <div className="bg-white border-b border-slate-200 px-6 flex gap-6 shrink-0">
@@ -493,21 +563,23 @@ export default function PatientProfilePage() {
                               </span>
                             )}
                           </div>
-                          <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
-                            <p className="text-sm font-medium text-slate-800 leading-relaxed whitespace-pre-wrap">
-                              {typeof record.content === 'string' ? record.content : (record.content?.observations || JSON.stringify(record.content))}
-                            </p>
-                            {record.attachments && record.attachments.length > 0 && (
-                              <div className="mt-4 flex flex-wrap gap-2">
-                                {record.attachments.map((file, fidx) => (
-                                  <a key={fidx} href={file.url} target="_blank" rel="noreferrer"
-                                    className="flex items-center gap-2 px-3 py-1.5 bg-slate-50 hover:bg-slate-100 rounded-lg text-[10px] font-bold text-slate-700 border border-slate-200 transition-colors">
-                                    <Paperclip className="h-3 w-3 text-slate-400" />
-                                    {file.name || `Archivo ${fidx + 1}`}
-                                  </a>
-                                ))}
-                              </div>
-                            )}
+                          <div className="bg-white border-y sm:border sm:rounded-none sm:border-slate-200 shadow-sm overflow-hidden">
+                            <div className="p-5">
+                              <p className="text-sm font-medium text-slate-800 leading-relaxed whitespace-pre-wrap">
+                                {typeof record.content === 'string' ? record.content : (record.content?.observations || JSON.stringify(record.content))}
+                              </p>
+                              {record.attachments && record.attachments.length > 0 && (
+                                <div className="mt-4 flex flex-wrap gap-2">
+                                  {record.attachments.map((file, fidx) => (
+                                    <a key={fidx} href={file.url} target="_blank" rel="noreferrer"
+                                      className="flex items-center gap-2 px-3 py-1.5 bg-slate-50 hover:bg-slate-100 rounded-lg text-[10px] font-bold text-slate-700 border border-slate-200 transition-colors">
+                                      <Paperclip className="h-3 w-3 text-slate-400" />
+                                      {file.name || `Archivo ${fidx + 1}`}
+                                    </a>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
                           </div>
                         </div>
                       ))}
@@ -570,18 +642,32 @@ export default function PatientProfilePage() {
                     </div>
                   ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {history.flatMap(h => h.attachments || []).map((file, idx) => (
-                        <a key={idx} href={file.url} target="_blank" rel="noreferrer"
-                          className="flex items-center gap-4 p-4 bg-white rounded-xl border border-slate-200 hover:border-primary-600/30 transition-all group shadow-sm">
-                          <div className="h-10 w-10 bg-slate-100 rounded-lg flex items-center justify-center text-slate-400 group-hover:bg-primary-50 group-hover:text-primary-600 transition-colors">
-                            <FileText className="h-5 w-5" />
+                      {history.filter(h => h.attachments && h.attachments.length > 0).map(record => (
+                        record.attachments?.map((file, fidx) => (
+                          <div key={`${record.id}-${fidx}`} className="flex items-center gap-4 p-4 bg-white rounded-xl border border-slate-200 hover:border-primary-600/30 transition-all group shadow-sm">
+                            <a href={file.url} target="_blank" rel="noreferrer" className="h-10 w-10 bg-slate-100 rounded-none flex items-center justify-center text-slate-400 group-hover:bg-primary-50 group-hover:text-primary-600 transition-colors">
+                              <FileText className="h-5 w-5" />
+                            </a>
+                            <div className="flex-1 min-w-0">
+                              <a href={file.url} target="_blank" rel="noreferrer">
+                                <p className="text-sm font-bold text-slate-900 truncate hover:text-primary-600 transition-colors cursor-pointer">{file.name || 'Documento'}</p>
+                              </a>
+                              <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mt-0.5">{file.type || 'Estudio clínico'}</p>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <button
+                                onClick={() => handleDeleteFile(record.id, file.url)}
+                                className="p-2 text-slate-300 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
+                                title={lang === 'es' ? 'Eliminar' : 'Delete'}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </button>
+                              <a href={file.url} target="_blank" rel="noreferrer" className="p-2 text-slate-300 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-all">
+                                <ExternalLink className="h-4 w-4" />
+                              </a>
+                            </div>
                           </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-bold text-slate-900 truncate">{file.name || 'Documento'}</p>
-                            <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mt-0.5">{file.type || 'Estudio clínico'}</p>
-                          </div>
-                          <ExternalLink className="h-4 w-4 text-slate-300 group-hover:text-primary-600 transition-colors" />
-                        </a>
+                        ))
                       ))}
                     </div>
                   )}
@@ -596,10 +682,6 @@ export default function PatientProfilePage() {
                   className="space-y-6">
                   <div className="flex items-center justify-between">
                     <h3 className="text-lg font-black text-slate-900">{t.upcoming_appointments}</h3>
-                    <button className="flex items-center gap-1.5 bg-primary text-on-primary px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-primary-600 transition-all shadow-sm">
-                      <Plus className="h-4 w-4" />
-                      {t.new_appointment || 'Nueva Cita'}
-                    </button>
                   </div>
                   {appointments.length === 0 ? (
                     <div className="py-24 text-center text-slate-400">
@@ -653,11 +735,45 @@ export default function PatientProfilePage() {
             onSuccess={() => fetchData()}
             tenantId={tenant.id}
             translations={t}
-            onReschedule={() => {
-              // Reschedule logic placeholder
+            onReschedule={(app) => {
+              if (app?.clients) {
+                const params = new URLSearchParams({
+                  action: 'reschedule',
+                  patient_id: app.clients.id,
+                  first_name: app.clients.first_name,
+                  last_name: app.clients.last_name || '',
+                  phone: app.clients.phone || ''
+                })
+                router.push(`/dashboard/appointments?${params.toString()}`)
+              }
               setSelectedAppointment(null)
             }}
             onUpdateStatus={updateAppointmentStatus}
+          />
+        )}
+
+        {showNewAppointment && (
+          <QuickAppointmentDrawer
+            tenantId={tenant.id}
+            lang={lang}
+            services={services}
+            professionals={professionals}
+            onClose={() => setShowNewAppointment(false)}
+            onSuccess={() => {
+              fetchData()
+              setShowNewAppointment(false)
+            }}
+            selectedDate={new Date()}
+            translations={t}
+            availableSlots={availableSlots}
+            slotLoading={slotLoading}
+            onFetchSlots={fetchSlots}
+            initialPatient={{
+              first_name: patient.first_name,
+              last_name: patient.last_name || '',
+              phone: patient.phone
+            }}
+            variant="modal"
           />
         )}
       </AnimatePresence>

@@ -30,6 +30,7 @@ export function AppointmentDetailDrawer({
   onMarkAsNotified
 }: AppointmentDetailDrawerProps) {
   const [updating, setUpdating] = useState(false)
+  const [cancelSuccess, setCancelSuccess] = useState(false)
 
   const handleToggleAttended = async () => {
     setUpdating(true)
@@ -56,15 +57,22 @@ export function AppointmentDetailDrawer({
     if (!confirm(T.confirm_cancel_appointment || 'Are you sure you want to cancel this appointment?')) return
     
     try {
+      setUpdating(true)
       const res = await fetch(`/api/appointments?id=${appointment.id}&tenant_id=${tenantId}`, { 
         method: 'DELETE' 
       })
       if (res.ok) {
-        onSuccess()
-        onClose()
+        setCancelSuccess(true)
+        setTimeout(() => {
+          onSuccess()
+          onClose()
+        }, 1500)
+      } else {
+        setUpdating(false)
       }
     } catch (e) {
       console.error(e)
+      setUpdating(false)
     }
   }
 
@@ -95,8 +103,29 @@ export function AppointmentDetailDrawer({
         className="relative w-full max-w-md bg-surface h-full shadow-2xl overflow-hidden flex flex-col"
         onClick={e => e.stopPropagation()}
       >
-        {/* Header - Compact */}
-        <div className="p-6 pb-4 flex items-start justify-between bg-on-surface/[0.02] border-b border-on-surface/5">
+        {cancelSuccess ? (
+          <div className="flex-1 flex flex-col items-center justify-center p-8 bg-surface">
+            <motion.div
+              initial={{ scale: 0.5, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ type: "spring", stiffness: 300, damping: 20 }}
+              className="h-20 w-20 bg-emerald-50 rounded-full flex items-center justify-center mb-6"
+            >
+              <CheckCircle className="h-10 w-10 text-emerald-500" />
+            </motion.div>
+            <motion.h2 
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="text-2xl font-black text-on-surface uppercase tracking-tight text-center"
+            >
+              {T.appointment_cancelled || 'Cita Cancelada'}
+            </motion.h2>
+          </div>
+        ) : (
+          <>
+            {/* Header - Compact */}
+            <div className="p-6 pb-4 flex items-start justify-between bg-on-surface/[0.02] border-b border-on-surface/5">
           <div>
             <div className="flex items-center gap-2 mb-2">
               <div className={`h-1.5 w-1.5 rounded-full ${
@@ -234,8 +263,9 @@ export function AppointmentDetailDrawer({
             </button>
           )}
         </div>
+          </>
+        )}
       </motion.div>
     </div>
-
   )
 }
