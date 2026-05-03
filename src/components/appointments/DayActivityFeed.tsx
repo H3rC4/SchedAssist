@@ -122,9 +122,9 @@ export const DayActivityFeed: React.FC<DayActivityFeedProps> = ({
         </div>
         <div className="flex items-center gap-6 pb-1">
            <div className="text-right">
-              <p className="text-[8px] font-black text-on-surface/20 uppercase tracking-[0.3em] leading-none mb-1">{T.status || 'STATUS'}</p>
+              <p className="text-[8px] font-black text-on-surface/20 uppercase tracking-[0.3em] leading-none mb-1">{T.status}</p>
               <div className="flex items-center gap-2">
-                <span className="text-xs font-black text-emerald-500 uppercase tracking-widest">{T.operative || 'OPERATIVO'}</span>
+                <span className="text-xs font-black text-emerald-500 uppercase tracking-widest">{T.operative}</span>
                 <div className="h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
               </div>
            </div>
@@ -212,7 +212,7 @@ export const DayActivityFeed: React.FC<DayActivityFeedProps> = ({
                           app.status === 'attended' ? 'text-emerald-500' : 
                           isOngoing ? 'text-primary animate-pulse' : 'text-on-surface/20'
                         }`}>
-                          {app.status === 'attended' ? T.attended : isOngoing ? T.ongoing || 'EN CURSO' : T.upcoming || 'PRÓXIMA'}
+                          {app.status === 'attended' ? T.attended : isOngoing ? T.ongoing : T.upcoming}
                         </span>
                         {app.status === 'attended' && <CheckCircle2 className="h-3 w-3 text-emerald-500" />}
                       </div>
@@ -247,7 +247,7 @@ export const DayActivityFeed: React.FC<DayActivityFeedProps> = ({
           </div>
 
           {/* Next Patient Card Column */}
-          <div className="lg:w-[480px] lg:sticky lg:top-8 lg:self-start max-h-[calc(100vh-100px)] flex">
+          <div className="lg:w-[480px] lg:sticky lg:top-8 lg:self-start flex">
             <AnimatePresence mode="wait">
               {selectedApp && (
                 <motion.div
@@ -255,7 +255,7 @@ export const DayActivityFeed: React.FC<DayActivityFeedProps> = ({
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -20 }}
-                  className="bg-white rounded-[3.5rem] border border-on-surface/5 shadow-2xl overflow-hidden flex flex-col w-full"
+                  className="bg-white rounded-[3.5rem] border border-on-surface/5 shadow-2xl overflow-hidden flex flex-col w-full max-h-[calc(100vh-100px)]"
                 >
                   {/* Card Header */}
                   <div className="bg-primary/5 p-4 md:p-5 border-b border-primary/5 relative">
@@ -264,7 +264,7 @@ export const DayActivityFeed: React.FC<DayActivityFeedProps> = ({
                     </div>
                     
                     <p className="text-[8px] font-black text-primary uppercase tracking-[0.4em] mb-4">
-                      {isPast(parseISO(selectedApp.end_at.slice(0, 19))) ? T.visit_summary : T.next_patient || 'PACIENTE EN ENFOQUE'}
+                      {isPast(parseISO(selectedApp.end_at.slice(0, 19))) ? T.visit_summary : T.next_patient}
                     </p>
                     
                     <div className="flex items-center gap-4 relative z-10">
@@ -289,14 +289,14 @@ export const DayActivityFeed: React.FC<DayActivityFeedProps> = ({
                   <div className="p-5 md:p-6 space-y-6 overflow-y-auto custom-scrollbar flex-1">
                     <div className="grid grid-cols-2 gap-4">
                       <div className="p-5 rounded-3xl bg-on-surface/[0.02] border border-on-surface/5">
-                        <p className="text-[8px] font-black text-on-surface/20 uppercase tracking-[0.2em] mb-2">{T.reason_visit || 'MOTIVO DE VISITA'}</p>
+                        <p className="text-[8px] font-black text-on-surface/20 uppercase tracking-[0.2em] mb-2">{T.reason_visit}</p>
                         <p className="text-xs font-black text-on-surface uppercase tracking-tight">{selectedApp.services?.name}</p>
                       </div>
                       <div className="p-5 rounded-3xl bg-on-surface/[0.02] border border-on-surface/5">
-                        <p className="text-[8px] font-black text-on-surface/20 uppercase tracking-[0.2em] mb-2">{T.history_status || 'ESTADO HISTORIAL'}</p>
+                        <p className="text-[8px] font-black text-on-surface/20 uppercase tracking-[0.2em] mb-2">{T.history_status}</p>
                         <div className="flex items-center gap-2">
                            <CheckCircle2 className="h-3 w-3 text-emerald-500" />
-                           <p className="text-[10px] font-black text-on-surface uppercase tracking-widest">{T.verified || 'VERIFICADO'}</p>
+                           <p className="text-[10px] font-black text-on-surface uppercase tracking-widest">{T.verified}</p>
                         </div>
                       </div>
                     </div>
@@ -304,7 +304,7 @@ export const DayActivityFeed: React.FC<DayActivityFeedProps> = ({
                     {/* Latest Visits Section */}
                     {selectedApp.last_visits && selectedApp.last_visits.length > 0 && (
                       <div className="p-5 rounded-3xl bg-on-surface/[0.02] border border-on-surface/5 mt-4">
-                        <p className="text-[8px] font-black text-on-surface/20 uppercase tracking-[0.2em] mb-2">{T.latest_visits || 'ÚLTIMAS VISITAS'}</p>
+                        <p className="text-[8px] font-black text-on-surface/20 uppercase tracking-[0.2em] mb-2">{T.latest_visits}</p>
                         <ul className="space-y-2">
                           {selectedApp.last_visits.slice(0, 3).map((visit, idx) => (
                             <li key={idx} className="text-xs text-on-surface">
@@ -357,7 +357,7 @@ export const DayActivityFeed: React.FC<DayActivityFeedProps> = ({
                             {selectedApp.status === 'attended' ? (
                               <motion.div key="undo" initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: -20, opacity: 0 }} className="flex items-center gap-2">
                                 <ShieldCheck className="h-4 w-4" />
-                                {T.undo || 'DESHACER'}
+                                {T.undo}
                               </motion.div>
                             ) : (
                               <motion.div key="mark" initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: -20, opacity: 0 }} className="flex items-center gap-2">
@@ -375,7 +375,7 @@ export const DayActivityFeed: React.FC<DayActivityFeedProps> = ({
                           {isRescheduling ? (
                             <span className="flex items-center gap-2">
                               <span className="w-4 h-4 border-2 border-orange-600 border-t-transparent rounded-full animate-spin" />
-                              {T.rescheduling || 'REAGENDANDO…'}
+                              {T.rescheduling}
                             </span>
                           ) : (
                             T.reschedule
@@ -389,7 +389,7 @@ export const DayActivityFeed: React.FC<DayActivityFeedProps> = ({
                           }}
                           className="col-span-2 bg-red-50 text-red-600 py-4 rounded-2xl text-[9px] font-black uppercase tracking-[0.2em] hover:bg-red-100 transition-all border-2 border-red-100"
                         >
-                          {T.delete || 'Eliminar'}
+                          {T.delete}
                         </button>
                       </div>
                     </div>
@@ -401,14 +401,14 @@ export const DayActivityFeed: React.FC<DayActivityFeedProps> = ({
         <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
           <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-lg">
             <h2 className="text-lg font-bold mb-4">{T.reschedule}</h2>
-            <p className="mb-4">{T.confirm_reschedule || '¿Confirmar re‑agendar esta cita?'}</p>
+            <p className="mb-4">{T.confirm_reschedule}</p>
             <div className="flex justify-end gap-3">
               <button
                 onClick={() => setShowRescheduleModal(false)}
                 disabled={isRescheduling}
                 className="px-4 py-2 bg-gray-200 text-gray-800 rounded disabled:opacity-50"
               >
-                {T.cancel || 'Cancelar'}
+                {T.cancel}
               </button>
               <button
                 onClick={() => confirmReschedule(selectedApp)}
@@ -418,7 +418,7 @@ export const DayActivityFeed: React.FC<DayActivityFeedProps> = ({
                 {isRescheduling && (
                   <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                 )}
-                {isRescheduling ? (T.rescheduling || 'Reagendando…') : (T.confirm || 'Confirmar')}
+                {isRescheduling ? T.rescheduling : T.confirm}
               </button>
             </div>
           </div>

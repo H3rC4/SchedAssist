@@ -12,19 +12,19 @@ import { Language, translations } from '@/lib/i18n'
 import { motion, AnimatePresence } from 'framer-motion'
 
 const navItemsBase = [
-  { id: 'dashboard',     es: 'Overview',      it: 'Overview',     en: 'Overview',   href: '/dashboard',              icon: LayoutDashboard, group: 'manage' },
-  { id: 'appointments',  es: 'Schedule',      it: 'Schedule',     en: 'Schedule',   href: '/dashboard/appointments', icon: Calendar,        group: 'manage' },
-  { id: 'clients',       es: 'Patients',      it: 'Patients',     en: 'Patients',   href: '/dashboard/clients',      icon: Users,           group: 'manage' },
-  { id: 'professionals', es: 'Staff',         it: 'Staff',        en: 'Staff',      href: '/dashboard/professionals',icon: Briefcase,       group: 'manage' },
-  { id: 'services',      es: 'Services',      it: 'Services',     en: 'Services',   href: '/dashboard/services',     icon: Layers,          group: 'configure' },
-  { id: 'locations',     es: 'Locations',     it: 'Locations',    en: 'Locations',  href: '/dashboard/locations',    icon: MapPin,          group: 'configure' },
-  { id: 'analytics',     es: 'Insights',      it: 'Insights',     en: 'Insights',   href: '/dashboard/analytics',    icon: TrendingUp,      group: 'configure' },
-  { id: 'settings',      es: 'System',        it: 'System',       en: 'System',     href: '/dashboard/settings',     icon: Settings,        group: 'configure' },
+  { id: 'dashboard',     es: 'Vista General',  it: 'Panoramica',   en: 'Overview',   href: '/dashboard',              icon: LayoutDashboard, group: 'manage' },
+  { id: 'appointments',  es: 'Agenda',         it: 'Agenda',       en: 'Schedule',   href: '/dashboard/appointments', icon: Calendar,        group: 'manage' },
+  { id: 'clients',       es: 'Pacientes',      it: 'Pazienti',     en: 'Patients',   href: '/dashboard/clients',      icon: Users,           group: 'manage' },
+  { id: 'professionals', es: 'Especialistas',  it: 'Specialisti',  en: 'Staff',      href: '/dashboard/professionals',icon: Briefcase,       group: 'manage' },
+  { id: 'services',      es: 'Servicios',      it: 'Servizi',      en: 'Services',   href: '/dashboard/services',     icon: Layers,          group: 'configure' },
+  { id: 'locations',     es: 'Sedes',          it: 'Sedi',         en: 'Locations',  href: '/dashboard/locations',    icon: MapPin,          group: 'configure' },
+  { id: 'analytics',     es: 'Estadísticas',   it: 'Statistiche',  en: 'Insights',   href: '/dashboard/analytics',    icon: TrendingUp,      group: 'configure' },
+  { id: 'settings',      es: 'Sistema',        it: 'Sistema',      en: 'System',     href: '/dashboard/settings',     icon: Settings,        group: 'configure' },
 ]
 
 const groupLabels = {
   manage:   { es: 'Gestión',      it: 'Gestione',    en: 'Manage' },
-  configure: { es: 'Configuración', it: 'Configuración', en: 'Configure' },
+  configure: { es: 'Configuración', it: 'Configurazione', en: 'Configure' },
 }
 
 interface SidebarProps {

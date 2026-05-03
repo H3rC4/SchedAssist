@@ -178,7 +178,7 @@ export function WeeklyCalendar({ selectedDate, appointments, lang, translations:
                         className={`absolute left-1 w-[85%] lg:w-[75%] rounded-xl p-2 bg-primary/20 border-l-4 border-primary shadow-sm flex items-center justify-center cursor-pointer hover:bg-primary/30 transition-all z-20`}
                       >
                         <span className="text-[10px] font-black text-primary uppercase tracking-wider text-center leading-tight">
-                          {group.length}<br/>{lang === 'es' ? 'Citas' : lang === 'it' ? 'Appuntamenti' : 'Appointments'}
+                          {group.length}<br/>{T.appointments_count}
                         </span>
                       </motion.div>
                     )

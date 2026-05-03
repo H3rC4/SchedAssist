@@ -24,6 +24,7 @@ export async function PATCH(req: NextRequest) {
     if (data.last_name !== undefined) updatePayload.last_name = data.last_name
     if (data.phone !== undefined) updatePayload.phone = data.phone
     if (data.notes !== undefined) updatePayload.notes = data.notes
+    if (data.allergies !== undefined) updatePayload.allergies = data.allergies
 
     const result = await supabase
       .from('clients')
@@ -46,7 +47,7 @@ export async function PATCH(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    const { tenant_id, first_name, last_name, phone, notes } = await req.json();
+    const { tenant_id, first_name, last_name, phone, notes, allergies } = await req.json();
 
     if (!tenant_id || !first_name || !last_name || !phone) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
@@ -67,7 +68,8 @@ export async function POST(req: NextRequest) {
         first_name,
         last_name,
         phone,
-        notes
+        notes,
+        allergies
       })
       .select()
       .single();

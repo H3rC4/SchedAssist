@@ -246,11 +246,28 @@ export function useAppointments() {
   }, [tenantId, selectedDate, currentMonth, fetchDayAppointments, fetchMonthAppointments])
 
   const updateStatus = async (id: string, status: string) => {
-    setAppointments(prev => prev.map(app => app.id === id ? { ...app, status: status as any } : app))
-    setAllMonthApps(prev => prev.map(app => app.id === id ? { ...app, status: status as any } : app))
+    // Optimistic UI update
+    const updateLocalState = (prev: Appointment[]) => 
+      prev.map(app => app.id === id ? { ...app, status: status as any } : app);
+    
+    setAppointments(updateLocalState)
+    setAllMonthApps(updateLocalState)
+
+    // Update global cache immediately to prevent fetch regression
+    Object.keys(appointmentsCache.days).forEach(key => {
+      appointmentsCache.days[key] = updateLocalState(appointmentsCache.days[key]);
+    });
+    Object.keys(appointmentsCache.months).forEach(key => {
+      appointmentsCache.months[key] = updateLocalState(appointmentsCache.months[key]);
+    });
 
     const { error } = await supabase.from('appointments').update({ status }).eq('id', id)
-    refresh()
+    
+    // We don't call refresh() here because Real-time subscription will handle it, 
+    // and we already updated the local state and cache optimistically.
+    if (error) {
+       refresh(); // Revert on error
+    }
     return !error
   }
 

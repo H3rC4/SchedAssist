@@ -9,7 +9,6 @@ import { format, parseISO, isAfter, subMonths } from 'date-fns'
 import { es } from 'date-fns/locale/es'
 import { it } from 'date-fns/locale/it'
 import { enUS } from 'date-fns/locale/en-US'
-import { PatientMedicalRecordDrawer } from '@/components/clients/PatientMedicalRecordDrawer'
 import { NewPatientDrawer } from '@/components/clients/NewPatientDrawer'
 import { useRouter } from 'next/navigation'
 
@@ -20,7 +19,11 @@ interface Client {
   phone: string;
   notes: string | null;
   created_at: string;
-  appointments?: any[];
+  appointments?: {
+    start_at: string;
+    status: string;
+    professionals?: any; // Handle array or object from Supabase
+  }[];
 }
 
 export default function ClientsPage() {
@@ -29,24 +32,11 @@ export default function ClientsPage() {
   const [clients, setClients] = useState<Client[]>([])
   const [filteredClients, setFilteredClients] = useState<Client[]>([])
   const [searchTerm, setSearchTerm] = useState('')
-  const [selectedClient, setSelectedClient] = useState<Client | null>(null)
-  const [clientApps, setClientApps] = useState<any[]>([])
-  const [clinicalRecords, setClinicalRecords] = useState<any[]>([])
   const [tenantId, setTenantId] = useState('')
   const [lang, setLang] = useState<'en' | 'es' | 'it'>('es')
   const [loading, setLoading] = useState(true)
-  const [drawerLoading, setDrawerLoading] = useState(false)
   const [isNewPatientOpen, setIsNewPatientOpen] = useState(false)
   const [filterActive, setFilterActive] = useState(false)
-
-  const fetchClinicalRecords = useCallback(async (clientId: string) => {
-    if (!tenantId || !clientId) return
-    const res = await fetch(`/api/clinical-records?tenant_id=${tenantId}&client_id=${clientId}`)
-    if (res.ok) {
-      const data = await res.json()
-      setClinicalRecords(data)
-    }
-  }, [tenantId])
 
   const initTenant = useCallback(async () => {
     const { data: { user } } = await supabase.auth.getUser()
@@ -72,7 +62,7 @@ export default function ClientsPage() {
       .from('clients')
       .select(`
         id, first_name, last_name, phone, notes, created_at,
-        appointments(start_at, status)
+        appointments(start_at, status, professionals(full_name))
       `)
       .eq('tenant_id', tenantId)
       .order('first_name')
@@ -111,20 +101,7 @@ export default function ClientsPage() {
   }, [searchTerm, clients, filterActive])
 
   async function openClientDetail(client: Client) {
-    setSelectedClient(client)
-    setDrawerLoading(true)
-    try {
-      const { data } = await supabase
-        .from('appointments')
-        .select(`id, status, start_at, end_at, notes, services(name), professionals(full_name)`)
-        .eq('client_id', client.id)
-        .order('start_at', { ascending: false })
-      
-      setClientApps(data || [])
-      await fetchClinicalRecords(client.id)
-    } finally {
-      setDrawerLoading(false)
-    }
+    router.push(`/dashboard/clients/${client.id}`)
   }
 
   const t = translations[lang] || translations['en']
@@ -148,25 +125,15 @@ export default function ClientsPage() {
     return format(parseISO(lastApp.start_at), 'MMM d, yyyy', { locale: dateLocale })
   }
 
-  async function handleAddNote(content: string) {
-    if (!selectedClient || !tenantId) return
+  const getLastDoctor = (client: Client) => {
+    if (!client.appointments || client.appointments.length === 0) return '-'
+    const lastApp = client.appointments.reduce((latest, current) => {
+      return isAfter(parseISO(current.start_at), parseISO(latest.start_at)) ? current : latest
+    }, client.appointments[0])
     
-    const res = await fetch('/api/clinical-records', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        tenant_id: tenantId,
-        client_id: selectedClient.id,
-        content: content,
-        record_type: 'medical_note'
-      })
-    })
-
-    if (res.ok) {
-      await fetchClinicalRecords(selectedClient.id)
-    } else {
-      throw new Error('Failed to save note')
-    }
+    const prof = lastApp.professionals
+    if (Array.isArray(prof)) return prof[0]?.full_name || '-'
+    return prof?.full_name || '-'
   }
 
   async function handleCreatePatient(data: { first_name: string; last_name: string; phone: string; notes: string }) {
@@ -189,30 +156,7 @@ export default function ClientsPage() {
     }
   }
 
-  async function handleUpdatePatient(id: string, data: any) {
-    if (!tenantId) return
-    
-    const res = await fetch('/api/clients', {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        id,
-        tenant_id: tenantId,
-        data
-      })
-    })
 
-    if (res.ok) {
-      const updated = await res.json()
-      if (selectedClient?.id === id) {
-        setSelectedClient({ ...selectedClient, ...updated.client })
-      }
-      await fetchClients()
-    } else {
-      const err = await res.json()
-      throw new Error(err.error || 'Failed to update patient')
-    }
-  }
 
   return (
     <div className="min-h-screen bg-surface p-6 md:p-8 max-w-[1600px] mx-auto">
@@ -265,7 +209,7 @@ export default function ClientsPage() {
           <thead>
             <tr className="border-b border-surface-container-low bg-precision-surface-lowest">
               <th className="px-4 py-4 text-[10px] font-black text-secondary-600 uppercase tracking-widest">{t.name}</th>
-              <th className="px-4 py-4 text-[10px] font-black text-secondary-600 uppercase tracking-widest">{t.id}</th>
+              <th className="px-4 py-4 text-[10px] font-black text-secondary-600 uppercase tracking-widest">{t.professional}</th>
               <th className="px-4 py-4 text-[10px] font-black text-secondary-600 uppercase tracking-widest">{t.phone}</th>
               <th className="px-4 py-4 text-[10px] font-black text-secondary-600 uppercase tracking-widest">{t.last_visit}</th>
               <th className="px-4 py-4 text-[10px] font-black text-secondary-600 uppercase tracking-widest">{t.status}</th>
@@ -287,25 +231,20 @@ export default function ClientsPage() {
             ) : (
               filteredClients.map(client => {
                 const status = getStatus(client)
-                const isSelected = selectedClient?.id === client.id
                 return (
                   <tr
                     key={client.id}
                     onClick={() => openClientDetail(client)}
-                    className={`cursor-pointer transition-all ${
-                      isSelected 
-                        ? 'bg-primary-600/5 shadow-[inset_0_0_0_2px_rgba(37,99,235,0.1)]' 
-                        : 'hover:bg-precision-surface-lowest'
-                    }`}
+                    className="cursor-pointer transition-all hover:bg-precision-surface-lowest"
                   >
                     <td className="px-6 py-5">
-                      <p className={`text-sm font-black tracking-tight ${isSelected ? 'text-primary-600' : 'text-secondary-900'}`}>
+                      <p className="text-sm font-black tracking-tight text-secondary-900">
                         {client.first_name} {client.last_name}
                       </p>
                     </td>
                     <td className="px-6 py-5">
                       <p className="text-xs font-bold text-secondary-600 uppercase tracking-widest">
-                        {client.id.slice(0, 8).toUpperCase()}
+                        {getLastDoctor(client)}
                       </p>
                     </td>
                     <td className="px-6 py-5 text-sm font-bold text-secondary-700">
@@ -333,24 +272,6 @@ export default function ClientsPage() {
 
       {/* Patient Drawers */}
       <AnimatePresence>
-        {selectedClient && (
-          <PatientMedicalRecordDrawer
-            patient={selectedClient}
-            isOpen={!!selectedClient}
-            onClose={() => setSelectedClient(null)}
-            history={clinicalRecords}
-            appointments={clientApps}
-            lang={lang}
-            translations={t}
-            onAddNote={handleAddNote}
-            onUpdatePatient={handleUpdatePatient}
-            onScheduleAppointment={() => {
-              router.push('/dashboard/appointments')
-            }}
-            isLoading={drawerLoading}
-          />
-        )}
-
         {isNewPatientOpen && (
           <NewPatientDrawer
             isOpen={isNewPatientOpen}

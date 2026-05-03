@@ -11,6 +11,8 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
   const date = searchParams.get('date')
   const tenantId = searchParams.get('tenant_id')
+  const clientId = searchParams.get('client_id')
+  const upcoming = searchParams.get('upcoming') === 'true'
   const supabase = createClient()
 
   if (!tenantId) return NextResponse.json({ error: 'tenant_id required' }, { status: 400 })
@@ -39,10 +41,18 @@ export async function GET(req: NextRequest) {
     query = query.eq('professional_id', callerProfId);
   }
 
+  if (clientId) {
+    query = query.eq('client_id', clientId);
+  }
+
   if (date) {
     query = query
       .gte('start_at', `${date}T00:00:00Z`)
       .lte('start_at', `${date}T23:59:59Z`)
+  }
+
+  if (upcoming) {
+    query = query.gte('start_at', new Date().toISOString());
   }
 
   const { data, error } = await query
