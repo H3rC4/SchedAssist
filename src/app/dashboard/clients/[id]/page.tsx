@@ -3,11 +3,11 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
-import { 
-  X, Calendar, Clock, FileText, Plus, ChevronRight, 
-  History as HistoryIcon, CalendarDays, Paperclip, 
-  ExternalLink, AlertCircle, ArrowLeft, Edit2, 
-  Save, Trash2, User, Phone, Mail, ShieldAlert
+import {
+  Calendar, Clock, FileText, Plus, ChevronRight,
+  History as HistoryIcon, CalendarDays, Paperclip,
+  ExternalLink, AlertCircle, ArrowLeft, Edit2,
+  Save, User, Phone, Mail, ShieldAlert, X, Check
 } from 'lucide-react'
 import { format, parseISO } from 'date-fns'
 import { es } from 'date-fns/locale/es'
@@ -35,24 +35,82 @@ interface Patient {
   created_at: string;
 }
 
+function InlineEdit({ label, value, onSave, multiline = false, icon }: {
+  label: string;
+  value: string;
+  onSave: (v: string) => Promise<void>;
+  multiline?: boolean;
+  icon?: React.ReactNode;
+}) {
+  const [editing, setEditing] = useState(false)
+  const [draft, setDraft] = useState(value)
+  const [saving, setSaving] = useState(false)
+
+  const handleSave = async () => {
+    setSaving(true)
+    await onSave(draft)
+    setSaving(false)
+    setEditing(false)
+  }
+
+  return (
+    <div className="group">
+      <div className="flex items-center justify-between mb-1">
+        <div className="flex items-center gap-2">
+          {icon && <span className="text-slate-400">{icon}</span>}
+          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{label}</p>
+        </div>
+        {!editing && (
+          <button onClick={() => { setDraft(value); setEditing(true) }}
+            className="opacity-0 group-hover:opacity-100 p-1 rounded text-slate-400 hover:text-primary-600 transition-all">
+            <Edit2 className="h-3 w-3" />
+          </button>
+        )}
+      </div>
+      {editing ? (
+        <div className="flex flex-col gap-2">
+          {multiline ? (
+            <textarea value={draft} onChange={e => setDraft(e.target.value)}
+              className="w-full bg-white border border-primary-300 rounded-lg p-2 text-sm font-medium text-slate-900 min-h-[80px] outline-none focus:ring-2 focus:ring-primary-500 resize-none" />
+          ) : (
+            <input value={draft} onChange={e => setDraft(e.target.value)}
+              className="w-full bg-white border border-primary-300 rounded-lg p-2 text-sm font-medium text-slate-900 outline-none focus:ring-2 focus:ring-primary-500" />
+          )}
+          <div className="flex gap-2">
+            <button onClick={handleSave} disabled={saving}
+              className="flex-1 flex items-center justify-center gap-1 bg-slate-900 text-white py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest">
+              {saving ? <div className="h-3 w-3 animate-spin rounded-full border-2 border-white/30 border-t-white" /> : <Check className="h-3 w-3" />}
+              Guardar
+            </button>
+            <button onClick={() => setEditing(false)}
+              className="px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest text-slate-500 bg-slate-100">
+              <X className="h-3 w-3" />
+            </button>
+          </div>
+        </div>
+      ) : (
+        <p className="text-sm font-bold text-slate-800 leading-relaxed">{value || <span className="italic text-slate-400">—</span>}</p>
+      )}
+    </div>
+  )
+}
+
 export default function PatientProfilePage() {
   const supabase = createClient()
   const router = useRouter()
   const params = useParams()
-  
+
   const [tenant, setTenant] = useState<any>(null)
   const [activeTab, setActiveTab] = useState<'history' | 'files' | 'upcoming'>('history')
   const [isLoading, setIsLoading] = useState(true)
   const [patient, setPatient] = useState<Patient | null>(null)
   const [history, setHistory] = useState<MedicalEntry[]>([])
   const [appointments, setAppointments] = useState<any[]>([])
-  const [isEditingAllergies, setIsEditingAllergies] = useState(false)
-  const [allergiesDraft, setAllergiesDraft] = useState('')
   const [isSaving, setIsSaving] = useState(false)
   const [newNoteContent, setNewNoteContent] = useState('')
   const [isAddingNote, setIsAddingNote] = useState(false)
 
-  const lang = (tenant?.settings?.language as 'en'|'es'|'it') || 'es'
+  const lang = (tenant?.settings?.language as 'en' | 'es' | 'it') || 'es'
   const t = translations[lang] || translations['en']
   const dateLocale = lang === 'it' ? it : (lang === 'es' ? es : enUS)
 
@@ -65,492 +123,369 @@ export default function PatientProfilePage() {
         .select('tenant_id, role, tenants(id, name, slug, settings)')
         .eq('user_id', user.id)
         .limit(1).single()
-      if (tuData?.tenants) {
-        setTenant(tuData.tenants)
-      }
+      if (tuData?.tenants) setTenant(tuData.tenants)
     }
     initTenant()
   }, [supabase])
 
   const fetchData = useCallback(async () => {
-    if (!tenant?.id || !params.id) return;
-    setIsLoading(true);
+    if (!tenant?.id || !params.id) return
+    setIsLoading(true)
     try {
-      // Fetch Patient
-      const patientRes = await fetch(`/api/clients/single?id=${params.id}&tenant_id=${tenant.id}`);
-      const patientData = await patientRes.json();
-      if (patientData.error) throw new Error(patientData.error);
-      setPatient(patientData.client);
-      setAllergiesDraft(patientData.client.allergies || '');
-
-      // Fetch History
-      const historyRes = await fetch(`/api/clinical-records?client_id=${params.id}&tenant_id=${tenant.id}`);
-      const historyData = await historyRes.json();
-      setHistory(historyData);
-
-      // Fetch Appointments (Next appointments)
-      const appointmentsRes = await fetch(`/api/appointments?client_id=${params.id}&tenant_id=${tenant.id}&upcoming=true`);
-      const appointmentsData = await appointmentsRes.json();
-      setAppointments(appointmentsData);
-
-    } catch (error) {
-      console.error('Error fetching patient data:', error);
+      const [patientRes, historyRes, appointmentsRes] = await Promise.all([
+        fetch(`/api/clients/single?id=${params.id}&tenant_id=${tenant.id}`),
+        fetch(`/api/clinical-records?client_id=${params.id}&tenant_id=${tenant.id}`),
+        fetch(`/api/appointments?client_id=${params.id}&tenant_id=${tenant.id}&upcoming=true`),
+      ])
+      const patientData = await patientRes.json()
+      if (patientData.error) throw new Error(patientData.error)
+      setPatient(patientData.client)
+      setHistory(await historyRes.json())
+      setAppointments(await appointmentsRes.json())
+    } catch (e) {
+      console.error(e)
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  }, [tenant?.id, params.id]);
+  }, [tenant?.id, params.id])
 
-  useEffect(() => {
-    if (tenant?.id) fetchData();
-  }, [fetchData, tenant?.id]);
+  useEffect(() => { if (tenant?.id) fetchData() }, [fetchData, tenant?.id])
 
-  const handleSaveAllergies = async () => {
-    if (!patient || !tenant) return;
-    setIsSaving(true);
-    try {
-      const res = await fetch('/api/clients', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          id: patient.id,
-          tenant_id: tenant.id,
-          data: { allergies: allergiesDraft }
-        })
-      });
-      if (res.ok) {
-        setPatient({ ...patient, allergies: allergiesDraft });
-        setIsEditingAllergies(false);
-      }
-    } catch (error) {
-      console.error('Error saving allergies:', error);
-    } finally {
-      setIsSaving(false);
-    }
-  };
+  const saveField = async (field: string, value: string) => {
+    if (!patient || !tenant) return
+    const res = await fetch('/api/clients', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: patient.id, tenant_id: tenant.id, data: { [field]: value } })
+    })
+    if (res.ok) setPatient({ ...patient, [field]: value })
+  }
 
   const handleAddNote = async () => {
-    if (!newNoteContent.trim() || !patient || !tenant) return;
-    setIsSaving(true);
+    if (!newNoteContent.trim() || !patient || !tenant) return
+    setIsSaving(true)
     try {
       const res = await fetch('/api/clinical-records', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          tenant_id: tenant.id,
-          client_id: patient.id,
-          content: newNoteContent,
-          record_type: 'medical_note'
-        })
-      });
+        body: JSON.stringify({ tenant_id: tenant.id, client_id: patient.id, content: newNoteContent, record_type: 'medical_note' })
+      })
       if (res.ok) {
-        const newRecord = await res.json();
-        setHistory([newRecord, ...history]);
-        setNewNoteContent('');
-        setIsAddingNote(false);
+        const newRecord = await res.json()
+        setHistory([newRecord, ...history])
+        setNewNoteContent('')
+        setIsAddingNote(false)
       }
-    } catch (error) {
-      console.error('Error adding note:', error);
     } finally {
-      setIsSaving(false);
+      setIsSaving(false)
     }
-  };
+  }
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-surface-container-lowest flex items-center justify-center">
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600" />
       </div>
-    );
+    )
   }
 
   if (!patient) {
     return (
-      <div className="min-h-screen bg-surface-container-lowest flex flex-col items-center justify-center p-8">
-        <AlertCircle className="h-16 w-16 text-secondary-300 mb-4" />
-        <h1 className="text-2xl font-black text-secondary-900 mb-2">{t.error || 'Patient Not Found'}</h1>
-        <button 
-          onClick={() => router.back()}
-          className="text-primary-600 font-bold hover:underline"
-        >
-          {t.back || 'Go back to patients list'}
-        </button>
+      <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-8">
+        <AlertCircle className="h-16 w-16 text-slate-300 mb-4" />
+        <h1 className="text-2xl font-black text-slate-900 mb-2">{t.error}</h1>
+        <button onClick={() => router.back()} className="text-primary-600 font-bold hover:underline">{t.back}</button>
       </div>
-    );
+    )
   }
 
+  const TABS = [
+    { id: 'history', label: t.clinical_history, icon: HistoryIcon },
+    { id: 'files', label: t.patient_files, icon: Paperclip },
+    { id: 'upcoming', label: t.upcoming_appointments, icon: CalendarDays },
+  ]
+
   return (
-    <div className="min-h-screen bg-surface-container-lowest">
-      {/* Top Header / Navigation */}
-      <div className="bg-white border-b border-surface-container-low sticky top-0 z-30">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center gap-4">
-              <button 
-                onClick={() => router.back()}
-                className="p-2 rounded-xl hover:bg-surface-container-low text-secondary-600 transition-all"
-              >
-                <ArrowLeft className="h-5 w-5" />
-              </button>
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-full bg-primary-100 flex items-center justify-center text-primary-600">
-                  <User className="h-5 w-5" />
-                </div>
-                <div>
-                  <h1 className="text-lg font-black text-secondary-900 leading-none">
-                    {patient.first_name} {patient.last_name}
-                  </h1>
-                  <p className="text-[10px] font-black text-secondary-500 uppercase tracking-widest mt-1">
-                    {t.medical_record}
-                  </p>
-                </div>
-              </div>
-            </div>
-            <div className="flex items-center gap-3">
-              <button 
-                onClick={() => router.push('/dashboard/calendar')}
-                className="hidden sm:flex items-center gap-2 px-4 py-2 bg-secondary-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg active:scale-95 transition-all"
-              >
-                <Plus className="h-3 w-3" />
-                {t.new_appointment || 'New Appointment'}
-              </button>
-            </div>
+    <div className="min-h-screen bg-slate-50 flex flex-col">
+
+      {/* ── HEADER ─────────────────────────────────────────────────────── */}
+      <div className="bg-white border-b border-slate-200 sticky top-0 z-30">
+        <div className="flex items-center gap-4 px-6 h-16">
+          <button onClick={() => router.back()}
+            className="p-2 rounded-lg hover:bg-slate-100 text-slate-500 transition-all shrink-0">
+            <ArrowLeft className="h-5 w-5" />
+          </button>
+
+          {/* Avatar + name */}
+          <div className="h-9 w-9 rounded-full bg-primary-100 flex items-center justify-center text-primary-600 shrink-0">
+            <User className="h-4 w-4" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <h1 className="text-base font-black text-slate-900 leading-none truncate">
+              {patient.first_name} {patient.last_name}
+            </h1>
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-0.5">{t.medical_record}</p>
+          </div>
+
+          {/* Right actions — fill the empty orange area */}
+          <div className="flex items-center gap-3 shrink-0">
+            <span className="hidden md:block text-[10px] font-black text-slate-400 uppercase tracking-widest">
+              {t.phone || 'Tel'}: {patient.phone}
+            </span>
+            <button
+              onClick={() => router.push('/dashboard/appointments')}
+              className="flex items-center gap-2 px-4 py-2 bg-slate-900 text-white rounded-lg text-[10px] font-black uppercase tracking-widest shadow active:scale-95 transition-all">
+              <Plus className="h-3 w-3" />
+              {t.new_appointment || 'Nueva Cita'}
+            </button>
           </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          
-          {/* Left Column: Basic Info & Allergies */}
-          <div className="lg:col-span-1 space-y-8">
-            {/* Allergies Card (Priority) */}
-            <div className="bg-error-50 rounded-[2.5rem] p-8 border border-error-100 shadow-sm relative overflow-hidden">
-              <div className="absolute top-0 right-0 p-8 opacity-10">
-                <ShieldAlert className="h-16 w-16 text-error-600" />
-              </div>
-              <div className="relative z-10">
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-[10px] font-black text-error-700 uppercase tracking-widest flex items-center gap-2">
-                    <ShieldAlert className="h-3 w-3" />
-                    {t.allergies}
-                  </h2>
-                  <button 
-                    onClick={() => setIsEditingAllergies(!isEditingAllergies)}
-                    className="p-2 rounded-xl hover:bg-error-100 text-error-600 transition-all"
-                  >
-                    {isEditingAllergies ? <X className="h-4 w-4" /> : <Edit2 className="h-4 w-4" />}
-                  </button>
-                </div>
+      {/* ── BODY ───────────────────────────────────────────────────────── */}
+      <div className="flex flex-1 overflow-hidden">
 
-                {isEditingAllergies ? (
-                  <div className="space-y-4">
-                    <textarea 
-                      value={allergiesDraft}
-                      onChange={(e) => setAllergiesDraft(e.target.value)}
-                      placeholder={t.edit_allergies}
-                      className="w-full bg-white rounded-2xl p-4 text-sm font-bold text-secondary-900 min-h-[100px] border-none ring-1 ring-error-200 focus:ring-2 focus:ring-error-500 outline-none transition-all resize-none shadow-inner"
-                    />
-                    <button 
-                      onClick={handleSaveAllergies}
-                      disabled={isSaving}
-                      className="w-full bg-error-600 text-white py-3 rounded-xl text-[10px] font-black uppercase tracking-widest active:scale-95 transition-all shadow-md flex items-center justify-center gap-2"
-                    >
-                      {isSaving ? <div className="h-3 w-3 animate-spin rounded-full border-2 border-white/30 border-t-white" /> : <Save className="h-3 w-3" />}
-                      {t.save}
-                    </button>
-                  </div>
-                ) : (
-                  <p className={`text-sm font-bold ${patient.allergies ? 'text-error-900' : 'text-error-400 italic'}`}>
-                    {patient.allergies || (lang === 'es' ? 'No se reportan alergias' : (lang === 'it' ? 'Nessuna allergia riportata' : 'No allergies reported'))}
-                  </p>
-                )}
-              </div>
+        {/* LEFT PANEL — straight edges, no rounded corners */}
+        <aside className="w-72 shrink-0 bg-white border-r border-slate-200 overflow-y-auto flex flex-col">
+
+          {/* Allergies — danger zone */}
+          <div className="bg-red-50 border-b border-red-200 p-5">
+            <div className="flex items-center gap-2 mb-3">
+              <ShieldAlert className="h-3.5 w-3.5 text-red-600" />
+              <h2 className="text-[10px] font-black text-red-700 uppercase tracking-widest">{t.allergies}</h2>
             </div>
+            <InlineEdit
+              label=""
+              value={patient.allergies || ''}
+              onSave={v => saveField('allergies', v)}
+              multiline
+            />
+          </div>
 
-            {/* Patient Info Card */}
-            <div className="bg-white rounded-[2.5rem] p-8 border border-surface-container-low shadow-sm">
-              <h2 className="text-[10px] font-black text-secondary-500 uppercase tracking-widest mb-6">
-                {t.patient_info}
-              </h2>
-              <div className="space-y-6">
-                <div className="flex items-center gap-4">
-                  <div className="h-10 w-10 rounded-xl bg-surface-container-low flex items-center justify-center text-secondary-400">
-                    <Phone className="h-5 w-5" />
-                  </div>
-                  <div>
-                    <p className="text-[10px] font-black text-secondary-400 uppercase tracking-widest leading-none mb-1">{t.phone || 'Phone'}</p>
-                    <p className="text-sm font-bold text-secondary-900">{patient.phone}</p>
-                  </div>
-                </div>
-                {patient.email && (
-                  <div className="flex items-center gap-4">
-                    <div className="h-10 w-10 rounded-xl bg-surface-container-low flex items-center justify-center text-secondary-400">
-                      <Mail className="h-5 w-5" />
-                    </div>
-                    <div>
-                      <p className="text-[10px] font-black text-secondary-400 uppercase tracking-widest leading-none mb-1">Email</p>
-                      <p className="text-sm font-bold text-secondary-900">{patient.email}</p>
-                    </div>
-                  </div>
-                )}
-                <div className="flex items-center gap-4">
-                  <div className="h-10 w-10 rounded-xl bg-surface-container-low flex items-center justify-center text-secondary-400">
-                    <CalendarDays className="h-5 w-5" />
-                  </div>
-                  <div>
-                    <p className="text-[10px] font-black text-secondary-400 uppercase tracking-widest leading-none mb-1">{t.since || 'Member Since'}</p>
-                    <p className="text-sm font-bold text-secondary-900">{format(new Date(patient.created_at), 'dd MMM yyyy')}</p>
-                  </div>
-                </div>
-              </div>
-            </div>
+          {/* Patient data — all editable */}
+          <div className="p-5 border-b border-slate-100 space-y-5 flex-1">
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{t.patient_info}</p>
 
-            {/* General Notes Card */}
-            <div className="bg-primary-50/30 rounded-[2.5rem] p-8 border border-primary-100 shadow-sm">
-              <h2 className="text-[10px] font-black text-primary-600 uppercase tracking-widest mb-4">
-                {t.notes_label || 'General Notes'}
-              </h2>
-              <p className="text-sm font-medium text-secondary-800 leading-relaxed whitespace-pre-wrap">
-                {patient.notes || (lang === 'es' ? 'Sin notas generales.' : (lang === 'it' ? 'Nessuna nota generale.' : 'No general notes available.'))}
+            <InlineEdit
+              label={t.first_name || 'Nombre'}
+              value={patient.first_name}
+              onSave={v => saveField('first_name', v)}
+              icon={<User className="h-3 w-3" />}
+            />
+            <InlineEdit
+              label={t.last_name || 'Apellido'}
+              value={patient.last_name}
+              onSave={v => saveField('last_name', v)}
+              icon={<User className="h-3 w-3" />}
+            />
+            <InlineEdit
+              label={t.phone || 'Teléfono'}
+              value={patient.phone}
+              onSave={v => saveField('phone', v)}
+              icon={<Phone className="h-3 w-3" />}
+            />
+            <InlineEdit
+              label="Email"
+              value={patient.email || ''}
+              onSave={v => saveField('email', v)}
+              icon={<Mail className="h-3 w-3" />}
+            />
+            <InlineEdit
+              label={t.notes || 'Notas'}
+              value={patient.notes || ''}
+              onSave={v => saveField('notes', v)}
+              multiline
+            />
+
+            <div>
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 flex items-center gap-2">
+                <Calendar className="h-3 w-3" />
+                {t.since || 'Miembro desde'}
               </p>
+              <p className="text-sm font-bold text-slate-800">{format(new Date(patient.created_at), 'dd MMM yyyy')}</p>
             </div>
           </div>
+        </aside>
 
-          {/* Right Column: Main Dashboard (Tabs) */}
-          <div className="lg:col-span-2 space-y-8">
-            <div className="bg-white rounded-[2.5rem] border border-surface-container-low shadow-sm flex flex-col min-h-[600px]">
-              {/* Tabs Navigation */}
-              <div className="px-8 border-b border-surface-container-low">
-                <div className="flex gap-8">
-                  {[
-                    { id: 'history', label: t.clinical_history, icon: HistoryIcon },
-                    { id: 'files', label: t.patient_files, icon: Paperclip },
-                    { id: 'upcoming', label: t.upcoming_appointments, icon: CalendarDays },
-                  ].map((tab) => (
-                    <button
-                      key={tab.id}
-                      onClick={() => setActiveTab(tab.id as any)}
-                      className={`py-6 flex items-center gap-2 text-[10px] font-black uppercase tracking-widest transition-all relative ${
-                        activeTab === tab.id ? 'text-primary-600' : 'text-secondary-500 hover:text-secondary-900'
-                      }`}
-                    >
-                      <tab.icon className="h-3 w-3" />
-                      {tab.label}
-                      {activeTab === tab.id && (
-                        <motion.div
-                          layoutId="activeTabProfile"
-                          className="absolute bottom-0 left-0 right-0 h-1 bg-primary-600 rounded-t-full"
-                        />
-                      )}
+        {/* RIGHT PANEL — tabs */}
+        <main className="flex-1 overflow-y-auto flex flex-col">
+
+          {/* Tab bar */}
+          <div className="bg-white border-b border-slate-200 px-6 flex gap-6 shrink-0">
+            {TABS.map(tab => (
+              <button key={tab.id}
+                onClick={() => setActiveTab(tab.id as any)}
+                className={`py-4 flex items-center gap-2 text-[10px] font-black uppercase tracking-widest transition-all relative border-b-2 ${activeTab === tab.id ? 'text-primary-600 border-primary-600' : 'text-slate-500 border-transparent hover:text-slate-900'}`}>
+                <tab.icon className="h-3 w-3" />
+                {tab.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Tab content */}
+          <div className="p-6 flex-1">
+            <AnimatePresence mode="wait">
+
+              {/* HISTORY */}
+              {activeTab === 'history' && (
+                <motion.div key="history"
+                  initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+                  className="space-y-6">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-lg font-black text-slate-900">{t.clinical_history}</h3>
+                    <button onClick={() => setIsAddingNote(!isAddingNote)}
+                      className="flex items-center gap-2 px-4 py-2 bg-slate-900 text-white rounded-lg text-[10px] font-black uppercase tracking-widest shadow active:scale-95 transition-all">
+                      <Plus className="h-3 w-3" />
+                      {t.add_note}
                     </button>
-                  ))}
-                </div>
-              </div>
+                  </div>
 
-              {/* Tab Content */}
-              <div className="p-8 flex-1">
-                <AnimatePresence mode="wait">
-                  {activeTab === 'history' && (
-                    <motion.div
-                      key="history"
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
-                      className="space-y-8"
-                    >
-                      <div className="flex items-center justify-between">
-                        <h3 className="text-xl font-black text-secondary-900 tracking-tight">{t.clinical_history}</h3>
-                        <button 
-                          onClick={() => setIsAddingNote(!isAddingNote)}
-                          className="flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-primary-700 transition-all shadow-md"
-                        >
-                          <Plus className="h-3 w-3" />
-                          {t.add_note}
+                  {isAddingNote && (
+                    <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }}
+                      className="bg-primary-50 rounded-xl p-5 border border-primary-200">
+                      <textarea value={newNoteContent} onChange={e => setNewNoteContent(e.target.value)}
+                        placeholder={t.add_comment_placeholder || 'Observaciones clínicas...'}
+                        className="w-full bg-white rounded-lg p-3 text-sm font-medium text-slate-900 min-h-[120px] border border-slate-200 outline-none focus:ring-2 focus:ring-primary-500 resize-none" />
+                      <div className="flex justify-end gap-3 mt-3">
+                        <button onClick={() => { setIsAddingNote(false); setNewNoteContent('') }}
+                          className="px-4 py-2 text-[10px] font-black uppercase tracking-widest text-slate-500 bg-white rounded-lg border border-slate-200">
+                          {t.cancel}
+                        </button>
+                        <button onClick={handleAddNote} disabled={isSaving || !newNoteContent.trim()}
+                          className="px-5 py-2 bg-slate-900 text-white rounded-lg text-[10px] font-black uppercase tracking-widest active:scale-95 transition-all shadow disabled:opacity-50">
+                          {isSaving ? 'Guardando...' : t.save}
                         </button>
                       </div>
+                    </motion.div>
+                  )}
 
-                      {isAddingNote && (
-                        <motion.div 
-                          initial={{ opacity: 0, height: 0 }}
-                          animate={{ opacity: 1, height: 'auto' }}
-                          className="bg-primary-50/50 rounded-3xl p-6 border border-primary-100"
-                        >
-                          <textarea
-                            value={newNoteContent}
-                            onChange={(e) => setNewNoteContent(e.target.value)}
-                            placeholder={t.add_comment_placeholder || 'Type clinical observations...'}
-                            className="w-full bg-white rounded-2xl p-4 text-sm font-medium text-secondary-900 min-h-[150px] border-none ring-1 ring-primary-100 focus:ring-2 focus:ring-primary-500 outline-none transition-all resize-none shadow-inner"
-                          />
-                          <div className="flex justify-end gap-3 mt-4">
-                            <button 
-                              onClick={() => {setIsAddingNote(false); setNewNoteContent('')}}
-                              className="px-4 py-2 text-[10px] font-black uppercase tracking-widest text-secondary-500"
-                            >
-                              {t.cancel}
-                            </button>
-                            <button 
-                              onClick={handleAddNote}
-                              disabled={isSaving || !newNoteContent.trim()}
-                              className="px-6 py-2 bg-secondary-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest active:scale-95 transition-all shadow-md"
-                            >
-                              {isSaving ? 'Saving...' : t.save}
-                            </button>
+                  {history.length === 0 ? (
+                    <div className="py-24 text-center text-slate-400">
+                      <HistoryIcon className="h-10 w-10 mx-auto mb-3 opacity-20" />
+                      <p className="text-sm font-medium">{t.no_history}</p>
+                    </div>
+                  ) : (
+                    <div className="relative pl-6 space-y-8 before:absolute before:left-0 before:top-2 before:bottom-0 before:w-px before:bg-slate-200">
+                      {history.map(record => (
+                        <div key={record.id} className="relative">
+                          <div className="absolute -left-[29px] top-2 h-4 w-4 rounded-full bg-primary-600 ring-4 ring-white" />
+                          <div className="flex items-center gap-3 mb-2">
+                            <span className="text-[10px] font-black text-primary-600 uppercase tracking-widest bg-primary-50 px-2 py-1 rounded">
+                              {format(new Date(record.created_at), 'dd MMM yyyy, HH:mm')}
+                            </span>
+                            {record.professionals && (
+                              <span className="text-[10px] font-black text-slate-500 uppercase">
+                                {lang === 'es' ? 'por' : lang === 'it' ? 'da' : 'by'} {record.professionals.full_name}
+                              </span>
+                            )}
                           </div>
-                        </motion.div>
-                      )}
-
-                      {history.length === 0 ? (
-                        <div className="py-20 text-center text-secondary-400">
-                          <HistoryIcon className="h-12 w-12 mx-auto mb-4 opacity-20" />
-                          <p className="text-sm font-medium">{t.no_history}</p>
+                          <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+                            <p className="text-sm font-medium text-slate-800 leading-relaxed whitespace-pre-wrap">
+                              {typeof record.content === 'string' ? record.content : (record.content?.observations || JSON.stringify(record.content))}
+                            </p>
+                            {record.attachments && record.attachments.length > 0 && (
+                              <div className="mt-4 flex flex-wrap gap-2">
+                                {record.attachments.map((file, fidx) => (
+                                  <a key={fidx} href={file.url} target="_blank" rel="noreferrer"
+                                    className="flex items-center gap-2 px-3 py-1.5 bg-slate-50 hover:bg-slate-100 rounded-lg text-[10px] font-bold text-slate-700 border border-slate-200 transition-colors">
+                                    <Paperclip className="h-3 w-3 text-slate-400" />
+                                    {file.name || `Archivo ${fidx + 1}`}
+                                  </a>
+                                ))}
+                              </div>
+                            )}
+                          </div>
                         </div>
-                      ) : (
-                        <div className="relative pl-8 space-y-12 before:absolute before:left-0 before:top-2 before:bottom-0 before:w-px before:bg-surface-container-low">
-                          {history.map((record) => (
-                            <div key={record.id} className="relative">
-                              <div className="absolute -left-[37px] top-2 h-4 w-4 rounded-full bg-primary-600 ring-4 ring-white" />
-                              <div className="flex items-center gap-3 mb-3">
-                                <span className="text-[10px] font-black text-primary-600 uppercase tracking-widest bg-primary-50 px-2 py-1 rounded-md">
-                                  {format(new Date(record.created_at), 'dd MMM yyyy, HH:mm')}
+                      ))}
+                    </div>
+                  )}
+                </motion.div>
+              )}
+
+              {/* FILES */}
+              {activeTab === 'files' && (
+                <motion.div key="files"
+                  initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+                  className="space-y-6">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-lg font-black text-slate-900">{t.patient_files}</h3>
+                    <button className="flex items-center gap-2 px-4 py-2 bg-slate-900 text-white rounded-lg text-[10px] font-black uppercase tracking-widest shadow active:scale-95 transition-all">
+                      <Plus className="h-3 w-3" />
+                      {t.add_study}
+                    </button>
+                  </div>
+                  {history.flatMap(h => h.attachments || []).length === 0 ? (
+                    <div className="py-24 text-center text-slate-400">
+                      <Paperclip className="h-10 w-10 mx-auto mb-3 opacity-20" />
+                      <p className="text-sm font-medium">{t.no_files}</p>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {history.flatMap(h => h.attachments || []).map((file, idx) => (
+                        <a key={idx} href={file.url} target="_blank" rel="noreferrer"
+                          className="flex items-center gap-4 p-4 bg-white rounded-xl border border-slate-200 hover:border-primary-600/30 transition-all group shadow-sm">
+                          <div className="h-10 w-10 bg-slate-100 rounded-lg flex items-center justify-center text-slate-400 group-hover:bg-primary-50 group-hover:text-primary-600 transition-colors">
+                            <FileText className="h-5 w-5" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-bold text-slate-900 truncate">{file.name || 'Documento'}</p>
+                            <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mt-0.5">{file.type || 'Estudio clínico'}</p>
+                          </div>
+                          <ExternalLink className="h-4 w-4 text-slate-300 group-hover:text-primary-600 transition-colors" />
+                        </a>
+                      ))}
+                    </div>
+                  )}
+                </motion.div>
+              )}
+
+              {/* UPCOMING */}
+              {activeTab === 'upcoming' && (
+                <motion.div key="upcoming"
+                  initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+                  className="space-y-6">
+                  <h3 className="text-lg font-black text-slate-900">{t.upcoming_appointments}</h3>
+                  {appointments.length === 0 ? (
+                    <div className="py-24 text-center text-slate-400">
+                      <CalendarDays className="h-10 w-10 mx-auto mb-3 opacity-20" />
+                      <p className="text-sm font-medium">{t.no_appointments}</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {appointments.map(app => (
+                        <div key={app.id}
+                          onClick={() => router.push(`/dashboard/appointments?appointment_id=${app.id}`)}
+                          className="flex items-center justify-between p-5 bg-white rounded-xl border border-slate-200 hover:border-primary-600/30 cursor-pointer transition-all group shadow-sm">
+                          <div className="flex items-center gap-4">
+                            <div className="h-12 w-12 rounded-lg bg-slate-50 border border-slate-200 flex flex-col items-center justify-center text-primary-600 shadow-sm group-hover:border-primary-600 transition-all">
+                              <span className="text-[9px] font-black uppercase">{format(parseISO(app.start_at), 'MMM')}</span>
+                              <span className="text-base font-black">{format(parseISO(app.start_at), 'dd')}</span>
+                            </div>
+                            <div>
+                              <p className="text-sm font-black text-slate-900 uppercase tracking-tight">{app.services?.name}</p>
+                              <div className="flex items-center gap-2 mt-1">
+                                <span className="flex items-center gap-1 text-[10px] font-bold text-slate-500 uppercase">
+                                  <Clock className="h-3 w-3" />
+                                  {format(parseISO(app.start_at), 'HH:mm')}
                                 </span>
-                                {record.professionals && (
-                                  <span className="text-[10px] font-black text-secondary-500 uppercase tracking-widest">
-                                    {lang === 'es' ? 'por' : (lang === 'it' ? 'da' : 'by')} {record.professionals.full_name}
-                                  </span>
-                                )}
-                              </div>
-                              <div className="bg-surface-container-lowest border border-surface-container-low rounded-[2rem] p-6 shadow-sm">
-                                <p className="text-sm font-medium text-secondary-800 leading-relaxed whitespace-pre-wrap">
-                                  {typeof record.content === 'string' ? record.content : (record.content?.observations || JSON.stringify(record.content))}
-                                </p>
-                                {record.attachments && record.attachments.length > 0 && (
-                                  <div className="mt-6 flex flex-wrap gap-3">
-                                    {record.attachments.map((file, fidx) => (
-                                      <a
-                                        key={fidx}
-                                        href={file.url}
-                                        target="_blank"
-                                        rel="noreferrer"
-                                        className="flex items-center gap-2 px-4 py-2 bg-surface-container-low/50 hover:bg-surface-container-low rounded-xl text-[10px] font-bold text-secondary-700 transition-colors border border-surface-container-mid"
-                                      >
-                                        <Paperclip className="h-3 w-3 text-secondary-400" />
-                                        {file.name || `Attachment ${fidx + 1}`}
-                                      </a>
-                                    ))}
-                                  </div>
-                                )}
+                                <span className="text-slate-300">•</span>
+                                <span className="text-[10px] font-bold text-slate-500 uppercase">
+                                  {format(parseISO(app.start_at), 'EEEE, MMMM d', { locale: dateLocale })}
+                                </span>
                               </div>
                             </div>
-                          ))}
+                          </div>
+                          <ChevronRight className="h-5 w-5 text-slate-300 group-hover:text-primary-600 group-hover:translate-x-1 transition-all" />
                         </div>
-                      )}
-                    </motion.div>
+                      ))}
+                    </div>
                   )}
+                </motion.div>
+              )}
 
-                  {activeTab === 'files' && (
-                    <motion.div
-                      key="files"
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
-                      className="space-y-6"
-                    >
-                      <div className="flex items-center justify-between">
-                        <h3 className="text-xl font-black text-secondary-900 tracking-tight">{t.patient_files}</h3>
-                        <button className="flex items-center gap-2 px-4 py-2 bg-secondary-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-all shadow-md">
-                          <Plus className="h-3 w-3" />
-                          {t.add_study}
-                        </button>
-                      </div>
-
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {history.flatMap(h => h.attachments || []).length === 0 ? (
-                          <div className="col-span-full py-20 text-center text-secondary-400">
-                            <Paperclip className="h-12 w-12 mx-auto mb-4 opacity-20" />
-                            <p className="text-sm font-medium">{t.no_files}</p>
-                          </div>
-                        ) : (
-                          history.flatMap(h => h.attachments || []).map((file, idx) => (
-                            <a
-                              key={idx}
-                              href={file.url}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="flex items-center gap-4 p-5 bg-white rounded-3xl border border-surface-container-low hover:border-primary-600/30 transition-all group shadow-sm"
-                            >
-                              <div className="h-12 w-12 bg-surface-container-low rounded-2xl flex items-center justify-center text-secondary-400 group-hover:bg-primary-50 group-hover:text-primary-600 transition-colors">
-                                <FileText className="h-6 w-6" />
-                              </div>
-                              <div className="flex-1 min-w-0">
-                                <p className="text-sm font-bold text-secondary-900 truncate">{file.name || 'Untitled Study'}</p>
-                                <p className="text-[10px] font-black text-secondary-500 uppercase tracking-widest mt-1">
-                                  {file.type || 'Clinical Document'}
-                                </p>
-                              </div>
-                              <ExternalLink className="h-4 w-4 text-secondary-300 group-hover:text-primary-600 transition-colors" />
-                            </a>
-                          ))
-                        )}
-                      </div>
-                    </motion.div>
-                  )}
-
-                  {activeTab === 'upcoming' && (
-                    <motion.div
-                      key="upcoming"
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
-                      className="space-y-6"
-                    >
-                      <div className="flex items-center justify-between">
-                        <h3 className="text-xl font-black text-secondary-900 tracking-tight">{t.upcoming_appointments}</h3>
-                      </div>
-
-                      <div className="space-y-4">
-                        {appointments.length === 0 ? (
-                          <div className="py-20 text-center text-secondary-400">
-                            <CalendarDays className="h-12 w-12 mx-auto mb-4 opacity-20" />
-                            <p className="text-sm font-medium">{t.no_appointments}</p>
-                          </div>
-                        ) : (
-                          appointments.map(app => (
-                            <div
-                              key={app.id}
-                              onClick={() => router.push(`/dashboard/calendar?appointment_id=${app.id}`)}
-                              className="flex items-center justify-between p-6 bg-surface-container-low/20 rounded-[2rem] border border-surface-container-low hover:border-primary-600/20 cursor-pointer transition-all group"
-                            >
-                              <div className="flex items-center gap-5">
-                                <div className="h-14 w-14 rounded-2xl bg-white border border-surface-container-low flex flex-col items-center justify-center text-primary-600 shadow-sm group-hover:border-primary-600 group-hover:shadow-md transition-all">
-                                  <span className="text-[10px] font-black uppercase">{format(parseISO(app.start_at), 'MMM')}</span>
-                                  <span className="text-lg font-black">{format(parseISO(app.start_at), 'dd')}</span>
-                                </div>
-                                <div>
-                                  <p className="text-sm font-black text-secondary-900 uppercase tracking-tight">{app.services?.name}</p>
-                                  <div className="flex items-center gap-3 mt-1">
-                                    <span className="flex items-center gap-1 text-[10px] font-bold text-secondary-500 uppercase">
-                                      <Clock className="h-3 w-3" />
-                                      {format(parseISO(app.start_at), 'HH:mm')}
-                                    </span>
-                                    <span className="text-secondary-300">•</span>
-                                    <span className="text-[10px] font-bold text-secondary-500 uppercase">
-                                      {format(parseISO(app.start_at), 'EEEE, MMMM d', { locale: dateLocale })}
-                                    </span>
-                                  </div>
-                                </div>
-                              </div>
-                              <ChevronRight className="h-5 w-5 text-secondary-300 group-hover:text-primary-600 group-hover:translate-x-1 transition-all" />
-                            </div>
-                          ))
-                        )}
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-            </div>
+            </AnimatePresence>
           </div>
-        </div>
+        </main>
       </div>
     </div>
   )
