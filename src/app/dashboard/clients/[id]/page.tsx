@@ -15,6 +15,7 @@ import { it } from 'date-fns/locale/it'
 import { enUS } from 'date-fns/locale/en-US'
 import { createClient } from '@/lib/supabase/client'
 import { translations } from '@/lib/i18n'
+import { AppointmentDetailDrawer } from '@/components/appointments/AppointmentDetailDrawer'
 
 interface MedicalEntry {
   id: string;
@@ -134,6 +135,7 @@ export default function PatientProfilePage() {
   const [isUploading, setIsUploading] = useState(false)
   const [uploadProgress, setUploadProgress] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const [selectedAppointment, setSelectedAppointment] = useState<any | null>(null)
 
   const lang = (tenant?.settings?.language as 'en' | 'es' | 'it') || 'es'
   const t = translations[lang] || translations['en']
@@ -269,6 +271,29 @@ export default function PatientProfilePage() {
       if (fileInputRef.current) fileInputRef.current.value = ''
     }
   }
+
+  const updateAppointmentStatus = async (id: string, status: string): Promise<boolean> => {
+    if (!tenant) return false
+    try {
+      const res = await fetch(`/api/appointments?id=${id}&tenant_id=${tenant.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status })
+      })
+      if (res.ok) {
+        setAppointments(prev => prev.map(a => a.id === id ? { ...a, status } : a))
+        if (selectedAppointment?.id === id) {
+          setSelectedAppointment({ ...selectedAppointment, status })
+        }
+        return true
+      }
+      return false
+    } catch (e) {
+      console.error(e)
+      return false
+    }
+  }
+
 
   if (isLoading) {
     return (
@@ -569,7 +594,13 @@ export default function PatientProfilePage() {
                 <motion.div key="upcoming"
                   initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
                   className="space-y-6">
-                  <h3 className="text-lg font-black text-slate-900">{t.upcoming_appointments}</h3>
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-lg font-black text-slate-900">{t.upcoming_appointments}</h3>
+                    <button className="flex items-center gap-1.5 bg-primary text-on-primary px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-primary-600 transition-all shadow-sm">
+                      <Plus className="h-4 w-4" />
+                      {t.new_appointment || 'Nueva Cita'}
+                    </button>
+                  </div>
                   {appointments.length === 0 ? (
                     <div className="py-24 text-center text-slate-400">
                       <CalendarDays className="h-10 w-10 mx-auto mb-3 opacity-20" />
@@ -579,7 +610,7 @@ export default function PatientProfilePage() {
                     <div className="space-y-3">
                       {appointments.map(app => (
                         <div key={app.id}
-                          onClick={() => router.push(`/dashboard/appointments?appointment_id=${app.id}`)}
+                          onClick={() => setSelectedAppointment(app)}
                           className="flex items-center justify-between p-5 bg-white rounded-xl border border-slate-200 hover:border-primary-600/30 cursor-pointer transition-all group shadow-sm">
                           <div className="flex items-center gap-4">
                             <div className="h-12 w-12 rounded-lg bg-slate-50 border border-slate-200 flex flex-col items-center justify-center text-primary-600 shadow-sm group-hover:border-primary-600 transition-all">
@@ -612,6 +643,24 @@ export default function PatientProfilePage() {
           </div>
         </main>
       </div>
+
+      <AnimatePresence>
+        {selectedAppointment && (
+          <AppointmentDetailDrawer
+            appointment={selectedAppointment}
+            lang={lang}
+            onClose={() => setSelectedAppointment(null)}
+            onSuccess={() => fetchData()}
+            tenantId={tenant.id}
+            translations={t}
+            onReschedule={() => {
+              // Reschedule logic placeholder
+              setSelectedAppointment(null)
+            }}
+            onUpdateStatus={updateAppointmentStatus}
+          />
+        )}
+      </AnimatePresence>
     </div>
   )
 }
