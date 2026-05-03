@@ -23,6 +23,7 @@ export async function PATCH(req: NextRequest) {
     if (data.first_name !== undefined) updatePayload.first_name = data.first_name
     if (data.last_name !== undefined) updatePayload.last_name = data.last_name
     if (data.phone !== undefined) updatePayload.phone = data.phone
+    if (data.email !== undefined) updatePayload.email = data.email
     if (data.notes !== undefined) updatePayload.notes = data.notes
     if (data.allergies !== undefined) updatePayload.allergies = data.allergies
 

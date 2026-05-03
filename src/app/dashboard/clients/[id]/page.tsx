@@ -1,13 +1,13 @@
 "use client"
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Calendar, Clock, FileText, Plus, ChevronRight,
   History as HistoryIcon, CalendarDays, Paperclip,
   ExternalLink, AlertCircle, ArrowLeft, Edit2,
-  Save, User, Phone, Mail, ShieldAlert, X, Check
+  Upload, User, Phone, Mail, ShieldAlert, X, Check
 } from 'lucide-react'
 import { format, parseISO } from 'date-fns'
 import { es } from 'date-fns/locale/es'
@@ -38,19 +38,30 @@ interface Patient {
 function InlineEdit({ label, value, onSave, multiline = false, icon }: {
   label: string;
   value: string;
-  onSave: (v: string) => Promise<void>;
+  onSave: (v: string) => Promise<boolean>;
   multiline?: boolean;
   icon?: React.ReactNode;
 }) {
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState(value)
   const [saving, setSaving] = useState(false)
+  const [status, setStatus] = useState<'idle' | 'ok' | 'error'>('idle')
+
+  // Sync draft when external value changes (e.g. after save)
+  useEffect(() => { if (!editing) setDraft(value) }, [value, editing])
 
   const handleSave = async () => {
     setSaving(true)
-    await onSave(draft)
+    setStatus('idle')
+    const ok = await onSave(draft)
     setSaving(false)
-    setEditing(false)
+    if (ok) {
+      setStatus('ok')
+      setEditing(false)
+      setTimeout(() => setStatus('idle'), 2000)
+    } else {
+      setStatus('error')
+    }
   }
 
   return (
@@ -61,12 +72,20 @@ function InlineEdit({ label, value, onSave, multiline = false, icon }: {
           <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{label}</p>
         </div>
         {!editing && (
-          <button onClick={() => { setDraft(value); setEditing(true) }}
+          <button onClick={() => { setDraft(value); setEditing(true); setStatus('idle') }}
             className="opacity-0 group-hover:opacity-100 p-1 rounded text-slate-400 hover:text-primary-600 transition-all">
             <Edit2 className="h-3 w-3" />
           </button>
         )}
       </div>
+      {status === 'ok' && !editing && (
+        <p className="text-[10px] font-black text-green-600 uppercase tracking-widest mb-1 flex items-center gap-1">
+          <Check className="h-3 w-3" /> Guardado
+        </p>
+      )}
+      {status === 'error' && (
+        <p className="text-[10px] font-black text-red-500 uppercase tracking-widest mb-1">Error al guardar</p>
+      )}
       {editing ? (
         <div className="flex flex-col gap-2">
           {multiline ? (
@@ -74,15 +93,18 @@ function InlineEdit({ label, value, onSave, multiline = false, icon }: {
               className="w-full bg-white border border-primary-300 rounded-lg p-2 text-sm font-medium text-slate-900 min-h-[80px] outline-none focus:ring-2 focus:ring-primary-500 resize-none" />
           ) : (
             <input value={draft} onChange={e => setDraft(e.target.value)}
+              onKeyDown={e => { if (e.key === 'Enter') handleSave() }}
               className="w-full bg-white border border-primary-300 rounded-lg p-2 text-sm font-medium text-slate-900 outline-none focus:ring-2 focus:ring-primary-500" />
           )}
           <div className="flex gap-2">
             <button onClick={handleSave} disabled={saving}
-              className="flex-1 flex items-center justify-center gap-1 bg-slate-900 text-white py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest">
-              {saving ? <div className="h-3 w-3 animate-spin rounded-full border-2 border-white/30 border-t-white" /> : <Check className="h-3 w-3" />}
-              Guardar
+              className="flex-1 flex items-center justify-center gap-1 bg-slate-900 text-white py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest disabled:opacity-60 transition-all">
+              {saving
+                ? <div className="h-3 w-3 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                : <Check className="h-3 w-3" />}
+              {saving ? 'Guardando...' : 'Guardar'}
             </button>
-            <button onClick={() => setEditing(false)}
+            <button onClick={() => { setEditing(false); setStatus('idle') }}
               className="px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest text-slate-500 bg-slate-100">
               <X className="h-3 w-3" />
             </button>
@@ -109,6 +131,9 @@ export default function PatientProfilePage() {
   const [isSaving, setIsSaving] = useState(false)
   const [newNoteContent, setNewNoteContent] = useState('')
   const [isAddingNote, setIsAddingNote] = useState(false)
+  const [isUploading, setIsUploading] = useState(false)
+  const [uploadProgress, setUploadProgress] = useState<string | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const lang = (tenant?.settings?.language as 'en' | 'es' | 'it') || 'es'
   const t = translations[lang] || translations['en']
@@ -151,14 +176,25 @@ export default function PatientProfilePage() {
 
   useEffect(() => { if (tenant?.id) fetchData() }, [fetchData, tenant?.id])
 
-  const saveField = async (field: string, value: string) => {
-    if (!patient || !tenant) return
-    const res = await fetch('/api/clients', {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id: patient.id, tenant_id: tenant.id, data: { [field]: value } })
-    })
-    if (res.ok) setPatient({ ...patient, [field]: value })
+  const saveField = async (field: string, value: string): Promise<boolean> => {
+    if (!patient || !tenant) return false
+    try {
+      const res = await fetch('/api/clients', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: patient.id, tenant_id: tenant.id, data: { [field]: value } })
+      })
+      if (res.ok) {
+        setPatient(prev => prev ? { ...prev, [field]: value } : prev)
+        return true
+      }
+      const err = await res.json()
+      console.error('[saveField]', field, err)
+      return false
+    } catch (e) {
+      console.error('[saveField]', e)
+      return false
+    }
   }
 
   const handleAddNote = async () => {
@@ -178,6 +214,59 @@ export default function PatientProfilePage() {
       }
     } finally {
       setIsSaving(false)
+    }
+  }
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file || !patient || !tenant) return
+
+    setIsUploading(true)
+    setUploadProgress('Subiendo archivo...')
+
+    try {
+      const filePath = `${tenant.id}/${patient.id}/${Date.now()}_${file.name}`
+      const { error: storageError } = await supabase.storage
+        .from('studies')
+        .upload(filePath, file, { upsert: false })
+
+      if (storageError && storageError.message.includes('Bucket not found')) {
+        await supabase.storage.createBucket('studies', { public: true })
+        await supabase.storage.from('studies').upload(filePath, file, { upsert: false })
+      } else if (storageError) {
+        throw new Error(storageError.message)
+      }
+
+      const { data: urlData } = supabase.storage.from('studies').getPublicUrl(filePath)
+      const fileUrl = urlData?.publicUrl || ''
+
+      setUploadProgress('Registrando estudio...')
+
+      const res = await fetch('/api/clinical-records', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          tenant_id: tenant.id,
+          client_id: patient.id,
+          content: `Estudio: ${file.name}`,
+          record_type: 'study',
+          attachments: [{ name: file.name, url: fileUrl, type: file.type }]
+        })
+      })
+
+      if (res.ok) {
+        const newRecord = await res.json()
+        setHistory([newRecord, ...history])
+        setUploadProgress('✓ Archivo subido correctamente')
+        setTimeout(() => setUploadProgress(null), 3000)
+      }
+    } catch (err: any) {
+      console.error('[Upload]', err)
+      setUploadProgress(`Error: ${err.message}`)
+      setTimeout(() => setUploadProgress(null), 3000)
+    } finally {
+      setIsUploading(false)
+      if (fileInputRef.current) fileInputRef.current.value = ''
     }
   }
 
@@ -407,17 +496,52 @@ export default function PatientProfilePage() {
                 <motion.div key="files"
                   initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
                   className="space-y-6">
+
+                  {/* Hidden file input */}
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    className="hidden"
+                    accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.xls,.xlsx"
+                    onChange={handleFileUpload}
+                  />
+
                   <div className="flex items-center justify-between">
-                    <h3 className="text-lg font-black text-slate-900">{t.patient_files}</h3>
-                    <button className="flex items-center gap-2 px-4 py-2 bg-slate-900 text-white rounded-lg text-[10px] font-black uppercase tracking-widest shadow active:scale-95 transition-all">
-                      <Plus className="h-3 w-3" />
-                      {t.add_study}
+                    <h3 className="text-lg font-black text-slate-900">{t.patient_files || 'Estudios y Archivos'}</h3>
+                    <button
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={isUploading}
+                      className="flex items-center gap-2 px-4 py-2 bg-slate-900 text-white rounded-lg text-[10px] font-black uppercase tracking-widest shadow active:scale-95 transition-all disabled:opacity-60">
+                      {isUploading
+                        ? <div className="h-3 w-3 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                        : <Upload className="h-3 w-3" />}
+                      {isUploading ? 'Subiendo...' : (t.add_study || 'Agregar Estudio')}
                     </button>
                   </div>
-                  {history.flatMap(h => h.attachments || []).length === 0 ? (
-                    <div className="py-24 text-center text-slate-400">
-                      <Paperclip className="h-10 w-10 mx-auto mb-3 opacity-20" />
-                      <p className="text-sm font-medium">{t.no_files}</p>
+
+                  {/* Upload progress */}
+                  {uploadProgress && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }}
+                      className={`flex items-center gap-2 px-4 py-3 rounded-lg text-sm font-bold ${
+                        uploadProgress.startsWith('✓')
+                          ? 'bg-green-50 text-green-700 border border-green-200'
+                          : uploadProgress.startsWith('Error')
+                          ? 'bg-red-50 text-red-700 border border-red-200'
+                          : 'bg-blue-50 text-blue-700 border border-blue-200'
+                      }`}>
+                      {isUploading && <div className="h-3 w-3 animate-spin rounded-full border-2 border-current/30 border-t-current" />}
+                      {uploadProgress}
+                    </motion.div>
+                  )}
+
+                  {history.flatMap(h => h.attachments || []).length === 0 && !isUploading ? (
+                    <div
+                      onClick={() => fileInputRef.current?.click()}
+                      className="py-24 text-center text-slate-400 border-2 border-dashed border-slate-200 rounded-xl cursor-pointer hover:border-primary-300 hover:text-primary-400 transition-all">
+                      <Upload className="h-10 w-10 mx-auto mb-3 opacity-30" />
+                      <p className="text-sm font-bold">{t.no_files || 'No hay archivos subidos'}</p>
+                      <p className="text-xs text-slate-400 mt-1">PDF, JPG, PNG, DOC, XLS</p>
                     </div>
                   ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -438,6 +562,7 @@ export default function PatientProfilePage() {
                   )}
                 </motion.div>
               )}
+
 
               {/* UPCOMING */}
               {activeTab === 'upcoming' && (
