@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { format, parseISO, startOfMonth, endOfMonth, addMonths, subMonths } from 'date-fns'
 
@@ -54,6 +54,7 @@ export function useAppointments() {
   const [notifyingId, setNotifyingId] = useState<string | null>(null)
   const [lang, setLang] = useState<'en' | 'es' | 'it'>('es')
   const [loading, setLoading] = useState(true)
+  const lastSlotParams = useRef<{p: string, d: string, s?: string} | null>(null)
 
   const fetchMeta = useCallback(async (tenantId: string) => {
     // Check cache first
@@ -126,6 +127,50 @@ export function useAppointments() {
     }
   }, [supabase])
 
+  const fetchSlots = useCallback(async (profId: string, dateStr: string, serviceId?: string) => {
+    if (!profId || !tenantId || !dateStr) {
+      setAvailableSlots([])
+      setIsBlocked(false)
+      setBlockReason(null)
+      return
+    }
+    setSlotLoading(true)
+    lastSlotParams.current = { p: profId, d: dateStr, s: serviceId }
+    try {
+      const queryParams: any = { 
+        tenant_id: tenantId, 
+        professional_id: profId, 
+        date: dateStr 
+      }
+      if (serviceId) queryParams.service_id = serviceId
+      
+      const params = new URLSearchParams(queryParams)
+      const res = await fetch(`/api/appointments/available-slots?${params}`)
+      if (!res.ok) throw new Error('Failed to fetch slots')
+      const data: { slots: string[]; isBlocked: boolean; blockReason: string | null } = await res.json()
+      setAvailableSlots(data.slots)
+      setIsBlocked(data.isBlocked)
+      setBlockReason(data.blockReason)
+    } catch (e) {
+      console.error('[fetchSlots]', e)
+      setAvailableSlots([])
+      setIsBlocked(false)
+      setBlockReason(null)
+    } finally {
+      setSlotLoading(false)
+    }
+  }, [tenantId])
+
+  const refresh = useCallback(() => {
+    if (tenantId) {
+      // Clear cache for current month and day to force reload
+      appointmentsCache.days = {};
+      appointmentsCache.months = {};
+      fetchDayAppointments(tenantId, selectedDate, true)
+      fetchMonthAppointments(tenantId, currentMonth, true)
+    }
+  }, [tenantId, selectedDate, currentMonth, fetchDayAppointments, fetchMonthAppointments])
+
   const init = useCallback(async () => {
     setLoading(true)
     const { data: { user } } = await supabase.auth.getUser()
@@ -156,8 +201,15 @@ export function useAppointments() {
   // Real-time subscription
   useEffect(() => {
     if (!tenantId) return
-    const channel = supabase.channel('realtime-appointments')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'appointments', filter: `tenant_id=eq.${tenantId}` }, () => {
+    
+    // Listen for appointment changes
+    const aptChannel = supabase.channel('realtime-appointments')
+      .on('postgres_changes', { 
+        event: '*', 
+        schema: 'public', 
+        table: 'appointments', 
+        filter: `tenant_id=eq.${tenantId}` 
+      }, () => {
         // Clear caches on change to ensure consistency
         appointmentsCache.days = {};
         appointmentsCache.months = {};
@@ -165,34 +217,31 @@ export function useAppointments() {
         fetchDayAppointments(tenantId, selectedDate, true)
       })
       .subscribe()
-    return () => { supabase.removeChannel(channel) }
-  }, [tenantId, currentMonth, selectedDate, fetchMonthAppointments, fetchDayAppointments, supabase])
 
-  const fetchSlots = useCallback(async (profId: string, dateStr: string) => {
-    if (!profId || !tenantId || !dateStr) {
-      setAvailableSlots([])
-      setIsBlocked(false)
-      setBlockReason(null)
-      return
+    // Listen for availability override changes
+    const overrideChannel = supabase.channel('realtime-overrides')
+      .on('postgres_changes', { 
+        event: '*', 
+        schema: 'public', 
+        table: 'professional_availability_overrides',
+        filter: `tenant_id=eq.${tenantId}` 
+      }, () => {
+        // Clear caches
+        appointmentsCache.days = {};
+        refresh(); 
+        
+        // If we were looking at slots, refetch them to show the new block/unblock
+        if (lastSlotParams.current) {
+          fetchSlots(lastSlotParams.current.p, lastSlotParams.current.d, lastSlotParams.current.s)
+        }
+      })
+      .subscribe()
+
+    return () => { 
+      supabase.removeChannel(aptChannel)
+      supabase.removeChannel(overrideChannel)
     }
-    setSlotLoading(true)
-    try {
-      const params = new URLSearchParams({ tenant_id: tenantId, professional_id: profId, date: dateStr })
-      const res = await fetch(`/api/appointments/available-slots?${params}`)
-      if (!res.ok) throw new Error('Failed to fetch slots')
-      const data: { slots: string[]; isBlocked: boolean; blockReason: string | null } = await res.json()
-      setAvailableSlots(data.slots)
-      setIsBlocked(data.isBlocked)
-      setBlockReason(data.blockReason)
-    } catch (e) {
-      console.error('[fetchSlots]', e)
-      setAvailableSlots([])
-      setIsBlocked(false)
-      setBlockReason(null)
-    } finally {
-      setSlotLoading(false)
-    }
-  }, [tenantId])
+  }, [tenantId, currentMonth, selectedDate, fetchMonthAppointments, fetchDayAppointments, supabase, refresh, fetchSlots])
 
   const cancelAppointment = async (id: string) => {
     setAppointments(prev => prev.map(app => app.id === id ? { ...app, status: 'cancelled' as any } : app))
@@ -219,16 +268,6 @@ export function useAppointments() {
     setNotifyingId(null)
     return !error
   }
-
-  const refresh = useCallback(() => {
-    if (tenantId) {
-      // Clear cache for current month and day to force reload
-      appointmentsCache.days = {};
-      appointmentsCache.months = {};
-      fetchDayAppointments(tenantId, selectedDate, true)
-      fetchMonthAppointments(tenantId, currentMonth, true)
-    }
-  }, [tenantId, selectedDate, currentMonth, fetchDayAppointments, fetchMonthAppointments])
 
   const updateStatus = async (id: string, status: string) => {
     // Optimistic UI update

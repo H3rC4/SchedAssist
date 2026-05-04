@@ -20,7 +20,7 @@ interface QuickAppointmentDrawerProps {
   slotLoading: boolean;
   isBlocked?: boolean;
   blockReason?: string | null;
-  onFetchSlots: (profId: string, date: string) => void;
+  onFetchSlots: (profId: string, date: string, serviceId?: string) => void;
   initialPatient?: { first_name: string; last_name: string; phone: string };
   rescheduledFromId?: string | null;
   variant?: 'drawer' | 'modal';
@@ -109,12 +109,12 @@ export function QuickAppointmentDrawer({
     }
   }
 
-  // Auto-fetch slots when professional or date changes
+  // Auto-fetch slots when professional, date or service changes
   useEffect(() => {
     if (formData.professional_id && formData.date) {
-      onFetchSlots(formData.professional_id, formData.date)
+      onFetchSlots(formData.professional_id, formData.date, formData.service_id)
     }
-  }, [formData.professional_id, formData.date, onFetchSlots])
+  }, [formData.professional_id, formData.date, formData.service_id, onFetchSlots])
 
   return (
     <div className={`fixed inset-0 z-[100] flex ${variant === 'drawer' ? 'justify-end' : 'items-center justify-center p-4'}`} onClick={onClose}>

@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SchedAssist</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>body { font-family: 'Inter', sans-serif; }</style>
+</head>
+<body class="bg-white text-slate-800">
+    <!-- NAV - fondo blanco -->
+    <nav class="fixed top-0 w-full z-50 bg-white border-b border-slate-200">
+        <div class="max-w-7xl mx-auto flex items-center justify-between px-8 py-4">
+            <div class="text-2xl font-bold text-[#005c55]">SchedAssist</div>
+            <div class="hidden md:flex space-x-8">
+                <a class="text-[#005c55] font-semibold border-b-2 border-[#005c55] pb-1" href="#features">Features</a>
+                <a class="text-slate-600 hover:text-[#005c55]" href="#">Solutions</a>
+                <a class="text-slate-600 hover:text-[#005c55]" href="#">Pricing</a>
+            </div>
+            <div class="flex items-center gap-4">
+                <a href="/login" class="text-slate-600">Login</a>
+                <a href="/register" class="bg-[#005c55] text-white px-6 py-2.5 rounded-full">Get Started</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- HERO - fondo verde MUY OSCURO -->
+    <header class="pt-28 pb-20 px-8" style="background: linear-gradient(180deg, #001f1c 0%, #005c55 100%);">
+        <div class="max-w-7xl mx-auto">
+            <div class="grid lg:grid-cols-2 gap-16 items-center">
+                <div class="space-y-8">
+                    <span class="inline-block px-4 py-1.5 rounded-full bg-white/10 text-white text-sm border border-white/20">NEW Next.js 14 & Shadcn/ui</span>
+                    <h1 class="text-5xl lg:text-7xl font-extrabold text-white">Precision in Patient Care<br/>Fluidity in Clinic Flow</h1>
+                    <p class="text-xl text-white/90">The definitive clinical management platform built for speed.</p>
+                    <div class="flex gap-4">
+                        <a href="/register" class="bg-teal-400 text-slate-900 px-8 py-4 rounded-xl font-bold">Start Free Trial</a>
+                        <button class="bg-white/10 text-white border border-white/30 px-8 py-4 rounded-xl font-bold">Watch Demo</button>
+                    </div>
+                </div>
+                <div class="bg-white rounded-2xl p-4 shadow-xl">
+                    <div class="bg-slate-900 rounded-xl p-6">
+                        <div class="flex items-center gap-3 mb-4">
+                            <span class="h-2 w-2 rounded-full bg-teal-400"></span>
+                            <h3 class="text-white font-bold">Panel de Hoy</h3>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4 mb-4">
+                            <div class="bg-slate-800 p-3 rounded"><p class="text-slate-400 text-xs">Citas Hoy</p><p class="text-white font-bold text-xl">24</p></div>
+                            <div class="bg-slate-800 p-3 rounded"><p class="text-slate-400 text-xs">Pacientes</p><p class="text-white font-bold text-xl">1.2k</p></div>
+                        </div>
+                        <div class="bg-teal-400 text-slate-900 p-3 rounded">
+                            <p class="text-xs font-bold">WhatsApp Bot Activo</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- FEATURES - fondo blanco, texto oscuro -->
+    <section class="py-24 px-8 bg-white" id="features">
+        <div class="max-w-7xl mx-auto">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl font-bold text-[#005c55]">Engineered for Medical Excellence</h2>
+            </div>
+            
+            <div class="grid lg:grid-cols-2 gap-16 mb-16">
+                <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuCktRYwYaSFW-I2M3oTRLmS3t_9Xm8O8pQGq91g908EYvMUX0V2lSdyfTtldJnqEuW1gsqy34PkjmdvaZOHl3JxGZcD8tCX_Shxo94dWdSt9aGVMM2Hs3ZF5CQI44F9hwZITEJulhCtEfWqb8c3k5r45w78RPFYefSroNjtPtonhhgrfRMmmj5BzjfKZqVK7whEyy-K6-Tk2Mxf8R8UbaePsWutNq0-JG-25dkoaCdrZuDD2T5K1quzrmasMtlUDXNIQa2QCq-9Tk4" class="rounded-2xl shadow-lg" alt="Agenda">
+                <div>
+                    <span class="bg-[#005c55]/10 text-[#005c55] text-xs font-bold px-2 py-1 rounded">Clinical Workflow</span>
+                    <h3 class="text-2xl font-bold text-slate-800 mt-4">Intelligent Interactive Agenda</h3>
+                    <p class="text-slate-600 mt-2">Our proprietary calendar system allows doctors to maintain clinical context at all times.</p>
+                    <ul class="mt-4 space-y-2 text-slate-700">
+                        <li>✓ Context-aware drawer navigation</li>
+                        <li>✓ Drag-and-drop rescheduling</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="grid lg:grid-cols-2 gap-16">
+                <div>
+                    <span class="bg-[#005c55]/10 text-[#005c55] text-xs font-bold px-2 py-1 rounded">Data Management</span>
+                    <h3 class="text-2xl font-bold text-slate-800 mt-4">Comprehensive Patient Records</h3>
+                    <p class="text-slate-600 mt-2">A centralized hub for every patient.</p>
+                    <div class="grid grid-cols-2 gap-4 mt-4">
+                        <div class="bg-slate-50 p-4 rounded border"><div class="text-2xl">📄</div><div class="font-bold">E-Prescriptions</div></div>
+                        <div class="bg-slate-50 p-4 rounded border"><div class="text-2xl">📎</div><div class="font-bold">File Storage</div></div>
+                    </div>
+                </div>
+                <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuCtNjv1eOyeC7bgJTELTHWaQuWofyryhx57QTHcy1LjqdxP3AeiVTSaGQaEg0vRXvrAoBVkrdpOQirk4isFsqsjjTqlMztaiggjnfEhTBzZ-1zHEoEBSDMKoDSVhIx6P6SnIU6wZGGFgvdItXyfWNjnS8zQqlGw6UKIrjO4Ir5UR5FZA1-oMdZUHXEF6K3z_V3O0s2a_Kbd4eWGdv-_eY0PCi46UQwA2t47c22m0gEJEMlYx3pTLfPNHVnFQxYMnhhCligVJdVrNIY" class="rounded-2xl shadow-lg" alt="Patient Records">
+            </div>
+        </div>
+    </section>
+
+    <!-- WHATSAPP - fondo negro/verde muy oscuro -->
+    <section class="py-24 px-8" style="background-color: #001f1c;">
+        <div class="max-w-7xl mx-auto">
+            <div class="grid lg:grid-cols-2 gap-16">
+                <div>
+                    <h2 class="text-4xl font-bold text-white mb-6">The WhatsApp Advantage</h2>
+                    <p class="text-white/80 mb-8">Reduce "no-shows" by up to 45% with automatic reminders.</p>
+                    <div class="flex items-center gap-4 mb-4">
+                        <div class="w-12 h-12 bg-teal-400 rounded-xl flex items-center justify-center text-2xl">🔔</div>
+                        <div><h4 class="text-white font-bold">Smart Reminders</h4><p class="text-white/70">Automatically ping patients 24h before.</p></div>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 bg-teal-400 rounded-xl flex items-center justify-center text-2xl">⚡</div>
+                        <div><h4 class="text-white font-bold">Instant Sync</h4><p class="text-white/70">Patients can confirm via chat.</p></div>
+                    </div>
+                </div>
+                <div class="bg-white/5 border border-white/10 rounded-2xl p-6">
+                    <div class="bg-slate-800 rounded-xl overflow-hidden">
+                        <div class="bg-slate-700 p-3 flex items-center gap-2">
+                            <span class="h-8 w-8 rounded-full bg-teal-400 flex items-center justify-center font-bold text-slate-900">SA</span>
+                            <span class="text-white font-bold">SchedAssist Bot</span>
+                            <span class="text-teal-400 text-xs ml-auto">Online</span>
+                        </div>
+                        <div class="p-4 space-y-2">
+                            <div class="bg-teal-400 text-slate-900 p-2 rounded-lg">Hola! Quiero agendar.</div>
+                            <div class="bg-slate-700 text-white p-2 rounded-lg">Tengo 10:00, 11:30, 16:00.</div>
+                            <div class="bg-teal-400 text-slate-900 p-2 rounded-lg">El de las 11:30.</div>
+                            <div class="bg-slate-700 text-white p-2 rounded-lg">¡Listo! Tu cita confirmada.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- TECH STACK -->
+    <section class="py-20 px-8 bg-slate-100">
+        <div class="max-w-7xl mx-auto text-center">
+            <h2 class="text-2xl font-bold text-[#005c55] mb-12">Built with Modern Foundations</h2>
+            <div class="grid grid-cols-4 gap-8">
+                <div class="p-8 bg-white rounded-xl"><p class="text-2xl font-bold text-[#005c55]">Next.js 14</p></div>
+                <div class="p-8 bg-white rounded-xl"><p class="text-2xl font-bold text-[#005c55]">Tailwind</p></div>
+                <div class="p-8 bg-white rounded-xl"><p class="text-2xl font-bold text-[#005c55]">HIPAA</p></div>
+                <div class="p-8 bg-white rounded-xl"><p class="text-2xl font-bold text-[#005c55]">Shadcn/ui</p></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="py-24 px-8 bg-white">
+        <div class="max-w-3xl mx-auto text-center bg-slate-100 rounded-3xl p-16">
+            <h2 class="text-4xl font-bold text-[#005c55] mb-6">Ready to Transform Your Clinic?</h2>
+            <p class="text-slate-600 mb-8">Join 500+ clinics that improved efficiency by 30%.</p>
+            <div class="flex justify-center gap-4">
+                <a href="/register" class="bg-[#005c55] text-white px-10 py-4 rounded-xl font-bold">Start Free Trial</a>
+                <button class="bg-white text-[#005c55] border border-slate-300 px-10 py-4 rounded-xl font-bold">Talk to Sales</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="bg-white border-t border-slate-200 py-12 px-8">
+        <div class="max-w-7xl mx-auto">
+            <div class="grid grid-cols-3 gap-8">
+                <div>
+                    <p class="text-2xl font-bold text-[#005c55] mb-4">SchedAssist</p>
+                    <p class="text-slate-500">Taking appointment automation to the next level.</p>
+                </div>
+                <div>
+                    <p class="font-bold text-slate-800 mb-4">Platform</p>
+                    <p class="text-slate-600">Features</p>
+                </div>
+                <div>
+                    <p class="font-bold text-slate-800 mb-4">Company</p>
+                    <p class="text-slate-600">About Us</p>
+                </div>
+            </div>
+            <p class="text-slate-500 mt-8">© 2026 SchedAssist.</p>
+        </div>
+    </footer>
+</body>
+</html>

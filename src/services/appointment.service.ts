@@ -523,7 +523,17 @@ export class AppointmentService {
     }
 
     const slots = Array.from(slotSet).sort()
-    return { slots, isBlocked: false, blockReason: null }
+    
+    // Determine if blocked (either full day or all slots occupied/blocked)
+    const hasBlocks = allOverrides?.some((ov: any) => ov.override_type === 'block');
+    const firstBlock = allOverrides?.find((ov: any) => ov.override_type === 'block');
+    const isBlocked = (slots.length === 0 && hasBlocks);
+
+    return { 
+      slots, 
+      isBlocked, 
+      blockReason: isBlocked ? (firstBlock?.reason || 'Horario bloqueado') : null 
+    }
   }
 
   /**
