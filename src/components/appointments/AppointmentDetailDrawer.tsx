@@ -191,7 +191,7 @@ export function AppointmentDetailDrawer({
                 </div>
                 <div>
                   <p className="text-[7px] font-black text-on-surface/30 uppercase tracking-widest leading-none mb-1">{T.professional}</p>
-                  <p className="text-[11px] font-black text-on-surface leading-none">{appointment.professionals?.full_name}</p>
+                  <p className="text-[11px] font-black text-on-surface leading-none">{appointment.professionals?.full_name || T.unassigned || 'Unassigned'}</p>
                 </div>
               </div>
 
@@ -201,9 +201,13 @@ export function AppointmentDetailDrawer({
                 </div>
                 <div>
                   <p className="text-[7px] font-black text-on-surface/30 uppercase tracking-widest leading-none mb-1">{T.contact}</p>
-                  <a href={`tel:${appointment.clients?.phone}`} className="text-[11px] font-black text-on-surface leading-none hover:text-primary transition-colors">
-                    {appointment.clients?.phone}
-                  </a>
+                  {appointment.clients?.phone ? (
+                    <a href={`tel:${appointment.clients.phone}`} className="text-[11px] font-black text-on-surface leading-none hover:text-primary transition-colors">
+                      {appointment.clients.phone}
+                    </a>
+                  ) : (
+                    <p className="text-[11px] font-black text-on-surface/30 leading-none">{T.no_phone || 'No phone'}</p>
+                  )}
                 </div>
               </div>
             </div>

@@ -82,7 +82,7 @@ export function useAppointments() {
       return;
     }
 
-    const { data } = await supabase.from('appointments').select('id, status, start_at, end_at, notes, clients(id, first_name, last_name), services(name), professionals(id)')
+    const { data } = await supabase.from('appointments').select('*, clients(*), services(*), professionals(*)')
       .eq('tenant_id', tenantId).neq('status', 'cancelled')
       .gte('start_at', `${start}T00:00:00Z`).lte('start_at', `${end}T23:59:59Z`)
     
@@ -93,7 +93,7 @@ export function useAppointments() {
 
     // Fetch pending notifications (any cancelled app where cancellation_notified is false)
     const { data: pending } = await supabase.from('appointments')
-      .select('*, clients(*), services(name), professionals(full_name)')
+      .select('*, clients(*), services(*), professionals(*)')
       .eq('tenant_id', tenantId)
       .eq('status', 'cancelled')
       .eq('cancellation_reason', 'professional_cancellation')
@@ -112,7 +112,7 @@ export function useAppointments() {
     }
 
     const { data } = await supabase.from('appointments')
-      .select('id, status, start_at, end_at, notes, clients(id, first_name, last_name, phone), services(name), professionals(id, full_name)')
+      .select('*, clients(*), services(*), professionals(*)')
       .eq('tenant_id', tenantId)
       .not('status', 'in', '("cancelled","rescheduled")')
       .gte('start_at', `${dateStr}T00:00:00Z`).lte('start_at', `${dateStr}T23:59:59Z`)
