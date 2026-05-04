@@ -17,6 +17,7 @@ import {
 } from 'date-fns'
 import { es } from 'date-fns/locale'
 import { useLandingTranslation } from '@/components/LanguageContext'
+import { dateLocales } from '@/lib/i18n'
 import { motion, AnimatePresence } from 'framer-motion'
 
 interface ProfessionalDetailDrawerProps {
@@ -54,7 +55,7 @@ export function ProfessionalDetailDrawer({
   saved,
   locations = []
 }: ProfessionalDetailDrawerProps) {
-  const { fullT } = useLandingTranslation()
+  const { fullT, language } = useLandingTranslation()
   const T = fullT 
   
   const days = [
