@@ -188,7 +188,7 @@ export function ProfessionalDetailDrawer({
   }
 
   const handleConfirmDelete = () => {
-    if (window.confirm('¿Estás seguro de eliminar este profesional? Esta acción no se puede deshacer.')) {
+    if (window.confirm(T.confirm_delete_prof_long || '¿Estás seguro de eliminar este profesional? Esta acción no se puede deshacer.')) {
       onDelete()
     }
   }
@@ -645,15 +645,7 @@ export function ProfessionalDetailDrawer({
                   </div>
                 )}
 
-                <div className="pt-20">
-                   <button 
-                      onClick={handleConfirmDelete}
-                      className="flex items-center gap-5 text-[10px] font-black text-slate-200 hover:text-red-500 uppercase tracking-[0.5em] transition-all"
-                   >
-                      <Trash2 className="h-5 w-5" />
-                      Decommission Profile
-                   </button>
-                </div>
+                {/* Decommission trigger removed as per UX refinement - moved to footer only */}
               </motion.div>
             )}
           </AnimatePresence>
@@ -663,9 +655,9 @@ export function ProfessionalDetailDrawer({
         <div className="p-4 md:p-6 border-t border-on-surface/5 bg-precision-surface-lowest flex flex-col md:flex-row items-center justify-between gap-4">
           <button 
             onClick={handleConfirmDelete}
-            className="flex items-center gap-2 text-[8px] font-black text-on-surface-muted hover:text-red-500 uppercase tracking-widest transition-all"
+            className="flex items-center gap-2.5 px-5 py-2.5 rounded-xl text-[10px] font-black text-red-600 bg-red-50 hover:bg-red-100 border border-red-200 transition-all uppercase tracking-widest shadow-sm active:scale-95"
           >
-            <Trash2 className="h-3 w-3" />
+            <Trash2 className="h-4 w-4" />
             {T.delete_profile || 'Eliminar Perfil'}
           </button>
 
@@ -717,7 +709,7 @@ export function ProfessionalDetailDrawer({
                       {T.temporary_shift || 'Excepción Temporal'}
                     </span>
                     <h3 className="text-xl font-black text-on-surface tracking-tighter uppercase">
-                      {format(parseISO(overrideModal.date), "MMM dd, yyyy", { locale: es })}
+                      {format(parseISO(overrideModal.date), "MMM dd, yyyy", { locale: dateLocales[language] })}
                     </h3>
                   </div>
                   <button 
@@ -757,7 +749,7 @@ export function ProfessionalDetailDrawer({
                   {(overrideForm.type === 'open' || overrideForm.type === 'block') && (
                     <div className="flex items-center gap-4 bg-surface-container-low p-4 rounded-lg border border-on-surface/5 animate-in slide-in-from-top-2 duration-300">
                       <div className="flex-1 text-center">
-                         <span className="text-[7px] font-black text-on-surface-muted uppercase tracking-widest block mb-1.5">START</span>
+                         <span className="text-[7px] font-black text-on-surface-muted uppercase tracking-widest block mb-1.5">{T.start || 'START'}</span>
                          <input 
                            type="time" 
                            value={overrideForm.start_time}
@@ -767,7 +759,7 @@ export function ProfessionalDetailDrawer({
                       </div>
                       <div className="h-8 w-px bg-on-surface/10 rounded-full" />
                       <div className="flex-1 text-center">
-                         <span className="text-[7px] font-black text-on-surface-muted uppercase tracking-widest block mb-1.5">END</span>
+                         <span className="text-[7px] font-black text-on-surface-muted uppercase tracking-widest block mb-1.5">{T.end || 'END'}</span>
                          <input 
                            type="time" 
                            value={overrideForm.end_time}
@@ -782,7 +774,7 @@ export function ProfessionalDetailDrawer({
                     <div className="p-3 rounded-lg bg-red-500/5 border border-red-500/10 flex gap-3 animate-in shake duration-500">
                       <AlertTriangle className="h-4 w-4 text-red-500 flex-shrink-0" />
                       <div className="text-[8px] text-red-500 font-black leading-tight uppercase tracking-widest">
-                        {T.conflict_warning || 'AVISO'}: {overrideConflicts.length} {T.appointments_cancelled || 'citas activas serán canceladas automáticamente'}.
+                        {T.warning || 'AVISO'}: {T.danger_appointments_cancelled?.(overrideConflicts.length) || `PELIGRO: ${overrideConflicts.length} cita(s) activa(s) se cancelarán automáticamente.`}
                       </div>
                     </div>
                   )}
