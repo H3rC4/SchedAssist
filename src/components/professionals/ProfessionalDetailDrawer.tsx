@@ -513,6 +513,14 @@ export function ProfessionalDetailDrawer({
                               {override.override_type === 'block' ? (T.blocked || 'Bloqueado') : (T.open || 'Abierto')}
                             </span>
                           </div>
+                          {override.start_time && override.end_time && (
+                            <div className="flex items-center gap-1.5 mt-1 text-on-surface-muted">
+                              <Clock className="h-3 w-3" />
+                              <span className="text-[10px] font-bold tracking-tight">
+                                {override.start_time.slice(0, 5)} - {override.end_time.slice(0, 5)}
+                              </span>
+                            </div>
+                          )}
                         </div>
                         <button 
                           onClick={() => handleDeleteOverride(override.id)}
@@ -718,7 +726,7 @@ export function ProfessionalDetailDrawer({
                     </button>
                   </div>
 
-                  {overrideForm.type === 'open' && (
+                  {(overrideForm.type === 'open' || overrideForm.type === 'block') && (
                     <div className="flex items-center gap-4 bg-surface-container-low p-4 rounded-lg border border-on-surface/5 animate-in slide-in-from-top-2 duration-300">
                       <div className="flex-1 text-center">
                          <span className="text-[7px] font-black text-on-surface-muted uppercase tracking-widest block mb-1.5">START</span>
