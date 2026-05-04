@@ -35,8 +35,15 @@ export class AppointmentService {
       .eq('override_date', dateStr)
       .maybeSingle();
 
-    // If explicitly blocked → not available
-    if (override?.override_type === 'block') return false;
+    // If explicitly blocked → check if the requested time falls within the block
+    if (override?.override_type === 'block') {
+      // If no times specified, block the entire day
+      if (!override.start_time || !override.end_time) return false;
+      
+      // Overlap if: appointmentStart < blockEnd AND appointmentEnd > blockStart
+      const overlapBlock = startTimeStr < override.end_time && endTimeStr > override.start_time;
+      if (overlapBlock) return false;
+    }
 
     let effectiveRules: any[] = [];
 
@@ -389,8 +396,10 @@ export class AppointmentService {
       .eq('override_date', params.date)
       .maybeSingle()
 
-    // If explicitly blocked → no slots
-    if (override?.override_type === 'block') return []
+    // If explicitly blocked with no times → block the entire day
+    if (override?.override_type === 'block' && (!override.start_time || !override.end_time)) {
+      return [];
+    }
 
     // Build the effective rules: either from override or from weekly config
     let effectiveRules: any[] = []
@@ -450,6 +459,10 @@ export class AppointmentService {
       const endRule = parseISO(`${params.date}T${rule.end_time}`)
       const lunchStart = rule.lunch_break_start ? parseISO(`${params.date}T${rule.lunch_break_start}`) : null
       const lunchEnd = rule.lunch_break_end ? parseISO(`${params.date}T${rule.lunch_break_end}`) : null
+      
+      // Hourly block override check
+      const blockStart = (override?.override_type === 'block' && override.start_time) ? parseISO(`${params.date}T${override.start_time}`) : null
+      const blockEnd = (override?.override_type === 'block' && override.end_time) ? parseISO(`${params.date}T${override.end_time}`) : null
 
       while (current < endRule) {
         const slotStart = current;
@@ -466,6 +479,12 @@ export class AppointmentService {
 
         // Check 3: Not during lunch break
         if (lunchStart && lunchEnd && slotStart < lunchEnd && slotEnd > lunchStart) {
+          current = new Date(current.getTime() + 30 * 60000);
+          continue;
+        }
+
+        // Check 3.5: Not during a specific block override
+        if (blockStart && blockEnd && slotStart < blockEnd && slotEnd > blockStart) {
           current = new Date(current.getTime() + 30 * 60000);
           continue;
         }
