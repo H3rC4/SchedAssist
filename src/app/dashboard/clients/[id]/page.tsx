@@ -37,12 +37,13 @@ interface Patient {
   created_at: string;
 }
 
-function InlineEdit({ label, value, onSave, multiline = false, icon }: {
+function InlineEdit({ label, value, onSave, multiline = false, icon, t }: {
   label: string;
   value: string;
   onSave: (v: string) => Promise<boolean>;
   multiline?: boolean;
   icon?: React.ReactNode;
+  t: any;
 }) {
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState(value)
@@ -82,11 +83,11 @@ function InlineEdit({ label, value, onSave, multiline = false, icon }: {
       </div>
       {status === 'ok' && !editing && (
         <p className="text-[10px] font-black text-green-600 uppercase tracking-widest mb-1 flex items-center gap-1">
-          <Check className="h-3 w-3" /> Guardado
+          <Check className="h-3 w-3" /> {t.saved}
         </p>
       )}
       {status === 'error' && (
-        <p className="text-[10px] font-black text-red-500 uppercase tracking-widest mb-1">Error al guardar</p>
+        <p className="text-[10px] font-black text-red-500 uppercase tracking-widest mb-1">{t.save_error}</p>
       )}
       {editing ? (
         <div className="flex flex-col gap-2">
@@ -104,7 +105,7 @@ function InlineEdit({ label, value, onSave, multiline = false, icon }: {
               {saving
                 ? <div className="h-3 w-3 animate-spin rounded-full border-2 border-white/30 border-t-white" />
                 : <Check className="h-3 w-3" />}
-              {saving ? 'Guardando...' : 'Guardar'}
+              {saving ? t.saving : t.save}
             </button>
             <button onClick={() => { setEditing(false); setStatus('idle') }}
               className="px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest text-slate-500 bg-slate-100">
@@ -238,7 +239,7 @@ export default function PatientProfilePage() {
     if (!file || !patient || !tenant) return
 
     setIsUploading(true)
-    setUploadProgress('Subiendo archivo...')
+    setUploadProgress(t.uploading_file)
 
     try {
       const filePath = `${tenant.id}/${patient.id}/${Date.now()}_${file.name}`
@@ -260,7 +261,7 @@ export default function PatientProfilePage() {
 
       const { url: fileUrl } = await uploadRes.json()
 
-      setUploadProgress('Registrando estudio...')
+      setUploadProgress(t.registering_study)
 
       const res = await fetch('/api/clinical-records', {
         method: 'POST',
@@ -268,7 +269,7 @@ export default function PatientProfilePage() {
         body: JSON.stringify({
           tenant_id: tenant.id,
           client_id: patient.id,
-          content: `Estudio: ${file.name}`,
+          content: `${t.study_label}: ${file.name}`,
           record_type: 'study',
           attachments: [{ name: file.name, url: fileUrl, type: file.type }]
         })
@@ -277,7 +278,7 @@ export default function PatientProfilePage() {
       if (res.ok) {
         const newRecord = await res.json()
         setHistory([newRecord, ...history])
-        setUploadProgress('✓ Archivo subido correctamente')
+        setUploadProgress(t.upload_success)
         setTimeout(() => setUploadProgress(null), 3000)
       }
     } catch (err: any) {
@@ -291,11 +292,11 @@ export default function PatientProfilePage() {
   }
 
   const handleDeleteFile = async (recordId: string, fileUrl: string) => {
-    const confirmMsg = lang === 'es' ? '¿Estás seguro de eliminar este archivo?' : (lang === 'it' ? 'Sei sicuro di voler eliminare questo file?' : 'Are you sure you want to delete this file?')
+    const confirmMsg = t.delete_file_confirm
     if (!window.confirm(confirmMsg)) return
 
     setIsUploading(true)
-    setUploadProgress(lang === 'es' ? 'Eliminando...' : 'Deleting...')
+    setUploadProgress(t.deleting)
 
     try {
       // 1. Delete from storage if possible
@@ -322,7 +323,7 @@ export default function PatientProfilePage() {
         setHistory(prev => prev.map(h => h.id === recordId ? { ...h, attachments: updatedAttachments } : h))
       }
 
-      setUploadProgress(lang === 'es' ? '✓ Eliminado correctamente' : '✓ Deleted successfully')
+      setUploadProgress(t.delete_success)
       setTimeout(() => setUploadProgress(null), 3000)
     } catch (err: any) {
       console.error('[DeleteFile]', err)
@@ -418,9 +419,9 @@ export default function PatientProfilePage() {
             </span>
             <button
               onClick={() => setShowNewAppointment(true)}
-              className="flex items-center gap-1.5 bg-primary text-white px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-primary-600 transition-all shadow-sm active:scale-95">
+              className="flex items-center gap-1.5 bg-slate-900 text-white px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-slate-800 transition-all shadow-sm active:scale-95">
               <Plus className="h-4 w-4" />
-              {t.new_appointment || 'Nueva Cita'}
+              {t.new_appointment}
             </button>
           </div>
         </div>
@@ -443,6 +444,7 @@ export default function PatientProfilePage() {
               value={patient.allergies || ''}
               onSave={v => saveField('allergies', v)}
               multiline
+              t={t}
             />
           </div>
 
@@ -455,30 +457,35 @@ export default function PatientProfilePage() {
               value={patient.first_name || ''}
               onSave={v => saveField('first_name', v)}
               icon={<User className="h-3 w-3" />}
+              t={t}
             />
             <InlineEdit
               label={t.last_name || 'Apellido'}
               value={patient.last_name || ''}
               onSave={v => saveField('last_name', v)}
               icon={<User className="h-3 w-3" />}
+              t={t}
             />
             <InlineEdit
               label={t.phone || 'Teléfono'}
               value={patient.phone || ''}
               onSave={v => saveField('phone', v)}
               icon={<Phone className="h-3 w-3" />}
+              t={t}
             />
             <InlineEdit
               label={t.email || 'Email'}
               value={patient.email || ''}
               onSave={v => saveField('email', v)}
               icon={<Mail className="h-3 w-3" />}
+              t={t}
             />
             <InlineEdit
               label={t.notes || 'Notas'}
               value={patient.notes || ''}
               onSave={v => saveField('notes', v)}
               multiline
+              t={t}
             />
 
             <div>
@@ -537,7 +544,7 @@ export default function PatientProfilePage() {
                         </button>
                         <button onClick={handleAddNote} disabled={isSaving || !newNoteContent.trim()}
                           className="px-5 py-2 bg-slate-900 text-white rounded-lg text-[10px] font-black uppercase tracking-widest active:scale-95 transition-all shadow disabled:opacity-50">
-                          {isSaving ? 'Guardando...' : t.save}
+                          {isSaving ? t.saving : t.save}
                         </button>
                       </div>
                     </motion.div>
@@ -559,7 +566,7 @@ export default function PatientProfilePage() {
                             </span>
                             {record.professionals && (
                               <span className="text-[10px] font-black text-slate-500 uppercase">
-                                {lang === 'es' ? 'por' : lang === 'it' ? 'da' : 'by'} {record.professionals.full_name}
+                                {t.by_label} {record.professionals.full_name}
                               </span>
                             )}
                           </div>
@@ -612,7 +619,7 @@ export default function PatientProfilePage() {
                       {isUploading
                         ? <div className="h-3 w-3 animate-spin rounded-full border-2 border-white/30 border-t-white" />
                         : <Upload className="h-3 w-3" />}
-                      {isUploading ? 'Subiendo...' : (t.add_study || 'Agregar Estudio')}
+                      {isUploading ? t.saving : (t.add_study || 'Agregar Estudio')}
                     </button>
                   </div>
 
@@ -637,7 +644,7 @@ export default function PatientProfilePage() {
                       onClick={() => fileInputRef.current?.click()}
                       className="py-24 text-center text-slate-400 border-2 border-dashed border-slate-200 rounded-xl cursor-pointer hover:border-primary-300 hover:text-primary-400 transition-all">
                       <Upload className="h-10 w-10 mx-auto mb-3 opacity-30" />
-                      <p className="text-sm font-bold">{t.no_files || 'No hay archivos subidos'}</p>
+                      <p className="text-sm font-bold">{t.no_files_desc}</p>
                       <p className="text-xs text-slate-400 mt-1">PDF, JPG, PNG, DOC, XLS</p>
                     </div>
                   ) : (
@@ -650,9 +657,9 @@ export default function PatientProfilePage() {
                             </a>
                             <div className="flex-1 min-w-0">
                               <a href={file.url} target="_blank" rel="noreferrer">
-                                <p className="text-sm font-bold text-slate-900 truncate hover:text-primary-600 transition-colors cursor-pointer">{file.name || 'Documento'}</p>
+                                <p className="text-sm font-bold text-slate-900 truncate hover:text-primary-600 transition-colors cursor-pointer">{file.name || t.document_fallback}</p>
                               </a>
-                              <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mt-0.5">{file.type || 'Estudio clínico'}</p>
+                              <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mt-0.5">{file.type || t.clinical_study_label}</p>
                             </div>
                             <div className="flex items-center gap-2">
                               <button
@@ -773,7 +780,7 @@ export default function PatientProfilePage() {
               last_name: patient.last_name || '',
               phone: patient.phone
             }}
-            variant="modal"
+            variant="drawer"
           />
         )}
       </AnimatePresence>

@@ -149,7 +149,7 @@ export function QuickAppointmentDrawer({
               transition={{ delay: 0.1 }}
               className="text-2xl font-black text-on-surface uppercase tracking-tight text-center mb-2"
             >
-              {rescheduledFromId ? (T.mark_rescheduled || 'Cita Reagendada') : (T.ready || 'Cita Creada')}
+              {rescheduledFromId ? T.appointment_rescheduled_success : T.appointment_created_success}
             </motion.h2>
             <motion.p
               initial={{ opacity: 0 }}
@@ -168,13 +168,13 @@ export function QuickAppointmentDrawer({
                 <div className="flex items-center gap-3 mb-6">
                   <div className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
                   <span className="text-[10px] font-black tracking-[0.4em] text-on-surface/40 uppercase">
-                    {rescheduledFromId ? (T.reschedule || 'Reagendar Cita') : T.quick_appointment}
+                    {rescheduledFromId ? T.reschedule_appointment_title : T.quick_appointment}
                   </span>
                 </div>
                 <h2 className="precision-header text-3xl leading-tight">
-                  {rescheduledFromId ? (T.reschedule || 'Reagendar') : T.create_appointment_p1} <br />
+                  {rescheduledFromId ? T.reschedule : T.create_appointment_p1} <br />
                   <span className="text-primary italic font-serif lowercase pr-2">
-                    {rescheduledFromId ? (T.appointment || 'cita') : T.create_appointment_p2}
+                    {rescheduledFromId ? T.appointment : T.create_appointment_p2}
                   </span>
                 </h2>
               </div>

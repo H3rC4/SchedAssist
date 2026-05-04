@@ -54,7 +54,7 @@ export function AppointmentDetailDrawer({
   }
 
   const cancelAppointment = async () => {
-    if (!confirm(T.confirm_cancel_appointment || 'Are you sure you want to cancel this appointment?')) return
+    if (!confirm(T.confirm_cancel_appointment)) return
     
     try {
       setUpdating(true)
@@ -119,7 +119,7 @@ export function AppointmentDetailDrawer({
               transition={{ delay: 0.1 }}
               className="text-2xl font-black text-on-surface uppercase tracking-tight text-center"
             >
-              {T.appointment_cancelled || 'Cita Cancelada'}
+              {T.appointment_cancelled}
             </motion.h2>
           </div>
         ) : (
@@ -223,7 +223,7 @@ export function AppointmentDetailDrawer({
 
           {appointment.cancellation_reason && (
             <div className="space-y-2">
-              <h4 className="text-[8px] font-black text-error/40 uppercase tracking-[0.3em] ml-1">{T.cancellation_reason || 'MOTIVO DE CANCELACIÓN'}</h4>
+              <h4 className="text-[8px] font-black text-error/40 uppercase tracking-[0.3em] ml-1">{T.cancellation_reason_title}</h4>
               <div className="p-4 rounded-2xl bg-error/5 border border-error/10">
                 <p className="text-[10px] font-bold text-error/70 leading-relaxed">
                   {appointment.cancellation_reason}
@@ -242,7 +242,7 @@ export function AppointmentDetailDrawer({
                 disabled={updating}
                 className="w-full py-4 rounded-xl bg-emerald-500 text-white font-black text-[9px] uppercase tracking-[0.2em] hover:opacity-90 transition-all flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20"
               >
-                <CheckCircle className="h-3.5 w-3.5" /> {T.mark_rescheduled || 'MARCAR REAGENDADA'}
+                <CheckCircle className="h-3.5 w-3.5" /> {T.mark_rescheduled_btn}
               </button>
             )}
 
