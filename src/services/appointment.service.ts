@@ -379,12 +379,12 @@ export class AppointmentService {
    * Get available time slots for a professional on a specific date,
    * respecting the duration of the selected service.
    */
-  static async getAvailableSlots(supabase: any, params: {
+  static async getAvailabilityDetails(supabase: any, params: {
     tenant_id: string;
     professional_id: string;
     date: string; // YYYY-MM-DD
     service_id?: string;
-  }) {
+  }): Promise<{ slots: string[]; isBlocked: boolean; blockReason: string | null }> {
     const dayOfWeek = parseISO(params.date).getDay()
 
     // 0. Check for a date-specific override FIRST
@@ -398,7 +398,7 @@ export class AppointmentService {
 
     // If explicitly blocked with no times → block the entire day
     if (override?.override_type === 'block' && (!override.start_time || !override.end_time)) {
-      return [];
+      return { slots: [], isBlocked: true, blockReason: override.reason || null };
     }
 
     // Build the effective rules: either from override or from weekly config
@@ -422,7 +422,7 @@ export class AppointmentService {
         .eq('day_of_week', dayOfWeek)
         .eq('active', true)
 
-      if (!rules || rules.length === 0) return []
+      if (!rules || rules.length === 0) return { slots: [], isBlocked: false, blockReason: null }
       effectiveRules = rules
     }
 
@@ -505,7 +505,22 @@ export class AppointmentService {
       }
     }
 
-    return Array.from(slotSet).sort()
+    const slots = Array.from(slotSet).sort()
+    return { slots, isBlocked: false, blockReason: null }
+  }
+
+  /**
+   * Backward-compatible wrapper: returns only the array of available slot strings.
+   * Used by the WhatsApp Bot engine.
+   */
+  static async getAvailableSlots(supabase: any, params: {
+    tenant_id: string;
+    professional_id: string;
+    date: string; // YYYY-MM-DD
+    service_id?: string;
+  }) {
+    const { slots } = await AppointmentService.getAvailabilityDetails(supabase, params)
+    return slots
   }
 
 

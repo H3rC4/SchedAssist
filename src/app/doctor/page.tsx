@@ -40,6 +40,8 @@ export default function DoctorDashboard() {
   const [professionals, setProfessionals] = useState<any[]>([])
   const [availableSlots, setAvailableSlots] = useState<string[]>([])
   const [slotLoading, setSlotLoading] = useState(false)
+  const [isBlocked, setIsBlocked] = useState(false)
+  const [blockReason, setBlockReason] = useState<string | null>(null)
 
   const fetchAppointments = useCallback(async (pId: string, tId: string, month: Date) => {
     const start = format(startOfMonth(month), 'yyyy-MM-dd')
@@ -69,86 +71,30 @@ export default function DoctorDashboard() {
   }, [supabase])
 
   const fetchSlots = useCallback(async (pId: string, dateStr: string) => {
-    if (!pId || !tenantId || !dateStr) return
-    setSlotLoading(true)
-    const date = parseISO(dateStr)
-    const dayOfWeek = date.getDay()
-
-    // 0. Check for overrides
-    const { data: override } = await supabase
-      .from('professional_availability_overrides')
-      .select('*')
-      .eq('tenant_id', tenantId)
-      .eq('professional_id', pId)
-      .eq('override_date', dateStr)
-      .maybeSingle()
-
-    if (override?.override_type === 'block') {
+    if (!pId || !tenantId || !dateStr) {
       setAvailableSlots([])
-      setSlotLoading(false)
+      setIsBlocked(false)
+      setBlockReason(null)
       return
     }
-
-    let effectiveRules: any[] = []
-    if (override?.override_type === 'open') {
-      effectiveRules = [{ 
-        start_time: override.start_time, 
-        end_time: override.end_time,
-        lunch_break_start: null,
-        lunch_break_end: null
-      }]
-    } else {
-      const { data: rules } = await supabase.from('availability_rules').select('*')
-        .eq('tenant_id', tenantId).eq('professional_id', pId)
-        .eq('day_of_week', dayOfWeek).eq('active', true)
-
-      if (!rules || rules.length === 0) { 
-        setAvailableSlots([])
-        setSlotLoading(false)
-        return 
-      }
-      effectiveRules = rules
+    setSlotLoading(true)
+    try {
+      const params = new URLSearchParams({ tenant_id: tenantId, professional_id: pId, date: dateStr })
+      const res = await fetch(`/api/appointments/available-slots?${params}`)
+      if (!res.ok) throw new Error('Failed to fetch slots')
+      const data: { slots: string[]; isBlocked: boolean; blockReason: string | null } = await res.json()
+      setAvailableSlots(data.slots)
+      setIsBlocked(data.isBlocked)
+      setBlockReason(data.blockReason)
+    } catch (e) {
+      console.error('[fetchSlots]', e)
+      setAvailableSlots([])
+      setIsBlocked(false)
+      setBlockReason(null)
+    } finally {
+      setSlotLoading(false)
     }
-
-    const { data: existingApps } = await supabase.from('appointments').select('start_at, end_at')
-      .eq('tenant_id', tenantId).eq('professional_id', pId).neq('status', 'cancelled')
-      .gte('start_at', `${dateStr}T00:00:00Z`).lte('start_at', `${dateStr}T23:59:59Z`)
-
-    const slots: string[] = []
-    const now = new Date()
-
-    for (const rule of effectiveRules) {
-      let current = parseISO(`${dateStr}T${rule.start_time}`)
-      const endRule = parseISO(`${dateStr}T${rule.end_time}`)
-      const lunchStart = rule.lunch_break_start ? parseISO(`${dateStr}T${rule.lunch_break_start}`) : null
-      const lunchEnd = rule.lunch_break_end ? parseISO(`${dateStr}T${rule.lunch_break_end}`) : null
-
-      while (current < endRule) {
-        const slotStart = new Date(current)
-        const slotEnd = new Date(current.getTime() + 30 * 60000)
-        
-        if (slotEnd > endRule) break
-
-        if (slotStart >= now) {
-          // Lunch break check
-          if (lunchStart && lunchEnd && slotStart < lunchEnd && slotEnd > lunchStart) {
-            current = slotEnd
-            continue
-          }
-
-          const isOccupied = existingApps?.some((a: any) => {
-            const appStart = parseISO(a.start_at.slice(0, 19))
-            const appEnd = parseISO(a.end_at.slice(0, 19))
-            return appStart < slotEnd && appEnd > slotStart
-          })
-          if (!isOccupied) slots.push(format(slotStart, 'HH:mm'))
-        }
-        current = slotEnd
-      }
-    }
-    setAvailableSlots(slots)
-    setSlotLoading(false)
-  }, [supabase, tenantId])
+  }, [tenantId])
 
   const markAsNotified = async (id: string) => {
     setNotifyingId(id)
@@ -446,6 +392,8 @@ export default function DoctorDashboard() {
           translations={getTranslations(language)}
           availableSlots={availableSlots}
           slotLoading={slotLoading}
+          isBlocked={isBlocked}
+          blockReason={blockReason}
           onFetchSlots={fetchSlots}
         />
       )}

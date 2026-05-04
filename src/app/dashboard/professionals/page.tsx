@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { Users, UserPlus, Loader2, Search, ArrowRight, Plus } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useProfessionals, AvailabilityRule } from '@/hooks/useProfessionals'
+import { AnimatePresence } from 'framer-motion'
 import { AddProfessionalModal } from '@/components/professionals/AddProfessionalModal'
 import { ProfessionalDetailDrawer } from '@/components/professionals/ProfessionalDetailDrawer'
 import { ProfessionalCard } from '@/components/professionals/ProfessionalCard'
@@ -97,10 +98,10 @@ export default function ProfessionalsPage() {
             </div>
             <button 
               onClick={() => setShowAddForm(true)}
-              className="precision-button-primary py-1.5 px-4 text-[9px] group flex items-center gap-2 h-fit"
+              className="flex items-center justify-center gap-2 px-6 py-3 bg-primary text-white rounded-xl font-black text-xs uppercase tracking-widest hover:bg-primary/90 transition-all shadow-md active:scale-95"
             >
               <span>{T_ui.add_professional_btn}</span>
-              <Plus className="h-3 w-3 group-hover:rotate-90 transition-transform" />
+              <Plus className="h-4 w-4" />
             </button>
           </div>
 
@@ -121,8 +122,8 @@ export default function ProfessionalsPage() {
           </div>
         </div>
 
-        {/* UNIFORM GRID SECTION */}
-        <div className="relative z-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4">
+        {/* LIST SECTION */}
+        <div className="relative z-10 flex flex-col gap-3 max-w-4xl">
           {filteredProfessionals.length === 0 ? (
             <div className="col-span-full py-12 text-center bg-precision-surface-lowest/50 backdrop-blur-sm rounded-xl border border-dashed border-on-surface/10">
               <div className="h-10 w-10 bg-surface-container-low rounded-full flex items-center justify-center mx-auto mb-3">
@@ -167,25 +168,27 @@ export default function ProfessionalsPage() {
         }}
       />
 
-      {selectedProf && (
-        <ProfessionalDetailDrawer 
-          professional={selectedProf}
-          locations={locations}
-          onClose={() => selectProfessional(null)}
-          activeTab={activeTab}
-          setActiveTab={setActiveTab}
-          editRules={editRules}
-          updateRule={updateRule}
-          toggleLunchBreak={toggleLunchBreak}
-          overrides={overrides}
-          onDelete={() => deleteProfessional(selectedProf.id)}
-          onSave={(generalInfo?: any) => updateAvailability(selectedProf.id, editRules, generalInfo)}
-          addOverride={(date, formData) => addOverride(selectedProf.id, { date, ...formData })}
-          deleteOverride={(id) => deleteOverride(selectedProf.id, id)}
-          saving={saving}
-          saved={saved}
-        />
-      )}
+      <AnimatePresence>
+        {selectedProf && (
+          <ProfessionalDetailDrawer 
+            professional={selectedProf}
+            locations={locations}
+            onClose={() => selectProfessional(null)}
+            activeTab={activeTab}
+            setActiveTab={setActiveTab}
+            editRules={editRules}
+            updateRule={updateRule}
+            toggleLunchBreak={toggleLunchBreak}
+            overrides={overrides}
+            onDelete={() => deleteProfessional(selectedProf.id)}
+            onSave={(generalInfo?: any) => updateAvailability(selectedProf.id, editRules, generalInfo)}
+            addOverride={(date, formData) => addOverride(selectedProf.id, { date, ...formData })}
+            deleteOverride={(id) => deleteOverride(selectedProf.id, id)}
+            saving={saving}
+            saved={saved}
+          />
+        )}
+      </AnimatePresence>
     </div>
   )
 }

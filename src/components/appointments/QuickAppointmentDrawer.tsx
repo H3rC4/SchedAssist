@@ -18,6 +18,8 @@ interface QuickAppointmentDrawerProps {
   translations: any;
   availableSlots: string[];
   slotLoading: boolean;
+  isBlocked?: boolean;
+  blockReason?: string | null;
   onFetchSlots: (profId: string, date: string) => void;
   initialPatient?: { first_name: string; last_name: string; phone: string };
   rescheduledFromId?: string | null;
@@ -35,6 +37,8 @@ export function QuickAppointmentDrawer({
   translations: T,
   availableSlots,
   slotLoading,
+  isBlocked = false,
+  blockReason = null,
   onFetchSlots,
   initialPatient,
   rescheduledFromId,
@@ -312,6 +316,15 @@ export function QuickAppointmentDrawer({
                       <div key={i} className="h-12 bg-on-surface/5 rounded-xl animate-pulse" />
                     ))}
                   </div>
+                ) : isBlocked ? (
+                  <div className="p-6 rounded-3xl bg-red-500/5 border border-red-500/20 flex flex-col gap-2 text-center">
+                    <p className="text-[11px] font-black text-red-500 uppercase tracking-widest">
+                      🚫 {T.professional_unavailable || 'Profesional no disponible'}
+                    </p>
+                    {blockReason && (
+                      <p className="text-xs font-semibold text-red-400/70">{blockReason}</p>
+                    )}
+                  </div>
                 ) : availableSlots.length === 0 ? (
                   <div className="p-8 rounded-3xl bg-orange-500/5 border border-orange-500/10 text-center">
                     <p className="text-[10px] font-black text-orange-600 uppercase tracking-widest">
@@ -361,7 +374,7 @@ export function QuickAppointmentDrawer({
         <div className="p-6 md:p-8 border-t border-on-surface/5 bg-surface/80 backdrop-blur-md">
           <button 
             onClick={handleCreateAppointment}
-            disabled={loading || saveSuccess || !formData.first_name || !formData.professional_id || !formData.time || !formData.service_id}
+            disabled={loading || saveSuccess || isBlocked || !formData.first_name || !formData.professional_id || !formData.time || !formData.service_id}
             className={`w-full py-5 rounded-full font-black text-[11px] uppercase tracking-[0.4em] shadow-xl transition-all duration-500 flex items-center justify-center gap-3 active:scale-[0.98] disabled:opacity-30 disabled:cursor-not-allowed
               ${saveSuccess ? 'bg-success text-white' : 'bg-primary text-white hover:shadow-primary/20 hover:-translate-y-0.5'}
               ${variant === 'modal' ? 'rounded-none border-2 border-slate-900 shadow-[4px_4px_0_0_#0f172a] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0_0_#0f172a]' : ''}

@@ -216,10 +216,20 @@ export function ProfessionalDetailDrawer({
 
   return (
     <div className="fixed inset-0 z-50 overflow-hidden" onClick={onClose}>
-      <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-500" />
+      <motion.div 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.3 }}
+        className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" 
+      />
 
-      <div 
-        className="absolute top-0 right-0 h-full w-full max-w-2xl bg-surface shadow-spatial animate-in slide-in-from-right duration-700 flex flex-col"
+      <motion.div 
+        initial={{ x: '100%' }}
+        animate={{ x: 0 }}
+        exit={{ x: '100%' }}
+        transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+        className="absolute top-0 right-0 h-full w-full max-w-2xl bg-surface shadow-spatial flex flex-col"
         onClick={e => e.stopPropagation()}
       >
         {/* HEADER SECTION */}
@@ -791,7 +801,7 @@ export function ProfessionalDetailDrawer({
             </div>
           )}
         </AnimatePresence>
-      </div>
+      </motion.div>
     </div>
   )
 }

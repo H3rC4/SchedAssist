@@ -58,6 +58,8 @@ function AppointmentsContent() {
     professionals,
     availableSlots,
     slotLoading,
+    isBlocked,
+    blockReason,
     loading,
     setSelectedDate,
     navigateMonth,
@@ -342,6 +344,8 @@ function AppointmentsContent() {
             availableSlots={availableSlots}
             slotLoading={slotLoading}
             onFetchSlots={fetchSlots}
+            isBlocked={isBlocked}
+            blockReason={blockReason}
             initialPatient={reschedulePatient || undefined}
             rescheduledFromId={rescheduledFromId}
             variant={searchParams.get('variant') === 'modal' ? 'modal' : 'drawer'}

@@ -48,6 +48,8 @@ export function useAppointments() {
   const [professionals, setProfessionals] = useState<any[]>([])
   const [availableSlots, setAvailableSlots] = useState<string[]>([])
   const [slotLoading, setSlotLoading] = useState(false)
+  const [isBlocked, setIsBlocked] = useState(false)
+  const [blockReason, setBlockReason] = useState<string | null>(null)
   const [pendingCalls, setPendingCalls] = useState<Appointment[]>([])
   const [notifyingId, setNotifyingId] = useState<string | null>(null)
   const [lang, setLang] = useState<'en' | 'es' | 'it'>('es')
@@ -167,47 +169,30 @@ export function useAppointments() {
   }, [tenantId, currentMonth, selectedDate, fetchMonthAppointments, fetchDayAppointments, supabase])
 
   const fetchSlots = useCallback(async (profId: string, dateStr: string) => {
-    if (!profId || !tenantId || !dateStr) { setAvailableSlots([]); return }
-    setSlotLoading(true)
-    const date = parseISO(dateStr)
-    const dayOfWeek = date.getDay()
-
-    const { data: rules } = await supabase.from('availability_rules').select('*')
-      .eq('tenant_id', tenantId).eq('professional_id', profId)
-      .eq('day_of_week', dayOfWeek).eq('active', true)
-
-    if (!rules || rules.length === 0) { setAvailableSlots([]); setSlotLoading(false); return }
-
-    const { data: existingApps } = await supabase.from('appointments').select('start_at, end_at')
-      .eq('tenant_id', tenantId).eq('professional_id', profId).neq('status', 'cancelled')
-      .gte('start_at', `${dateStr}T00:00:00Z`).lte('start_at', `${dateStr}T23:59:59Z`)
-
-    const slots: string[] = []
-    const now = new Date()
-
-    for (const rule of rules) {
-      let current = parseISO(`${dateStr}T${rule.start_time}`)
-      const endRule = parseISO(`${dateStr}T${rule.end_time}`)
-
-      while (current < endRule) {
-        const slotStart = new Date(current)
-        const slotEnd = new Date(current.getTime() + 30 * 60000)
-
-        if (slotStart < now) { current = slotEnd; continue }
-
-        const isOccupied = existingApps?.some((a: any) => {
-          const appStart = parseISO(a.start_at.slice(0, 19))
-          const appEnd = parseISO(a.end_at.slice(0, 19))
-          return appStart < slotEnd && appEnd > slotStart
-        })
-
-        if (!isOccupied) slots.push(format(slotStart, 'HH:mm'))
-        current = slotEnd
-      }
+    if (!profId || !tenantId || !dateStr) {
+      setAvailableSlots([])
+      setIsBlocked(false)
+      setBlockReason(null)
+      return
     }
-    setAvailableSlots(slots)
-    setSlotLoading(false)
-  }, [tenantId, supabase])
+    setSlotLoading(true)
+    try {
+      const params = new URLSearchParams({ tenant_id: tenantId, professional_id: profId, date: dateStr })
+      const res = await fetch(`/api/appointments/available-slots?${params}`)
+      if (!res.ok) throw new Error('Failed to fetch slots')
+      const data: { slots: string[]; isBlocked: boolean; blockReason: string | null } = await res.json()
+      setAvailableSlots(data.slots)
+      setIsBlocked(data.isBlocked)
+      setBlockReason(data.blockReason)
+    } catch (e) {
+      console.error('[fetchSlots]', e)
+      setAvailableSlots([])
+      setIsBlocked(false)
+      setBlockReason(null)
+    } finally {
+      setSlotLoading(false)
+    }
+  }, [tenantId])
 
   const cancelAppointment = async (id: string) => {
     setAppointments(prev => prev.map(app => app.id === id ? { ...app, status: 'cancelled' as any } : app))
@@ -281,6 +266,8 @@ export function useAppointments() {
     professionals,
     availableSlots,
     slotLoading,
+    isBlocked,
+    blockReason,
     lang,
     loading,
     pendingCalls,

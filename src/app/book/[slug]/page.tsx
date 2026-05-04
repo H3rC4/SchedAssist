@@ -34,6 +34,8 @@ export default function BookingPage() {
   const [services, setServices] = useState<any[]>([])
   const [professionals, setProfessionals] = useState<any[]>([])
   const [availableSlots, setAvailableSlots] = useState<string[]>([])
+  const [isBlocked, setIsBlocked] = useState(false)
+  const [blockReason, setBlockReason] = useState<string | null>(null)
   
   // Selection State
   const [step, setStep] = useState(1)
@@ -100,67 +102,35 @@ export default function BookingPage() {
 
   // Fetch Slots when Date/Professional/Service changes
   const fetchSlots = useCallback(async () => {
-    if (!tenant || !selectedService || !selectedDate) return
-    
-    // If no professional selected, we can't show slots unless we check all of them
-    // For now, require professional selection or show first available
-    if (!selectedProfessional) return
-
-    const dateStr = format(selectedDate, 'yyyy-MM-dd')
-    const dayOfWeek = selectedDate.getDay()
-
-    const { data: rules } = await supabase
-      .from('availability_rules')
-      .select('*')
-      .eq('professional_id', selectedProfessional.id)
-      .eq('day_of_week', dayOfWeek)
-      .eq('active', true)
-
-    if (!rules || rules.length === 0) {
+    if (!tenant || !selectedService || !selectedDate || !selectedProfessional) {
       setAvailableSlots([])
+      setIsBlocked(false)
+      setBlockReason(null)
       return
     }
 
-    const { data: existingApps } = await supabase
-      .from('appointments')
-      .select('start_at, end_at')
-      .eq('professional_id', selectedProfessional.id)
-      .neq('status', 'cancelled')
-      .gte('start_at', `${dateStr}T00:00:00Z`)
-      .lte('start_at', `${dateStr}T23:59:59Z`)
+    const dateStr = format(selectedDate, 'yyyy-MM-dd')
+    const params = new URLSearchParams({
+      tenant_id: tenant.id,
+      professional_id: selectedProfessional.id,
+      date: dateStr,
+      service_id: selectedService.id,
+    })
 
-    const slots: string[] = []
-    const now = new Date()
-
-    for (const rule of rules) {
-      let current = parseISO(`${dateStr}T${rule.start_time}`)
-      const endRule = parseISO(`${dateStr}T${rule.end_time}`)
-
-      while (current < endRule) {
-        const slotStart = new Date(current)
-        const slotEnd = new Date(current.getTime() + (selectedService.duration_minutes || 30) * 60000)
-
-        // Prevent past slots
-        if (slotStart < now) {
-          current = new Date(current.getTime() + 15 * 60000)
-          continue
-        }
-
-        const isOccupied = existingApps?.some(a => {
-          const appStart = parseISO(a.start_at)
-          const appEnd = parseISO(a.end_at)
-          return appStart < slotEnd && appEnd > slotStart
-        })
-
-        if (!isOccupied) {
-          slots.push(format(slotStart, 'HH:mm'))
-        }
-        current = new Date(current.getTime() + 15 * 60000) // 15 min granularity
-      }
+    try {
+      const res = await fetch(`/api/appointments/available-slots?${params}`)
+      if (!res.ok) throw new Error('Failed to fetch slots')
+      const data: { slots: string[]; isBlocked: boolean; blockReason: string | null } = await res.json()
+      setAvailableSlots(data.slots)
+      setIsBlocked(data.isBlocked)
+      setBlockReason(data.blockReason)
+    } catch (e) {
+      console.error('[booking fetchSlots]', e)
+      setAvailableSlots([])
+      setIsBlocked(false)
+      setBlockReason(null)
     }
-
-    setAvailableSlots(slots)
-  }, [tenant, selectedService, selectedProfessional, selectedDate, supabase])
+  }, [tenant, selectedService, selectedProfessional, selectedDate])
 
   useEffect(() => {
     if (step === 4) fetchSlots()
@@ -458,7 +428,12 @@ export default function BookingPage() {
                     <div className="space-y-4 flex flex-col">
                       <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Horarios Disponibles</p>
                       <div className="grid grid-cols-3 gap-2 overflow-y-auto max-h-[250px] pr-2 custom-scrollbar">
-                        {availableSlots.length === 0 ? (
+                        {isBlocked ? (
+                          <div className="col-span-3 py-10 text-center">
+                            <p className="text-sm font-black text-red-400 uppercase tracking-widest mb-1">🚫 Profesional no disponible</p>
+                            {blockReason && <p className="text-xs text-red-400/60 font-semibold">{blockReason}</p>}
+                          </div>
+                        ) : availableSlots.length === 0 ? (
                           <div className="col-span-3 py-12 text-center text-slate-500 italic text-sm">
                             No hay horarios disponibles para este día.
                           </div>
@@ -483,7 +458,7 @@ export default function BookingPage() {
 
                   <div className="mt-8 pt-8 border-t border-white/5">
                     <button
-                      disabled={!selectedSlot}
+                      disabled={!selectedSlot || isBlocked}
                       onClick={() => setStep(5)}
                       className="w-full bg-accent-500 text-primary-950 font-black uppercase tracking-[0.2em] text-xs py-5 rounded-2xl hover:bg-accent-400 transition-all active:scale-95 shadow-[0_0_20px_rgba(245,158,11,0.2)] disabled:opacity-30 disabled:pointer-events-none"
                     >
