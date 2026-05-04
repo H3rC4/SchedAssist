@@ -440,63 +440,13 @@ export const translations = {
       tech_hipaa: 'HIPAA',
       tech_hipaa_desc: 'Security',
       tech_shadcn: 'Shadcn/ui',
-      tech_shadcn_desc: 'UX Elegance',
+tech_shadcn_desc: 'UX Elegance',
       
       // CTA & Footer
       final_cta_title: 'Ready to Transform Your Practice?',
       final_cta_desc: 'Join over 500 clinics that improved operational efficiency by 30% in the first month.',
       no_card_required: 'No credit card required. 14 days of full access.',
       footer_copyright: '© 2025 SchedAssist. Built for modern clinics.',
-      
-      // More detailed descriptions
-      hero_subtitle: 'The definitive clinical management platform built for speed.',
-      hero_description: 'Experience lightning-fast scheduling and elegant patient records in one unified workspace. Automate bookings, manage patients, and grow your practice.',
-      
-      // Features
-      features_section_title: 'Designed for Medical Excellence',
-      feature_1_title: 'WhatsApp Bot',
-      feature_1_desc: 'Automates interactions and drastically reduces no-shows.',
-      feature_2_title: 'Artificial Intelligence',
-      feature_2_desc: 'Natural language processing lets patients book intuitively.',
-      feature_3_title: 'Dashboard & Metrics',
-      feature_3_desc: 'Monitor clinic performance, daily flows, and revenue in real-time.',
-      feature_4_title: 'Stripe Payments',
-      feature_4_desc: 'Reduce no-shows by charging deposits or full fee upfront automatically.',
-      feature_5_title: 'Secure Space',
-      feature_5_desc: 'Multi-user platform for clinics and independent professionals with full privacy.',
-      feature_6_title: 'Automation',
-      feature_6_desc: 'Reminders, confirmations, and reschedulings without human intervention, 24/7.',
-      
-      // Customization
-      custom_title: 'Unprecedented Customization',
-      custom_subtitle: 'Adapt SchedAssist to your exact operational needs without writing a single line of code.',
-      custom_feature_1: 'Granular Schedules',
-      custom_feature_1_desc: 'Define custom shifts, breaks, and vacations for each professional independently.',
-      custom_feature_2: 'Service Durations',
-      custom_feature_2_desc: 'Set specific durations for each service and perfectly optimize your clinical schedule.',
-      custom_feature_3: 'Roles & Access',
-      custom_feature_3_desc: 'Total control over what administrators, doctors, and support staff can see and do.',
-      
-      // Features (detailed)
-      agenda_title: 'Smart Interactive Schedule',
-      agenda_desc: 'Our patented calendar system allows physicians to maintain clinical context at all times. Side drawers slide with patient history, ensuring you never lose your place while reviewing vital data.',
-      records_title: 'Complete Patient Records',
-      records_desc: 'A centralized hub for each patient. Access medical history, uploaded files, and consultation notes in a single high-performance view. Designed for fast data entry without clutter.',
-      final_cta_title: 'Ready to Transform Your Clinic?',
-      final_cta_desc: 'Join 500+ clinics that have improved their operational efficiency by 30% in the first month.',
-      no_card_required: 'No credit card required. 14-day full access.',
-      nav_login: 'Login',
-
-      // Login Form Specific (Retained for compatibility)
-      login_card_title: 'Sign In',
-      email_label: 'Email Address',
-      password_label: 'Password',
-      forgot_password: 'Forgot Password?',
-      remember_me: 'Keep me signed in',
-      login_button: 'Sign In',
-      no_client_yet: 'Not a client yet?',
-      contact_sales: 'Contact Sales',
-      back_home: 'Back to Home',
     },
 
     // Tutorial
