@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from 'react'
-import { Clock, X, Trash2, Coffee, CalendarX, CheckCircle, RefreshCcw, Loader2, ChevronLeft, ChevronRight as ChevronRightIcon, AlertTriangle, Users, ShieldCheck, Mail, ArrowRight, ShieldAlert, ChevronDown, Calendar } from 'lucide-react'
+import { Clock, X, Trash2, Coffee, CalendarX, CheckCircle, RefreshCcw, Loader2, ChevronLeft, ChevronRight as ChevronRightIcon, AlertTriangle, Users, ShieldCheck, Mail, ArrowRight, ShieldAlert, ChevronDown, Calendar, Copy, Check } from 'lucide-react'
 import { Professional, AvailabilityRule, Override } from '@/hooks/useProfessionals'
 import { createClient } from '@/lib/supabase/client'
 import { 
@@ -71,6 +71,8 @@ export function ProfessionalDetailDrawer({
   const [resettingPassword, setResettingPassword] = useState(false)
   const [internalSaving, setInternalSaving] = useState(false)
   const [creatingAccount, setCreatingAccount] = useState(false)
+  const [copiedEmail, setCopiedEmail] = useState(false)
+  const [copiedPass, setCopiedPass] = useState(false)
   
   const [localInfo, setLocalInfo] = useState({
     full_name: professional.full_name,
@@ -188,6 +190,17 @@ export function ProfessionalDetailDrawer({
   const handleConfirmDelete = () => {
     if (window.confirm('¿Estás seguro de eliminar este profesional? Esta acción no se puede deshacer.')) {
       onDelete()
+    }
+  }
+  
+  const copyToClipboard = (text: string, type: 'email' | 'pass') => {
+    navigator.clipboard.writeText(text)
+    if (type === 'email') {
+      setCopiedEmail(true)
+      setTimeout(() => setCopiedEmail(false), 2000)
+    } else {
+      setCopiedPass(true)
+      setTimeout(() => setCopiedPass(false), 2000)
     }
   }
 
@@ -571,9 +584,14 @@ export function ProfessionalDetailDrawer({
                         <span className="text-[8px] font-black text-on-surface-muted uppercase tracking-widest block mb-2 ml-1">
                           {T.login_identifier || 'Identificador de Acceso'}
                         </span>
-                        <div className="flex items-center justify-between">
+                        <div className="flex items-center justify-between gap-4">
                            <span className="text-sm font-black text-on-surface break-all">{professional.auth_email}</span>
-                           <Mail className="h-4 w-4 text-on-surface-muted" />
+                           <button 
+                             onClick={() => copyToClipboard(professional.auth_email || '', 'email')}
+                             className={`p-2 rounded-lg transition-all ${copiedEmail ? 'bg-emerald-500/10 text-emerald-600' : 'hover:bg-on-surface/5 text-on-surface-muted hover:text-on-surface'}`}
+                           >
+                             {copiedEmail ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                           </button>
                         </div>
                       </div>
                       
@@ -582,9 +600,19 @@ export function ProfessionalDetailDrawer({
                           <span className="text-[8px] font-black text-on-surface-muted uppercase tracking-widest block mb-2 ml-1">
                             {T.credentials_hint || 'Sugerencia de Credenciales'}
                           </span>
-                          <span className="text-2xl font-black text-primary tracking-widest px-4 py-2 bg-primary/5 rounded-lg block w-fit">
-                            {localHint || '••••••••'}
-                          </span>
+                          <div className="flex items-center gap-3">
+                            <span className="text-2xl font-black text-primary tracking-widest px-4 py-2 bg-primary/5 rounded-lg block w-fit">
+                              {localHint || '••••••••'}
+                            </span>
+                            {localHint && (
+                              <button 
+                                onClick={() => copyToClipboard(localHint, 'pass')}
+                                className={`p-2 rounded-lg transition-all ${copiedPass ? 'bg-emerald-500/10 text-emerald-600' : 'hover:bg-on-surface/5 text-on-surface-muted hover:text-on-surface'}`}
+                              >
+                                {copiedPass ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                              </button>
+                            )}
+                          </div>
                         </div>
                         <button 
                           onClick={handleResetPassword}
