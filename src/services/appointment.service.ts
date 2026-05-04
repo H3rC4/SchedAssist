@@ -26,32 +26,37 @@ export class AppointmentService {
     const startTimeStr = format(startDate, 'HH:mm:ss');
     const endTimeStr = format(endDate, 'HH:mm:ss');
 
-    // 1. Check for a date-specific override FIRST
-    const { data: override } = await supabase
+    // 1. Check for date-specific overrides
+    const { data: allOverrides } = await supabase
       .from('professional_availability_overrides')
       .select('*')
       .eq('tenant_id', params.tenant_id)
       .eq('professional_id', params.professional_id)
-      .eq('override_date', dateStr)
-      .maybeSingle();
+      .eq('override_date', dateStr);
 
-    // If explicitly blocked → check if the requested time falls within the block
-    if (override?.override_type === 'block') {
-      // If no times specified, block the entire day
-      if (!override.start_time || !override.end_time) return false;
-      
-      // Overlap if: appointmentStart < blockEnd AND appointmentEnd > blockStart
-      const overlapBlock = startTimeStr < override.end_time && endTimeStr > override.start_time;
-      if (overlapBlock) return false;
+    // If any override is a full-day block, or if the requested time falls within an hourly block
+    if (allOverrides && allOverrides.length > 0) {
+      for (const ov of allOverrides as any[]) {
+        if (ov.override_type === 'block') {
+          // If no times specified, it blocks the entire day
+          if (!ov.start_time || !ov.end_time) return false;
+          
+          // Overlap if: appointmentStart < blockEnd AND appointmentEnd > blockStart
+          // We use string comparison for HH:mm:ss format which is safe
+          const overlapBlock = startTimeStr < ov.end_time && endTimeStr > ov.start_time;
+          if (overlapBlock) return false;
+        }
+      }
     }
 
     let effectiveRules: any[] = [];
+    const openOverride = allOverrides?.find((ov: any) => ov.override_type === 'open');
 
-    if (override?.override_type === 'open') {
+    if (openOverride) {
       // Use the override's custom hours for this specific date
       effectiveRules = [{ 
-        start_time: override.start_time, 
-        end_time: override.end_time,
+        start_time: openOverride.start_time, 
+        end_time: openOverride.end_time,
         lunch_break_start: null,
         lunch_break_end: null
       }];
@@ -387,28 +392,29 @@ export class AppointmentService {
   }): Promise<{ slots: string[]; isBlocked: boolean; blockReason: string | null }> {
     const dayOfWeek = parseISO(params.date).getDay()
 
-    // 0. Check for a date-specific override FIRST
-    const { data: override } = await supabase
+    // 0. Check for date-specific overrides
+    const { data: allOverrides } = await supabase
       .from('professional_availability_overrides')
       .select('*')
       .eq('tenant_id', params.tenant_id)
       .eq('professional_id', params.professional_id)
-      .eq('override_date', params.date)
-      .maybeSingle()
+      .eq('override_date', params.date);
 
-    // If explicitly blocked with no times → block the entire day
-    if (override?.override_type === 'block' && (!override.start_time || !override.end_time)) {
-      return { slots: [], isBlocked: true, blockReason: override.reason || null };
+    // Check for full-day block first
+    const fullDayBlock = allOverrides?.find((ov: any) => ov.override_type === 'block' && (!ov.start_time || !ov.end_time));
+    if (fullDayBlock) {
+      return { slots: [], isBlocked: true, blockReason: fullDayBlock.reason || null };
     }
 
-    // Build the effective rules: either from override or from weekly config
+    // Build the effective rules: either from an 'open' override or from weekly config
     let effectiveRules: any[] = []
+    const openOverride = allOverrides?.find((ov: any) => ov.override_type === 'open');
 
-    if (override?.override_type === 'open') {
+    if (openOverride) {
       // Use the override's custom hours for this specific date
       effectiveRules = [{ 
-        start_time: override.start_time, 
-        end_time: override.end_time,
+        start_time: openOverride.start_time, 
+        end_time: openOverride.end_time,
         lunch_break_start: null,
         lunch_break_end: null
       }]
@@ -460,9 +466,8 @@ export class AppointmentService {
       const lunchStart = rule.lunch_break_start ? parseISO(`${params.date}T${rule.lunch_break_start}`) : null
       const lunchEnd = rule.lunch_break_end ? parseISO(`${params.date}T${rule.lunch_break_end}`) : null
       
-      // Hourly block override check
-      const blockStart = (override?.override_type === 'block' && override.start_time) ? parseISO(`${params.date}T${override.start_time}`) : null
-      const blockEnd = (override?.override_type === 'block' && override.end_time) ? parseISO(`${params.date}T${override.end_time}`) : null
+      // Hourly block overrides for this date
+      const hourlyBlocks = allOverrides?.filter((ov: any) => ov.override_type === 'block' && ov.start_time && ov.end_time) || [];
 
       while (current < endRule) {
         const slotStart = current;
@@ -483,8 +488,14 @@ export class AppointmentService {
           continue;
         }
 
-        // Check 3.5: Not during a specific block override
-        if (blockStart && blockEnd && slotStart < blockEnd && slotEnd > blockStart) {
+        // Check 3.5: Not during any specific block override
+        const isBlockedByOverride = hourlyBlocks.some((block: any) => {
+          const bStart = parseISO(`${params.date}T${block.start_time}`);
+          const bEnd = parseISO(`${params.date}T${block.end_time}`);
+          return slotStart < bEnd && slotEnd > bStart;
+        });
+
+        if (isBlockedByOverride) {
           current = new Date(current.getTime() + 30 * 60000);
           continue;
         }
