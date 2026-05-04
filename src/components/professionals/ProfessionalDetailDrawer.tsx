@@ -362,14 +362,14 @@ export function ProfessionalDetailDrawer({
                                   type="time" 
                                   value={rule.start_time.slice(0, 5)}
                                   onChange={e => updateRule(rule.day_of_week, 'start_time', e.target.value + ':00')}
-                                  className="bg-transparent border-none p-0 text-[10px] font-black text-on-surface focus:ring-0 outline-none w-12"
+                                  className="bg-transparent border-none p-0 text-[11px] font-black text-on-surface focus:ring-0 outline-none w-20"
                                 />
                                 <span className="text-[8px] font-black text-on-surface-muted">→</span>
                                 <input 
                                   type="time" 
                                   value={rule.end_time.slice(0, 5)}
                                   onChange={e => updateRule(rule.day_of_week, 'end_time', e.target.value + ':00')}
-                                  className="bg-transparent border-none p-0 text-[10px] font-black text-on-surface focus:ring-0 outline-none w-12"
+                                  className="bg-transparent border-none p-0 text-[11px] font-black text-on-surface focus:ring-0 outline-none w-20"
                                 />
                               </div>
 
@@ -402,14 +402,14 @@ export function ProfessionalDetailDrawer({
                                     type="time" 
                                     value={rule.lunch_break_start.slice(0, 5)}
                                     onChange={e => updateRule(rule.day_of_week, 'lunch_break_start', e.target.value + ':00')}
-                                    className="bg-transparent border-none p-0 text-[10px] font-black text-on-surface focus:ring-0 outline-none w-12"
+                                    className="bg-transparent border-none p-0 text-[11px] font-black text-on-surface focus:ring-0 outline-none w-20"
                                   />
                                   <span className="text-[8px] font-black text-on-surface-muted">→</span>
                                   <input 
                                     type="time" 
                                     value={(rule.lunch_break_end || '14:00').slice(0, 5)}
                                     onChange={e => updateRule(rule.day_of_week, 'lunch_break_end', e.target.value + ':00')}
-                                    className="bg-transparent border-none p-0 text-[10px] font-black text-on-surface focus:ring-0 outline-none w-12"
+                                    className="bg-transparent border-none p-0 text-[11px] font-black text-on-surface focus:ring-0 outline-none w-20"
                                   />
                                 </div>
                               </div>
@@ -734,7 +734,7 @@ export function ProfessionalDetailDrawer({
                            type="time" 
                            value={overrideForm.start_time}
                            onChange={e => setOverrideForm(f => ({...f, start_time: e.target.value}))}
-                           className="bg-transparent border-none text-center p-0 text-xl font-black text-on-surface focus:ring-0 w-full" 
+                           className="bg-transparent border-none text-center p-0 text-2xl font-black text-on-surface focus:ring-0 w-28 mx-auto block" 
                          />
                       </div>
                       <div className="h-8 w-px bg-on-surface/10 rounded-full" />
@@ -744,7 +744,7 @@ export function ProfessionalDetailDrawer({
                            type="time" 
                            value={overrideForm.end_time}
                            onChange={e => setOverrideForm(f => ({...f, end_time: e.target.value}))}
-                           className="bg-transparent border-none text-center p-0 text-xl font-black text-on-surface focus:ring-0 w-full" 
+                           className="bg-transparent border-none text-center p-0 text-2xl font-black text-on-surface focus:ring-0 w-28 mx-auto block" 
                          />
                       </div>
                     </div>
