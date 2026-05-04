@@ -380,6 +380,15 @@ export const translations = {
 
     // Landing Page
     landing: {
+      // Nav
+      nav_features: 'Features',
+      nav_solutions: 'Solutions',
+      nav_pricing: 'Pricing',
+      nav_resources: 'Resources',
+      nav_login: 'Login',
+      nav_get_started: 'Get Started',
+      
+      // Hero
       hero_badge: "NEW: Next.js 14 & Shadcn/ui Powering Your Clinic",
       hero_title_1: 'Precision in Patient Care,',
       hero_title_2: 'Fluidity in Clinic Flow',
@@ -393,6 +402,12 @@ export const translations = {
       records_desc: 'A centralized hub for every patient. Access medical history, uploaded files, and consultation notes in a single, high-performance view. Designed for rapid data entry without the clutter.',
       whatsapp_title: 'The WhatsApp Advantage',
       whatsapp_desc: 'Reduce "no-shows" by up to 45% with automatic reminders. SchedAssist integrates directly with WhatsApp to send patient confirmations, follow-ups, and arrival alerts—all managed from your dashboard.',
+      whatsapp_benefit_1_title: 'Smart Reminders',
+      whatsapp_benefit_1_desc: 'Automatically ping patients 24 hours before their visit.',
+      whatsapp_benefit_2_title: 'Instant Sync',
+      whatsapp_benefit_2_desc: 'Patients can confirm or reschedule via chat—synced instantly.',
+      whatsapp_benefit_3_title: 'AI Booking',
+      whatsapp_benefit_3_desc: 'Natural language processing lets patients book appointments through conversation.',
       whatsapp_feature_1_title: 'Smart Reminders',
       whatsapp_feature_1_desc: 'Automatically ping patients 24 hours before their visit.',
       whatsapp_feature_2_title: 'Instant Sync',
@@ -420,6 +435,56 @@ export const translations = {
       final_cta: 'Ready to Transform Your Clinic?',
       final_cta_btn: 'Start Now',
       tech_title: 'Built with Modern Foundations',
+      tech_nextjs: 'Next.js 14',
+      tech_nextjs_desc: 'Performance',
+      tech_tailwind: 'Tailwind CSS',
+      tech_tailwind_desc: 'Efficiency',
+      tech_hipaa: 'HIPAA',
+      tech_hipaa_desc: 'Security',
+      tech_shadcn: 'Shadcn/ui',
+      tech_shadcn_desc: 'UX Elegance',
+      
+      // CTA & Footer
+      final_cta_title: 'Ready to Transform Your Practice?',
+      final_cta_desc: 'Join over 500 clinics that improved operational efficiency by 30% in the first month.',
+      final_cta_btn: 'Start Now',
+      no_card_required: 'No credit card required. 14 days of full access.',
+      footer_copyright: '© 2025 SchedAssist. Built for modern clinics.',
+      
+      // More detailed descriptions
+      hero_subtitle: 'The definitive clinical management platform built for speed.',
+      hero_description: 'Experience lightning-fast scheduling and elegant patient records in one unified workspace. Automate bookings, manage patients, and grow your practice.',
+      
+      // Features
+      features_section_title: 'Designed for Medical Excellence',
+      feature_1_title: 'WhatsApp Bot',
+      feature_1_desc: 'Automates interactions and drastically reduces no-shows.',
+      feature_2_title: 'Artificial Intelligence',
+      feature_2_desc: 'Natural language processing lets patients book intuitively.',
+      feature_3_title: 'Dashboard & Metrics',
+      feature_3_desc: 'Monitor clinic performance, daily flows, and revenue in real-time.',
+      feature_4_title: 'Stripe Payments',
+      feature_4_desc: 'Reduce no-shows by charging deposits or full fee upfront automatically.',
+      feature_5_title: 'Secure Space',
+      feature_5_desc: 'Multi-user platform for clinics and independent professionals with full privacy.',
+      feature_6_title: 'Automation',
+      feature_6_desc: 'Reminders, confirmations, and reschedulings without human intervention, 24/7.',
+      
+      // Customization
+      custom_title: 'Unprecedented Customization',
+      custom_subtitle: 'Adapt SchedAssist to your exact operational needs without writing a single line of code.',
+      custom_feature_1: 'Granular Schedules',
+      custom_feature_1_desc: 'Define custom shifts, breaks, and vacations for each professional independently.',
+      custom_feature_2: 'Service Durations',
+      custom_feature_2_desc: 'Set specific durations for each service and perfectly optimize your clinical schedule.',
+      custom_feature_3: 'Roles & Access',
+      custom_feature_3_desc: 'Total control over what administrators, doctors, and support staff can see and do.',
+      
+      // Features (detailed)
+      agenda_title: 'Smart Interactive Schedule',
+      agenda_desc: 'Our patented calendar system allows physicians to maintain clinical context at all times. Side drawers slide with patient history, ensuring you never lose your place while reviewing vital data.',
+      records_title: 'Complete Patient Records',
+      records_desc: 'A centralized hub for each patient. Access medical history, uploaded files, and consultation notes in a single high-performance view. Designed for fast data entry without clutter.',
       final_cta_title: 'Ready to Transform Your Clinic?',
       final_cta_desc: 'Join 500+ clinics that have improved their operational efficiency by 30% in the first month.',
       no_card_required: 'No credit card required. 14-day full access.',
@@ -960,6 +1025,15 @@ export const translations = {
 
     // Landing Page
     landing: {
+      // Nav
+      nav_features: 'Funcionalidades',
+      nav_solutions: 'Soluciones',
+      nav_pricing: 'Precios',
+      nav_resources: 'Recursos',
+      nav_login: 'Iniciar Sesión',
+      nav_get_started: 'Comenzar',
+      
+      // Hero
       hero_badge: "NUEVO: Next.js 14 y Shadcn/ui Impulsando tu Clínica",
       hero_title_1: 'Precisión en la Atención,',
       hero_title_2: 'Fluidez en el Flujo Clínico',
@@ -973,6 +1047,12 @@ export const translations = {
       records_desc: 'Un centro centralizado para cada paciente. Acceda al historial médico, archivos cargados y notas de consulta en una vista única de alto rendimiento. Diseñado para una entrada rápida de datos sin desorden.',
       whatsapp_title: 'La Ventaja de WhatsApp',
       whatsapp_desc: 'Reduzca el ausentismo hasta en un 45% con recordatorios automáticos. SchedAssist se integra directamente con WhatsApp para enviar confirmaciones, seguimientos y alertas de llegada, todo gestionado desde su panel.',
+      whatsapp_benefit_1_title: 'Recordatorios Inteligentes',
+      whatsapp_benefit_1_desc: 'Notifica automáticamente a los pacientes 24 horas antes de su visita.',
+      whatsapp_benefit_2_title: 'Sincronización Instantánea',
+      whatsapp_benefit_2_desc: 'Los pacientes pueden confirmar o reprogramar vía chat, sincronizado al instante.',
+      whatsapp_benefit_3_title: 'Reserva con IA',
+      whatsapp_benefit_3_desc: 'El procesamiento de lenguaje natural permite a los pacientes reservar citas mediante conversación.',
       whatsapp_feature_1_title: 'Recordatorios Inteligentes',
       whatsapp_feature_1_desc: 'Notifica automáticamente a los pacientes 24 horas antes de su visita.',
       whatsapp_feature_2_title: 'Sincronización Instantánea',

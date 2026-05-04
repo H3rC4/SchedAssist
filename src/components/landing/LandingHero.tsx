@@ -14,16 +14,16 @@ export function LandingHero() {
     <main className="relative z-10 flex-1 flex flex-col items-center justify-center px-6 pt-32 pb-24 text-center max-w-7xl mx-auto w-full overflow-hidden">
       
       {/* Premium Glow Effect Background */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-96 bg-amber-500/10 blur-[120px] rounded-full -z-10 pointer-events-none" />
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-96 bg-primary-500/10 blur-[120px] rounded-full -z-10 pointer-events-none" />
 
       {/* Badge */}
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
-        className="inline-flex items-center gap-2 px-6 py-2 rounded-full border border-white/5 bg-slate-900/50 backdrop-blur-xl text-amber-500 text-[10px] font-black uppercase tracking-[0.2em] mb-10 shadow-2xl"
+        className="inline-flex items-center gap-2 px-6 py-2 rounded-full border border-white/5 bg-primary-950/50 backdrop-blur-xl text-primary-light text-[10px] font-black uppercase tracking-[0.2em] mb-10 shadow-2xl"
       >
-         <Zap className="h-3.5 w-3.5 fill-amber-500" /> {t.hero_badge || "Next-Generation SaaS"}
+         <Zap className="h-3.5 w-3.5 fill-primary-light" /> {t.hero_badge || "Next-Generation SaaS"}
       </motion.div>
 
       {/* Title */}
@@ -34,7 +34,7 @@ export function LandingHero() {
         className="text-5xl md:text-8xl font-black text-white tracking-tighter leading-[0.95] mb-8"
       >
          {t.hero_title_1} <br />
-         <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-amber-600 drop-shadow-[0_0_15px_rgba(245,158,11,0.3)]">{t.hero_title_2}</span>
+         <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-light to-primary-400 drop-shadow-[0_0_15px_rgba(13,148,136,0.3)]">{t.hero_title_2}</span>
       </motion.h1>
       
       {/* Subtitle */}
@@ -42,7 +42,7 @@ export function LandingHero() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 1, delay: 0.3 }}
-        className="text-lg text-slate-400 max-w-2xl mb-12 leading-relaxed"
+        className="text-lg text-white/70 max-w-2xl mb-12 leading-relaxed"
       >
          {t.hero_description || t.hero_subtitle}
       </motion.p>
@@ -56,7 +56,7 @@ export function LandingHero() {
       >
         <Link 
           href="/register" 
-          className="px-10 py-5 rounded-[2rem] bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-black uppercase tracking-[0.2em] transition-all shadow-xl shadow-amber-500/20 hover:scale-105 active:scale-95 flex items-center gap-3 group"
+          className="px-10 py-5 rounded-[2rem] bg-primary-light hover:bg-primary-200 text-primary-950 text-xs font-black uppercase tracking-[0.2em] transition-all shadow-xl shadow-primary-light/20 hover:scale-105 active:scale-95 flex items-center gap-3 group"
         >
           {t.hero_cta_primary || t.hero_cta} <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
         </Link>
@@ -78,7 +78,7 @@ export function LandingHero() {
           </div>
 
           {/* Decorative elements */}
-          <div className="absolute -z-10 -bottom-20 left-1/2 -translate-x-1/2 w-[120%] h-96 bg-indigo-500/5 blur-[120px] rounded-full pointer-events-none" />
+          <div className="absolute -z-10 -bottom-20 left-1/2 -translate-x-1/2 w-[120%] h-96 bg-primary-500/5 blur-[120px] rounded-full pointer-events-none" />
       </div>
     </main>
   );

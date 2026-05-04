@@ -90,7 +90,7 @@ export function RealisticDashboard() {
                         <div className="relative h-24 w-24">
                             <svg className="h-full w-full -rotate-90" viewBox="0 0 36 36">
                                 <circle stroke="rgba(255,255,255,0.05)" strokeWidth="4" fill="transparent" r="16" cx="18" cy="18" />
-                                <circle className="text-amber-500" stroke="currentColor" strokeWidth="4" fill="transparent" strokeDasharray="100, 100" strokeLinecap="round" r="16" cx="18" cy="18" style={{ strokeDashoffset: 100 - 65 }} />
+                                <circle className="text-primary-light" stroke="currentColor" strokeWidth="4" fill="transparent" strokeDasharray="100, 100" strokeLinecap="round" r="16" cx="18" cy="18" style={{ strokeDashoffset: 100 - 65 }} />
                             </svg>
                             <div className="absolute inset-0 flex items-center justify-center">
                                 <span className="text-xl font-black text-white">65%</span>

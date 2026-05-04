@@ -15,9 +15,12 @@ const config: Config = {
         primary: {
           DEFAULT: "#005c55", // Deep Green
           container: "#004b46",
+          light: "#0d9488", // Teal for accents
+          400: "#14b8a6", // Lighter teal for gradients
+          200: "#5eead4", // Even lighter
           on: "#ffffff",
           "on-container": "#90ffeb",
-          950: "#001f1c",
+          950: "#001f1c", // Very dark green for backgrounds
         },
         secondary: {
           DEFAULT: "#855300", // Deep Amber

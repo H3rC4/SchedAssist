@@ -10,20 +10,19 @@ const FeatureCard = ({ title, desc, icon: Icon, className, delay }: { title: str
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
         transition={{ duration: 0.6, delay }}
-        className={`group p-8 rounded-[2.5rem] bg-white/5 border border-white/5 hover:border-amber-500/30 transition-all duration-500 relative overflow-hidden ${className}`}
+        className={`group p-8 rounded-[2.5rem] bg-primary-950 border border-slate-200 hover:border-primary-200 transition-all duration-500 relative overflow-hidden ${className}`}
     >
-        <div className="absolute top-0 right-0 h-32 w-32 bg-amber-500/5 blur-3xl opacity-0 group-hover:opacity-100 transition-opacity" />
+        <div className="absolute top-0 right-0 h-32 w-32 bg-primary-500/10 blur-3xl opacity-0 group-hover:opacity-100 transition-opacity" />
         
-        <div className="h-12 w-12 rounded-2xl bg-slate-800 flex items-center justify-center mb-6 group-hover:bg-amber-500 group-hover:text-slate-950 transition-all duration-500 shadow-xl">
-            <Icon className="h-6 w-6" />
+        <div className="h-12 w-12 rounded-2xl bg-primary-light/10 flex items-center justify-center mb-6 group-hover:bg-primary-light group-hover:text-primary-950 transition-all duration-500 shadow-xl">
+            <Icon className="h-6 w-6 text-primary-light" />
         </div>
         
-        <h3 className="text-xl font-black text-white mb-3 tracking-tight group-hover:text-amber-500 transition-colors uppercase italic">{title}</h3>
-        <p className="text-sm text-slate-400 leading-relaxed font-medium">
+        <h3 className="text-xl font-black text-white mb-3 tracking-tight group-hover:text-primary-light transition-colors uppercase italic">{title}</h3>
+        <p className="text-sm text-white/70 leading-relaxed font-medium">
             {desc}
         </p>
 
-        {/* Noise overlay */}
         <div className="absolute inset-0 noise opacity-10 pointer-events-none" />
     </motion.div>
 )
@@ -32,7 +31,7 @@ export function LandingFeatures() {
   const { t } = useLandingTranslation();
 
   return (
-    <section className="relative z-10 px-6 py-24">
+    <section className="relative z-10 px-6 py-24 bg-primary-950">
       <div className="max-w-7xl mx-auto">
         
         <div className="grid grid-cols-1 md:grid-cols-12 gap-6">

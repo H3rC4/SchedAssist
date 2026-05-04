@@ -29,13 +29,13 @@ export function WhatsAppChatPreview() {
         <div className="w-full max-w-sm h-[420px] bg-slate-900 rounded-[2.5rem] border border-white/10 shadow-2xl flex flex-col overflow-hidden relative">
             {/* Header */}
             <div className="bg-slate-800/80 backdrop-blur-md p-4 flex items-center gap-3 border-bottom border-white/5">
-                <div className="h-10 w-10 rounded-full bg-amber-500 flex items-center justify-center font-black text-slate-950">
+<div className="h-10 w-10 rounded-full bg-primary-light flex items-center justify-center font-black text-primary-950">
                     SA
-                </div>
-                <div>
-                    <p className="text-sm font-black text-white leading-none">SchedAssist Bot</p>
-                    <p className="text-[10px] text-emerald-500 font-bold mt-1 tracking-widest uppercase">Online</p>
-                </div>
+                 </div>
+                 <div>
+                     <p className="text-sm font-black text-white leading-none">SchedAssist Bot</p>
+                     <p className="text-[10px] text-emerald-500 font-bold mt-1 tracking-widest uppercase">Online</p>
+                 </div>
             </div>
 
             {/* Chat Content */}
