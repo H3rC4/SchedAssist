@@ -432,8 +432,6 @@ export const translations = {
       custom_feature_2_desc: 'Set specific durations for each service to perfectly optimize your clinical agenda.',
       custom_feature_3: 'Role Access',
       custom_feature_3_desc: 'Total control over what administrators, doctors, and staff can see and do.',
-      final_cta: 'Ready to Transform Your Clinic?',
-      final_cta_btn: 'Start Now',
       tech_title: 'Built with Modern Foundations',
       tech_nextjs: 'Next.js 14',
       tech_nextjs_desc: 'Performance',
@@ -447,7 +445,6 @@ export const translations = {
       // CTA & Footer
       final_cta_title: 'Ready to Transform Your Practice?',
       final_cta_desc: 'Join over 500 clinics that improved operational efficiency by 30% in the first month.',
-      final_cta_btn: 'Start Now',
       no_card_required: 'No credit card required. 14 days of full access.',
       footer_copyright: '© 2025 SchedAssist. Built for modern clinics.',
       
