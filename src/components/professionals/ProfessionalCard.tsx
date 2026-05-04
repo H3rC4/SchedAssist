@@ -6,9 +6,10 @@ import { Professional } from '@/hooks/useProfessionals'
 interface ProfessionalCardProps {
   professional: Professional;
   onClick: () => void;
+  t: any;
 }
 
-export function ProfessionalCard({ professional, onClick }: ProfessionalCardProps) {
+export function ProfessionalCard({ professional, onClick, t }: ProfessionalCardProps) {
   const activeDays = (professional.availability_rules || []).filter(r => r.active).length
 
   return (
@@ -32,7 +33,7 @@ export function ProfessionalCard({ professional, onClick }: ProfessionalCardProp
             {professional.full_name}
           </h3>
           <p className="text-[7px] font-black text-on-surface-muted uppercase tracking-[0.2em]">
-            {professional.specialty || 'Especialista'}
+            {professional.specialty || (t.specialist || 'Specialist')}
           </p>
         </div>
       </div>
@@ -41,7 +42,7 @@ export function ProfessionalCard({ professional, onClick }: ProfessionalCardProp
         <div className="flex items-center gap-1.5 px-2 py-1 bg-surface rounded-full">
           <Clock className="h-2.5 w-2.5 text-primary" />
           <span className="text-[7px] text-on-surface-muted font-black uppercase tracking-widest">
-            {activeDays} {activeDays === 1 ? 'DÍA' : 'DÍAS'} LABORALES
+            {activeDays} {activeDays === 1 ? (t.work_day || 'WORK DAY') : (t.work_days || 'WORK DAYS')}
           </span>
         </div>
         

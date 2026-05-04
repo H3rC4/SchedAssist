@@ -129,7 +129,7 @@ export function AddProfessionalModal({ isOpen, onClose, onConfirm, t, locations 
             onClick={onClose}
             className="px-6 py-2.5 rounded-lg text-[9px] font-black uppercase tracking-widest text-on-surface-muted hover:text-on-surface hover:bg-on-surface/5 transition-all"
           >
-            {t.cancel || 'Cancelar'}
+            {t.cancel || 'Cancel'}
           </button>
           
           <button

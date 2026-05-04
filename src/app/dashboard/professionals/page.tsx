@@ -130,7 +130,7 @@ export default function ProfessionalsPage() {
               </div>
               <h3 className="text-sm font-black text-on-surface uppercase tracking-tight">{T_ui.no_professionals_yet}</h3>
               <p className="mt-0.5 text-[8px] font-bold text-on-surface-muted uppercase tracking-widest">
-                {lang === 'es' ? 'COMIENZA AGREGANDO A TU EQUIPO' : lang === 'it' ? 'INIZIA AGGIUNGENDO IL TUO TEAM' : 'START BY ADDING YOUR TEAM'}
+                {T_ui.start_team_cta || 'START BY ADDING YOUR TEAM'}
               </p>
             </div>
           ) : (
@@ -139,6 +139,7 @@ export default function ProfessionalsPage() {
                 <ProfessionalCard 
                   professional={prof} 
                   onClick={() => selectProfessional(prof)} 
+                  t={T_ui}
                 />
               </div>
             ))

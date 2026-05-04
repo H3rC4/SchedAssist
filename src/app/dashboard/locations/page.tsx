@@ -5,7 +5,7 @@ import {
   Plus, CheckCircle, X, 
   Globe, Navigation, ArrowRight
 } from 'lucide-react'
-import { Language } from '@/lib/i18n'
+import { Language, translations } from '@/lib/i18n'
 import { createClient } from '@/lib/supabase/client'
 import { motion, AnimatePresence } from 'framer-motion'
 import { LocationPrecisionCard } from '@/components/dashboard/LocationPrecisionCard'
@@ -97,10 +97,12 @@ export default function LocationsPage() {
   }
 
   async function handleDeleteLocation(id: string) {
-    if (!confirm('¿Seguro que deseas eliminar esta sede?')) return
+    if (!confirm(t.confirm_delete_location || '¿Seguro que deseas eliminar esta sede?')) return
     const res = await fetch(`/api/locations?id=${id}&tenant_id=${tenantId}`, { method: 'DELETE' })
     if (res.ok) fetchLocations()
   }
+
+  const t = translations[lang] || translations['en']
 
   return (
     <div className="min-h-full bg-surface py-editorial-tight md:py-editorial overflow-x-hidden">
@@ -113,20 +115,20 @@ export default function LocationsPage() {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8, ease: "easeOut" }}
           >
-            <p className="text-[10px] font-black text-primary uppercase tracking-[0.4em] mb-6">Global Presence</p>
+            <p className="text-[10px] font-black text-primary uppercase tracking-[0.4em] mb-6">{t.global_presence || 'Global Presence'}</p>
             <h1 className="precision-header max-w-4xl">
               Precision <br />
-              <span className="text-primary/20 italic font-medium">Locations</span>
+              <span className="text-primary/20 italic font-medium">{t.nav_locations || 'Locations'}</span>
             </h1>
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 mt-12">
                <p className="precision-subheader max-w-lg">
-                 Strategically manage your physical reach and patient touchpoints.
+                 {t.locations_subtitle || 'Strategically manage your physical reach and patient touchpoints.'}
                </p>
                <button 
                  onClick={() => setShowAddForm(true)}
                  className="precision-button-primary self-start group flex items-center gap-4"
                >
-                 <span>Add Location</span>
+                 <span>{t.add_location || 'Add Location'}</span>
                  <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
                </button>
             </div>
@@ -144,12 +146,12 @@ export default function LocationsPage() {
               <div className="h-20 w-20 bg-primary/10 rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-ambient">
                 <Globe className="h-10 w-10 text-primary" />
               </div>
-              <h2 className="text-3xl font-black text-on-surface mb-4 uppercase tracking-tight">No locations mapped</h2>
+              <h2 className="text-3xl font-black text-on-surface mb-4 uppercase tracking-tight">{t.no_locations_found || 'No locations mapped'}</h2>
               <p className="text-on-surface-muted font-medium mb-10 max-w-md mx-auto leading-relaxed">
                 Connect your physical clinics to the digital scheduling ecosystem.
               </p>
               <button onClick={() => setShowAddForm(true)} className="precision-button-tonal">
-                Map First Location
+                {t.map_first_location || 'Map First Location'}
               </button>
             </div>
           ) : (
@@ -162,6 +164,7 @@ export default function LocationsPage() {
                   savedId={savedId}
                   onEdit={setEditLocation}
                   onDelete={handleDeleteLocation}
+                  t={t}
                 />
               ))}
             </div>
@@ -191,8 +194,8 @@ export default function LocationsPage() {
               <div className="p-12 md:p-20 overflow-y-auto custom-scrollbar flex-1">
                  <div className="flex items-center justify-between mb-20">
                     <div>
-                       <p className="text-[10px] font-black text-primary uppercase tracking-[0.3em] mb-4">Spatial Mapping</p>
-                       <h2 className="precision-header text-5xl mb-0">{editLocation ? 'Update' : 'Define'} Location</h2>
+                       <p className="text-[10px] font-black text-primary uppercase tracking-[0.3em] mb-4"> {t.spatial_mapping || 'Spatial Mapping'}</p>
+                       <h2 className="precision-header text-5xl mb-0">{editLocation ? (t.update || 'Update') : (t.create || 'Define')} {t.location || 'Location'}</h2>
                     </div>
                     <button onClick={() => { setShowAddForm(false); setEditLocation(null) }} className="p-4 rounded-2xl bg-surface-container-low hover:bg-surface-container-highest transition-colors text-on-surface-muted hover:text-on-surface">
                        <X className="h-8 w-8" />
@@ -207,7 +210,7 @@ export default function LocationsPage() {
                          value={editLocation ? editLocation.name : formData.name}
                          onChange={e => editLocation ? setEditLocation({...editLocation, name: e.target.value}) : setFormData({...formData, name: e.target.value})}
                          className="w-full text-4xl font-black text-on-surface bg-transparent border-none focus:ring-0 placeholder:text-on-surface-muted p-0 uppercase"
-                         placeholder="Branch identifier..." 
+                         placeholder={t.branch_identifier_ph || "Branch identifier..."} 
                        />
                     </div>
 
@@ -217,7 +220,7 @@ export default function LocationsPage() {
                          value={editLocation ? editLocation.address : formData.address}
                          onChange={e => editLocation ? setEditLocation({...editLocation, address: e.target.value}) : setFormData({...formData, address: e.target.value})}
                          className="w-full text-2xl font-bold text-on-surface bg-transparent border-none focus:ring-0 placeholder:text-on-surface-muted p-0"
-                         placeholder="Street, number, unit..." 
+                         placeholder={t.geographic_address_ph || "Street, number, unit..."} 
                        />
                     </div>
 
@@ -227,15 +230,15 @@ export default function LocationsPage() {
                          value={editLocation ? editLocation.city : formData.city}
                          onChange={e => editLocation ? setEditLocation({...editLocation, city: e.target.value}) : setFormData({...formData, city: e.target.value})}
                          className="w-full text-2xl font-bold text-on-surface bg-transparent border-none focus:ring-0 placeholder:text-on-surface-muted p-0"
-                         placeholder="Location city..." 
+                         placeholder={t.location_city_ph || "Location city..."} 
                        />
                     </div>
 
-                    {editLocation && (
+                     {editLocation && (
                       <div className="flex items-center gap-6 p-8 bg-surface-container-low rounded-3xl">
                          <div className="flex-1">
-                            <p className="text-[10px] font-black text-on-surface-muted uppercase tracking-[0.2em] mb-2">Operation Status</p>
-                            <p className="text-sm font-bold text-on-surface">Enable patients to book at this location</p>
+                            <p className="text-[10px] font-black text-on-surface-muted uppercase tracking-[0.2em] mb-2">{t.operation_status || 'Operation Status'}</p>
+                            <p className="text-sm font-bold text-on-surface">{t.enable_booking_desc || 'Enable patients to book at this location'}</p>
                          </div>
                          <button 
                            onClick={() => setEditLocation({...editLocation, active: !editLocation.active})}
@@ -254,7 +257,7 @@ export default function LocationsPage() {
                    disabled={saving || (editLocation ? !editLocation.name : !formData.name)}
                    className="precision-button-primary w-full text-lg py-6 flex items-center justify-center gap-4 disabled:opacity-30 disabled:cursor-not-allowed"
                  >
-                    {saving ? 'Mapping...' : editLocation ? 'Update Coordinates' : 'Establish Location'}
+                    {saving ? (t.mapping_loading || 'Mapping...') : editLocation ? (t.update_coordinates || 'Update Coordinates') : (t.establish_location || 'Establish Location')}
                     <CheckCircle className="h-6 w-6" />
                  </button>
               </div>

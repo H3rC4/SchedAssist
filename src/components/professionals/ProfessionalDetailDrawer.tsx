@@ -57,15 +57,16 @@ export function ProfessionalDetailDrawer({
 }: ProfessionalDetailDrawerProps) {
   const { fullT, language } = useLandingTranslation()
   const T = fullT 
+  const currentLocale = dateLocales[language as keyof typeof dateLocales] || es
   
   const days = [
-    T.sunday || 'Domingo',
-    T.monday || 'Lunes',
-    T.tuesday || 'Martes',
-    T.wednesday || 'Miércoles',
-    T.thursday || 'Jueves',
-    T.friday || 'Viernes',
-    T.saturday || 'Sábado'
+    T.sunday || 'Sunday',
+    T.monday || 'Monday',
+    T.tuesday || 'Tuesday',
+    T.wednesday || 'Wednesday',
+    T.thursday || 'Thursday',
+    T.friday || 'Friday',
+    T.saturday || 'Saturday'
   ]
   
   const [localHint, setLocalHint] = useState(professional.auth_password_hint)
@@ -189,7 +190,7 @@ export function ProfessionalDetailDrawer({
   }
 
   const handleConfirmDelete = () => {
-    if (window.confirm(T.confirm_delete_prof_long || '¿Estás seguro de eliminar este profesional? Esta acción no se puede deshacer.')) {
+    if (window.confirm(T.confirm_delete_prof_long || 'Are you sure you want to delete this professional? This action cannot be undone.')) {
       onDelete()
     }
   }
@@ -290,7 +291,7 @@ export function ProfessionalDetailDrawer({
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-1.5">
                       <label className="text-[8px] font-black text-on-surface-muted uppercase tracking-[0.2em] ml-2">
-                        {T.full_name || 'Nombre Completo'}
+                        {T.fullName || 'Full Name'}
                       </label>
                       <input 
                         type="text"
@@ -301,7 +302,7 @@ export function ProfessionalDetailDrawer({
                     </div>
                     <div className="space-y-1.5">
                       <label className="text-[8px] font-black text-on-surface-muted uppercase tracking-[0.2em] ml-2">
-                        {T.specialty || 'Especialidad'}
+                        {T.specialty || 'Specialty'}
                       </label>
                       <input 
                         type="text"
@@ -312,7 +313,7 @@ export function ProfessionalDetailDrawer({
                     </div>
                     <div className="space-y-1.5 md:col-span-2">
                       <label className="text-[8px] font-black text-on-surface-muted uppercase tracking-[0.2em] ml-2">
-                        {T.location || 'Sucursal Principal'}
+                        {T.location || 'Primary Location'}
                       </label>
                       <div className="relative">
                         <select 
@@ -320,7 +321,7 @@ export function ProfessionalDetailDrawer({
                           onChange={e => setLocalInfo(prev => ({ ...prev, location_id: e.target.value }))}
                           className="w-full h-10 bg-surface border border-on-surface/10 rounded-lg px-4 text-sm font-bold text-on-surface focus:border-primary outline-none transition-all appearance-none pr-10"
                         >
-                          <option value="">{T.select_location || 'Seleccionar sucursal'}</option>
+                          <option value="">{T.select_location || 'Select location'}</option>
                           {locations.map(l => (
                             <option key={l.id} value={l.id}>{l.name}</option>
                           ))}
@@ -334,7 +335,7 @@ export function ProfessionalDetailDrawer({
                 {/* WEEKLY RULES */}
                 <div className="flex items-center justify-between px-2">
                   <h3 className="text-xs font-black text-on-surface tracking-tighter uppercase">
-                    {T.weekly_availability || 'Disponibilidad Semanal'}
+                    {T.weekly_availability || 'Weekly Availability'}
                   </h3>
                 </div>
 
@@ -395,7 +396,7 @@ export function ProfessionalDetailDrawer({
                                     : 'bg-surface-container-high border-on-surface/5 text-on-surface-muted hover:text-on-surface'
                                 }`}
                               >
-                                {rule.lunch_break_start ? (T.remove_break || 'Quitar Receso') : (T.add_break || 'Agregar Receso')}
+                                {rule.lunch_break_start ? (T.remove_break || 'Remove Break') : (T.add_break || 'Add Break')}
                               </button>
                             </div>
                           )}
@@ -408,7 +409,7 @@ export function ProfessionalDetailDrawer({
                                 <Coffee className="h-3 w-3 text-amber-600" />
                               </div>
                               <span className="text-[8px] font-black text-on-surface-muted uppercase tracking-widest">
-                                {T.lunch_break_time || 'Horario de Receso'}
+                                {T.lunch_break_time || 'Lunch Break Time'}
                               </span>
                               <div className="flex items-center gap-2 ml-auto">
                                 <div className="flex items-center gap-1.5 px-2.5 py-1 bg-surface-container-low rounded-md border border-on-surface/5">
@@ -447,7 +448,7 @@ export function ProfessionalDetailDrawer({
               >
                 <div className="flex items-center justify-between px-2">
                   <h3 className="text-xs font-black text-on-surface tracking-tighter uppercase">
-                    {T.manage_exceptions || 'Gestionar Excepciones'}
+                    {T.manage_exceptions || 'Manage Exceptions'}
                   </h3>
                   <div className="flex items-center gap-1.5 p-1 bg-surface-container-low rounded-lg">
                     <button 
@@ -457,7 +458,7 @@ export function ProfessionalDetailDrawer({
                       <ChevronLeft className="h-4 w-4" />
                     </button>
                     <span className="text-[10px] font-black text-on-surface uppercase tracking-widest px-3">
-                      {format(calendarMonth, 'MMMM yyyy', { locale: es })}
+                      {format(calendarMonth, 'MMMM yyyy', { locale: currentLocale })}
                     </span>
                     <button 
                       onClick={() => setCalendarMonth(new Date(calendarMonth.getFullYear(), calendarMonth.getMonth() + 1))}
@@ -470,9 +471,9 @@ export function ProfessionalDetailDrawer({
 
                 <div className="bg-precision-surface-lowest rounded-xl border border-on-surface/5 overflow-hidden">
                   <div className="grid grid-cols-7 border-b border-on-surface/5">
-                    {['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'].map(d => (
-                      <div key={d} className="py-2 text-center text-[8px] font-black text-on-surface-muted uppercase tracking-[0.2em]">
-                        {d}
+                    {getCalendarDays(calendarMonth).slice(0, 7).map((day, i) => (
+                      <div key={i} className="py-2 text-center text-[8px] font-black text-on-surface-muted uppercase tracking-[0.2em]">
+                        {format(day, 'eee', { locale: currentLocale })}
                       </div>
                     ))}
                   </div>
@@ -519,12 +520,12 @@ export function ProfessionalDetailDrawer({
                         <div className="flex-1">
                           <div className="flex items-center gap-2">
                             <span className="text-xs font-black text-on-surface tracking-tighter uppercase">
-                              {format(parseISO(override.override_date), 'EEEE d MMMM', { locale: es })}
+                              {format(parseISO(override.override_date), 'EEEE d MMMM', { locale: currentLocale })}
                             </span>
                             <span className={`text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full ${
                               override.override_type === 'block' ? 'bg-red-500/10 text-red-600' : 'bg-emerald-500/10 text-emerald-600'
                             }`}>
-                              {override.override_type === 'block' ? (T.blocked || 'Bloqueado') : (T.open || 'Abierto')}
+                              {override.override_type === 'block' ? (T.blocked || 'Blocked') : (T.open || 'Open')}
                             </span>
                           </div>
                           {override.start_time && override.end_time && (
@@ -548,7 +549,7 @@ export function ProfessionalDetailDrawer({
                     <div className="p-8 text-center bg-surface-container-low/50 rounded-xl border border-dashed border-on-surface/10">
                       <Calendar className="h-8 w-8 text-on-surface-muted/20 mx-auto mb-3" />
                       <p className="text-[10px] font-black text-on-surface-muted uppercase tracking-[0.2em]">
-                        {T.no_exceptions || 'Sin excepciones configuradas'}
+                        {T.no_exceptions || 'No exceptions configured'}
                       </p>
                     </div>
                   )}
@@ -572,10 +573,10 @@ export function ProfessionalDetailDrawer({
                       </div>
                       <div>
                         <h4 className="text-sm font-black text-on-surface uppercase tracking-tighter">
-                          {T.auth_active || 'Perfil Autenticado'}
+                          {T.auth_active || 'Authenticated Profile'}
                         </h4>
                         <p className="text-[8px] font-black text-emerald-500 flex items-center gap-1 mt-1 uppercase tracking-widest">
-                          <CheckCircle className="h-3 w-3" /> {T.verified || 'Verificado'}
+                          <CheckCircle className="h-3 w-3" /> {T.verified || 'Verified'}
                         </p>
                       </div>
                     </div>
@@ -583,7 +584,7 @@ export function ProfessionalDetailDrawer({
                     <div className="space-y-4">
                       <div className="bg-precision-surface-lowest rounded-lg p-4 border border-on-surface/5">
                         <span className="text-[8px] font-black text-on-surface-muted uppercase tracking-widest block mb-2 ml-1">
-                          {T.login_identifier || 'Identificador de Acceso'}
+                          {T.login_identifier || 'Login Identifier'}
                         </span>
                         <div className="flex items-center justify-between gap-4">
                            <span className="text-sm font-black text-on-surface break-all">{professional.auth_email}</span>
@@ -599,7 +600,7 @@ export function ProfessionalDetailDrawer({
                       <div className="bg-precision-surface-lowest rounded-lg p-4 border border-on-surface/5 flex flex-col md:flex-row md:items-center justify-between gap-6">
                         <div className="flex-1">
                           <span className="text-[8px] font-black text-on-surface-muted uppercase tracking-widest block mb-2 ml-1">
-                            {T.credentials_hint || 'Sugerencia de Credenciales'}
+                            {T.credentials_hint || 'Credentials Hint'}
                           </span>
                           <div className="flex items-center gap-3">
                             <span className="text-2xl font-black text-primary tracking-widest px-4 py-2 bg-primary/5 rounded-lg block w-fit">
@@ -641,7 +642,7 @@ export function ProfessionalDetailDrawer({
                       disabled={creatingAccount}
                       className="px-8 py-3 bg-primary text-white rounded-lg text-[9px] font-black uppercase tracking-widest shadow-spatial hover:shadow-lg transition-all active:scale-95 disabled:opacity-50"
                     >
-                      {creatingAccount ? '...' : (T.create_auth_btn || 'Generar Cuenta de Acceso')}
+                      {creatingAccount ? '...' : (T.create_auth_btn || 'Generate Access Account')}
                     </button>
                   </div>
                 )}
@@ -659,7 +660,7 @@ export function ProfessionalDetailDrawer({
             className="flex items-center gap-2.5 px-5 py-2.5 rounded-xl text-[10px] font-black text-red-600 bg-red-50 hover:bg-red-100 border border-red-200 transition-all uppercase tracking-widest shadow-sm active:scale-95"
           >
             <Trash2 className="h-4 w-4" />
-            {T.delete_profile || 'Eliminar Perfil'}
+            {T.decommission_profile || 'Decommission Profile'}
           </button>
 
           <div className="flex items-center gap-3 w-full md:w-auto">
@@ -667,7 +668,7 @@ export function ProfessionalDetailDrawer({
               onClick={onClose}
               className="flex-1 md:flex-none px-6 py-2.5 rounded-lg text-[9px] font-black uppercase tracking-widest text-on-surface-muted hover:text-on-surface hover:bg-on-surface/5 transition-all"
             >
-              {T.discard || 'Descartar'}
+              {T.discard || 'Discard'}
             </button>
             <button 
               onClick={handleSaveAll} 
@@ -681,7 +682,7 @@ export function ProfessionalDetailDrawer({
               ) : saving ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
-                <>{T.save_changes || 'Guardar Cambios'} <ArrowRight className="h-4 w-4 ml-1" /></>
+                <>{T.save_changes || 'Save Changes'} <ArrowRight className="h-4 w-4 ml-1" /></>
               )}
             </button>
           </div>
@@ -707,7 +708,7 @@ export function ProfessionalDetailDrawer({
                 <div className="flex items-center justify-between mb-6">
                   <div>
                     <span className="text-[8px] font-black text-primary uppercase tracking-widest mb-1 block">
-                      {T.temporary_shift || 'Excepción Temporal'}
+                      {T.temporary_shift || 'Temporary Shift'}
                     </span>
                     <h3 className="text-xl font-black text-on-surface tracking-tighter uppercase">
                       {format(parseISO(overrideModal.date), "MMM dd, yyyy", { locale: dateLocales[language] })}
@@ -732,7 +733,7 @@ export function ProfessionalDetailDrawer({
                       }`}
                     >
                       <ShieldAlert className="h-5 w-5" />
-                      <span className="text-[8px] font-black uppercase tracking-widest">{T.full_block || 'Bloqueo Total'}</span>
+                      <span className="text-[8px] font-black uppercase tracking-widest">{T.full_block || 'Full Block'}</span>
                     </button>
                     <button
                       onClick={() => setOverrideForm(f => ({ ...f, type: 'open' }))}
@@ -743,7 +744,7 @@ export function ProfessionalDetailDrawer({
                       }`}
                     >
                       <Clock className="h-5 w-5" />
-                      <span className="text-[8px] font-black uppercase tracking-widest">{T.special_shift || 'Horario Especial'}</span>
+                      <span className="text-[8px] font-black uppercase tracking-widest">{T.special_shift || 'Special Shift'}</span>
                     </button>
                   </div>
 
@@ -774,9 +775,7 @@ export function ProfessionalDetailDrawer({
                   {overrideConflicts.length > 0 && (
                     <div className="p-3 rounded-lg bg-red-500/5 border border-red-500/10 flex gap-3 animate-in shake duration-500">
                       <AlertTriangle className="h-4 w-4 text-red-500 flex-shrink-0" />
-                      <div className="text-[8px] text-red-500 font-black leading-tight uppercase tracking-widest">
-                        {T.warning || 'AVISO'}: {T.danger_appointments_cancelled?.(overrideConflicts.length) || `PELIGRO: ${overrideConflicts.length} cita(s) activa(s) se cancelarán automáticamente.`}
-                      </div>
+                        {T.warning || 'WARNING'}: {T.danger_appointments_cancelled?.(overrideConflicts.length) || `DANGER: ${overrideConflicts.length} active appointment(s) will be automatically cancelled.`}
                     </div>
                   )}
 
@@ -785,7 +784,7 @@ export function ProfessionalDetailDrawer({
                     disabled={internalSaving}
                     className="w-full py-3 rounded-lg font-black text-[9px] uppercase tracking-widest transition-all shadow-md active:scale-95 disabled:opacity-50 bg-primary text-white hover:bg-primary-dark"
                   >
-                    {internalSaving ? '...' : (T.establish_exception || 'Establecer Excepción')}
+                    {internalSaving ? '...' : (T.establish_exception || 'Establish Exception')}
                   </button>
                 </div>
               </motion.div>
@@ -797,7 +796,7 @@ export function ProfessionalDetailDrawer({
   )
 }
 
-function AddOverrideForm({ onAdd }: { onAdd: (date: string, data: any) => void }) {
+function AddOverrideForm({ onAdd, T }: { onAdd: (date: string, data: any) => void, T: any }) {
   const [date, setDate] = useState('')
   const [isAvailable, setIsAvailable] = useState(false)
   const [startTime, setStartTime] = useState('09:00')
@@ -814,7 +813,7 @@ function AddOverrideForm({ onAdd }: { onAdd: (date: string, data: any) => void }
     <form onSubmit={handleSubmit} className="space-y-10">
       <div className="space-y-6">
         <div className="space-y-1.5">
-          <label className="text-[8px] font-black text-on-surface-muted uppercase tracking-widest ml-2">Exception Date</label>
+          <label className="text-[8px] font-black text-on-surface-muted uppercase tracking-widest ml-2">{T.exception_date || 'Exception Date'}</label>
           <input 
             type="date" 
             value={date} 
@@ -825,8 +824,8 @@ function AddOverrideForm({ onAdd }: { onAdd: (date: string, data: any) => void }
         
         <div className="flex items-center gap-6 p-5 bg-precision-surface-lowest rounded-xl border border-on-surface/5">
           <div className="flex-1">
-             <p className="text-[7px] font-black text-on-surface-muted uppercase tracking-widest mb-1">Availability</p>
-             <p className="text-[10px] font-bold text-on-surface uppercase tracking-tighter">Is professional operational?</p>
+             <p className="text-[7px] font-black text-on-surface-muted uppercase tracking-widest mb-1">{T.availability || 'Availability'}</p>
+             <p className="text-[10px] font-bold text-on-surface uppercase tracking-tighter">{T.is_professional_operational || 'Is professional operational?'}</p>
           </div>
           <button 
             type="button"
@@ -851,11 +850,11 @@ function AddOverrideForm({ onAdd }: { onAdd: (date: string, data: any) => void }
             >
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <label className="text-[8px] font-black text-on-surface-muted uppercase tracking-widest ml-2">Start Time</label>
+                  <label className="text-[8px] font-black text-on-surface-muted uppercase tracking-widest ml-2">{T.start_time || 'Start Time'}</label>
                   <input type="time" value={startTime} onChange={(e) => setStartTime(e.target.value)} className="w-full h-11 bg-surface border border-on-surface/10 rounded-xl px-5 text-sm font-bold text-on-surface focus:border-primary outline-none transition-all" />
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-[8px] font-black text-on-surface-muted uppercase tracking-widest ml-2">End Time</label>
+                  <label className="text-[8px] font-black text-on-surface-muted uppercase tracking-widest ml-2">{T.end_time || 'End Time'}</label>
                   <input type="time" value={endTime} onChange={(e) => setEndTime(e.target.value)} className="w-full h-11 bg-surface border border-on-surface/10 rounded-xl px-5 text-sm font-bold text-on-surface focus:border-primary outline-none transition-all" />
                 </div>
               </div>
@@ -868,7 +867,7 @@ function AddOverrideForm({ onAdd }: { onAdd: (date: string, data: any) => void }
         type="submit"
         className="w-full h-12 bg-on-surface text-surface rounded-xl font-black text-[9px] uppercase tracking-widest shadow-lg hover:bg-primary hover:text-white transition-all active:scale-95"
       >
-        Establish Exception
+        {T.establish_exception || 'Establish Exception'}
       </button>
     </form>
   )

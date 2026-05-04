@@ -15,9 +15,10 @@ interface LocationPrecisionCardProps {
   savedId: string | null
   onEdit: (location: Location) => void
   onDelete: (id: string) => void
+  t: any
 }
 
-export function LocationPrecisionCard({ location, index, savedId, onEdit, onDelete }: LocationPrecisionCardProps) {
+export function LocationPrecisionCard({ location, index, savedId, onEdit, onDelete, t }: LocationPrecisionCardProps) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 30 }}
@@ -49,7 +50,7 @@ export function LocationPrecisionCard({ location, index, savedId, onEdit, onDele
         <div className="flex items-center gap-4 mb-4">
           <div className="h-1.5 w-8 bg-primary/20 rounded-full" />
           <p className="text-[10px] font-black text-on-surface-muted uppercase tracking-widest">
-            {location.city || 'Global'}
+            {location.city || (t.global || 'Global')}
           </p>
         </div>
         <h3 className="text-4xl font-black text-on-surface tracking-tighter mb-8 group-hover:text-primary transition-colors leading-none uppercase">
@@ -65,10 +66,10 @@ export function LocationPrecisionCard({ location, index, savedId, onEdit, onDele
 
       <div className="mt-12 pt-8 border-t border-surface-container-highest flex items-center justify-between">
          <span className={`text-[10px] font-black uppercase tracking-[0.3em] px-5 py-2 rounded-full ${location.active ? 'bg-primary/10 text-primary' : 'bg-surface-container-high text-on-surface-muted'}`}>
-            {location.active ? 'Active Operation' : 'Inactive'}
+            {location.active ? (t.active_operation || 'Active Operation') : (t.inactive || 'Inactive')}
          </span>
          <button className="text-[10px] font-black uppercase tracking-[0.3em] text-primary hover:translate-x-2 transition-transform flex items-center gap-2">
-            View Schedule <ArrowRight className="h-4 w-4" />
+            {t.view_schedule || 'View Schedule'} <ArrowRight className="h-4 w-4" />
          </button>
       </div>
     </motion.div>
