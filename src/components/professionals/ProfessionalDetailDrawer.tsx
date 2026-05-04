@@ -228,7 +228,11 @@ export function ProfessionalDetailDrawer({
         initial={{ x: '100%' }}
         animate={{ x: 0 }}
         exit={{ x: '100%' }}
-        transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+        transition={{ 
+          type: 'tween', 
+          ease: [0.16, 1, 0.3, 1], // Custom elegant ease
+          duration: 0.6 
+        }}
         className="absolute top-0 right-0 h-full w-full max-w-2xl bg-surface shadow-spatial flex flex-col"
         onClick={e => e.stopPropagation()}
       >

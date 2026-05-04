@@ -473,6 +473,9 @@ export class AppointmentService {
         const slotStart = current;
         const slotEnd = new Date(current.getTime() + durationMinutes * 60000);
         
+        const startTimeStr = format(slotStart, 'HH:mm:ss');
+        const endTimeStr = format(slotEnd, 'HH:mm:ss');
+        
         // Check 1: Fits within working hours
         if (slotEnd > endRule) break;
 
@@ -483,16 +486,19 @@ export class AppointmentService {
         }
 
         // Check 3: Not during lunch break
-        if (lunchStart && lunchEnd && slotStart < lunchEnd && slotEnd > lunchStart) {
-          current = new Date(current.getTime() + 30 * 60000);
-          continue;
+        if (rule.lunch_break_start && rule.lunch_break_end) {
+          const lStart = rule.lunch_break_start;
+          const lEnd = rule.lunch_break_end;
+          const overlapLunch = startTimeStr < lEnd && endTimeStr > lStart;
+          if (overlapLunch) {
+            current = new Date(current.getTime() + 30 * 60000);
+            continue;
+          }
         }
 
         // Check 3.5: Not during any specific block override
         const isBlockedByOverride = hourlyBlocks.some((block: any) => {
-          const bStart = parseISO(`${params.date}T${block.start_time}`);
-          const bEnd = parseISO(`${params.date}T${block.end_time}`);
-          return slotStart < bEnd && slotEnd > bStart;
+          return startTimeStr < block.end_time && endTimeStr > block.start_time;
         });
 
         if (isBlockedByOverride) {
@@ -508,7 +514,7 @@ export class AppointmentService {
         });
 
         if (!isOccupied) {
-          const timeLabel = slotStart.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })
+          const timeLabel = format(slotStart, 'HH:mm')
           slotSet.add(timeLabel)
         }
 
