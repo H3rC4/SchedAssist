@@ -343,17 +343,6 @@ export const translations = {
     patient_reminders: 'Patient Reminders',
     patient_reminders_desc: 'Automated follow-ups for pending records.',
     
-    // Billing Tab
-    subscription_billing: 'Subscription & Billing',
-    subscription_desc: 'Manage your clinic\'s digital infrastructure',
-    current_plan: 'Current Plan',
-    renews_on: (date: string) => `Renews ${date}`,
-    monthly_cost: 'Monthly Cost',
-    payment_method: 'Payment Method',
-    manage_subscription: 'Manage Subscription',
-    billing_history: 'Billing History',
-    download_pdf: 'Download PDF',
-
     // Other Settings
     system_settings: 'System Settings',
     whapi_integration: 'Whapi.Cloud Integration',
@@ -989,17 +978,6 @@ tech_shadcn_desc: 'UX Elegance',
     patient_reminders: 'Recordatorios para Pacientes',
     patient_reminders_desc: 'Seguimientos automáticos para registros pendientes.',
     
-    // Billing Tab
-    subscription_billing: 'Suscripción y Facturación',
-    subscription_desc: 'Gestiona la infraestructura digital de tu clínica',
-    current_plan: 'Plan Actual',
-    renews_on: (date: string) => `Renueva el ${date}`,
-    monthly_cost: 'Costo Mensual',
-    payment_method: 'Método de Pago',
-    manage_subscription: 'Gestionar Suscripción',
-    billing_history: 'Historial de Facturación',
-    download_pdf: 'Descargar PDF',
-
     // Other Settings
     system_settings: 'Ajustes del Sistema',
     whapi_integration: 'Integración Whapi.Cloud',
@@ -1613,17 +1591,6 @@ tech_shadcn_desc: 'UX Elegance',
     patient_reminders: 'Promemoria Pazienti',
     patient_reminders_desc: 'Follow-up automatici per record in sospeso.',
     
-    // Billing Tab
-    subscription_billing: 'Abbonamento e Fatturazione',
-    subscription_desc: 'Gestisci l\'infrastruttura digitale della tua clinica',
-    current_plan: 'Piano Attuale',
-    renews_on: (date: string) => `Rinnova il ${date}`,
-    monthly_cost: 'Costo Mensual',
-    payment_method: 'Metodo di Pagamento',
-    manage_subscription: 'Gestisci Abbonamento',
-    billing_history: 'Storico Fatturazione',
-    download_pdf: 'Scarica PDF',
-
     // Other Settings
     system_settings: 'Impostazioni di Sistema',
     whapi_integration: 'Integrazione Whapi.Cloud',
