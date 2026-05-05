@@ -105,17 +105,17 @@ export default function WhatsAppSettingsPage() {
       <header className="flex flex-col md:flex-row md:items-end justify-between gap-8">
         <div>
           <h1 className="text-4xl md:text-5xl font-black text-on-surface tracking-tighter uppercase mb-2">
-            WhatsApp <span className="text-primary italic font-serif lowercase">Configuration</span>
+            WhatsApp <span className="text-primary italic font-serif lowercase">{t.integration || 'Integration'}</span>
           </h1>
           <p className="text-[10px] font-black text-on-surface/30 uppercase tracking-[0.4em]">
-            Automated Patient Communication Gateway
+            {t.whapi_desc || 'Automated Patient Communication Gateway'}
           </p>
         </div>
         <button 
           onClick={() => setShowAddForm(!showAddForm)}
           className="px-8 py-4 rounded-2xl bg-slate-900 text-white text-[10px] font-black uppercase tracking-widest shadow-lg hover:-translate-y-1 transition-all active:scale-95"
         >
-          {showAddForm ? 'Cancel' : 'Add New Account'}
+          {showAddForm ? t.cancel || 'Cancel' : t.add_account || 'Add New Account'}
         </button>
       </header>
 
@@ -129,10 +129,10 @@ export default function WhatsAppSettingsPage() {
             className="overflow-hidden"
           >
             <div className="bg-white rounded-[2.5rem] border border-primary/20 p-10 shadow-spatial space-y-8">
-              <h3 className="text-xl font-black text-on-surface uppercase tracking-tight">Connect Business Account</h3>
+              <h3 className="text-xl font-black text-on-surface uppercase tracking-tight">{t.connect_business || 'Connect Business Account'}</h3>
               <form onSubmit={handleAddAccount} className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div className="space-y-3">
-                   <label className="text-[10px] font-black text-on-surface/30 uppercase tracking-widest ml-1">Account Label</label>
+                   <label className="text-[10px] font-black text-on-surface/30 uppercase tracking-widest ml-1">{t.account_label || 'Account Label'}</label>
                    <input 
                      type="text" 
                      value={newAccount.label}
@@ -142,7 +142,7 @@ export default function WhatsAppSettingsPage() {
                    />
                 </div>
                 <div className="space-y-3">
-                   <label className="text-[10px] font-black text-on-surface/30 uppercase tracking-widest ml-1">Phone Number ID</label>
+                   <label className="text-[10px] font-black text-on-surface/30 uppercase tracking-widest ml-1">{t.phone_id_label || 'Phone Number ID'}</label>
                    <input 
                      type="text" 
                      value={newAccount.phone_number_id}
@@ -151,7 +151,7 @@ export default function WhatsAppSettingsPage() {
                    />
                 </div>
                 <div className="md:col-span-2 space-y-3">
-                   <label className="text-[10px] font-black text-on-surface/30 uppercase tracking-widest ml-1">Access Token</label>
+                   <label className="text-[10px] font-black text-on-surface/30 uppercase tracking-widest ml-1">{t.token_label || 'Access Token'}</label>
                    <input 
                      type="password" 
                      value={newAccount.access_token}
@@ -169,7 +169,7 @@ export default function WhatsAppSettingsPage() {
                   disabled={isProcessing}
                   className="md:col-span-2 h-16 bg-primary text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-primary/20"
                 >
-                  {isProcessing ? <Loader2 className="h-5 w-5 animate-spin mx-auto" /> : 'Confirm Integration'}
+                  {isProcessing ? <Loader2 className="h-5 w-5 animate-spin mx-auto" /> : t.confirm_integration || 'Confirm Integration'}
                 </button>
               </form>
             </div>
@@ -183,22 +183,22 @@ export default function WhatsAppSettingsPage() {
           <div className="space-y-8 flex-1">
             <div className="space-y-2">
               <h3 className="text-xl font-black text-on-surface uppercase tracking-tight">
-                Integration Status
+                {t.integration_status || 'Integration Status'}
               </h3>
               <div className="flex items-center gap-3">
                 <div className={`flex items-center gap-2 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${
                   isConnected ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 'bg-amber-50 text-amber-600 border border-amber-100'
                 }`}>
                   <CheckCircle2 className={`h-3 w-3 ${isConnected ? '' : 'animate-pulse'}`} />
-                  {isConnected ? 'Active Instance' : 'Link Required'}
+                  {isConnected ? t.active_instance || 'Active Instance' : t.link_required || 'Link Required'}
                 </div>
               </div>
             </div>
             
             <p className="text-sm font-medium text-on-surface/50 leading-relaxed max-w-sm">
               {isConnected 
-                ? 'Your primary account is linked. Automated reminders and clinical follow-ups are active.' 
-                : 'Connect your WhatsApp Business API account to enable automated reminders and sequential waitlist notifications.'}
+                ? t.whatsapp_active_desc || 'Your primary account is linked. Automated reminders and clinical follow-ups are active.' 
+                : t.whatsapp_inactive_desc || 'Connect your WhatsApp Business API account to enable automated reminders.'}
             </p>
 
             <div className="flex flex-wrap gap-4">
@@ -219,10 +219,10 @@ export default function WhatsAppSettingsPage() {
             </div>
             <div className="space-y-4 max-w-[180px]">
               <p className="text-[11px] font-bold text-on-surface/60 leading-tight">
-                Business accounts require API configuration. Standard QR pairing is for personal instances.
+                {t.qr_notice || 'Business accounts require API configuration. Standard QR pairing is for personal instances.'}
               </p>
               <button className="flex items-center gap-2 text-[10px] font-black text-primary uppercase tracking-widest hover:translate-x-2 transition-transform">
-                Read Documentation <ArrowRight className="h-4 w-4" />
+                {t.read_docs || 'Read Documentation'} <ArrowRight className="h-4 w-4" />
               </button>
             </div>
           </div>
@@ -232,11 +232,11 @@ export default function WhatsAppSettingsPage() {
       {/* Automated Reminders Switch */}
       <section className="bg-white rounded-[2rem] border border-on-surface/5 p-8 md:p-10 flex items-center justify-between group cursor-pointer hover:shadow-lg transition-all" onClick={() => setRemindersEnabled(!remindersEnabled)}>
         <div className="space-y-2">
-          <h3 className="text-lg font-black text-on-surface uppercase tracking-tight">Automated Reminders</h3>
-          <p className="text-xs font-medium text-on-surface/40">Send automatic confirmations 24 hours before scheduled visits.</p>
+          <h3 className="text-lg font-black text-on-surface uppercase tracking-tight">{t.auto_reminders || 'Automated Reminders'}</h3>
+          <p className="text-xs font-medium text-on-surface/40">{t.reminders_desc || 'Send automatic confirmations 24 hours before scheduled visits.'}</p>
         </div>
         <div className="flex items-center gap-6">
-          <span className="text-[10px] font-black text-on-surface/40 uppercase tracking-widest">{remindersEnabled ? 'On' : 'Off'}</span>
+          <span className="text-[10px] font-black text-on-surface/40 uppercase tracking-widest">{remindersEnabled ? t.on || 'On' : t.off || 'Off'}</span>
           <div className={`h-8 w-14 rounded-full flex items-center px-1 transition-all ${remindersEnabled ? 'bg-primary' : 'bg-on-surface/10'}`}>
             <motion.div 
               animate={{ x: remindersEnabled ? 24 : 0 }}
@@ -249,17 +249,17 @@ export default function WhatsAppSettingsPage() {
       {/* Message Templates */}
       <section className="space-y-8">
         <div className="flex items-end justify-between px-2">
-          <h3 className="text-2xl font-black text-on-surface tracking-tighter uppercase">Clinical Templates</h3>
+          <h3 className="text-2xl font-black text-on-surface tracking-tighter uppercase">{t.clinical_templates || 'Clinical Templates'}</h3>
           <button className="text-[10px] font-black text-primary uppercase tracking-widest hover:underline">
-            Manage Cloud API Templates
+            {t.manage_templates || 'Manage Cloud API Templates'}
           </button>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {[
-            { id: 1, name: 'CONFIRMATION_REMINDER', text: 'Hi [Patient], your visit is confirmed for [Date] at [Time]. Please confirm attendance.' },
-            { id: 2, name: 'WAITLIST_OFFER', text: 'Good news! A slot opened for today at [Time]. Would you like to take it? (Reply in [X] min)' },
-            { id: 3, name: 'POST_VISIT_FEEDBACK', text: 'Thank you for visiting [Clinic]. Please rate your experience: [Link]' },
+            { id: 1, name: 'CONFIRMATION_REMINDER', text: t.template_conf_text || 'Hi [Patient], your visit is confirmed for [Date] at [Time]. Please confirm attendance.' },
+            { id: 2, name: 'WAITLIST_OFFER', text: t.template_wait_text || 'Good news! A slot opened for today at [Time]. Would you like to take it?' },
+            { id: 3, name: 'POST_VISIT_FEEDBACK', text: t.template_feedback_text || 'Thank you for visiting [Clinic]. Please rate your experience: [Link]' },
           ].map((item) => (
             <div key={item.id} className="bg-white rounded-[2rem] border border-on-surface/5 p-8 flex flex-col gap-6 group hover:shadow-xl transition-all">
               <div className="space-y-4 flex-1">
@@ -272,7 +272,7 @@ export default function WhatsAppSettingsPage() {
                 </p>
               </div>
               <button className="w-full py-3 rounded-xl border border-on-surface/5 text-[9px] font-black uppercase tracking-widest hover:bg-on-surface/5 transition-all">
-                Preview Logic
+                {t.preview_logic || 'Preview Logic'}
               </button>
             </div>
           ))}

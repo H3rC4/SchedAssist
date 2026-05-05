@@ -46,7 +46,7 @@ export default function SettingsLayout({ children }: { children: ReactNode }) {
       <aside className="w-80 border-r border-on-surface/5 bg-white p-10 flex flex-col gap-12 flex-shrink-0">
         <div>
           <h2 className="text-[10px] font-black text-on-surface/30 uppercase tracking-[0.4em] mb-8 px-4">
-            Preferences
+            {t.preferences}
           </h2>
           <nav className="space-y-3">
             {menuItems.map((item) => {
@@ -79,11 +79,11 @@ export default function SettingsLayout({ children }: { children: ReactNode }) {
         <div className="mt-auto p-8 rounded-[2rem] bg-on-surface/5 border border-on-surface/5">
           <div className="flex items-center gap-3 mb-4">
              <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-             <span className="text-[10px] font-black uppercase tracking-widest text-on-surface/40">Cloud Sync Active</span>
+             <span className="text-[10px] font-black uppercase tracking-widest text-on-surface/40">{t.cloud_sync_active}</span>
           </div>
           <p className="text-[9px] font-bold text-on-surface/30 leading-relaxed uppercase tracking-tighter">
             V.2.4.0 <br />
-            Last encrypted backup: Today, 04:12 AM
+            {t.last_backup('Today, 04:12 AM')}
           </p>
         </div>
       </aside>

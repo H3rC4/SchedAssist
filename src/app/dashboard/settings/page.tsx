@@ -109,10 +109,10 @@ export default function GeneralSettingsPage() {
     <div className="space-y-12 animate-in fade-in duration-700">
       <header>
         <h1 className="text-3xl font-black text-on-surface tracking-tighter uppercase mb-2">
-          General <span className="text-primary italic font-serif lowercase">Settings</span>
+          {t.general_settings?.split(' ')[0]} <span className="text-primary italic font-serif lowercase">{t.general_settings?.split(' ').slice(1).join(' ')}</span>
         </h1>
         <p className="text-[10px] font-black text-on-surface/30 uppercase tracking-[0.4em]">
-          Clinic Identity & System Preferences
+          {t.clinic_identity_desc}
         </p>
       </header>
 
@@ -122,12 +122,12 @@ export default function GeneralSettingsPage() {
           <section className="bg-white rounded-[2.5rem] border border-on-surface/5 p-8 shadow-spatial space-y-8">
             <div className="flex items-center gap-4 mb-2">
               <Building2 className="h-5 w-5 text-primary" />
-              <h2 className="text-lg font-black text-on-surface uppercase tracking-tight">Clinic Identity</h2>
+              <h2 className="text-lg font-black text-on-surface uppercase tracking-tight">{t.clinic_identity}</h2>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div className="space-y-3">
-                <label className="text-[10px] font-black text-on-surface/30 uppercase tracking-widest ml-1">Contact Phone</label>
+                <label className="text-[10px] font-black text-on-surface/30 uppercase tracking-widest ml-1">{t.contact_phone}</label>
                 <input
                   type="text"
                   value={contactPhone}
@@ -136,7 +136,7 @@ export default function GeneralSettingsPage() {
                 />
               </div>
               <div className="space-y-3">
-                <label className="text-[10px] font-black text-on-surface/30 uppercase tracking-widest ml-1">Primary Color</label>
+                <label className="text-[10px] font-black text-on-surface/30 uppercase tracking-widest ml-1">{t.primary_color}</label>
                 <div className="flex gap-3">
                   <input
                     type="color"
@@ -155,7 +155,7 @@ export default function GeneralSettingsPage() {
             </div>
 
             <div className="space-y-3">
-              <label className="text-[10px] font-black text-on-surface/30 uppercase tracking-widest ml-1">System Language</label>
+              <label className="text-[10px] font-black text-on-surface/30 uppercase tracking-widest ml-1">{t.system_language_label}</label>
               <select
                 value={selectedLang}
                 onChange={(e) => setSelectedLang(e.target.value as Language)}
@@ -173,12 +173,12 @@ export default function GeneralSettingsPage() {
             <section className="bg-white rounded-[2.5rem] border border-on-surface/5 p-8 shadow-spatial space-y-8">
               <div className="flex items-center gap-4 mb-2">
                 <KeyRound className="h-5 w-5 text-primary" />
-                <h2 className="text-lg font-black text-on-surface uppercase tracking-tight">Security</h2>
+                <h2 className="text-lg font-black text-on-surface uppercase tracking-tight">{t.change_password}</h2>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div className="space-y-3">
-                  <label className="text-[10px] font-black text-on-surface/30 uppercase tracking-widest ml-1">New Password</label>
+                  <label className="text-[10px] font-black text-on-surface/30 uppercase tracking-widest ml-1">{t.new_password_label}</label>
                   <div className="relative">
                     <input
                       type={showPassword ? "text" : "password"}
@@ -192,7 +192,7 @@ export default function GeneralSettingsPage() {
                   </div>
                 </div>
                 <div className="space-y-3">
-                  <label className="text-[10px] font-black text-on-surface/30 uppercase tracking-widest ml-1">Confirm Password</label>
+                  <label className="text-[10px] font-black text-on-surface/30 uppercase tracking-widest ml-1">{t.confirm_password_label}</label>
                   <input
                     type={showPassword ? "text" : "password"}
                     value={confirmPassword}
@@ -229,8 +229,8 @@ export default function GeneralSettingsPage() {
                 />
               </div>
               <div className="text-center">
-                <p className="text-[10px] font-black text-on-surface/30 uppercase tracking-widest">Clinic Logo</p>
-                <p className="text-[9px] font-medium text-on-surface/20 mt-1 uppercase">Recommended: 512x512 PNG</p>
+                <p className="text-[10px] font-black text-on-surface/30 uppercase tracking-widest">{t.clinic_logo}</p>
+                <p className="text-[9px] font-medium text-on-surface/20 mt-1 uppercase">{t.recommended_logo}</p>
               </div>
             </div>
           </section>
@@ -248,7 +248,7 @@ export default function GeneralSettingsPage() {
                 disabled={isSaving}
                 className="w-full h-16 bg-primary text-white rounded-[2rem] text-[10px] font-black uppercase tracking-[0.3em] shadow-lg shadow-primary/20 hover:-translate-y-1 transition-all active:scale-95 disabled:opacity-50"
              >
-                {isSaving ? <Loader2 className="h-5 w-5 animate-spin mx-auto" /> : 'Save Changes'}
+                {isSaving ? <Loader2 className="h-5 w-5 animate-spin mx-auto" /> : t.save_changes}
              </button>
           </div>
         </div>

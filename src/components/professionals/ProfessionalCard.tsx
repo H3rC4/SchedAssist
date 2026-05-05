@@ -63,7 +63,7 @@ export function ProfessionalCard({ professional, onClick, t }: ProfessionalCardP
                 ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' 
                 : 'bg-on-surface/10 text-on-surface-muted border-transparent'
             }`}>
-              {professional.active ? 'Active' : 'Inactive'}
+              {professional.active ? (t.active_status || 'Active') : (t.inactive_status || 'Inactive')}
             </div>
           </div>
         </div>
