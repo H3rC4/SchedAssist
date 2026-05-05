@@ -56,10 +56,10 @@ function DashboardHeader({ lang = 'es', onMenuClick }: { lang?: Language; onMenu
             </span>
           </div>
           <div className="hidden lg:block min-w-0">
-            <p className="text-[11px] font-black text-on-surface leading-none truncate max-w-[120px]">
+            <p className="text-[14px] font-black text-on-surface leading-none truncate max-w-[120px]">
               {tenantName || '—'}
             </p>
-            <p className="text-[9px] font-bold text-on-surface-muted leading-tight mt-0.5 truncate max-w-[140px]">
+            <p className="text-[11px] font-bold text-on-surface-muted leading-tight mt-0.5 truncate max-w-[140px]">
               {tenantEmail}
             </p>
           </div>

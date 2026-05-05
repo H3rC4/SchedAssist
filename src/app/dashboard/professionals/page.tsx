@@ -98,10 +98,10 @@ export default function ProfessionalsPage() {
             </div>
             <button 
               onClick={() => setShowAddForm(true)}
-              className="flex items-center justify-center gap-3 px-8 py-4 bg-primary text-white rounded-2xl font-black text-sm uppercase tracking-[0.2em] hover:bg-primary/90 hover:shadow-xl hover:-translate-y-0.5 transition-all active:scale-95 shadow-lg group"
+              className="flex items-center justify-center gap-3 px-6 py-3 bg-primary text-white rounded-2xl font-black text-[10.5px] uppercase tracking-[0.2em] hover:bg-primary/90 hover:shadow-xl hover:-translate-y-0.5 transition-all active:scale-95 shadow-lg group"
             >
               <span>{T_ui.add_professional_btn}</span>
-              <Plus className="h-5 w-5 group-hover:rotate-90 transition-transform duration-300" />
+              <Plus className="h-[15px] w-[15px] group-hover:rotate-90 transition-transform duration-300" />
             </button>
           </div>
 
