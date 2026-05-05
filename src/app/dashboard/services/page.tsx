@@ -323,7 +323,7 @@ export default function ServicesPage() {
             </motion.div>
           </div>
         )}
-      </AnimatePresence>e>
+      </AnimatePresence>
     </div>
   )
 }
