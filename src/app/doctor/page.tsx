@@ -274,11 +274,11 @@ export default function DoctorDashboard() {
           </div>
         )}
 
-        {/* LAYOUT PRINCIPAL (Lista Vertical Mejorada) */}
-        <div className="flex flex-col gap-6">
+        {/* LAYOUT PRINCIPAL (Dos columnas) */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
           
           {/* Calendar Strip / Widget */}
-          <div className="bg-white border border-on-surface/5 rounded-[1.5rem] p-6 md:p-8 shadow-sm w-full">
+          <div className="bg-white border border-on-surface/5 rounded-[1.5rem] p-6 md:p-8 shadow-sm w-full order-1 lg:order-2">
             <div className="flex items-center justify-between mb-8">
               <button onClick={() => setCurrentMonth(subMonths(currentMonth, 1))} className="p-2 rounded-xl bg-surface-container-low hover:bg-surface-container text-on-surface transition-colors">
                 <ChevronLeft className="h-4 w-4" />
@@ -318,7 +318,7 @@ export default function DoctorDashboard() {
           </div>
 
           {/* Day Feed List */}
-          <div className="w-full space-y-4">
+          <div className="w-full space-y-4 order-2 lg:order-1">
             <div className="flex items-center justify-between px-2">
               <h3 className="text-sm font-black text-on-surface uppercase tracking-tighter flex items-center gap-2">
                 {format(selectedDate, "EEEE d MMMM", { locale })}
