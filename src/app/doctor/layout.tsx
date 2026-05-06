@@ -2,26 +2,98 @@
 
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { LogOut, Calendar, Clock, Zap, User, Settings } from 'lucide-react'
+import { LogOut, Menu, X, Bell } from 'lucide-react'
 import { ForcePasswordChangeGate } from '@/components/dashboard/ForcePasswordChangeGate'
-import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-
 import { useLandingTranslation } from '@/components/LanguageContext'
+import { DoctorSidebar } from '@/components/doctor/DoctorSidebar'
+import { motion, AnimatePresence } from 'framer-motion'
+import { Language, translations } from '@/lib/i18n'
+
+function DoctorHeader({ profName, specialty, lang = 'es', onMenuClick }: { profName: string, specialty: string, lang?: Language; onMenuClick: () => void }) {
+  const supabase = createClient()
+  const t = translations[lang] || translations['es']
+
+  async function handleSignOut() {
+    await supabase.auth.signOut()
+    window.location.href = '/login'
+  }
+
+  return (
+    <header className="flex h-14 items-center justify-between px-4 md:px-6 flex-shrink-0 bg-surface z-40 relative border-b border-on-surface/5">
+      {/* Left: Mobile menu + Doctor name */}
+      <div className="flex items-center gap-2.5">
+        <button
+          onClick={onMenuClick}
+          className="md:hidden p-1.5 rounded-lg text-on-surface-muted hover:bg-surface-container-low transition-colors"
+        >
+          <Menu className="h-4.5 w-4.5" />
+        </button>
+
+        <div className="flex items-center gap-2">
+          <div className="h-7 w-7 rounded-md bg-primary/10 flex items-center justify-center flex-shrink-0">
+            <span className="text-primary font-black text-[10px] uppercase">
+              {profName ? profName.split(' ').map(w => w[0]).join('').slice(0, 2) : 'DR'}
+            </span>
+          </div>
+          <div className="hidden lg:block min-w-0">
+            <p className="text-[14px] font-black text-on-surface leading-none truncate max-w-[150px] uppercase tracking-tighter">
+              {profName || '—'}
+            </p>
+            <p className="text-[9px] font-bold text-on-surface-muted leading-tight mt-0.5 truncate max-w-[140px] uppercase tracking-widest">
+              {specialty || 'General'}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Right: actions */}
+      <div className="flex items-center gap-1.5">
+        <button className="p-1.5 rounded-lg text-on-surface-muted hover:bg-surface-container-low transition-colors">
+          <Bell className="h-4.5 w-4.5" />
+        </button>
+        <button
+          onClick={handleSignOut}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-black uppercase tracking-widest text-on-surface-muted hover:bg-surface-container-low hover:text-red-500 transition-colors"
+        >
+          <LogOut className="h-3.5 w-3.5" />
+          <span className="hidden sm:inline">{t.sign_out}</span>
+        </button>
+      </div>
+    </header>
+  )
+}
 
 export default function DoctorLayout({ children }: { children: React.ReactNode }) {
-  const { fullT, language } = useLandingTranslation()
+  const { language, setLanguage } = useLandingTranslation()
   const supabase = createClient()
-  const pathname = usePathname()
   const [profName, setProfName] = useState('')
   const [specialty, setSpecialty] = useState('')
   const [forcePassword, setForcePassword] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
 
   useEffect(() => {
     async function load() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { window.location.href = '/login'; return }
+
+      // Also get tenant settings for language/colors
+      const { data: tuData } = await supabase
+        .from('tenant_users')
+        .select('tenant_id, role, tenants(settings)')
+        .eq('user_id', user.id)
+        .limit(1).single()
+
+      if (tuData?.tenants) {
+        const t = tuData.tenants as any
+        const detectedLang = (t.settings?.language as Language) || 'es'
+        setLanguage(detectedLang)
+        
+        if (t.settings?.primary_color) {
+          document.documentElement.style.setProperty('--primary', t.settings.primary_color)
+        }
+      }
 
       const { data: prof } = await supabase
         .from('professionals')
@@ -39,28 +111,16 @@ export default function DoctorLayout({ children }: { children: React.ReactNode }
     load()
   }, [])
 
-  async function handleSignOut() {
-    await supabase.auth.signOut()
-    window.location.href = '/login'
-  }
-
   if (loading) {
     return (
-      <div className="flex h-screen items-center justify-center bg-slate-50">
-        <div className="h-10 w-10 border-4 border-primary-600 border-t-transparent animate-spin rounded-full" />
+      <div className="flex h-screen items-center justify-center bg-surface">
+        <div className="h-10 w-10 border-4 border-primary border-t-transparent animate-spin rounded-full" />
       </div>
     )
   }
 
-  const navItems = [
-    { label: fullT.nav_calendar, href: '/doctor', icon: Calendar },
-    { label: fullT.tab_weekly_config, href: '/doctor/schedule', icon: Clock },
-    { label: fullT.nav_patients, href: '/doctor/patients', icon: User },
-    { label: fullT.nav_settings, href: '/doctor/settings', icon: Settings },
-  ]
-
   return (
-    <div className="flex h-screen bg-slate-100 font-sans">
+    <div className="flex h-screen bg-surface overflow-hidden text-on-surface font-sans">
       {forcePassword && (
         <ForcePasswordChangeGate 
           lang={language} 
@@ -68,63 +128,56 @@ export default function DoctorLayout({ children }: { children: React.ReactNode }
         />
       )}
 
-      {/* Sidebar compacta */}
-      <aside className="hidden md:flex w-64 flex-col bg-slate-950 text-white p-6 gap-8">
-        {/* Logo */}
-        <div className="flex items-center gap-3">
-          <div className="h-10 w-10 bg-amber-500 rounded-xl flex items-center justify-center">
-            <Zap className="h-5 w-5 text-slate-900 fill-slate-900" />
-          </div>
-          <div>
-            <span className="text-lg font-black tracking-tight">SCHED<span className="text-amber-500">ASSIST</span></span>
-            <span className="text-[9px] font-bold text-slate-500 uppercase tracking-[0.2em] block">{fullT.role_professional}</span>
-          </div>
-        </div>
-
-        {/* Doctor Info */}
-        <div className="bg-white/5 rounded-2xl p-4 border border-white/10">
-          <div className="flex items-center gap-3">
-            <div className="h-12 w-12 rounded-xl bg-amber-500/20 flex items-center justify-center text-amber-500 font-black text-lg">
-              {profName.split(' ').map(w => w[0]).join('').slice(0, 2)}
-            </div>
-            <div className="min-w-0">
-              <p className="text-sm font-bold truncate">{profName}</p>
-              <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider truncate">{specialty || 'General'}</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Nav */}
-        <nav className="flex-1 space-y-2">
-          {navItems.map(item => {
-            const active = pathname === item.href
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all
-                  ${active ? 'bg-amber-500 text-slate-900 shadow-lg shadow-amber-500/20' : 'text-slate-400 hover:text-white hover:bg-white/5'}`}
+      {/* Mobile sidebar overlay */}
+      <AnimatePresence>
+        {isSidebarOpen && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsSidebarOpen(false)}
+              className="fixed inset-0 z-[60] bg-on-surface/30 backdrop-blur-sm md:hidden"
+            />
+            <motion.div
+              initial={{ x: '-100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '-100%' }}
+              transition={{ type: 'spring', damping: 28, stiffness: 220 }}
+              className="fixed inset-y-0 left-0 z-[70] w-64 p-3 md:hidden"
+            >
+              <div className="h-full rounded-[2rem] overflow-hidden bg-surface-container-lowest shadow-spatial border border-on-surface/5">
+                 <DoctorSidebar lang={language} />
+              </div>
+              <button
+                onClick={() => setIsSidebarOpen(false)}
+                className="absolute top-5 right-[-2.75rem] h-10 w-10 bg-white rounded-xl flex items-center justify-center shadow-float text-on-surface-muted"
               >
-                <item.icon className="h-5 w-5" />
-                {item.label}
-              </Link>
-            )
-          })}
-        </nav>
+                <X className="h-5 w-5" />
+              </button>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
 
-        {/* Sign Out */}
-        <button
-          onClick={handleSignOut}
-          className="flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-bold text-slate-500 hover:text-white hover:bg-white/5 transition-all"
-        >
-          <LogOut className="h-4 w-4" /> {fullT.sign_out}
-        </button>
-      </aside>
+      {/* Desktop sidebar */}
+      <div className="hidden md:flex flex-shrink-0 transition-all duration-500 ease-in-out">
+        <DoctorSidebar lang={language} />
+      </div>
 
-      {/* Main Content */}
-      <main className="flex-1 overflow-y-auto p-6 md:p-10">
-        {children}
-      </main>
+      {/* Main Content Column */}
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <DoctorHeader 
+          profName={profName} 
+          specialty={specialty} 
+          lang={language} 
+          onMenuClick={() => setIsSidebarOpen(true)} 
+        />
+        
+        <main className="flex-1 overflow-y-auto custom-scrollbar p-6 md:p-10">
+          {children}
+        </main>
+      </div>
     </div>
   )
 }
