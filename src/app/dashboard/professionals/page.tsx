@@ -77,62 +77,72 @@ export default function ProfessionalsPage() {
   )
 
   return (
-    <div className="flex-1 bg-surface min-h-screen p-4 md:p-8 animate-in fade-in duration-700">
-      <div className="max-w-[1400px] mx-auto space-y-8">
-        {/* HEADER */}
-        <header>
-          <h1 className="text-4xl font-black text-on-surface tracking-tighter uppercase mb-2">
-            {T_ui.staff_title?.split(' ')[0]} <span className="text-primary italic font-serif lowercase">& {T_ui.staff_title?.split(' ').slice(1).join(' ')}</span>
-          </h1>
-          <p className="text-[10px] font-black text-on-surface/30 uppercase tracking-[0.4em]">
-            {T_ui.staff_subtitle}
-          </p>
-        </header>
+    <div className="flex-1 bg-surface min-h-screen p-2 md:p-3 animate-in fade-in duration-700">
+      {/* BACKGROUND DECOR */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden opacity-[0.02]">
+        <div className="absolute -top-[10%] -right-[10%] w-[60%] h-[60%] rounded-full bg-primary blur-[120px]" />
+        <div className="absolute top-[40%] -left-[10%] w-[40%] h-[40%] rounded-full bg-primary blur-[100px]" />
+      </div>
 
-        {/* CONTROLS */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="relative group w-full sm:max-w-md">
-            <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none text-on-surface/40 group-focus-within:text-primary transition-colors">
-              <Search className="h-4 w-4" />
+      <div className="max-w-[1400px] mx-auto">
+        {/* COMPACT HEADER */}
+        <div className="relative z-10 mb-4 md:mb-6">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-3">
+            <div className="max-w-2xl">
+              <h1 className="text-lg md:text-xl font-black tracking-tighter text-on-surface leading-tight uppercase">
+                {T_ui.staff_title}
+              </h1>
+              <p className="mt-0.5 text-[7px] font-black text-on-surface-muted uppercase tracking-[0.3em]">
+                {T_ui.staff_subtitle}
+              </p>
             </div>
-            <input
-              type="text"
-              placeholder={T_ui.search_placeholder || 'Search professionals...'}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full h-12 pl-12 pr-4 bg-white border border-on-surface/5 rounded-[1.5rem] shadow-sm focus:ring-1 focus:ring-primary focus:border-primary transition-all text-xs font-bold text-on-surface placeholder:text-on-surface/30 placeholder:text-[10px] placeholder:uppercase placeholder:tracking-widest outline-none"
-            />
+            <button 
+              onClick={() => setShowAddForm(true)}
+              className="flex items-center justify-center gap-3 px-6 py-3 bg-primary text-white rounded-2xl font-black text-[10.5px] uppercase tracking-[0.2em] hover:bg-primary/90 hover:shadow-xl hover:-translate-y-0.5 transition-all active:scale-95 shadow-lg group"
+            >
+              <span>{T_ui.add_professional_btn}</span>
+              <Plus className="h-[15px] w-[15px] group-hover:rotate-90 transition-transform duration-300" />
+            </button>
           </div>
 
-          <button 
-            onClick={() => setShowAddForm(true)}
-            className="flex items-center justify-center gap-2 px-8 py-3.5 bg-primary text-white rounded-[1.5rem] font-black text-[10px] uppercase tracking-widest hover:bg-primary/90 hover:-translate-y-0.5 transition-all active:scale-95 whitespace-nowrap"
-          >
-            <span>{T_ui.add_professional_btn || 'Add Professional'}</span>
-            <Plus className="h-4 w-4" />
-          </button>
+          {/* COMPACT SEARCH BAR */}
+          <div className="mt-4 max-w-sm">
+            <div className="relative group">
+              <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none text-on-surface-muted group-focus-within:text-primary transition-colors">
+                <Search className="h-3 w-3" />
+              </div>
+              <input
+                type="text"
+                placeholder={T_ui.search_placeholder}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full h-8 pl-9 pr-3 bg-precision-surface-lowest border border-on-surface/5 rounded-xl shadow-sm focus:ring-1 focus:ring-primary focus:border-primary transition-all text-[10px] font-bold text-on-surface placeholder:text-on-surface-muted/40 placeholder:text-[8px] placeholder:uppercase placeholder:tracking-widest"
+              />
+            </div>
+          </div>
         </div>
 
         {/* LIST SECTION */}
-        <div className="flex flex-col gap-4 max-w-5xl">
+        <div className="relative z-10 flex flex-col gap-3 max-w-4xl">
           {filteredProfessionals.length === 0 ? (
-            <div className="py-16 text-center bg-white rounded-[2rem] border border-on-surface/5 shadow-sm">
-              <div className="h-16 w-16 bg-on-surface/5 rounded-[1.5rem] flex items-center justify-center mx-auto mb-4">
-                <Users className="h-8 w-8 text-on-surface/20" />
+            <div className="col-span-full py-12 text-center bg-precision-surface-lowest/50 backdrop-blur-sm rounded-xl border border-dashed border-on-surface/10">
+              <div className="h-10 w-10 bg-surface-container-low rounded-full flex items-center justify-center mx-auto mb-3">
+                <Users className="h-5 w-5 text-on-surface-muted" />
               </div>
-              <h3 className="text-lg font-black text-on-surface uppercase tracking-tighter">{T_ui.no_professionals_yet}</h3>
-              <p className="mt-2 text-[10px] font-bold text-on-surface/40 uppercase tracking-[0.2em]">
+              <h3 className="text-sm font-black text-on-surface uppercase tracking-tight">{T_ui.no_professionals_yet}</h3>
+              <p className="mt-0.5 text-[8px] font-bold text-on-surface-muted uppercase tracking-widest">
                 {T_ui.start_team_cta || 'START BY ADDING YOUR TEAM'}
               </p>
             </div>
           ) : (
             filteredProfessionals.map((prof) => (
-              <ProfessionalCard 
-                key={prof.id}
-                professional={prof} 
-                onClick={() => selectProfessional(prof)} 
-                t={T_ui}
-              />
+              <div key={prof.id} className="h-full">
+                <ProfessionalCard 
+                  professional={prof} 
+                  onClick={() => selectProfessional(prof)} 
+                  t={T_ui}
+                />
+              </div>
             ))
           )}
         </div>
