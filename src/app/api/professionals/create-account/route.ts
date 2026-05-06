@@ -27,8 +27,8 @@ export async function POST(req: NextRequest) {
     // 2. Generate credentials
     const randomSuffix = Math.random().toString(36).substring(2, 8);
     const normalizedName = prof.full_name.toLowerCase().replace(/[^a-z0-9]/g, '');
-    const auth_email = `dr.${normalizedName}.${randomSuffix}@schedassist.com`;
-    const auth_password_hint = Math.random().toString(36).substring(2, 8) + 'X!';
+    const auth_email = `dr.${normalizedName}@schedassist.com`;
+    const auth_password_hint = randomSuffix + 'X!';
 
     // 3. Create user in Supabase Auth
     const { data: authData, error: authError } = await supabase.auth.admin.createUser({
