@@ -4,14 +4,13 @@ import { useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { Loader2 } from 'lucide-react';
 
-export function GoogleAuthButton({ actionText = 'Continuar con Google' }: { actionText?: string }) {
+export function GoogleAuthButton({ actionText = 'Continue with Google' }: { actionText?: string }) {
   const [loading, setLoading] = useState(false);
 
   async function handleLogin() {
     setLoading(true);
     const supabase = createClient();
-    
-    // El redirect principal va hacia auth/callback, que luego manda a /dashboard
+
     await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
@@ -24,7 +23,7 @@ export function GoogleAuthButton({ actionText = 'Continuar con Google' }: { acti
     <button
       onClick={handleLogin}
       disabled={loading}
-      className="w-full flex items-center justify-center gap-3 py-4 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-white text-sm font-bold uppercase tracking-wider transition-all"
+      className="w-full flex items-center justify-center gap-3 py-4 px-6 rounded-[1.5rem] bg-white/5 hover:bg-white/10 border border-white/10 text-white text-xs font-black uppercase tracking-widest transition-all hover:scale-[1.02] active:scale-95 backdrop-blur-md group"
     >
       {loading ? (
         <Loader2 className="h-5 w-5 animate-spin" />

@@ -191,22 +191,24 @@ export default function DoctorDashboard() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
-          <h1 className="text-3xl font-black text-white tracking-tight">{fullT.nav_calendar}</h1>
+          <h1 className="text-4xl font-black uppercase tracking-tight text-white">
+            {fullT.nav_calendar} <span className="font-serif italic lowercase font-normal opacity-70">agenda</span>
+          </h1>
           <p className="text-sm font-bold text-primary-400 mt-1 uppercase tracking-widest">
             {format(new Date(), "EEEE d MMMM, yyyy", { locale })}
           </p>
         </div>
         <button 
           onClick={() => setShowNewModal(true)}
-          className="flex items-center justify-center gap-2 px-6 py-4 bg-accent-500 text-primary-950 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-accent-400 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl shadow-accent-500/20"
+          className="flex items-center justify-center gap-2 px-8 py-4 bg-accent-500 text-primary-950 rounded-[1.5rem] font-black text-sm uppercase tracking-widest hover:bg-accent-400 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl shadow-accent-500/20"
         >
-          <Plus className="h-4 w-4" /> {translations[language]?.new_appointment || 'Nueva Cita'}
+          <Plus className="h-5 w-5" /> {translations[language]?.new_appointment || 'Nueva Cita'}
         </button>
       </div>
 
       {/* Pending Calls Reminder (Doctor View) */}
       {pendingCalls.length > 0 && (
-        <div className="bg-red-500/10 backdrop-blur-md border border-red-500/20 rounded-[2rem] p-8 animate-in slide-in-from-top duration-700">
+        <div className="bg-red-500/10 backdrop-blur-md border border-red-500/20 rounded-[1.5rem] p-6 md:p-8 animate-in slide-in-from-top duration-700">
            <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-3">
                 <div className="h-10 w-10 bg-red-100 flex items-center justify-center rounded-xl text-red-600">
@@ -222,7 +224,7 @@ export default function DoctorDashboard() {
            
            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {pendingCalls.map(call => (
-                <div key={call.id} className="bg-white p-6 rounded-2xl border border-red-200/50 shadow-sm flex flex-col justify-between group">
+                <div key={call.id} className="bg-white p-6 rounded-[1.5rem] border border-red-200/50 shadow-sm flex flex-col justify-between group">
                   <div className="flex items-center gap-4 mb-4">
                     <div className="h-12 w-12 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 font-black text-xs">
                       {call.clients?.first_name[0]}{call.clients?.last_name[0]}
@@ -270,10 +272,10 @@ export default function DoctorDashboard() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+      <div className="flex flex-col gap-8">
         {/* Calendar */}
-        <div className="lg:col-span-5">
-          <div className="bg-primary-900/40 backdrop-blur-xl rounded-[2.5rem] border border-white/10 p-8 shadow-2xl noise h-full">
+        <div className="w-full">
+          <div className="bg-primary-900/40 backdrop-blur-xl rounded-[1.5rem] border border-white/10 p-6 md:p-8 shadow-2xl noise h-full">
             <div className="flex items-center justify-between mb-8">
               <button onClick={() => setCurrentMonth(subMonths(currentMonth, 1))} className="p-3 rounded-xl bg-primary-800/50 hover:bg-primary-700 text-primary-200 transition-colors">
                 <ChevronLeft className="h-5 w-5" />
@@ -312,7 +314,7 @@ export default function DoctorDashboard() {
         </div>
 
         {/* Day Feed */}
-        <div className="lg:col-span-7 space-y-4">
+        <div className="w-full space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-black text-white flex items-center gap-2">
               <Calendar className="h-5 w-5 text-accent-500" />
@@ -324,7 +326,7 @@ export default function DoctorDashboard() {
           </div>
 
           {dayApps.length === 0 ? (
-            <div className="bg-primary-900/40 backdrop-blur-xl rounded-[2.5rem] border border-white/10 p-16 text-center noise">
+            <div className="bg-primary-900/40 backdrop-blur-xl rounded-[1.5rem] border border-white/10 p-16 text-center noise">
               <Calendar className="h-12 w-12 text-primary-800 mx-auto mb-4" />
               <p className="text-lg font-bold text-primary-400">{fullT.no_activity_today}</p>
               <p className="text-sm text-primary-500 mt-1">{language === 'es' ? '¡Disfruta tu tiempo libre! 🎉' : 'Enjoy your free time! 🎉'}</p>
@@ -332,8 +334,8 @@ export default function DoctorDashboard() {
           ) : (
             <div className="space-y-3">
               {dayApps.map((app, idx) => (
-                <div key={app.id} className="bg-primary-900/40 backdrop-blur-xl rounded-3xl border border-white/10 p-5 shadow-sm hover:bg-primary-800/40 transition-all group noise">
-                  <div className="flex items-center gap-5">
+                <div key={app.id} className="bg-primary-900/40 backdrop-blur-xl rounded-[1.5rem] border border-white/10 p-5 md:p-6 shadow-sm hover:bg-primary-800/40 transition-all group noise">
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-5">
                     {/* Time */}
                     <div className="h-14 w-14 rounded-2xl bg-primary-800/50 border border-white/5 flex flex-col items-center justify-center flex-shrink-0 group-hover:bg-accent-500 transition-all duration-300">
                       <span className="text-lg font-black leading-none group-hover:text-primary-950 text-accent-500">{format(parseISO(app.start_at), 'HH')}</span>
