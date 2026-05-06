@@ -32,15 +32,15 @@ export function LanguageSelector() {
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md transition-all group"
+        className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-white/[0.04] border border-white/[0.08] shadow-sm hover:shadow-md transition-all group"
       >
-        <Globe className="h-4 w-4 text-slate-500 group-hover:text-amber-500 transition-colors" />
-        <span className="text-sm font-semibold text-slate-800 dark:text-slate-100 uppercase tracking-wider">{currentLang.code}</span>
-        <ChevronDown className={`h-4 w-4 text-slate-400 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
+        <Globe className="h-4 w-4 text-white/40 group-hover:text-accent-400 transition-colors" />
+        <span className="text-sm font-semibold text-white/70 uppercase tracking-wider">{currentLang.code}</span>
+        <ChevronDown className={`h-4 w-4 text-white/30 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
       </button>
 
       {isOpen && (
-        <div className="absolute top-full right-0 mt-2 w-48 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl overflow-hidden z-50 animate-in fade-in zoom-in-95 duration-200">
+        <div className="absolute top-full right-0 mt-2 w-48 rounded-3xl bg-[#0e0f13] border border-white/[0.08] shadow-xl overflow-hidden z-50 animate-in fade-in zoom-in-95 duration-200">
           <div className="p-2 space-y-1">
             {languages.map((lang) => (
               <button
@@ -51,15 +51,15 @@ export function LanguageSelector() {
                 }}
                 className={`w-full flex items-center justify-between px-4 py-3 rounded-2xl text-sm font-medium transition-all ${
                   language === lang.code 
-                    ? 'bg-slate-100 dark:bg-slate-800 text-amber-600 dark:text-amber-400' 
-                    : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50'
+                    ? 'bg-accent-500/10 text-accent-400' 
+                    : 'text-white/50 hover:bg-white/[0.04]'
                 }`}
               >
                 <div className="flex items-center gap-3">
                   <span className="text-lg">{lang.flag}</span>
                   <span>{lang.label}</span>
                 </div>
-                {language === lang.code && <div className="w-1.5 h-1.5 rounded-full bg-amber-500" />}
+                {language === lang.code && <div className="w-1.5 h-1.5 rounded-full bg-accent-500" />}
               </button>
             ))}
           </div>

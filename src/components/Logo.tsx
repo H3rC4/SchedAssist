@@ -21,7 +21,7 @@ export function Logo({ className = "h-10 w-10", iconOnly = false, textColor = "t
 
       {!iconOnly && (
         <span className={`text-xl font-black tracking-tight uppercase select-none ${textColor}`}>
-          Sched<span className="text-primary group-hover:opacity-80 transition-opacity">Assist</span>
+          Sched<span className="text-accent-500 group-hover:opacity-80 transition-opacity">Assist</span>
         </span>
       )}
     </div>
