@@ -23,7 +23,7 @@ export function GoogleAuthButton({ actionText = 'Continue with Google' }: { acti
     <button
       onClick={handleLogin}
       disabled={loading}
-      className="w-full flex items-center justify-center gap-3 py-4 px-6 rounded-[1.5rem] bg-white/5 hover:bg-white/10 border border-white/10 text-white text-xs font-black uppercase tracking-widest transition-all hover:scale-[1.02] active:scale-95 backdrop-blur-md group"
+      className="w-full flex items-center justify-center gap-3 py-4 px-6 bg-primary/[0.03] hover:bg-primary/[0.08] border border-primary/20 text-primary text-xs font-black uppercase tracking-widest transition-all hover:scale-[1.02] active:scale-95 group"
     >
       {loading ? (
         <Loader2 className="h-5 w-5 animate-spin" />
