@@ -32,15 +32,15 @@ export function LanguageSelector() {
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-white/[0.04] border border-white/[0.08] shadow-sm hover:shadow-md transition-all group"
+        className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-primary/[0.04] border border-primary/10 shadow-sm hover:shadow-md transition-all group"
       >
-        <Globe className="h-4 w-4 text-white/40 group-hover:text-primary-light transition-colors" />
-        <span className="text-sm font-semibold text-white/70 uppercase tracking-wider">{currentLang.code}</span>
-        <ChevronDown className={`h-4 w-4 text-white/30 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
+        <Globe className="h-4 w-4 text-primary/50 group-hover:text-primary transition-colors" />
+        <span className="text-sm font-semibold text-primary uppercase tracking-wider">{currentLang.code}</span>
+        <ChevronDown className={`h-4 w-4 text-primary/40 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
       </button>
 
       {isOpen && (
-        <div className="absolute top-full right-0 mt-2 w-48 rounded-3xl bg-[#0e0f13] border border-white/[0.08] shadow-xl overflow-hidden z-50 animate-in fade-in zoom-in-95 duration-200">
+        <div className="absolute top-full right-0 mt-2 w-48 rounded-3xl bg-white border border-primary/10 shadow-xl overflow-hidden z-50 animate-in fade-in zoom-in-95 duration-200">
           <div className="p-2 space-y-1">
             {languages.map((lang) => (
               <button
@@ -51,8 +51,8 @@ export function LanguageSelector() {
                 }}
                 className={`w-full flex items-center justify-between px-4 py-3 rounded-2xl text-sm font-medium transition-all ${
                   language === lang.code 
-                    ? 'bg-primary/10 text-primary-light' 
-                    : 'text-white/50 hover:bg-white/[0.04]'
+                    ? 'bg-primary/10 text-primary' 
+                    : 'text-[#191c1e]/60 hover:bg-primary/[0.04]'
                 }`}
               >
                 <div className="flex items-center gap-3">

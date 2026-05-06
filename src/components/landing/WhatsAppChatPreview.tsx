@@ -26,7 +26,7 @@ const Message = ({ text, sender, time, delay }: { text: string, sender: 'user' |
 
 export function WhatsAppChatPreview() {
     return (
-        <div className="w-full max-w-sm h-[420px] bg-white/[0.03] rounded-[2.5rem] border border-white/[0.06] shadow-2xl flex flex-col overflow-hidden relative">
+        <div className="w-full max-w-sm h-[420px] bg-[#090a0d] rounded-[2.5rem] border border-white/[0.06] shadow-2xl flex flex-col overflow-hidden relative">
             <div className="bg-white/[0.04] backdrop-blur-md p-4 flex items-center gap-3 border-b border-white/[0.06]">
                 <div className="h-10 w-10 rounded-full bg-primary flex items-center justify-center font-black text-white">
                     SA
@@ -37,7 +37,7 @@ export function WhatsAppChatPreview() {
                  </div>
             </div>
 
-            <div className="flex-1 p-4 overflow-y-auto custom-scrollbar bg-white/[0.02] relative">
+            <div className="flex-1 p-4 overflow-y-auto custom-scrollbar bg-[#090a0d] relative">
                 <div className="relative z-10">
                     <Message text="Hola! Quiero agendar una limpieza dental para mañana." sender="user" time="14:02" delay={1} />
                     <Message text="¡Hola! 👋 Con gusto. Para mañana tengo los siguientes horarios: 10:00, 11:30 y 16:00. ¿Cuál te queda mejor?" sender="bot" time="14:02" delay={2} />

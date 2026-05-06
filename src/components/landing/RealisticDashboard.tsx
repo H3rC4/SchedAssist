@@ -42,7 +42,7 @@ export function RealisticDashboard() {
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: "easeOut" }}
-            className="w-full max-w-4xl mx-auto p-4 md:p-8 rounded-[3rem] bg-white/[0.03] border border-white/[0.06] shadow-[0_32px_128px_-16px_rgba(0,0,0,0.8)] overflow-hidden relative"
+            className="w-full max-w-4xl mx-auto p-4 md:p-8 rounded-[3rem] bg-[#090a0d] border border-white/[0.06] shadow-[0_32px_128px_-16px_rgba(0,0,0,0.8)] overflow-hidden relative"
         >
             <div className="absolute top-0 right-0 h-64 w-64 bg-primary/[0.06] blur-[100px] rounded-full -mr-32 -mt-32" />
             <div className="absolute bottom-0 left-0 h-48 w-48 bg-white/[0.03] blur-[80px] rounded-full -ml-24 -mb-24" />

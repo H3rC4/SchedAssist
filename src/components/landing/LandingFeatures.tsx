@@ -10,11 +10,11 @@ const FeatureCard = ({ title, desc, icon: Icon, className, delay }: { title: str
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
         transition={{ duration: 0.6, delay }}
-        className={`group p-8 rounded-[2.5rem] bg-white/[0.03] border border-white/[0.06] hover:border-primary/30 transition-all duration-500 relative overflow-hidden ${className}`}
+        className={`group p-8 rounded-[2.5rem] bg-white/5 border border-white/10 hover:border-primary/30 transition-all duration-500 relative overflow-hidden ${className}`}
     >
         <div className="absolute top-0 right-0 h-32 w-32 bg-primary/[0.04] blur-3xl opacity-0 group-hover:opacity-100 transition-opacity" />
         
-        <div className="h-12 w-12 rounded-2xl bg-white/[0.06] flex items-center justify-center mb-6 group-hover:bg-primary group-hover:text-white transition-all duration-500 shadow-xl">
+        <div className="h-12 w-12 rounded-2xl bg-white/10 flex items-center justify-center mb-6 group-hover:bg-primary group-hover:text-white transition-all duration-500 shadow-xl">
             <Icon className="h-6 w-6 text-white/70 group-hover:text-white" />
         </div>
         
@@ -31,7 +31,7 @@ export function LandingFeatures() {
   const { t } = useLandingTranslation();
 
   return (
-    <section className="relative z-10 px-6 py-24 bg-[#090a0d]">
+    <section className="relative z-10 px-6 py-24 bg-primary">
       <div className="max-w-7xl mx-auto">
 
         <motion.div
@@ -40,13 +40,13 @@ export function LandingFeatures() {
           viewport={{ once: true }}
           className="text-center mb-16"
         >
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-white/[0.06] bg-white/[0.03] backdrop-blur-xl text-primary-light text-[9px] font-black uppercase tracking-[0.2em] mb-6">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-white/10 bg-white/5 text-primary-light text-[9px] font-black uppercase tracking-[0.2em] mb-6">
             <Sparkles className="h-3 w-3" /> Platform Capabilities
           </div>
           <h2 className="text-4xl md:text-5xl font-black text-white tracking-tight uppercase italic">
             Everything you need
           </h2>
-          <p className="text-white/40 font-medium max-w-2xl mx-auto mt-4">
+          <p className="text-white/60 font-medium max-w-2xl mx-auto mt-4">
             From intelligent scheduling to automated payments — run your clinic on autopilot.
           </p>
         </motion.div>

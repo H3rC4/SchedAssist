@@ -18,16 +18,16 @@ export function Navbar() {
       className="fixed top-0 left-0 right-0 z-50 px-6 py-6"
     >
       <div className="max-w-7xl mx-auto">
-        <div className="bg-white/[0.03] backdrop-blur-2xl h-20 rounded-[2.5rem] px-8 flex items-center justify-between border border-white/[0.06] shadow-[0_32px_64px_-16px_rgba(0,0,0,0.8)] relative">
+        <div className="bg-white/80 backdrop-blur-2xl h-20 rounded-[2.5rem] px-8 flex items-center justify-between border border-primary/10 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.08)] relative">
           
         <Link href="/" className="hover:scale-105 transition-transform active:scale-95">
-          <Logo textColor="text-white" />
+          <Logo />
         </Link>
 
           <div className="hidden md:flex items-center gap-4 relative z-10">
             <LanguageSelector />
             
-            <div className="w-px h-8 bg-white/10 mx-2" />
+            <div className="w-px h-8 bg-primary/10 mx-2" />
 
             <Link 
               href="/login" 
@@ -48,7 +48,7 @@ export function Navbar() {
           </div>
 
           <div className="absolute inset-0 rounded-[2.5rem] overflow-hidden pointer-events-none">
-            <div className="absolute inset-0 noise opacity-[0.04]" />
+            <div className="absolute inset-0 noise opacity-[0.02]" />
           </div>
         </div>
       </div>
