@@ -12,14 +12,14 @@ const Message = ({ text, sender, time, delay }: { text: string, sender: 'user' |
     >
         <div className={`max-w-[80%] px-4 py-2.5 rounded-2xl text-sm font-medium shadow-sm ${
             sender === 'user' 
-                ? 'bg-accent-500 text-[#090a0d] rounded-tr-none' 
+                ? 'bg-primary text-white rounded-tr-none' 
                 : 'bg-white/[0.06] text-white/80 rounded-tl-none border border-white/[0.06]'
         }`}>
             {text}
         </div>
         <div className="flex items-center gap-1 mt-1 px-1">
             <span className="text-[9px] text-white/30 font-bold">{time}</span>
-            {sender === 'user' && <CheckCheck className="h-3 w-3 text-accent-400" />}
+            {sender === 'user' && <CheckCheck className="h-3 w-3 text-primary-light" />}
         </div>
     </motion.div>
 )
@@ -28,12 +28,12 @@ export function WhatsAppChatPreview() {
     return (
         <div className="w-full max-w-sm h-[420px] bg-white/[0.03] rounded-[2.5rem] border border-white/[0.06] shadow-2xl flex flex-col overflow-hidden relative">
             <div className="bg-white/[0.04] backdrop-blur-md p-4 flex items-center gap-3 border-b border-white/[0.06]">
-                <div className="h-10 w-10 rounded-full bg-accent-500 flex items-center justify-center font-black text-[#090a0d]">
+                <div className="h-10 w-10 rounded-full bg-primary flex items-center justify-center font-black text-white">
                     SA
                  </div>
                  <div>
                      <p className="text-sm font-black text-white leading-none">SchedAssist Bot</p>
-                     <p className="text-[10px] text-accent-400 font-bold mt-1 tracking-widest uppercase">Online</p>
+                     <p className="text-[10px] text-primary-light font-bold mt-1 tracking-widest uppercase">Online</p>
                  </div>
             </div>
 
@@ -50,7 +50,7 @@ export function WhatsAppChatPreview() {
                 <div className="flex-1 bg-white/[0.04] rounded-full h-10 px-4 flex items-center text-white/30 text-xs">
                     Escribe un mensaje...
                 </div>
-                <div className="h-10 w-10 rounded-full bg-accent-500 flex items-center justify-center text-[#090a0d]">
+                <div className="h-10 w-10 rounded-full bg-primary flex items-center justify-center text-white">
                     <Send className="h-4 w-4" />
                 </div>
             </div>

@@ -10,15 +10,15 @@ const FeatureCard = ({ title, desc, icon: Icon, className, delay }: { title: str
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
         transition={{ duration: 0.6, delay }}
-        className={`group p-8 rounded-[2.5rem] bg-white/[0.03] border border-white/[0.06] hover:border-accent-500/20 transition-all duration-500 relative overflow-hidden ${className}`}
+        className={`group p-8 rounded-[2.5rem] bg-white/[0.03] border border-white/[0.06] hover:border-primary/30 transition-all duration-500 relative overflow-hidden ${className}`}
     >
-        <div className="absolute top-0 right-0 h-32 w-32 bg-accent-500/[0.04] blur-3xl opacity-0 group-hover:opacity-100 transition-opacity" />
+        <div className="absolute top-0 right-0 h-32 w-32 bg-primary/[0.04] blur-3xl opacity-0 group-hover:opacity-100 transition-opacity" />
         
-        <div className="h-12 w-12 rounded-2xl bg-white/[0.06] flex items-center justify-center mb-6 group-hover:bg-accent-500 group-hover:text-[#090a0d] transition-all duration-500 shadow-xl">
-            <Icon className="h-6 w-6 text-white/70 group-hover:text-[#090a0d]" />
+        <div className="h-12 w-12 rounded-2xl bg-white/[0.06] flex items-center justify-center mb-6 group-hover:bg-primary group-hover:text-white transition-all duration-500 shadow-xl">
+            <Icon className="h-6 w-6 text-white/70 group-hover:text-white" />
         </div>
         
-        <h3 className="text-xl font-black text-white mb-3 tracking-tight group-hover:text-accent-400 transition-colors uppercase italic">{title}</h3>
+        <h3 className="text-xl font-black text-white mb-3 tracking-tight group-hover:text-primary-light transition-colors uppercase italic">{title}</h3>
         <p className="text-sm text-white/50 leading-relaxed font-medium">
             {desc}
         </p>
@@ -40,7 +40,7 @@ export function LandingFeatures() {
           viewport={{ once: true }}
           className="text-center mb-16"
         >
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-white/[0.06] bg-white/[0.03] backdrop-blur-xl text-accent-400 text-[9px] font-black uppercase tracking-[0.2em] mb-6">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-white/[0.06] bg-white/[0.03] backdrop-blur-xl text-primary-light text-[9px] font-black uppercase tracking-[0.2em] mb-6">
             <Sparkles className="h-3 w-3" /> Platform Capabilities
           </div>
           <h2 className="text-4xl md:text-5xl font-black text-white tracking-tight uppercase italic">

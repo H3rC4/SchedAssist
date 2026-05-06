@@ -13,13 +13,13 @@ export function LandingHero() {
   return (
     <main className="relative z-10 flex-1 flex flex-col items-center justify-center px-6 pt-32 pb-24 text-center max-w-7xl mx-auto w-full overflow-hidden">
       
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-96 bg-accent-500/[0.04] blur-[120px] rounded-full -z-10 pointer-events-none" />
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-96 bg-primary/[0.04] blur-[120px] rounded-full -z-10 pointer-events-none" />
 
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
-        className="inline-flex items-center gap-2 px-6 py-2 rounded-full border border-white/[0.06] bg-white/[0.03] backdrop-blur-xl text-accent-400 text-[10px] font-black uppercase tracking-[0.2em] mb-10 shadow-2xl"
+        className="inline-flex items-center gap-2 px-6 py-2 rounded-full border border-white/[0.06] bg-white/[0.03] backdrop-blur-xl text-primary-light text-[10px] font-black uppercase tracking-[0.2em] mb-10 shadow-2xl"
       >
          <Sparkles className="h-3.5 w-3.5" /> {t.hero_badge || "Next-Generation SaaS"}
       </motion.div>
@@ -31,7 +31,7 @@ export function LandingHero() {
         className="text-5xl md:text-8xl font-black text-white tracking-tighter leading-[0.95] mb-8"
       >
          {t.hero_title_1} <br />
-         <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent-400 to-accent-500 drop-shadow-[0_0_15px_rgba(245,158,11,0.2)]">{t.hero_title_2}</span>
+         <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-light to-primary-400 drop-shadow-[0_0_15px_rgba(13,148,136,0.3)]">{t.hero_title_2}</span>
       </motion.h1>
       
       <motion.p 
@@ -51,7 +51,7 @@ export function LandingHero() {
       >
         <Link 
           href="/register" 
-          className="px-10 py-5 rounded-[2rem] bg-accent-500 hover:bg-accent-400 text-[#090a0d] text-xs font-black uppercase tracking-[0.2em] transition-all shadow-xl shadow-accent-500/25 hover:scale-105 active:scale-95 flex items-center gap-3 group"
+          className="px-10 py-5 rounded-[2rem] bg-primary hover:bg-primary-light text-white text-xs font-black uppercase tracking-[0.2em] transition-all shadow-xl shadow-primary/20 hover:scale-105 active:scale-95 flex items-center gap-3 group"
         >
           {t.hero_cta_primary || t.hero_cta} <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
         </Link>
@@ -69,7 +69,7 @@ export function LandingHero() {
              <WhatsAppChatPreview />
           </div>
 
-          <div className="absolute -z-10 -bottom-20 left-1/2 -translate-x-1/2 w-[120%] h-96 bg-accent-500/[0.03] blur-[120px] rounded-full pointer-events-none" />
+          <div className="absolute -z-10 -bottom-20 left-1/2 -translate-x-1/2 w-[120%] h-96 bg-primary/[0.03] blur-[120px] rounded-full pointer-events-none" />
       </div>
     </main>
   );

@@ -31,7 +31,7 @@ export function Navbar() {
 
             <Link 
               href="/login" 
-              className="px-8 py-3.5 rounded-2xl bg-accent-500 hover:bg-accent-400 text-[#090a0d] text-[10px] font-black uppercase tracking-widest transition-all shadow-xl shadow-accent-500/20 active:scale-95 flex items-center gap-3"
+              className="px-8 py-3.5 rounded-2xl bg-primary hover:bg-primary-light text-white text-[10px] font-black uppercase tracking-widest transition-all shadow-xl shadow-primary/20 active:scale-95 flex items-center gap-3"
             >
               {t.nav_login} <ShieldCheck className="h-4 w-4" />
             </Link>
@@ -41,7 +41,7 @@ export function Navbar() {
              <LanguageSelector />
              <Link 
                href="/login" 
-               className="h-10 w-10 rounded-xl bg-accent-500 text-[#090a0d] flex items-center justify-center shadow-lg"
+               className="h-10 w-10 rounded-xl bg-primary text-white flex items-center justify-center shadow-lg"
              >
                <ShieldCheck className="h-5 w-5" />
              </Link>
