@@ -157,11 +157,15 @@ export function Sidebar({ lang = 'es' }: SidebarProps) {
             >
                 <LifeBuoy className="h-5 w-5" />
             </button>
-            <form action="/auth/sign-out" method="post">
-                <button className="p-3 text-on-surface/40 hover:text-red-500 hover:bg-red-50 rounded-2xl transition-all">
-                    <LogOut className="h-5 w-5" />
-                </button>
-            </form>
+            <button 
+              onClick={async () => {
+                await supabase.auth.signOut()
+                window.location.href = '/login'
+              }}
+              className="p-3 text-on-surface/40 hover:text-red-500 hover:bg-red-50 rounded-2xl transition-all"
+            >
+                <LogOut className="h-5 w-5" />
+            </button>
         </div>
       </div>
 

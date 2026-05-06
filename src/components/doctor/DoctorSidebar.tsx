@@ -9,6 +9,7 @@ import {
 } from 'lucide-react'
 import { Language, translations } from '@/lib/i18n'
 import { motion, AnimatePresence } from 'framer-motion'
+import { createClient } from '@/lib/supabase/client'
 
 const navItemsBase = [
   { id: 'calendar',  es: 'Calendario',     it: 'Calendario',   en: 'Calendar',   href: '/doctor',          icon: Calendar, group: 'manage' },
@@ -123,11 +124,16 @@ export function DoctorSidebar({ lang = 'es' }: DoctorSidebarProps) {
             >
                 <LifeBuoy className="h-5 w-5" />
             </button>
-            <form action="/auth/sign-out" method="post">
-                <button className="p-3 text-on-surface/40 hover:text-red-500 hover:bg-red-50 rounded-2xl transition-all">
-                    <LogOut className="h-5 w-5" />
-                </button>
-            </form>
+            <button 
+              onClick={async () => {
+                const supabase = createClient()
+                await supabase.auth.signOut()
+                window.location.href = '/login'
+              }}
+              className="p-3 text-on-surface/40 hover:text-red-500 hover:bg-red-50 rounded-2xl transition-all"
+            >
+                <LogOut className="h-5 w-5" />
+            </button>
         </div>
       </div>
 

@@ -222,224 +222,239 @@ export default function DoctorSchedulePage() {
   }
 
   return (
-    <div className="max-w-[1200px] mx-auto space-y-8 animate-in fade-in duration-700 pb-20 px-4 md:px-0">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-black text-white tracking-tight">{fullT.nav_schedule}</h1>
-          <p className="text-sm font-bold text-primary-400 mt-1 uppercase tracking-widest">{language === 'es' ? 'Gestión de disponibilidad y ausencias' : 'Manage availability and absences'}</p>
+    <div className="flex-1 bg-surface min-h-screen p-4 md:p-8 animate-in fade-in duration-700">
+      <div className="max-w-[1400px] mx-auto space-y-8 pb-20">
+        
+        {/* Header */}
+        <div className="relative z-10">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+            <div className="max-w-2xl">
+              <h1 className="text-2xl md:text-3xl font-black tracking-tighter text-on-surface leading-tight uppercase">
+                {fullT.nav_schedule || 'Gestión de Disponibilidad'}
+              </h1>
+              <p className="mt-1 text-[9px] font-black text-on-surface-muted uppercase tracking-[0.3em]">
+                {language === 'es' ? 'Gestión de horarios y ausencias' : 'Manage availability and absences'}
+              </p>
+            </div>
+          </div>
         </div>
-      </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
-        {/* Weekly Schedule */}
-        <div className="bg-primary-900/40 backdrop-blur-xl rounded-[2.5rem] border border-white/5 p-8 shadow-2xl">
-          <h3 className="text-[10px] font-black text-primary-500 uppercase tracking-widest flex items-center gap-2 mb-8">
-            <Clock className="h-4 w-4" /> {language === 'es' ? 'CONFIGURACIÓN SEMANAL' : 'WEEKLY CONFIGURATION'}
-          </h3>
-          <div className="grid gap-4">
-            {rules.map(rule => (
-              <div key={rule.day_of_week}
-                className={`rounded-2xl border transition-all ${rule.active ? 'border-accent-500/30 bg-primary-800/40 shadow-lg shadow-accent-500/5' : 'border-white/5 bg-primary-950/20 opacity-60'}`}>
-                <div className="flex items-center gap-4 p-5">
-                  <label className="flex items-center gap-3 cursor-pointer min-w-[140px]">
-                    <input type="checkbox" checked={rule.active} onChange={e => updateRule(rule.day_of_week, 'active', e.target.checked)}
-                      className="w-5 h-5 rounded-lg border-white/10 bg-primary-950/50 text-accent-500 focus:ring-accent-500 focus:ring-offset-primary-900" />
-                    <span className={`text-sm font-black ${rule.active ? 'text-white' : 'text-primary-500'}`}>{weekDays[rule.day_of_week]}</span>
-                  </label>
-                  
+        <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 items-start">
+          
+          {/* Exceptions Calendar (Left Side / 50%) */}
+          <div className="w-full lg:w-1/2 space-y-6 order-1">
+            <div className="bg-white border border-on-surface/5 rounded-[1.5rem] p-6 md:p-8 shadow-sm">
+              <div className="flex items-center justify-between mb-8">
+                 <h3 className="text-[10px] font-black text-on-surface-muted uppercase tracking-widest flex items-center gap-2">
+                   <CalendarX className="h-4 w-4" /> {language === 'es' ? 'CALENDARIO DE EXCEPCIONES' : 'EXCEPTIONS CALENDAR'}
+                 </h3>
+                <div className="flex items-center gap-4">
+                  <button onClick={() => setCalendarMonth(subMonths(calendarMonth, 1))} className="p-2 bg-surface-container-low hover:bg-surface-container text-on-surface rounded-xl transition-colors">
+                    <ChevronLeft className="h-4 w-4" />
+                  </button>
+                  <h3 className="text-sm font-black text-on-surface uppercase tracking-widest min-w-[120px] text-center">
+                    {format(calendarMonth, 'MMMM yyyy', { locale })}
+                  </h3>
+                  <button onClick={() => setCalendarMonth(addMonths(calendarMonth, 1))} className="p-2 bg-surface-container-low hover:bg-surface-container text-on-surface rounded-xl transition-colors">
+                    <ChevronRight className="h-4 w-4" />
+                  </button>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-7 gap-2 mb-4">
+                {(language === 'es' ? ['Dom', 'Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab'] : ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']).map(d => (
+                  <div key={d} className="text-center text-[9px] font-black text-on-surface-muted uppercase py-2 tracking-widest">{d}</div>
+                ))}
+              </div>
+              <div className="grid grid-cols-7 gap-2">
+                {getCalendarDays(calendarMonth).map((day, i) => {
+                  const dateStr = format(day, 'yyyy-MM-dd')
+                  const isToday = isSameDay(day, new Date())
+                  const hasOverride = overrides.find(ov => ov.override_date === dateStr)
+                  const inMonth = isSameMonth(day, calendarMonth)
+
+                  return (
+                    <button key={i} onClick={() => inMonth && handleOpenOverrideModal(dateStr)} disabled={!inMonth}
+                      className={`aspect-square flex flex-col items-center justify-center rounded-2xl text-[11px] font-black transition-all relative border-2
+                        ${!inMonth ? 'opacity-0 cursor-default pointer-events-none' : ''}
+                        ${hasOverride?.override_type === 'block' ? 'bg-red-50 text-red-600 border-red-500/20 shadow-sm' : 
+                          hasOverride?.override_type === 'open' ? 'bg-amber-50 text-amber-600 border-amber-500/20 shadow-sm' :
+                          isToday ? 'bg-primary/5 text-primary border-primary/20' : 'bg-surface-container-lowest text-on-surface border-transparent hover:bg-surface-container-low hover:border-on-surface/10'}
+                      `}>
+                      {format(day, 'd')}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+
+            {/* Exceptions List */}
+            <div className="space-y-4">
+              <div className="flex items-center justify-between px-2">
+                <h5 className="text-[10px] font-black text-on-surface-muted uppercase tracking-widest">{language === 'es' ? 'Próximos días bloqueados' : 'Upcoming blocked days'}</h5>
+                <span className="text-[10px] font-black text-primary uppercase tracking-widest bg-primary/5 px-3 py-1 rounded-full">{overrides.length} total</span>
+              </div>
+              {overrides.length === 0 ? (
+                <div className="bg-white border border-on-surface/5 rounded-[1.5rem] p-8 text-center shadow-sm">
+                  <p className="text-xs font-black text-on-surface uppercase tracking-tighter">
+                    {language === 'es' ? 'NO HAY EXCEPCIONES' : 'NO SCHEDULED EXCEPTIONS'}
+                  </p>
+                </div>
+              ) : (
+                <div className="grid gap-3">
+                  {overrides.map(ov => (
+                    <div key={ov.id} className="flex items-center justify-between p-5 bg-white rounded-[1.5rem] border border-on-surface/5 shadow-sm group hover:border-primary/20 hover:shadow-md transition-all">
+                      <div className="flex items-center gap-4">
+                        <div className={`h-12 w-12 rounded-xl flex items-center justify-center ${ov.override_type === 'block' ? 'bg-red-50 text-red-500' : 'bg-amber-50 text-amber-500'}`}>
+                          {ov.override_type === 'block' ? <CalendarX className="h-6 w-6" /> : <Clock className="h-6 w-6" />}
+                        </div>
+                        <div>
+                          <p className="text-sm font-black text-on-surface uppercase tracking-tight">{format(parseISO(ov.override_date), "d MMMM", { locale })}</p>
+                          <p className="text-[9px] font-bold text-on-surface-muted uppercase tracking-widest mt-0.5">
+                            {ov.override_type === 'block' ? (language === 'es' ? 'Bloqueado TOTAL' : 'TOTAL Blocked') : `${ov.start_time?.slice(0, 5)} - ${ov.end_time?.slice(0, 5)}`}
+                          </p>
+                        </div>
+                      </div>
+                      <button onClick={() => handleDeleteOverride(ov.id)}
+                        className="p-3 text-on-surface-muted hover:text-red-500 hover:bg-red-50 rounded-xl transition-all opacity-0 group-hover:opacity-100">
+                        <Trash2 className="h-5 w-5" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Weekly Schedule (Right Side / 50%) */}
+          <div className="w-full lg:w-1/2 bg-white border border-on-surface/5 rounded-[1.5rem] p-6 md:p-8 shadow-sm order-2">
+            <h3 className="text-[10px] font-black text-on-surface-muted uppercase tracking-widest flex items-center gap-2 mb-8">
+              <Clock className="h-4 w-4" /> {language === 'es' ? 'CONFIGURACIÓN SEMANAL' : 'WEEKLY CONFIGURATION'}
+            </h3>
+            
+            <div className="grid gap-4">
+              {rules.map(rule => (
+                <div key={rule.day_of_week}
+                  className={`rounded-[1rem] border transition-all ${rule.active ? 'border-primary/20 bg-primary/[0.02]' : 'border-on-surface/5 bg-surface-container-lowest opacity-60'}`}>
+                  <div className="flex items-center gap-4 p-5">
+                    <label className="flex items-center gap-3 cursor-pointer min-w-[140px]">
+                      <input type="checkbox" checked={rule.active} onChange={e => updateRule(rule.day_of_week, 'active', e.target.checked)}
+                        className="w-5 h-5 rounded-md border-on-surface/20 text-primary focus:ring-primary" />
+                      <span className={`text-sm font-black uppercase tracking-tight ${rule.active ? 'text-on-surface' : 'text-on-surface-muted'}`}>{weekDays[rule.day_of_week]}</span>
+                    </label>
+                    
+                    {rule.active && (
+                      <div className="flex items-center gap-3 ml-auto animate-in fade-in slide-in-from-right-2 duration-300">
+                        <input type="time" value={rule.start_time.slice(0, 5)} onChange={e => updateRule(rule.day_of_week, 'start_time', e.target.value + ':00')}
+                          className="rounded-lg border border-on-surface/10 px-3 py-2 text-xs font-black focus:ring-2 focus:ring-primary outline-none bg-white text-on-surface" />
+                        <span className="text-on-surface-muted font-bold">→</span>
+                        <input type="time" value={rule.end_time.slice(0, 5)} onChange={e => updateRule(rule.day_of_week, 'end_time', e.target.value + ':00')}
+                          className="rounded-lg border border-on-surface/10 px-3 py-2 text-xs font-black focus:ring-2 focus:ring-primary outline-none bg-white text-on-surface" />
+                      </div>
+                    )}
+                  </div>
+
                   {rule.active && (
-                    <div className="flex items-center gap-3 ml-auto animate-in fade-in slide-in-from-right-2 duration-300">
-                      <input type="time" value={rule.start_time.slice(0, 5)} onChange={e => updateRule(rule.day_of_week, 'start_time', e.target.value + ':00')}
-                        className="rounded-xl border border-white/10 px-3 py-2 text-xs font-black focus:ring-2 focus:ring-accent-500 outline-none bg-primary-950/50 text-white" />
-                      <span className="text-primary-600 font-bold">→</span>
-                      <input type="time" value={rule.end_time.slice(0, 5)} onChange={e => updateRule(rule.day_of_week, 'end_time', e.target.value + ':00')}
-                        className="rounded-xl border border-white/10 px-3 py-2 text-xs font-black focus:ring-2 focus:ring-accent-500 outline-none bg-primary-950/50 text-white" />
+                    <div className="px-5 pb-5 animate-in fade-in duration-300">
+                      <div className="flex items-center gap-4 bg-amber-500/5 border border-amber-500/20 rounded-xl px-4 py-3">
+                        <label className="flex items-center gap-2 cursor-pointer text-[9px] text-amber-700 font-black uppercase tracking-widest whitespace-nowrap">
+                          <input type="checkbox" checked={!!rule.lunch_break_start} onChange={e => toggleLunchBreak(rule.day_of_week, e.target.checked)}
+                            className="w-4 h-4 rounded border-amber-500/30 text-amber-500 focus:ring-amber-500" />
+                          <Coffee className="h-4 w-4" /> {language === 'es' ? 'Pausa' : 'Break'}
+                        </label>
+                        
+                        {rule.lunch_break_start && (
+                          <div className="flex items-center gap-2 ml-auto animate-in fade-in slide-in-from-right-2 duration-300">
+                            <span className="text-[9px] text-amber-600 font-black uppercase tracking-widest">{language === 'es' ? 'DE' : 'FROM'}</span>
+                            <input type="time" value={rule.lunch_break_start.slice(0, 5)} onChange={e => updateRule(rule.day_of_week, 'lunch_break_start', e.target.value + ':00')}
+                              className="rounded-lg border border-amber-500/20 px-2 py-1.5 text-[10px] font-black focus:ring-2 focus:ring-amber-500 outline-none bg-white text-amber-900 w-20" />
+                            <span className="text-[9px] text-amber-600 font-black uppercase tracking-widest">{language === 'es' ? 'A' : 'TO'}</span>
+                            <input type="time" value={(rule.lunch_break_end || '14:00').slice(0, 5)} onChange={e => updateRule(rule.day_of_week, 'lunch_break_end', e.target.value + ':00')}
+                              className="rounded-lg border border-amber-500/20 px-2 py-1.5 text-[10px] font-black focus:ring-2 focus:ring-amber-500 outline-none bg-white text-amber-900 w-20" />
+                          </div>
+                        )}
+                      </div>
                     </div>
                   )}
                 </div>
-
-                {rule.active && (
-                  <div className="px-5 pb-5 animate-in fade-in duration-300">
-                    <div className="flex items-center gap-4 bg-accent-500/5 border border-accent-500/10 rounded-2xl px-5 py-4">
-                      <label className="flex items-center gap-2 cursor-pointer text-[10px] text-accent-500 font-black uppercase tracking-widest whitespace-nowrap">
-                        <input type="checkbox" checked={!!rule.lunch_break_start} onChange={e => toggleLunchBreak(rule.day_of_week, e.target.checked)}
-                          className="w-4 h-4 rounded-md border-accent-500/30 bg-primary-950/50 text-accent-500 focus:ring-accent-500 focus:ring-offset-primary-900" />
-                        <Coffee className="h-4 w-4" /> {language === 'es' ? 'Pausa Almuerzo' : 'Lunch Break'}
-                      </label>
-                      
-                      {rule.lunch_break_start && (
-                        <div className="flex items-center gap-2 ml-auto animate-in fade-in slide-in-from-right-2 duration-300">
-                          <span className="text-[10px] text-accent-600 font-black">{language === 'es' ? 'DESDE' : 'FROM'}</span>
-                          <input type="time" value={rule.lunch_break_start.slice(0, 5)} onChange={e => updateRule(rule.day_of_week, 'lunch_break_start', e.target.value + ':00')}
-                            className="rounded-lg border border-accent-500/20 px-2 py-1.5 text-[11px] font-black focus:ring-2 focus:ring-accent-500 outline-none bg-primary-950/50 text-white w-24" />
-                          <span className="text-[10px] text-accent-600 font-black">{language === 'es' ? 'HASTA' : 'UNTIL'}</span>
-                          <input type="time" value={(rule.lunch_break_end || '14:00').slice(0, 5)} onChange={e => updateRule(rule.day_of_week, 'lunch_break_end', e.target.value + ':00')}
-                            className="rounded-lg border border-accent-500/20 px-2 py-1.5 text-[11px] font-black focus:ring-2 focus:ring-accent-500 outline-none bg-primary-950/50 text-white w-24" />
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-
-          <button onClick={handleSaveRules} disabled={saving}
-            className="w-full mt-6 flex items-center justify-center gap-3 py-4 rounded-2xl bg-accent-500 text-primary-950 font-black uppercase tracking-widest shadow-xl shadow-accent-500/20 disabled:opacity-50 transition-all hover:scale-[1.02] active:scale-95">
-            {saved ? (<><CheckCircle className="h-6 w-6" /> {language === 'es' ? '¡Horario Guardado!' : 'Schedule Saved!'}</>) : saving ? <Loader2 className="h-6 w-6 animate-spin" /> : (<><Save className="h-6 w-6" /> {fullT.save}</>)}
-          </button>
-        </div>
-
-        {/* Exceptions Calendar */}
-        <div className="space-y-6">
-          <div className="bg-primary-900/40 backdrop-blur-xl rounded-[2.5rem] border border-white/5 shadow-2xl overflow-hidden p-8">
-            <div className="flex items-center justify-between mb-8">
-               <h3 className="text-[10px] font-black text-primary-500 uppercase tracking-widest flex items-center gap-2">
-                 <CalendarX className="h-4 w-4" /> {language === 'es' ? 'CALENDARIO DE EXCEPCIONES' : 'EXCEPTIONS CALENDAR'}
-               </h3>
-              <div className="flex items-center gap-4">
-                <button onClick={() => setCalendarMonth(subMonths(calendarMonth, 1))} className="p-2 hover:bg-primary-800/50 rounded-xl transition-colors">
-                  <ChevronLeft className="h-5 w-5 text-primary-400" />
-                </button>
-                <h3 className="text-sm font-black text-white uppercase tracking-widest min-w-[140px] text-center">
-                  {format(calendarMonth, 'MMMM yyyy', { locale })}
-                </h3>
-                <button onClick={() => setCalendarMonth(addMonths(calendarMonth, 1))} className="p-2 hover:bg-primary-800/50 rounded-xl transition-colors">
-                  <ChevronRight className="h-5 w-5 text-primary-400" />
-                </button>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-7 gap-2 mb-4">
-              {(language === 'es' ? ['Dom', 'Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab'] : ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']).map(d => (
-                <div key={d} className="text-center text-[10px] font-black text-primary-500 uppercase py-2 tracking-widest">{d}</div>
               ))}
             </div>
-            <div className="grid grid-cols-7 gap-2">
-              {getCalendarDays(calendarMonth).map((day, i) => {
-                const dateStr = format(day, 'yyyy-MM-dd')
-                const isToday = isSameDay(day, new Date())
-                const hasOverride = overrides.find(ov => ov.override_date === dateStr)
-                const inMonth = isSameMonth(day, calendarMonth)
 
-                return (
-                  <button key={i} onClick={() => inMonth && handleOpenOverrideModal(dateStr)} disabled={!inMonth}
-                    className={`aspect-square flex flex-col items-center justify-center rounded-[1.2rem] text-[11px] font-black transition-all relative border-2
-                      ${!inMonth ? 'opacity-0 cursor-default pointer-events-none' : ''}
-                      ${hasOverride?.override_type === 'block' ? 'bg-red-500/10 border-red-500/30 text-red-400 shadow-lg shadow-red-500/5' : 
-                        hasOverride?.override_type === 'open' ? 'bg-orange-500/10 border-orange-500/30 text-orange-400 shadow-lg shadow-orange-500/5' :
-                        isToday ? 'bg-accent-500/10 border-accent-500/30 text-accent-400' : 'bg-primary-950/30 border-white/5 text-primary-300 hover:bg-primary-800/50 hover:border-white/10'}
-                    `}>
-                    {format(day, 'd')}
-                  </button>
-                )
-              })}
-            </div>
+            <button onClick={handleSaveRules} disabled={saving}
+              className="w-full mt-6 flex items-center justify-center gap-3 py-4 rounded-[1.5rem] bg-primary text-white font-black text-xs uppercase tracking-widest shadow-lg hover:bg-primary/90 hover:-translate-y-0.5 disabled:opacity-50 transition-all active:scale-95">
+              {saved ? (<><CheckCircle className="h-5 w-5" /> {language === 'es' ? '¡Guardado!' : 'Saved!'}</>) : saving ? <Loader2 className="h-5 w-5 animate-spin" /> : (<><Save className="h-5 w-5" /> {fullT.save || 'Guardar'}</>)}
+            </button>
           </div>
+        </div>
 
-          {/* Exceptions List */}
-          <div className="space-y-4">
-            <div className="flex items-center justify-between px-1">
-              <h5 className="text-[10px] font-black text-primary-500 uppercase tracking-widest">{language === 'es' ? 'Próximos días bloqueados' : 'Upcoming blocked days'}</h5>
-              <span className="text-[10px] font-black text-accent-950 bg-accent-500 px-2 py-0.5 rounded-full">{overrides.length} total</span>
-            </div>
-            {overrides.length === 0 ? (
-              <div className="text-center py-12 text-primary-500 italic text-sm bg-primary-900/20 rounded-[2rem] border-2 border-dashed border-white/5">
-                {language === 'es' ? 'No tienes excepciones programadas' : 'No scheduled exceptions'}
-              </div>
-            ) : (
-              <div className="grid gap-3">
-                {overrides.map(ov => (
-                  <div key={ov.id} className="flex items-center justify-between p-5 rounded-3xl border border-white/5 bg-primary-900/40 backdrop-blur-xl shadow-lg group hover:border-accent-500/30 transition-all">
-                    <div className="flex items-center gap-4">
-                      <div className={`h-12 w-12 rounded-2xl flex items-center justify-center ${ov.override_type === 'block' ? 'bg-red-500/10 text-red-400' : 'bg-orange-500/10 text-orange-400 shadow-sm'}`}>
-                        {ov.override_type === 'block' ? <CalendarX className="h-6 w-6" /> : <Clock className="h-6 w-6" />}
-                      </div>
-                      <div>
-                        <p className="text-sm font-black text-white">{format(parseISO(ov.override_date), "d MMMM", { locale })}</p>
-                        <p className="text-[10px] font-black text-primary-400 uppercase tracking-widest">
-                          {ov.override_type === 'block' ? (language === 'es' ? 'Bloqueado TOTAL' : 'TOTAL Blocked') : `${ov.start_time?.slice(0, 5)} - ${ov.end_time?.slice(0, 5)}`}
-                        </p>
-                      </div>
-                    </div>
-                    <button onClick={() => handleDeleteOverride(ov.id)}
-                      className="p-3 text-primary-500 hover:text-red-400 hover:bg-red-500/10 rounded-2xl transition-all opacity-0 group-hover:opacity-100">
-                      <Trash2 className="h-5 w-5" />
+        {/* Override Modal */}
+        {overrideModal && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-on-surface/20 backdrop-blur-sm p-4" onClick={() => setOverrideModal(null)}>
+            <div className="bg-white border border-on-surface/10 rounded-[2rem] shadow-2xl w-full max-w-sm overflow-hidden animate-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()}>
+              <div className="p-8">
+                <div className="flex items-center justify-between mb-8">
+                  <h3 className="text-xl font-black text-on-surface uppercase tracking-tight">
+                    {format(parseISO(overrideModal.date), "d MMMM", { locale })}
+                  </h3>
+                  <button onClick={() => setOverrideModal(null)} className="p-2 rounded-full hover:bg-surface-container transition-colors"><X className="h-5 w-5 text-on-surface-muted" /></button>
+                </div>
+
+                <div className="space-y-6">
+                  <div className="grid grid-cols-2 gap-3">
+                    <button onClick={() => setOverrideForm(f => ({ ...f, type: 'block' }))}
+                      className={`flex items-center justify-center gap-2 p-4 rounded-xl border-2 text-[10px] font-black uppercase tracking-widest transition-all ${
+                        overrideForm.type === 'block' ? 'border-red-500/50 bg-red-50 text-red-600 shadow-sm' : 'border-on-surface/10 text-on-surface-muted hover:border-on-surface/20'
+                      }`}>
+                      <CalendarX className="h-4 w-4" /> {language === 'es' ? 'Bloquear' : 'Block'}
+                    </button>
+                    <button onClick={() => setOverrideForm(f => ({ ...f, type: 'open' }))}
+                      className={`flex items-center justify-center gap-2 p-4 rounded-xl border-2 text-[10px] font-black uppercase tracking-widest transition-all ${
+                        overrideForm.type === 'open' ? 'border-amber-500/50 bg-amber-50 text-amber-600 shadow-sm' : 'border-on-surface/10 text-on-surface-muted hover:border-on-surface/20'
+                      }`}>
+                      <Clock className="h-4 w-4" /> {language === 'es' ? 'Especial' : 'Special'}
                     </button>
                   </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
 
-      {/* Override Modal */}
-      {overrideModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-primary-950/80 backdrop-blur-md px-4" onClick={() => setOverrideModal(null)}>
-          <div className="bg-primary-900 border border-white/10 rounded-[2.5rem] shadow-2xl w-full max-w-sm overflow-hidden animate-in zoom-in-95 duration-300" onClick={e => e.stopPropagation()}>
-            <div className="p-8">
-              <div className="flex items-center justify-between mb-8">
-                <h3 className="text-xl font-black text-white tracking-tight">
-                  {format(parseISO(overrideModal.date), "d MMMM", { locale })}
-                </h3>
-                <button onClick={() => setOverrideModal(null)} className="p-2 rounded-full hover:bg-white/5 transition-colors"><X className="h-5 w-5 text-primary-400" /></button>
-              </div>
-
-              <div className="space-y-6">
-                <div className="grid grid-cols-2 gap-3">
-                  <button onClick={() => setOverrideForm(f => ({ ...f, type: 'block' }))}
-                    className={`flex items-center justify-center gap-2 p-4 rounded-2xl border-2 text-[10px] font-black uppercase tracking-widest transition-all ${
-                      overrideForm.type === 'block' ? 'border-red-500/50 bg-red-500/10 text-red-400 shadow-lg shadow-red-500/10' : 'border-white/5 text-primary-500 hover:border-white/10 hover:bg-white/5'
-                    }`}>
-                    <CalendarX className="h-4 w-4" /> {language === 'es' ? 'Bloquear' : 'Block'}
-                  </button>
-                  <button onClick={() => setOverrideForm(f => ({ ...f, type: 'open' }))}
-                    className={`flex items-center justify-center gap-2 p-4 rounded-2xl border-2 text-[10px] font-black uppercase tracking-widest transition-all ${
-                      overrideForm.type === 'open' ? 'border-orange-500/50 bg-orange-500/10 text-orange-400 shadow-lg shadow-orange-500/10' : 'border-white/5 text-primary-500 hover:border-white/10 hover:bg-white/5'
-                    }`}>
-                    <Clock className="h-4 w-4" /> {language === 'es' ? 'Especial' : 'Special'}
-                  </button>
-                </div>
-
-                {overrideForm.type === 'open' && (
-                  <div className="flex items-center gap-4 animate-in fade-in slide-in-from-top-2 duration-300">
-                    <input type="time" value={overrideForm.start_time} onChange={e => setOverrideForm(f => ({...f, start_time: e.target.value}))}
-                      className="flex-1 rounded-2xl bg-primary-950 border border-white/5 px-4 py-3 text-sm font-black text-white focus:border-accent-500 focus:ring-1 focus:ring-accent-500 outline-none transition-all" />
-                    <span className="text-primary-500 font-bold">→</span>
-                    <input type="time" value={overrideForm.end_time} onChange={e => setOverrideForm(f => ({...f, end_time: e.target.value}))}
-                      className="flex-1 rounded-2xl bg-primary-950 border border-white/5 px-4 py-3 text-sm font-black text-white focus:border-accent-500 focus:ring-1 focus:ring-accent-500 outline-none transition-all" />
-                  </div>
-                )}
-
-                <div className="space-y-1">
-                  <label className="text-[10px] font-black text-primary-400 uppercase tracking-widest ml-1">{language === 'es' ? 'Nota (Privada)' : 'Note (Private)'}</label>
-                  <input type="text" value={overrideForm.note} placeholder={language === 'es' ? 'Ej: Vacaciones o Trámite' : 'e.g. Vacation or Personal'} onChange={e => setOverrideForm(f => ({...f, note: e.target.value}))}
-                    className="w-full rounded-2xl bg-primary-950 border border-white/5 px-5 py-4 text-sm font-medium text-white focus:border-accent-500 focus:ring-1 focus:ring-accent-500 outline-none transition-all placeholder:text-primary-600" />
-                </div>
-
-                {overrideConflicts.length > 0 && (
-                  <div className="p-4 rounded-2xl bg-red-500/10 border border-red-500/20 flex gap-4 animate-in shake duration-500">
-                    <AlertTriangle className="h-6 w-6 text-red-400 flex-shrink-0" />
-                    <div className="text-xs text-red-300 font-bold">
-                      {language === 'es' 
-                        ? `Tienes ${overrideConflicts.length} cita(s) este día que serán canceladas automáticamente.`
-                        : `You have ${overrideConflicts.length} appointment(s) this day that will be automatically cancelled.`}
+                  {overrideForm.type === 'open' && (
+                    <div className="flex items-center gap-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                      <input type="time" value={overrideForm.start_time} onChange={e => setOverrideForm(f => ({...f, start_time: e.target.value}))}
+                        className="flex-1 rounded-xl bg-surface-container-lowest border border-on-surface/10 px-4 py-3 text-sm font-black text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all" />
+                      <span className="text-on-surface-muted font-bold">→</span>
+                      <input type="time" value={overrideForm.end_time} onChange={e => setOverrideForm(f => ({...f, end_time: e.target.value}))}
+                        className="flex-1 rounded-xl bg-surface-container-lowest border border-on-surface/10 px-4 py-3 text-sm font-black text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all" />
                     </div>
-                  </div>
-                )}
+                  )}
 
-                <button onClick={handleSaveOverride} disabled={saving}
-                  className={`w-full py-5 rounded-[2rem] font-black text-xs uppercase tracking-[0.2em] transition-all shadow-xl active:scale-95 disabled:opacity-50 ${
-                    overrideForm.type === 'block' ? 'bg-red-500 hover:bg-red-600 text-white shadow-red-500/20' : 'bg-orange-500 hover:bg-orange-600 text-white shadow-orange-500/20'
-                  }`}>
-                  {saving ? (language === 'es' ? 'Guardando...' : 'Saving...') : (language === 'es' ? 'Aplicar Excepción' : 'Apply Exception')}
-                </button>
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-black text-on-surface-muted uppercase tracking-widest ml-1">{language === 'es' ? 'Nota (Privada)' : 'Note (Private)'}</label>
+                    <input type="text" value={overrideForm.note} placeholder={language === 'es' ? 'Ej: Vacaciones o Trámite' : 'e.g. Vacation or Personal'} onChange={e => setOverrideForm(f => ({...f, note: e.target.value}))}
+                      className="w-full rounded-xl bg-surface-container-lowest border border-on-surface/10 px-5 py-4 text-sm font-medium text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all placeholder:text-on-surface-muted" />
+                  </div>
+
+                  {overrideConflicts.length > 0 && (
+                    <div className="p-4 rounded-xl bg-red-50 border border-red-200 flex gap-4 animate-in shake duration-500">
+                      <AlertTriangle className="h-6 w-6 text-red-500 flex-shrink-0" />
+                      <div className="text-xs text-red-700 font-bold">
+                        {language === 'es' 
+                          ? `Tienes ${overrideConflicts.length} cita(s) este día que serán canceladas automáticamente.`
+                          : `You have ${overrideConflicts.length} appointment(s) this day that will be automatically cancelled.`}
+                      </div>
+                    </div>
+                  )}
+
+                  <button onClick={handleSaveOverride} disabled={saving}
+                    className={`w-full py-4 rounded-[1.5rem] font-black text-[10px] uppercase tracking-[0.2em] transition-all shadow-lg hover:-translate-y-0.5 active:scale-95 disabled:opacity-50 flex justify-center items-center gap-2 ${
+                      overrideForm.type === 'block' ? 'bg-red-500 hover:bg-red-600 text-white' : 'bg-amber-500 hover:bg-amber-600 text-white'
+                    }`}>
+                    {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+                    {saving ? (language === 'es' ? 'Guardando...' : 'Saving...') : (language === 'es' ? 'Aplicar Excepción' : 'Apply Exception')}
+                  </button>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   )
 }

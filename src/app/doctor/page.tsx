@@ -42,6 +42,7 @@ export default function DoctorDashboard() {
   const [slotLoading, setSlotLoading] = useState(false)
   const [isBlocked, setIsBlocked] = useState(false)
   const [blockReason, setBlockReason] = useState<string | null>(null)
+  const [selectedApp, setSelectedApp] = useState<Appointment | null>(null)
 
   const fetchAppointments = useCallback(async (pId: string, tId: string, month: Date) => {
     const start = format(startOfMonth(month), 'yyyy-MM-dd')
@@ -275,10 +276,83 @@ export default function DoctorDashboard() {
         )}
 
         {/* LAYOUT PRINCIPAL (Dos columnas) */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+        <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 items-start">
           
-          {/* Calendar Strip / Widget */}
-          <div className="bg-white border border-on-surface/5 rounded-[1.5rem] p-6 md:p-8 shadow-sm w-full order-1 lg:order-2">
+          {/* Day Feed List (65%) */}
+          <div className="w-full lg:w-[65%] order-2 lg:order-1 flex flex-col gap-6">
+            <div className="flex items-center justify-between px-2">
+              <h3 className="text-sm font-black text-on-surface uppercase tracking-tighter flex items-center gap-2">
+                {format(selectedDate, "EEEE d MMMM", { locale })}
+              </h3>
+              <span className="text-[9px] font-black text-primary uppercase tracking-widest bg-primary/5 px-3 py-1.5 rounded-full">
+                {dayApps.length} {fullT.nav_calendar.toLowerCase()}
+              </span>
+            </div>
+
+            {dayApps.length === 0 ? (
+              <div className="bg-white border border-on-surface/5 rounded-[1.5rem] p-12 text-center shadow-sm">
+                <div className="h-12 w-12 bg-surface-container-low rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Calendar className="h-5 w-5 text-on-surface-muted" />
+                </div>
+                <p className="text-xs font-black text-on-surface uppercase tracking-tighter">{fullT.no_activity_today}</p>
+                <p className="text-[9px] font-bold text-on-surface-muted uppercase tracking-widest mt-1">
+                  {language === 'es' ? 'DISFRUTA TU TIEMPO LIBRE' : 'ENJOY YOUR FREE TIME'}
+                </p>
+              </div>
+            ) : (
+              <div className="relative pl-6 lg:pl-10 space-y-4 before:absolute before:inset-y-0 before:left-[11px] lg:before:left-[19px] before:w-[2px] before:bg-on-surface/[0.08]">
+                {dayApps.map((app, idx) => {
+                  const isPast = new Date(app.start_at) < new Date();
+                  return (
+                    <div key={app.id} className="relative group">
+                      {/* Node */}
+                      <div className={`absolute -left-[35px] lg:-left-[43px] top-6 h-5 w-5 rounded-full border-[4px] border-surface shadow-sm z-10 transition-colors duration-300 ${isPast ? 'bg-on-surface/20' : 'bg-primary ring-2 ring-primary/20'}`} />
+                      
+                      {/* Card */}
+                      <button 
+                        onClick={() => setSelectedApp(app)}
+                        className="w-full text-left bg-white border border-primary/10 rounded-[1.5rem] p-5 lg:p-6 shadow-sm hover:shadow-md transition-all group-hover:-translate-y-0.5 group-hover:border-primary/30 flex items-center justify-between gap-4"
+                      >
+                        <div className="flex items-center gap-5">
+                          <div className="text-center">
+                            <span className="block text-lg font-black text-on-surface leading-none tracking-tighter">{format(parseISO(app.start_at), 'HH:mm')}</span>
+                            <span className="block text-[9px] font-bold text-on-surface-muted uppercase tracking-widest mt-1">
+                               {app.status === 'confirmed' ? fullT.confirmed : app.status === 'completed' ? fullT.done : app.status === 'cancelled' ? fullT.canceled : fullT.pending}
+                            </span>
+                          </div>
+                          
+                          <div className="h-10 w-[1px] bg-on-surface/10 hidden sm:block"></div>
+                          
+                          <div>
+                            <p className="text-sm font-black text-on-surface uppercase tracking-tight">{app.clients?.first_name} {app.clients?.last_name}</p>
+                            <div className="flex items-center gap-3 text-[10px] text-on-surface-muted font-bold uppercase tracking-widest mt-1">
+                              {app.services && (
+                                <span className="flex items-center gap-1.5 text-primary">
+                                  <Stethoscope className="h-3 w-3" /> {app.services.name}
+                                </span>
+                              )}
+                              {app.clients?.phone && (
+                                <span className="flex items-center gap-1.5">
+                                  <Phone className="h-3 w-3" /> {app.clients.phone}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="h-10 w-10 shrink-0 rounded-full bg-surface-container-low flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-colors">
+                          <ChevronRight className="h-5 w-5" />
+                        </div>
+                      </button>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* Calendar Strip / Widget (35%) */}
+          <div className="w-full lg:w-[35%] shrink-0 bg-white border border-on-surface/5 rounded-[1.5rem] p-6 md:p-8 shadow-sm order-1 lg:order-2 lg:sticky lg:top-8">
             <div className="flex items-center justify-between mb-8">
               <button onClick={() => setCurrentMonth(subMonths(currentMonth, 1))} className="p-2 rounded-xl bg-surface-container-low hover:bg-surface-container text-on-surface transition-colors">
                 <ChevronLeft className="h-4 w-4" />
@@ -317,72 +391,91 @@ export default function DoctorDashboard() {
             </div>
           </div>
 
-          {/* Day Feed List */}
-          <div className="w-full space-y-4 order-2 lg:order-1">
-            <div className="flex items-center justify-between px-2">
-              <h3 className="text-sm font-black text-on-surface uppercase tracking-tighter flex items-center gap-2">
-                {format(selectedDate, "EEEE d MMMM", { locale })}
-              </h3>
-              <span className="text-[9px] font-black text-primary uppercase tracking-widest bg-primary/5 px-3 py-1.5 rounded-full">
-                {dayApps.length} {fullT.nav_calendar.toLowerCase()}
-              </span>
-            </div>
-
-            {dayApps.length === 0 ? (
-              <div className="bg-white border border-on-surface/5 rounded-[1.5rem] p-12 text-center shadow-sm">
-                <div className="h-12 w-12 bg-surface-container-low rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Calendar className="h-5 w-5 text-on-surface-muted" />
-                </div>
-                <p className="text-xs font-black text-on-surface uppercase tracking-tighter">{fullT.no_activity_today}</p>
-                <p className="text-[9px] font-bold text-on-surface-muted uppercase tracking-widest mt-1">
-                  {language === 'es' ? 'DISFRUTA TU TIEMPO LIBRE' : 'ENJOY YOUR FREE TIME'}
-                </p>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {dayApps.map((app, idx) => (
-                  <div key={app.id} className="bg-white border border-on-surface/5 rounded-[1.5rem] p-4 md:p-5 shadow-sm hover:shadow-md transition-all group flex items-center gap-4">
-                    
-                    {/* Time Bubble */}
-                    <div className="h-12 w-12 rounded-xl bg-surface-container-low flex flex-col items-center justify-center shrink-0 group-hover:bg-primary transition-colors duration-300">
-                      <span className="text-sm font-black text-on-surface group-hover:text-white leading-none">{format(parseISO(app.start_at), 'HH')}</span>
-                      <span className="text-[8px] font-bold text-on-surface-muted group-hover:text-white/80 mt-0.5">{format(parseISO(app.start_at), 'mm')}</span>
-                    </div>
-
-                    {/* Patient Info */}
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs font-black text-on-surface uppercase tracking-tight truncate mb-1">
-                        {app.clients?.first_name} {app.clients?.last_name}
-                      </p>
-                      <div className="flex items-center gap-3 text-[9px] text-on-surface-muted font-bold uppercase tracking-widest">
-                        {app.services && (
-                          <span className="flex items-center gap-1 truncate">
-                            <Stethoscope className="h-2.5 w-2.5" /> {app.services.name}
-                          </span>
-                        )}
-                        {app.clients?.phone && (
-                          <span className="flex items-center gap-1 shrink-0">
-                            <Phone className="h-2.5 w-2.5" /> {app.clients.phone}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Status Badge */}
-                    <div className={`px-3 py-1.5 rounded-full text-[8px] font-black uppercase tracking-widest shrink-0
-                      ${app.status === 'confirmed' || app.status === 'completed' ? 'bg-emerald-500/10 text-emerald-600' :
-                        app.status === 'cancelled' ? 'bg-red-500/10 text-red-600' : 'bg-amber-500/10 text-amber-600'}`}>
-                      {app.status === 'confirmed' ? fullT.confirmed : app.status === 'completed' ? fullT.done :
-                       app.status === 'cancelled' ? fullT.canceled : fullT.pending}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
         </div>
       </div>
       
+      {/* Detail Modal */}
+      {selectedApp && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
+          <div className="absolute inset-0 bg-on-surface/20 backdrop-blur-sm transition-opacity" onClick={() => setSelectedApp(null)} />
+          <div className="relative bg-white rounded-[2rem] w-full max-w-lg shadow-2xl overflow-hidden flex flex-col max-h-[90vh] animate-in fade-in zoom-in-95 duration-200">
+             <div className="p-6 md:p-8 flex-1 overflow-y-auto">
+                <div className="flex items-start justify-between mb-8">
+                  <div className="flex items-center gap-4">
+                    <div className="h-16 w-16 rounded-[1.5rem] bg-surface-container-low flex items-center justify-center text-xl font-black text-primary tracking-tighter">
+                      {selectedApp.clients?.first_name[0]}{selectedApp.clients?.last_name[0]}
+                    </div>
+                    <div>
+                      <h2 className="text-xl font-black text-on-surface uppercase tracking-tight leading-none mb-1">
+                        {selectedApp.clients?.first_name} {selectedApp.clients?.last_name}
+                      </h2>
+                      <span className="text-[10px] font-bold text-on-surface-muted uppercase tracking-widest">
+                        ID: #{selectedApp.id.slice(0,8)}
+                      </span>
+                    </div>
+                  </div>
+                  <div className={`px-3 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest
+                    ${selectedApp.status === 'confirmed' || selectedApp.status === 'completed' ? 'bg-emerald-500/10 text-emerald-600' :
+                      selectedApp.status === 'cancelled' ? 'bg-red-500/10 text-red-600' : 'bg-amber-500/10 text-amber-600'}`}>
+                    {selectedApp.status === 'confirmed' ? fullT.confirmed : selectedApp.status === 'completed' ? fullT.done :
+                     selectedApp.status === 'cancelled' ? fullT.canceled : fullT.pending}
+                  </div>
+                </div>
+
+                <div className="space-y-6">
+                   <div>
+                      <h4 className="text-[10px] font-black text-on-surface-muted uppercase tracking-widest mb-3">Detalles de la Cita</h4>
+                      <div className="bg-surface-container-lowest border border-on-surface/5 rounded-[1.5rem] p-5 space-y-4">
+                         <div className="flex items-center gap-3">
+                           <Clock className="h-4 w-4 text-primary" />
+                           <div>
+                             <p className="text-xs font-black text-on-surface uppercase tracking-tight">{format(parseISO(selectedApp.start_at), "EEEE d MMMM, yyyy", { locale })}</p>
+                             <p className="text-[10px] font-bold text-on-surface-muted uppercase tracking-widest">{format(parseISO(selectedApp.start_at), "HH:mm")}</p>
+                           </div>
+                         </div>
+                         {selectedApp.services && (
+                           <div className="flex items-center gap-3">
+                             <Stethoscope className="h-4 w-4 text-primary" />
+                             <div>
+                               <p className="text-xs font-black text-on-surface uppercase tracking-tight">{selectedApp.services.name}</p>
+                               <p className="text-[10px] font-bold text-on-surface-muted uppercase tracking-widest">Servicio</p>
+                             </div>
+                           </div>
+                         )}
+                         {selectedApp.clients?.phone && (
+                           <div className="flex items-center gap-3">
+                             <Phone className="h-4 w-4 text-primary" />
+                             <div>
+                               <p className="text-xs font-black text-on-surface uppercase tracking-tight">{selectedApp.clients.phone}</p>
+                               <p className="text-[10px] font-bold text-on-surface-muted uppercase tracking-widest">Teléfono</p>
+                             </div>
+                           </div>
+                         )}
+                      </div>
+                   </div>
+
+                   {selectedApp.notes && (
+                     <div>
+                        <h4 className="text-[10px] font-black text-on-surface-muted uppercase tracking-widest mb-3">Notas</h4>
+                        <div className="bg-amber-500/5 border border-amber-500/20 rounded-[1.5rem] p-5 text-sm font-bold text-amber-900 leading-relaxed">
+                          {selectedApp.notes}
+                        </div>
+                     </div>
+                   )}
+                </div>
+             </div>
+             <div className="p-6 bg-surface-container-lowest border-t border-on-surface/5 flex gap-3">
+                <button onClick={() => setSelectedApp(null)} className="flex-1 py-4 bg-surface-container hover:bg-surface-container-high rounded-[1.5rem] text-xs font-black text-on-surface uppercase tracking-widest transition-colors">
+                  Cerrar
+                </button>
+                <a href={`https://wa.me/${selectedApp.clients?.phone?.replace(/\D/g,'')}`} target="_blank" rel="noreferrer" className="flex-1 py-4 bg-emerald-500 hover:bg-emerald-600 rounded-[1.5rem] text-xs font-black text-white uppercase tracking-widest transition-colors flex items-center justify-center gap-2">
+                  <MessageSquare className="h-4 w-4" /> WhatsApp
+                </a>
+             </div>
+          </div>
+        </div>
+      )}
+
       {/* New Appointment Drawer */}
       {showNewModal && tenantId && (
         <QuickAppointmentDrawer 
