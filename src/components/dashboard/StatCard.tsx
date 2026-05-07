@@ -10,18 +10,25 @@ interface StatCardProps {
 
 export function StatCard({ name, value, icon: Icon, change, changeType }: StatCardProps) {
   return (
-    <div className="bg-white rounded-2xl p-6 shadow-card hover:shadow-float hover:-translate-y-0.5 transition-all duration-200 group">
-      <div className="flex items-start justify-between mb-5">
-        {/* Icon pill */}
-        <div className="h-11 w-11 rounded-xl bg-primary-light flex items-center justify-center flex-shrink-0">
-          <Icon className="h-5 w-5 text-primary" />
+    <div className="bg-white border border-primary/10 p-8 hover:border-primary/30 transition-all duration-300 group relative overflow-hidden">
+      {/* Decorative Technical Elements */}
+      <div className="absolute top-0 left-0 w-1 h-full bg-primary/10 group-hover:bg-primary transition-colors" />
+      <div className="absolute top-0 right-0 p-3 opacity-[0.03] pointer-events-none group-hover:opacity-[0.08] transition-opacity">
+        <Icon className="h-16 w-16" />
+      </div>
+      
+      <div className="flex items-start justify-between mb-10">
+        {/* Icon square */}
+        <div className="h-10 w-10 bg-primary/[0.03] border border-primary/10 flex items-center justify-center flex-shrink-0 group-hover:bg-primary group-hover:text-white transition-all">
+          <Icon className="h-4 w-4" />
         </div>
-        {/* Change badge */}
+        
+        {/* Change badge - Technical style */}
         {change && (
-          <span className={`inline-flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1 rounded-full ${
+          <span className={`inline-flex items-center gap-1.5 text-[9px] font-black uppercase tracking-widest px-3 py-1.5 border ${
             changeType === 'increase'
-              ? 'bg-success-light text-success'
-              : 'bg-error-light text-error'
+              ? 'bg-emerald-50 border-emerald-200 text-emerald-600'
+              : 'bg-primary/[0.03] border-primary/10 text-primary/40'
           }`}>
             {changeType === 'increase' ? '↑' : '↓'} {change}
           </span>
@@ -29,10 +36,10 @@ export function StatCard({ name, value, icon: Icon, change, changeType }: StatCa
       </div>
 
       <div>
-        <dd className="text-3xl font-bold text-on-surface tracking-tight leading-none mb-1.5">
+        <dd className="text-4xl font-black text-[#191c1e] tracking-tighter uppercase leading-none mb-3 italic">
           {value}
         </dd>
-        <dt className="text-sm font-medium text-on-surface-muted">
+        <dt className="text-[10px] font-black text-primary/40 uppercase tracking-[0.4em]">
           {name}
         </dt>
       </div>

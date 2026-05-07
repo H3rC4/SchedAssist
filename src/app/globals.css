@@ -26,43 +26,43 @@
 @layer components {
   /* --- Editorial Typography --- */
   .precision-header {
-    @apply font-display text-4xl md:text-5xl lg:text-6xl font-black text-on-surface tracking-tighter leading-[0.9] mb-4;
+    @apply font-display text-4xl md:text-5xl lg:text-6xl font-black text-[#191c1e] tracking-tighter leading-[0.9] mb-4 uppercase italic;
   }
   
   .precision-subheader {
-    @apply font-display text-xl md:text-2xl font-medium text-on-surface/60 tracking-tight;
+    @apply font-display text-[10px] font-black text-primary/40 uppercase tracking-[0.4em];
   }
 
   /* --- Tonal Surfaces --- */
   .precision-surface-lowest {
-    @apply bg-surface-container-lowest shadow-ambient rounded-3xl transition-all duration-300;
+    @apply bg-white border border-primary/10 rounded-none transition-all duration-300;
   }
   
   .precision-surface-low {
-    @apply bg-surface-container-low rounded-3xl transition-all duration-300;
+    @apply bg-primary/[0.03] border border-primary/5 rounded-none transition-all duration-300;
   }
 
   /* --- Precision Buttons --- */
   .precision-button-primary {
-    @apply bg-primary text-white font-display font-bold py-4 px-8 rounded-full shadow-spatial hover:brightness-110 active:scale-[0.98] transition-all;
+    @apply bg-primary text-white font-display font-black text-xs uppercase tracking-[0.4em] py-4 px-8 rounded-none shadow-xl shadow-primary/20 hover:bg-primary-light hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-3;
   }
 
   .precision-button-tonal {
-    @apply bg-surface-container-highest text-on-surface font-display font-bold py-4 px-8 rounded-full hover:bg-surface-container-high transition-all active:scale-[0.98];
+    @apply bg-primary/[0.05] text-primary border border-primary/10 font-display font-black text-[10px] uppercase tracking-[0.2em] py-3 px-6 rounded-none hover:bg-primary/10 transition-all active:scale-[0.98] flex items-center justify-center gap-2;
   }
 
   /* --- Custom Scrollbar --- */
   .custom-scrollbar::-webkit-scrollbar {
-    width: 4px;
+    width: 2px;
   }
   .custom-scrollbar::-webkit-scrollbar-track {
     @apply bg-transparent;
   }
   .custom-scrollbar::-webkit-scrollbar-thumb {
-    @apply bg-primary/10 rounded-full;
+    @apply bg-primary/20 rounded-none;
   }
   .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    @apply bg-primary/20;
+    @apply bg-primary/40;
   }
 }
 

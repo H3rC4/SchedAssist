@@ -73,15 +73,16 @@ export function Sidebar({ lang = 'es' }: SidebarProps) {
     <div 
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      className={`flex h-full flex-col bg-surface-container-lowest relative z-50 transition-all duration-500 ease-in-out border-r border-on-surface/5 ${
-        isExpanded ? 'w-[240px]' : 'w-[80px]'
+      className={`flex h-full flex-col bg-white relative z-50 transition-all duration-500 ease-in-out border-r border-primary/10 ${
+        isExpanded ? 'w-[280px]' : 'w-[80px]'
       }`}
     >
       {/* Brand Section */}
-      <div className={`h-14 flex items-center border-b border-on-surface/5 transition-all duration-500 ${isExpanded ? 'px-8' : 'justify-center'}`}>
-        <Link href="/dashboard" className="flex items-center gap-3 group">
-          <div className="h-8 w-8 rounded-xl bg-primary flex items-center justify-center transition-transform duration-500 group-hover:rotate-12 shadow-spatial flex-shrink-0">
-            <Zap className="h-4 w-4 text-white fill-white" />
+      <div className={`h-24 flex items-center border-b border-primary/10 transition-all duration-500 ${isExpanded ? 'px-8' : 'justify-center'}`}>
+        <Link href="/dashboard" className="flex items-center gap-4 group">
+          <div className="h-10 w-10 bg-primary flex items-center justify-center transition-all duration-500 group-hover:scale-110 shadow-xl shadow-primary/20 flex-shrink-0 rounded-none relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-full h-full bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+            <Zap className="h-5 w-5 text-white fill-white relative z-10" />
           </div>
           <AnimatePresence>
             {isExpanded && (
@@ -91,8 +92,8 @@ export function Sidebar({ lang = 'es' }: SidebarProps) {
                 exit={{ opacity: 0, x: -10 }}
                 className="overflow-hidden whitespace-nowrap"
               >
-                <span className="text-lg font-black text-on-surface tracking-tighter leading-none block font-display">SchedAssist</span>
-                <span className="text-[9px] font-black text-primary/40 uppercase tracking-[0.2em] block">Precision OS</span>
+                <span className="text-xl font-black text-[#191c1e] tracking-tighter leading-none block uppercase italic">SchedAssist</span>
+                <span className="text-[9px] font-black text-primary/40 uppercase tracking-[0.4em] block mt-1">Operational OS</span>
               </motion.div>
             )}
           </AnimatePresence>
@@ -100,15 +101,18 @@ export function Sidebar({ lang = 'es' }: SidebarProps) {
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 px-4 space-y-10 overflow-y-auto custom-scrollbar">
+      <nav className="flex-1 px-4 py-10 space-y-12 overflow-y-auto custom-scrollbar">
         {groups.map(group => {
           const items = filteredNavItems.filter(i => i.group === group)
           if (items.length === 0) return null
           return (
-            <div key={group} className="space-y-4">
-              <p className={`px-4 text-[10px] font-black text-on-surface/30 uppercase tracking-[0.3em] font-display transition-opacity duration-300 ${isExpanded ? 'opacity-100' : 'opacity-0 h-0 overflow-hidden'}`}>
-                {groupLabels[group][lang]}
-              </p>
+            <div key={group} className="space-y-6">
+              <div className={`flex items-center gap-3 px-4 transition-opacity duration-300 ${isExpanded ? 'opacity-100' : 'opacity-0 h-0 overflow-hidden'}`}>
+                <div className="h-px w-4 bg-primary/20" />
+                <p className="text-[9px] font-black text-primary/30 uppercase tracking-[0.5em]">
+                  {groupLabels[group][lang]}
+                </p>
+              </div>
               <div className="space-y-1">
                 {items.map(item => {
                   const active = pathname === item.href
@@ -116,28 +120,28 @@ export function Sidebar({ lang = 'es' }: SidebarProps) {
                     <Link
                       key={item.id}
                       href={item.href}
-                      className={`group flex items-center justify-between rounded-2xl px-4 py-3.5 transition-all duration-300 ${
+                      className={`group flex items-center justify-between px-4 py-4 transition-all duration-300 relative rounded-none ${
                         active
-                          ? 'bg-primary/5 text-primary shadow-sm ring-1 ring-primary/10'
-                          : 'text-on-surface/50 hover:bg-surface-container-low hover:text-on-surface'
+                          ? 'bg-primary text-white shadow-xl shadow-primary/20'
+                          : 'text-[#191c1e]/50 hover:bg-primary/[0.03] hover:text-primary'
                       }`}
                     >
                       <div className="flex items-center gap-4">
-                        <div className={`transition-colors duration-300 flex-shrink-0 ${active ? 'text-primary' : 'text-on-surface/30 group-hover:text-on-surface/60'}`}>
+                        <div className={`transition-colors duration-300 flex-shrink-0 ${active ? 'text-white' : 'text-primary/30 group-hover:text-primary'}`}>
                           <item.icon className="h-5 w-5" strokeWidth={active ? 2.5 : 2} />
                         </div>
                         {isExpanded && (
                           <motion.span 
                             initial={{ opacity: 0, x: -10 }}
                             animate={{ opacity: 1, x: 0 }}
-                            className={`text-[15px] font-bold tracking-tight whitespace-nowrap ${active ? 'font-black' : 'font-semibold'}`}
+                            className={`text-[10px] uppercase tracking-[0.2em] whitespace-nowrap ${active ? 'font-black' : 'font-bold'}`}
                           >
                             {item[lang as keyof typeof item] as string}
                           </motion.span>
                         )}
                       </div>
                       {active && (
-                        <motion.div layoutId="active-pill" className="h-1.5 w-1.5 rounded-full bg-primary" />
+                        <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-2/3 bg-white/40" />
                       )}
                     </Link>
                   )
@@ -149,11 +153,11 @@ export function Sidebar({ lang = 'es' }: SidebarProps) {
       </nav>
 
       {/* Footer Section */}
-      <div className="p-4 mt-auto">
+      <div className="p-4 border-t border-primary/10 bg-primary/[0.01]">
         <div className={`flex items-center justify-between px-2 ${isExpanded ? '' : 'flex-col gap-4'}`}>
             <button 
               onClick={() => setShowSupportModal(true)}
-              className="p-3 text-on-surface/40 hover:text-primary hover:bg-primary/5 rounded-2xl transition-all"
+              className="h-10 w-10 flex items-center justify-center text-primary/40 hover:text-primary hover:bg-primary/[0.05] border border-transparent hover:border-primary/10 transition-all rounded-none"
             >
                 <LifeBuoy className="h-5 w-5" />
             </button>
@@ -162,7 +166,7 @@ export function Sidebar({ lang = 'es' }: SidebarProps) {
                 await supabase.auth.signOut()
                 window.location.href = '/login'
               }}
-              className="p-3 text-on-surface/40 hover:text-red-500 hover:bg-red-50 rounded-2xl transition-all"
+              className="h-10 w-10 flex items-center justify-center text-primary/40 hover:text-red-500 hover:bg-red-50 border border-transparent hover:border-red-100 transition-all rounded-none"
             >
                 <LogOut className="h-5 w-5" />
             </button>
@@ -178,27 +182,32 @@ export function Sidebar({ lang = 'es' }: SidebarProps) {
               animate={{ opacity: 1 }} 
               exit={{ opacity: 0 }}
               onClick={() => setShowSupportModal(false)}
-              className="absolute inset-0 bg-on-surface/20 backdrop-blur-md" 
+              className="absolute inset-0 bg-[#001f1c]/60 backdrop-blur-md" 
             />
             <motion.div 
-              initial={{ opacity: 0, scale: 0.9, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="relative w-full max-w-md bg-surface-container-lowest rounded-5xl shadow-spatial p-10"
+              initial={{ opacity: 0, y: 40 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 40 }}
+              className="relative w-full max-w-md bg-white border border-primary/10 p-12 md:p-16 rounded-none shadow-2xl"
               onClick={e => e.stopPropagation()}
             >
-              <div className="h-16 w-16 rounded-3xl bg-primary/5 flex items-center justify-center mb-8 shadow-sm">
+              <div className="absolute top-0 right-0 p-8 opacity-[0.02] pointer-events-none select-none">
+                <LifeBuoy className="h-32 w-32 text-primary" />
+              </div>
+
+              <div className="h-16 w-16 bg-primary/[0.03] border border-primary/10 flex items-center justify-center mb-10 rounded-none">
                 <LifeBuoy className="h-8 w-8 text-primary" />
               </div>
-              <h3 className="precision-header text-4xl mb-4">{t.support_title}</h3>
-              <p className="text-on-surface/60 font-medium mb-10 leading-relaxed">{t.support_description}</p>
+              <h3 className="text-3xl font-black text-[#191c1e] tracking-tighter uppercase mb-4 italic">{t.support_title}</h3>
+              <p className="text-[10px] font-black text-[#191c1e]/40 uppercase tracking-[0.4em] mb-12 leading-loose">{t.support_description}</p>
               
-              <div className="space-y-4 mb-10">
-                <div className="flex items-center gap-4 p-5 rounded-3xl bg-surface-container-low">
+              <div className="space-y-4 mb-12">
+                <div className="flex items-center gap-4 p-6 bg-primary/[0.03] border border-primary/10 rounded-none relative overflow-hidden">
+                   <div className="absolute top-0 left-0 w-1 h-full bg-primary/10" />
                    <Mail className="h-5 w-5 text-primary" />
                    <div className="flex-1">
-                      <p className="text-[10px] font-black text-on-surface/30 uppercase tracking-[0.2em]">{lang === 'es' ? 'Contacto' : 'Contact'}</p>
-                      <p className="font-bold text-on-surface">{t.support_email}</p>
+                      <p className="text-[9px] font-black text-primary/30 uppercase tracking-[0.4em]">{lang === 'es' ? 'Contacto' : 'Contact'}</p>
+                      <p className="font-black text-[#191c1e] text-sm">{t.support_email}</p>
                    </div>
                 </div>
               </div>

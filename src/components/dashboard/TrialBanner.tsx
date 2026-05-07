@@ -21,35 +21,49 @@ export function TrialBanner({ status, trialEndsAt, lang = 'es' }: TrialBannerPro
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
   if (diffDays < 0) return (
-    <div className="bg-red-600 text-white px-6 py-3 flex flex-col md:flex-row items-center justify-between gap-4 animate-in slide-in-from-top duration-500">
-      <div className="flex items-center gap-3">
-        <AlertTriangle className="h-5 w-5 animate-pulse" />
-        <span className="text-sm font-black uppercase tracking-widest">{t.trial_expired || 'Tu periodo de prueba ha expirado'}</span>
+    <div className="bg-red-950 text-white px-8 py-5 flex flex-col md:flex-row items-center justify-between gap-4 animate-in slide-in-from-top duration-700 relative z-[60] border-b border-red-500/30">
+      <div className="absolute top-0 left-0 w-1 h-full bg-red-600" />
+      <div className="flex items-center gap-5">
+        <div className="h-10 w-10 bg-red-600/20 border border-red-500/30 flex items-center justify-center rounded-none">
+          <AlertTriangle className="h-5 w-5 text-red-500 animate-pulse" />
+        </div>
+        <span className="text-[10px] font-black uppercase tracking-[0.4em] text-red-100">{t.trial_expired || 'Tu periodo de prueba ha expirado'}</span>
       </div>
       <Link 
         href="/dashboard/whatsapp" 
-        className="px-6 py-2 bg-white text-red-600 rounded-full text-xs font-black uppercase tracking-widest hover:scale-105 transition-all shadow-lg"
+        className="px-8 py-3 bg-red-600 text-white text-[10px] font-black uppercase tracking-[0.4em] hover:bg-red-500 transition-all shadow-xl shadow-red-900/50 rounded-none border border-transparent hover:border-red-400"
       >
-        {t.whatsapp_banner.cta} por $70/mes
+        {t.whatsapp_banner?.cta || 'Actualizar'} por $70/mes
       </Link>
     </div>
   );
 
   return (
-    <div className="bg-indigo-600 text-white px-6 py-3 flex flex-col md:flex-row items-center justify-between gap-4 animate-in slide-in-from-top duration-500">
-      <div className="flex items-center gap-3">
-        <Clock className="h-5 w-5" />
-        <span className="text-sm font-bold uppercase tracking-widest">
-            {t.trial_mode || 'Estás en el periodo de prueba'}: <span className="font-black underline decoration-indigo-300 decoration-2 underline-offset-4">{diffDays} {t.days_left || 'días restantes'}</span>
-        </span>
+    <div className="bg-primary-950 text-white px-8 py-5 flex flex-col md:flex-row items-center justify-between gap-4 animate-in slide-in-from-top duration-700 relative z-[60] border-b border-primary/20">
+      <div className="absolute top-0 left-0 w-1 h-full bg-primary" />
+      <div className="flex items-center gap-5">
+        <div className="h-10 w-10 bg-primary/20 border border-primary/30 flex items-center justify-center rounded-none">
+          <Clock className="h-5 w-5 text-primary-400" />
+        </div>
+        <div className="flex flex-col">
+          <span className="text-[9px] font-black uppercase tracking-[0.5em] text-primary-400/60 mb-0.5">
+            {t.trial_mode || 'Estás en el periodo de prueba'}
+          </span>
+          <span className="text-xs font-black uppercase tracking-widest text-white italic">
+            {diffDays} {t.days_left || 'días restantes'}
+          </span>
+        </div>
       </div>
-      <div className="flex items-center gap-4">
-        <p className="hidden md:block text-[10px] font-bold uppercase tracking-widest opacity-80 italic">{t.whatsapp_blocked || 'WhatsApp bloqueado hasta el pago'}</p>
+      <div className="flex items-center gap-6">
+        <p className="hidden md:block text-[9px] font-black uppercase tracking-[0.3em] opacity-40 italic">
+          {t.whatsapp_blocked || 'WhatsApp blocked until payment'}
+        </p>
         <Link 
           href="/dashboard/whatsapp" 
-          className="px-6 py-2 bg-amber-500 text-slate-900 rounded-full text-xs font-black uppercase tracking-widest hover:scale-105 transition-all shadow-lg flex items-center gap-2"
+          className="precision-button-primary flex items-center gap-3"
         >
-          {t.unlock_whatsapp || 'Desbloquear WhatsApp'} <Zap className="h-3 w-3 fill-current" />
+          <span>{t.unlock_whatsapp || 'Unlock WhatsApp'}</span>
+          <Zap className="h-3.5 w-3.5 fill-current group-hover:scale-110 transition-transform" />
         </Link>
       </div>
     </div>

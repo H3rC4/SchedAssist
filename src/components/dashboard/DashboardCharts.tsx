@@ -16,23 +16,25 @@ interface DashboardChartsProps {
 }
 
 export function DashboardCharts({ chartData, statusData, revenue, lang = 'es' }: DashboardChartsProps) {
-  const COLORS = ['#10b981', '#f59e0b', '#ef4444', '#0e7490']
+  const COLORS = ['#005c55', '#855300', '#ba1a1a', '#001f1c']
   const t = translations[lang] || translations['es']
   const dateLocale = lang === 'it' ? it : (lang === 'es' ? es : enUS)
 
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       return (
-        <div className="bg-white border border-border-subtle p-4 rounded-xl shadow-float">
-          <p className="text-[11px] font-semibold text-on-surface-muted uppercase tracking-widest mb-1">
-            {format(parseISO(label), 'EEE d MMM', { locale: dateLocale })}
+        <div className="bg-white border border-primary/10 p-6 rounded-none shadow-2xl">
+          <p className="text-[9px] font-black text-primary/40 uppercase tracking-[0.4em] mb-2">
+            {format(parseISO(label), 'EEE d MMM', { locale: dateLocale }).toUpperCase()}
           </p>
-          <p className="text-xl font-bold text-on-surface leading-none">
-            {payload[0].value}{' '}
-            <span className="text-sm font-medium text-on-surface-muted">
-              {t.appointments.toLowerCase()}
+          <div className="flex items-baseline gap-2">
+            <span className="text-3xl font-black text-[#191c1e] tracking-tighter italic">
+              {payload[0].value}
             </span>
-          </p>
+            <span className="text-[10px] font-black text-primary/60 uppercase tracking-widest">
+              {t.appointments.toUpperCase()}
+            </span>
+          </div>
         </div>
       )
     }
@@ -40,53 +42,57 @@ export function DashboardCharts({ chartData, statusData, revenue, lang = 'es' }:
   }
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
-
+    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
       {/* ── Activity Area Chart ── */}
-      <div className="lg:col-span-8 bg-white rounded-2xl p-6 shadow-card">
-        <div className="flex items-center justify-between mb-6">
+      <div className="lg:col-span-8 bg-white border border-primary/10 p-10 relative overflow-hidden group">
+        <div className="absolute top-0 left-0 w-1 h-full bg-primary/5 group-hover:bg-primary transition-colors" />
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-12">
           <div>
-            <h3 className="text-base font-semibold text-on-surface">{t.weekly_activity}</h3>
-            <p className="text-sm text-on-surface-muted mt-0.5">{t.appointments_volume}</p>
+            <div className="flex items-center gap-4 mb-3">
+              <div className="h-px w-8 bg-primary" />
+              <p className="text-[10px] font-black text-primary/40 uppercase tracking-[0.5em]">{t.appointments_volume.toUpperCase()}</p>
+            </div>
+            <h3 className="text-4xl font-black text-[#191c1e] tracking-tighter uppercase italic">{t.weekly_activity}</h3>
           </div>
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary-light">
-            <div className="h-2 w-2 rounded-full bg-primary" />
-            <span className="text-[11px] font-semibold text-primary">Live</span>
+          <div className="inline-flex items-center gap-4 px-5 py-2 border border-primary/10 bg-primary/[0.03] text-primary text-[10px] font-black uppercase tracking-[0.4em]">
+            <div className="h-2 w-2 bg-primary shadow-[0_0_10px_rgba(0,92,85,0.4)]" />
+            <span>OPERATIONAL SCAN</span>
           </div>
         </div>
 
-        <div className="h-[280px] w-full">
+        <div className="h-[340px] w-full">
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={chartData} margin={{ top: 5, right: 5, left: -25, bottom: 0 }}>
+            <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
               <defs>
                 <linearGradient id="colorCount" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%"  stopColor="#0f766e" stopOpacity={0.15} />
-                  <stop offset="95%" stopColor="#0f766e" stopOpacity={0} />
+                  <stop offset="5%"  stopColor="#005c55" stopOpacity={0.15} />
+                  <stop offset="95%" stopColor="#005c55" stopOpacity={0} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+              <CartesianGrid strokeDasharray="0" vertical={false} stroke="rgba(0,92,85,0.05)" />
               <XAxis
                 dataKey="date"
                 axisLine={false}
                 tickLine={false}
-                tick={{ fill: '#94a3b8', fontSize: 11, fontWeight: 500 }}
-                tickFormatter={(str) => format(parseISO(str), 'EEE', { locale: dateLocale })}
-                dy={8}
+                tick={{ fill: '#005c55', fontSize: 9, fontWeight: 900, opacity: 0.4 }}
+                tickFormatter={(str) => format(parseISO(str), 'EEE', { locale: dateLocale }).toUpperCase()}
+                dy={15}
               />
               <YAxis
                 axisLine={false}
                 tickLine={false}
-                tick={{ fill: '#94a3b8', fontSize: 11, fontWeight: 500 }}
+                tick={{ fill: '#005c55', fontSize: 9, fontWeight: 900, opacity: 0.4 }}
               />
               <Tooltip content={<CustomTooltip />} />
               <Area
                 type="monotone"
                 dataKey="count"
-                stroke="#0f766e"
-                strokeWidth={2.5}
+                stroke="#005c55"
+                strokeWidth={4}
                 fillOpacity={1}
                 fill="url(#colorCount)"
-                animationDuration={1200}
+                animationDuration={1500}
+                strokeLinecap="square"
               />
             </AreaChart>
           </ResponsiveContainer>
@@ -94,22 +100,27 @@ export function DashboardCharts({ chartData, statusData, revenue, lang = 'es' }:
       </div>
 
       {/* ── Distribution + Revenue ── */}
-      <div className="lg:col-span-4 bg-white rounded-2xl p-6 shadow-card flex flex-col">
-        <h3 className="text-base font-semibold text-on-surface mb-5">{t.distribution}</h3>
+      <div className="lg:col-span-4 bg-white border border-primary/10 p-10 flex flex-col relative overflow-hidden group">
+        <div className="absolute top-0 left-0 w-1 h-full bg-secondary/20 group-hover:bg-secondary transition-colors" />
+        <div className="flex items-center gap-4 mb-8">
+          <div className="h-px w-8 bg-secondary" />
+          <h3 className="text-xl font-black text-[#191c1e] tracking-tighter uppercase italic">{t.distribution}</h3>
+        </div>
 
         {/* Donut chart */}
-        <div className="h-[180px] w-full flex-shrink-0">
+        <div className="h-[220px] w-full flex-shrink-0 mb-10">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie
                 data={statusData}
                 cx="50%"
                 cy="50%"
-                innerRadius={54}
-                outerRadius={72}
-                paddingAngle={6}
+                innerRadius={70}
+                outerRadius={95}
+                paddingAngle={0}
                 dataKey="value"
-                stroke="none"
+                stroke="#fff"
+                strokeWidth={3}
               >
                 {statusData.map((_, index) => (
                   <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
@@ -118,11 +129,16 @@ export function DashboardCharts({ chartData, statusData, revenue, lang = 'es' }:
               <Tooltip
                 contentStyle={{
                   backgroundColor: '#ffffff',
-                  borderRadius: '12px',
-                  border: '1px solid #e2e8f0',
-                  boxShadow: '0 8px 40px rgba(15,23,42,0.10)',
-                  fontSize: '12px',
-                  fontWeight: '600',
+                  border: '1px solid rgba(0,92,85,0.1)',
+                  padding: '16px',
+                  borderRadius: '0px',
+                  boxShadow: '0 20px 40px rgba(0,0,0,0.1)'
+                }}
+                itemStyle={{
+                  fontSize: '10px',
+                  fontWeight: 900,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.2em'
                 }}
               />
             </PieChart>
@@ -130,37 +146,40 @@ export function DashboardCharts({ chartData, statusData, revenue, lang = 'es' }:
         </div>
 
         {/* Legend */}
-        <div className="space-y-2.5 mt-3">
+        <div className="space-y-4 mb-12 flex-1">
           {statusData.map((item, index) => (
-            <div key={item.name} className="flex items-center justify-between">
-              <div className="flex items-center gap-2.5">
+            <div key={item.name} className="flex items-center justify-between border-b border-primary/5 pb-3 group/item">
+              <div className="flex items-center gap-4">
                 <div
-                  className="h-2.5 w-2.5 rounded-full flex-shrink-0"
+                  className="h-3 w-3 rounded-none transition-transform group-hover/item:scale-125"
                   style={{ backgroundColor: COLORS[index % COLORS.length] }}
                 />
-                <span className="text-sm font-medium text-on-surface-muted capitalize">
-                  {item.name === 'completed' ? t.confirmed
-                    : item.name === 'cancelled' ? t.canceled
-                    : item.name === 'pending'   ? t.pending
-                    : item.name}
+                <span className="text-[10px] font-black text-primary/40 uppercase tracking-[0.3em] group-hover/item:text-primary transition-colors">
+                  {item.name === 'completed' ? t.confirmed.toUpperCase()
+                    : item.name === 'cancelled' ? t.canceled.toUpperCase()
+                    : item.name === 'pending'   ? t.pending.toUpperCase()
+                    : item.name.toUpperCase()}
                 </span>
               </div>
-              <span className="text-sm font-bold text-on-surface">{item.value}</span>
+              <span className="text-base font-black text-[#191c1e] tracking-tighter italic">{item.value}</span>
             </div>
           ))}
         </div>
 
         {/* Revenue */}
-        <div className="mt-auto pt-5 border-t border-border-subtle">
-          <p className="text-[11px] font-semibold text-on-surface-muted uppercase tracking-widest mb-1">
-            {t.estimated_revenue}
+        <div className="mt-auto pt-10 border-t border-primary/10 relative">
+          <p className="text-[10px] font-black text-primary/40 uppercase tracking-[0.5em] mb-4">
+            {t.estimated_revenue.toUpperCase()}
           </p>
-          <p className="text-3xl font-bold text-on-surface tracking-tight">
-            ${revenue.toLocaleString()}
-          </p>
-          <div className="mt-2.5 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-success-light">
-            <div className="h-1.5 w-1.5 rounded-full bg-success" />
-            <span className="text-[11px] font-semibold text-success">{t.appointments_completed}</span>
+          <div className="flex items-baseline gap-3 mb-8">
+             <span className="text-2xl font-black text-primary/30">$</span>
+             <p className="text-5xl font-black text-[#191c1e] tracking-tighter uppercase italic">
+               {revenue.toLocaleString()}
+             </p>
+          </div>
+          <div className="inline-flex items-center gap-4 px-5 py-2 border border-primary/10 bg-primary/[0.03] text-primary text-[10px] font-black uppercase tracking-[0.4em]">
+            <div className="h-1.5 w-1.5 bg-primary shadow-[0_0_8px_rgba(0,92,85,0.4)]" />
+            <span>{t.appointments_completed.toUpperCase()}</span>
           </div>
         </div>
       </div>

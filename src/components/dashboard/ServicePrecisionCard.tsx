@@ -35,53 +35,53 @@ export function ServicePrecisionCard({ service, index, savedId, durationLabels, 
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.05, duration: 0.5 }}
-      className={`precision-surface-lowest p-5 group relative transition-all hover:translate-y-[-2px] hover:shadow-spatial rounded-2xl ${savedId === service.id ? 'ring-1 ring-primary ring-offset-1' : ''}`}
+      className={`bg-white border border-primary/10 p-6 group relative transition-all hover:border-primary/30 rounded-none ${savedId === service.id ? 'ring-1 ring-primary ring-offset-0' : ''}`}
     >
-      <div className="flex items-start justify-between mb-5">
-        <div className={`h-12 w-12 rounded-xl ${iconData.bg} flex items-center justify-center ${iconData.color} transition-transform duration-500 group-hover:scale-110 shadow-sm`}>
+      <div className="flex items-start justify-between mb-6">
+        <div className={`h-14 w-14 bg-primary/[0.03] border border-primary/10 flex items-center justify-center ${iconData.color} transition-colors group-hover:bg-primary/[0.08] rounded-none`}>
           {iconData.icon}
         </div>
-        <div className="flex gap-1.5">
+        <div className="flex gap-2">
           <button 
             onClick={() => onEdit(service)} 
-            className="h-8 w-8 flex items-center justify-center bg-surface-container-low rounded-lg text-on-surface-muted hover:text-primary hover:bg-surface-container-highest transition-all"
+            className="h-9 w-9 flex items-center justify-center bg-primary/[0.03] border border-primary/10 text-primary/40 hover:text-primary hover:bg-primary/10 transition-all rounded-none"
           >
-            <Pencil className="h-3.5 w-3.5" />
+            <Pencil className="h-4 w-4" />
           </button>
           <button 
             onClick={() => onDelete(service.id)} 
-            className="h-8 w-8 flex items-center justify-center bg-surface-container-low rounded-lg text-on-surface-muted hover:text-accent-rose hover:bg-accent-rose/10 transition-all"
+            className="h-9 w-9 flex items-center justify-center bg-primary/[0.03] border border-primary/10 text-primary/40 hover:text-red-600 hover:bg-red-50 transition-all rounded-none"
           >
-            <Trash2 className="h-3.5 w-3.5" />
+            <Trash2 className="h-4 w-4" />
           </button>
         </div>
       </div>
 
       <div>
-        <div className="flex items-center gap-2 mb-2">
-          <div className="h-0.5 w-4 bg-primary/20 rounded-full" />
-          <p className="text-[7px] font-black text-on-surface-muted uppercase tracking-widest">
+        <div className="flex items-center gap-3 mb-3">
+          <div className="h-px w-6 bg-primary/20" />
+          <p className="text-[8px] font-black text-primary/60 uppercase tracking-[0.4em]">
             {durationLabels[service.duration_minutes] || `${service.duration_minutes}m`}
           </p>
         </div>
-        <h3 className="text-base font-black text-on-surface tracking-tighter group-hover:text-primary transition-colors leading-tight uppercase">
+        <h3 className="text-xl font-black text-[#191c1e] tracking-tighter group-hover:text-primary transition-colors leading-tight uppercase italic">
           {service.name}
         </h3>
         
-        <div className="flex items-center justify-between mt-6 pt-4 border-t border-surface-container-highest">
-          <div className="flex items-center gap-1.5">
-            <Clock className="h-3 w-3 text-on-surface-muted" />
-            <span className="text-[9px] font-black text-on-surface uppercase tracking-widest">{durationLabels[service.duration_minutes] || `${service.duration_minutes}m`}</span>
+        <div className="flex items-center justify-between mt-8 pt-6 border-t border-primary/10">
+          <div className="flex items-center gap-2">
+            <Clock className="h-3.5 w-3.5 text-primary/40" />
+            <span className="text-[10px] font-black text-[#191c1e]/60 uppercase tracking-[0.2em]">{durationLabels[service.duration_minutes] || `${service.duration_minutes}m`}</span>
           </div>
           {service.price ? (
-            <div className="flex items-center gap-1">
-              <span className="text-[10px] font-black text-primary/40">$</span>
-              <span className="text-lg font-black text-on-surface tracking-tighter">{service.price}</span>
+            <div className="flex items-center gap-1.5">
+              <span className="text-[11px] font-black text-primary/40 uppercase tracking-widest">$</span>
+              <span className="text-2xl font-black text-[#191c1e] tracking-tighter italic">{service.price}</span>
             </div>
           ) : (
-            <div className="flex items-center gap-1.5 px-2 py-0.5 bg-surface-container-low rounded-full">
-              <Info className="h-2.5 w-2.5 text-on-surface-muted" />
-              <span className="text-[7px] font-black text-on-surface-muted uppercase tracking-widest">PROX</span>
+            <div className="flex items-center gap-2 px-3 py-1 bg-primary/[0.03] border border-primary/10">
+              <Info className="h-3 w-3 text-primary/40" />
+              <span className="text-[8px] font-black text-primary/60 uppercase tracking-[0.3em]">RESERVADO</span>
             </div>
           )}
         </div>

@@ -2,14 +2,15 @@ import { Skeleton } from "@/components/ui/Skeleton"
 
 export function StatCardSkeleton() {
   return (
-    <div className="relative overflow-hidden rounded-[2.5rem] p-8 border border-white/60 dark:border-white/10 shadow-sm bg-white/40 dark:bg-slate-900/40 backdrop-blur-sm">
+    <div className="relative overflow-hidden p-8 border border-primary/10 bg-white group">
+      <div className="absolute top-0 left-0 w-1 h-full bg-primary/10" />
       <div className="flex items-center justify-between mb-8">
-        <Skeleton className="h-16 w-16 rounded-[1.5rem]" />
-        <Skeleton className="h-6 w-16 rounded-full" />
+        <Skeleton className="h-12 w-12" />
+        <Skeleton className="h-6 w-20" />
       </div>
-      <div className="space-y-3">
-        <Skeleton className="h-3 w-32 rounded-full" />
-        <Skeleton className="h-12 w-20 rounded-xl" />
+      <div className="space-y-4">
+        <Skeleton className="h-3 w-32" />
+        <Skeleton className="h-10 w-24" />
       </div>
     </div>
   )
@@ -17,25 +18,29 @@ export function StatCardSkeleton() {
 
 export function AppointmentListSkeleton() {
   return (
-    <div className="space-y-4">
+    <div className="space-y-8">
       <div className="flex items-center justify-between px-2">
-        <Skeleton className="h-8 w-48 rounded-lg" />
-        <Skeleton className="h-4 w-32 rounded-full" />
+        <div className="flex items-center gap-3">
+          <div className="h-1 w-6 bg-primary/20" />
+          <Skeleton className="h-6 w-56" />
+        </div>
+        <Skeleton className="h-4 w-40" />
       </div>
-      <div className="bg-white/40 backdrop-blur-xl rounded-[2.5rem] border border-white/60 p-4 space-y-4">
+      <div className="space-y-4">
         {[1, 2, 3, 4].map((i) => (
-          <div key={i} className="flex items-center p-6 rounded-[2rem] bg-white border border-transparent">
-            <Skeleton className="h-16 w-16 rounded-[1.5rem] mr-8" />
-            <div className="flex-1 space-y-3">
-              <div className="flex items-center gap-3">
-                <Skeleton className="h-6 w-40 rounded-full" />
-                <Skeleton className="h-4 w-20 rounded-full" />
+          <div key={i} className="flex items-center p-8 bg-white border border-primary/10 relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-1 h-full bg-primary/5" />
+            <Skeleton className="h-16 w-16 mr-10" />
+            <div className="flex-1 space-y-4">
+              <div className="flex items-center gap-4">
+                <Skeleton className="h-6 w-48" />
+                <Skeleton className="h-3 w-24" />
               </div>
-              <Skeleton className="h-4 w-60 rounded-full" />
+              <Skeleton className="h-3 w-64" />
             </div>
-            <div className="ml-4 flex items-center gap-4">
-              <Skeleton className="h-8 w-24 rounded-full" />
-              <Skeleton className="h-10 w-10 rounded-2xl" />
+            <div className="ml-6 flex items-center gap-6">
+              <Skeleton className="h-4 w-32" />
+              <Skeleton className="h-12 w-12" />
             </div>
           </div>
         ))}
@@ -46,44 +51,56 @@ export function AppointmentListSkeleton() {
 
 export function DashboardHeaderSkeleton() {
   return (
-    <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-12">
+    <div className="flex flex-col md:flex-row md:items-end justify-between gap-10 mb-16">
       <div className="space-y-6">
-        <div className="flex items-center gap-3">
-          <Skeleton className="h-3 w-3 rounded-full" />
-          <Skeleton className="h-3 w-32 rounded-full" />
-        </div>
         <div className="flex items-center gap-4">
-          <Skeleton className="h-12 w-80 rounded-2xl" />
-          <Skeleton className="h-12 w-12 rounded-xl" />
+          <div className="h-1 w-4 bg-primary/30" />
+          <Skeleton className="h-3 w-40" />
         </div>
-        <Skeleton className="h-4 w-48 rounded-full" />
+        <div className="flex items-center gap-6">
+          <Skeleton className="h-14 w-96" />
+          <Skeleton className="h-14 w-14" />
+        </div>
+        <Skeleton className="h-3 w-56" />
       </div>
-      <div className="flex gap-4">
-        <Skeleton className="h-14 w-40 rounded-2xl" />
-        <Skeleton className="h-14 w-48 rounded-2xl" />
+      <div className="flex gap-6">
+        <Skeleton className="h-14 w-44" />
+        <Skeleton className="h-14 w-52" />
       </div>
     </div>
   )
 }
+
 export function DashboardChartsSkeleton() {
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-      {[1, 2].map((i) => (
-        <div key={i} className="bg-white/40 dark:bg-slate-900/40 rounded-[2.5rem] border border-white/60 dark:border-white/10 p-8 space-y-6">
-          <div className="flex items-center justify-between">
-            <div className="space-y-2">
-              <Skeleton className="h-6 w-48 rounded-lg" />
-              <Skeleton className="h-4 w-32 rounded-full" />
-            </div>
-            <Skeleton className="h-10 w-10 rounded-xl" />
+    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+      <div className="lg:col-span-8 bg-white border border-primary/10 p-10 space-y-10 relative">
+        <div className="absolute top-0 left-0 w-1 h-full bg-primary/5" />
+        <div className="flex items-center justify-between">
+          <div className="space-y-4">
+            <Skeleton className="h-3 w-40" />
+            <Skeleton className="h-10 w-64" />
           </div>
-          <Skeleton className="h-[250px] w-full rounded-2xl" />
-          <div className="flex justify-center gap-6">
-            <Skeleton className="h-3 w-20 rounded-full" />
-            <Skeleton className="h-3 w-24 rounded-full" />
-          </div>
+          <Skeleton className="h-8 w-32" />
         </div>
-      ))}
+        <Skeleton className="h-[300px] w-full" />
+      </div>
+      <div className="lg:col-span-4 bg-white border border-primary/10 p-10 space-y-10 relative">
+        <div className="absolute top-0 left-0 w-1 h-full bg-secondary/5" />
+        <div className="space-y-4">
+          <Skeleton className="h-8 w-48" />
+          <Skeleton className="h-[200px] w-[200px] mx-auto" />
+        </div>
+        <div className="space-y-4 mt-8">
+          <Skeleton className="h-4 w-full" />
+          <Skeleton className="h-4 w-full" />
+          <Skeleton className="h-4 w-2/3" />
+        </div>
+        <div className="pt-8 border-t border-primary/10">
+          <Skeleton className="h-3 w-32 mb-3" />
+          <Skeleton className="h-12 w-48" />
+        </div>
+      </div>
     </div>
   )
 }

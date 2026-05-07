@@ -51,48 +51,52 @@ export default function RegisterClinicPage() {
   }
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-slate-50 dark:bg-slate-950 p-6 relative overflow-hidden font-sans">
-      {/* Dynamic Background */}
-      <div className={`absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full blur-[120px] transition-all duration-1000 ${
-        selectedLang === 'es' ? 'bg-amber-500/10' : selectedLang === 'it' ? 'bg-emerald-500/10' : 'bg-indigo-500/10'
-      }`} />
-      <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-slate-500/5 blur-[120px]" />
+    <div className="min-h-screen w-full flex items-center justify-center bg-white p-6 overflow-hidden relative">
+      {/* Decoración de fondo */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-96 bg-primary/[0.03] blur-[120px] rounded-full -z-10 pointer-events-none" />
 
       <div className="max-w-md w-full relative z-10">
-        <div className="bg-white dark:bg-slate-900 rounded-[3rem] shadow-2xl p-8 md:p-12 border border-slate-200/50 dark:border-white/5 animate-in zoom-in-95 duration-500">
-          
+        <div className="bg-white border border-primary/10 p-12 md:p-16 relative overflow-hidden shadow-spatial">
+          {/* Texto decorativo de fondo */}
+          <div className="absolute top-0 right-0 p-8 opacity-[0.02] pointer-events-none select-none">
+            <span className="text-6xl font-black uppercase tracking-tighter text-primary">
+              {step === 0 ? 'Lang' : 'Clinic'}
+            </span>
+          </div>
+
           {step === 0 && (
-            <div className="animate-in fade-in duration-500">
-              <div className="text-center mb-10">
-                <div className="h-16 w-16 bg-amber-500/10 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                  <Globe className="h-8 w-8 text-amber-500" />
+            <div className="animate-in fade-in duration-700 relative z-10">
+              <div className="mb-10">
+                <div className="inline-flex items-center gap-2 px-4 py-1.5 border border-primary/10 bg-primary/[0.03] text-primary text-[9px] font-black uppercase tracking-[0.2em] mb-6">
+                  <Globe className="h-3 w-3" /> Next-Generation Onboarding
                 </div>
-                <h1 className="text-3xl font-black text-slate-900 dark:text-white uppercase tracking-tight">
-                  {translations['en'].onboarding.select_language}
+                <h1 className="text-3xl font-black text-[#191c1e] tracking-tighter uppercase mb-3">
+                  Select <br />
+                  <span className="text-primary italic">Language</span>
                 </h1>
-                <p className="text-sm font-semibold text-slate-500 mt-2">
-                  Welcome to SchedAssist. Let's start by choosing your language.
+                <p className="text-[10px] font-black text-[#191c1e]/40 uppercase tracking-[0.4em]">
+                  Universal Identity Access
                 </p>
               </div>
 
-              <div className="grid gap-4">
+              <div className="grid gap-3">
                 {[
-                  { id: 'es', name: 'Español', flag: '🇪🇸' },
-                  { id: 'en', name: 'English', flag: '🇺🇸' },
-                  { id: 'it', name: 'Italiano', flag: '🇮🇹' },
+                  { id: 'es', name: 'Español', code: 'ES' },
+                  { id: 'en', name: 'English', code: 'US' },
+                  { id: 'it', name: 'Italiano', code: 'IT' },
                 ].map((l) => (
                   <button
                     key={l.id}
                     onClick={() => handleLanguageSelect(l.id as Language)}
-                    className="flex items-center justify-between p-6 rounded-[2rem] bg-slate-50 dark:bg-black/40 border border-slate-100 dark:border-white/5 hover:border-amber-500 hover:scale-[1.02] active:scale-95 transition-all group shadow-sm"
+                    className="flex items-center justify-between p-5 bg-primary/[0.03] border border-primary/10 hover:border-primary hover:bg-primary/[0.08] transition-all group relative overflow-hidden"
                   >
                     <div className="flex items-center gap-4">
-                      <span className="text-3xl">{l.flag}</span>
-                      <span className="font-black text-slate-700 dark:text-white uppercase tracking-widest text-sm">
+                      <span className="text-[10px] font-black text-primary/30 group-hover:text-primary transition-colors">{l.code}</span>
+                      <span className="font-black text-[#191c1e] uppercase tracking-[0.2em] text-xs">
                         {l.name}
                       </span>
                     </div>
-                    <ArrowRight className="h-5 w-5 text-slate-300 group-hover:text-amber-500 transition-colors" />
+                    <ArrowRight className="h-4 w-4 text-primary/30 group-hover:text-primary group-hover:translate-x-2 transition-all" />
                   </button>
                 ))}
               </div>
@@ -100,74 +104,79 @@ export default function RegisterClinicPage() {
           )}
 
           {step === 1 && (
-            <div className="animate-in slide-in-from-right-8 duration-500">
-              <div className="text-center mb-10">
-                <h1 className="text-3xl font-black text-slate-900 dark:text-white uppercase tracking-tight">
-                  {t.registration.title}
+            <div className="animate-in slide-in-from-right-8 duration-700 relative z-10">
+              <div className="mb-10">
+                <div className="inline-flex items-center gap-2 px-4 py-1.5 border border-primary/10 bg-primary/[0.03] text-primary text-[9px] font-black uppercase tracking-[0.2em] mb-6">
+                  <ShieldCheck className="h-3 w-3" /> Precision Registration
+                </div>
+                <h1 className="text-3xl font-black text-[#191c1e] tracking-tighter uppercase mb-3">
+                  Almost <br />
+                  <span className="text-primary italic">Ready</span>
                 </h1>
-                <p className="text-sm font-semibold text-slate-500 mt-2 leading-relaxed">
-                  {t.registration.subtitle}
+                <p className="text-[10px] font-black text-[#191c1e]/40 uppercase tracking-[0.4em]">
+                  Establish Clinical Identity
                 </p>
               </div>
 
               {error && (
-                <div className="mb-6 p-5 rounded-2xl bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 text-sm font-bold border border-red-100 dark:border-red-500/20 italic">
-                  ⚠ {error}
+                <div className="mb-8 p-6 bg-red-50 border border-red-200 flex items-center gap-4">
+                  <p className="text-xs font-bold text-red-800 tracking-tight uppercase">
+                    {error}
+                  </p>
                 </div>
               )}
 
               <form ref={formRef} onSubmit={handleSubmit} className="space-y-6">
                 <div>
-                  <label className="block text-xs font-black text-slate-400 dark:text-slate-500 mb-2 uppercase tracking-[0.2em] ml-2">
+                  <label className="text-[9px] font-black text-primary/60 uppercase tracking-[0.3em] ml-2 mb-2 block">
                     {t.registration.name_label}
                   </label>
                   <div className="relative group">
-                    <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none">
-                      <Building className="h-5 w-5 text-slate-300 group-focus-within:text-amber-500 transition-colors" />
-                    </div>
+                    <Building className="absolute left-5 top-1/2 -translate-y-1/2 h-4 w-4 text-primary/30 group-focus-within:text-primary transition-colors" />
                     <input
                       name="clinicName"
                       required
                       autoFocus
-                      className="block w-full pl-14 pr-6 py-5 rounded-2xl bg-slate-50 dark:bg-black border-none ring-1 ring-slate-200 dark:ring-white/10 focus:ring-2 focus:ring-amber-500 transition-all font-bold text-slate-900 dark:text-white shadow-inner"
+                      className="w-full bg-primary/[0.03] border border-primary/20 py-4 pl-14 pr-5 text-sm font-bold text-[#191c1e] placeholder:text-primary/30 focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all outline-none"
                       placeholder={t.registration.name_ph}
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-black text-slate-400 dark:text-slate-500 mb-2 uppercase tracking-[0.2em] ml-2">
+                  <label className="text-[9px] font-black text-primary/60 uppercase tracking-[0.3em] ml-2 mb-2 block">
                     {t.registration.phone_label}
                   </label>
                   <div className="relative group">
-                    <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none">
-                      <Phone className="h-5 w-5 text-slate-300 group-focus-within:text-amber-500 transition-colors" />
-                    </div>
+                    <Phone className="absolute left-5 top-1/2 -translate-y-1/2 h-4 w-4 text-primary/30 group-focus-within:text-primary transition-colors" />
                     <input
                       name="contactPhone"
-                      className="block w-full pl-14 pr-6 py-5 rounded-2xl bg-slate-50 dark:bg-black border-none ring-1 ring-slate-200 dark:ring-white/10 focus:ring-2 focus:ring-amber-500 transition-all font-bold text-slate-900 dark:text-white shadow-inner"
+                      className="w-full bg-primary/[0.03] border border-primary/20 py-4 pl-14 pr-5 text-sm font-bold text-[#191c1e] placeholder:text-primary/30 focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all outline-none"
                       placeholder={t.registration.phone_ph}
                     />
                   </div>
                 </div>
 
-                <div className="space-y-5 pt-4">
+                <div className="pt-6 space-y-4">
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-full py-6 rounded-[2rem] bg-slate-900 dark:bg-amber-500 hover:bg-slate-800 dark:hover:bg-amber-400 text-white dark:text-slate-900 font-black uppercase tracking-[0.2em] transition-all shadow-xl shadow-amber-500/10 hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-3"
+                    className="w-full py-4 bg-primary text-white text-xs font-black uppercase tracking-[0.4em] transition-all shadow-xl shadow-primary/20 hover:bg-primary-light hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-3 group"
                   >
                     {loading ? (
-                      <Loader2 className="h-6 w-6 animate-spin" />
+                      <Loader2 className="h-4 w-4 animate-spin" />
                     ) : (
-                      <>{t.registration.finish_btn} <ArrowRight className="h-5 w-5" /></>
+                      <>
+                        <span>{t.registration.finish_btn}</span>
+                        <ArrowRight className="h-4 w-4 group-hover:translate-x-2 transition-transform" />
+                      </>
                     )}
                   </button>
 
                   <button
                     type="button"
                     onClick={() => handleSubmit()}
-                    className="w-full py-2 text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 hover:text-amber-500 transition-colors"
+                    className="w-full py-2 text-[9px] font-black text-primary/60 uppercase tracking-widest hover:text-primary transition-colors"
                   >
                     {t.registration.skip_btn}
                   </button>
@@ -175,7 +184,6 @@ export default function RegisterClinicPage() {
               </form>
             </div>
           )}
-
         </div>
       </div>
     </div>

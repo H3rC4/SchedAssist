@@ -97,68 +97,68 @@ export function InteractiveTutorial({ tenantId, lang = 'es', onComplete }: Tutor
 
   return (
     <div className="fixed inset-0 z-[150] pointer-events-auto">
-      <div className="absolute inset-0 bg-slate-900/40 dark:bg-black/60 backdrop-blur-[2px] transition-all duration-500" />
+      <div className="absolute inset-0 bg-white/40 backdrop-blur-[2px] transition-all duration-500" />
 
       <div 
-        className="absolute bg-transparent ring-[100vw] ring-slate-900/40 dark:ring-black/60 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] pointer-events-none rounded-[1.5rem]"
+        className="absolute bg-transparent ring-[100vw] ring-[#191c1e]/40 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] pointer-events-none rounded-none"
         style={{
           top: targetRect.top - 8,
           left: targetRect.left - 8,
           width: targetRect.width + 16,
           height: targetRect.height + 16,
-          boxShadow: `0 0 0 4px ${stepInfo.bg.replace('bg-', '') === 'amber-500' ? '#f59e0b' : '#10b981'}`
+          boxShadow: `0 0 0 1px #005c55`
         }}
       >
-        <div className="absolute inset-0 border-2 border-white/20 rounded-[1.5rem] animate-pulse" />
+        <div className="absolute inset-0 border-2 border-primary animate-pulse" />
       </div>
 
       <div 
-        className="absolute z-[160] transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] w-[320px] bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200 dark:border-white/10 overflow-hidden"
+        className="absolute z-[160] transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] w-[360px] bg-white border border-primary/20 shadow-2xl overflow-hidden rounded-none"
         style={{
           top: targetRect.top > window.innerHeight / 2 ? undefined : targetRect.top,
           bottom: targetRect.top > window.innerHeight / 2 ? (window.innerHeight - targetRect.bottom) : undefined,
-          left: targetRect.right + 24
+          left: targetRect.right + 32
         }}
       >
-        <div className="h-1 w-full bg-slate-100 dark:bg-slate-800">
+        <div className="h-1.5 w-full bg-primary/5">
           <div 
-            className={`h-full ${stepInfo.bg} transition-all duration-500`}
+            className="h-full bg-primary transition-all duration-500"
             style={{ width: `${((currentStep + 1) / STEPS.length) * 100}%` }}
           />
         </div>
 
-        <div className="p-6">
-          <div className="flex items-start justify-between mb-4">
-            <div className={`h-12 w-12 rounded-2xl flex items-center justify-center ${stepInfo.bg}/10`}>
-              <stepInfo.icon className={`h-6 w-6 ${stepInfo.color}`} />
+        <div className="p-8">
+          <div className="flex items-start justify-between mb-6">
+            <div className="h-14 w-14 bg-primary/[0.03] border border-primary/10 flex items-center justify-center text-primary rounded-none">
+              <stepInfo.icon className="h-6 w-6" />
             </div>
             <button 
               onClick={handleFinish}
-              className="p-1 rounded-full text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+              className="p-2 text-primary/40 hover:text-red-500 hover:bg-red-50 transition-colors rounded-none"
             >
               <X className="h-5 w-5" />
             </button>
           </div>
 
-          <h3 className="text-xl font-black text-slate-900 dark:text-white tracking-tight mb-2">
+          <h3 className="text-2xl font-black text-[#191c1e] tracking-tighter mb-3 uppercase italic leading-none">
             {stepInfo.title}
           </h3>
-          <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed font-medium mb-6">
+          <p className="text-[11px] text-[#191c1e]/60 leading-relaxed font-bold mb-8 uppercase tracking-tight">
             {stepInfo.content}
           </p>
 
           <div className="flex items-center justify-between mt-auto">
-            <span className="text-xs font-bold text-slate-400 tracking-widest uppercase">
-              {t.tutorial.step_x_of_y(currentStep + 1, STEPS.length)}
+            <span className="text-[10px] font-black text-primary/40 tracking-[0.3em] uppercase">
+              STEP {currentStep + 1} / {STEPS.length}
             </span>
             <button
               onClick={nextStep}
-              className={`h-10 px-5 rounded-xl font-bold text-white shadow-lg transition-all active:scale-95 flex items-center gap-2 ${stepInfo.bg} hover:opacity-90`}
+              className="h-12 px-6 bg-primary text-white text-[10px] font-black uppercase tracking-[0.4em] shadow-xl shadow-primary/20 transition-all active:scale-95 flex items-center gap-3 hover:bg-primary-light rounded-none"
             >
               {currentStep < STEPS.length - 1 ? (
-                <>{t.tutorial.next} <ArrowRight className="h-4 w-4" /></>
+                <><span>CONTINUE</span> <ArrowRight className="h-4 w-4" /></>
               ) : (
-                <>{t.tutorial.finish} <CheckCircle2 className="h-4 w-4" /></>
+                <><span>FINISH TOUR</span> <CheckCircle2 className="h-4 w-4" /></>
               )}
             </button>
           </div>
