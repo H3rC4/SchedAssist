@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from 'react'
-import { X, UserPlus, CheckCircle, Loader2, ArrowRight, Sparkles, ChevronDown } from 'lucide-react'
+import { X, UserPlus, CheckCircle, Loader2, ArrowRight, Sparkles, ChevronRight, Building } from 'lucide-react'
 
 interface AddProfessionalModalProps {
   isOpen: boolean;
@@ -162,6 +162,3 @@ export function AddProfessionalModal({ isOpen, onClose, onConfirm, t, locations 
     </div>
   )
 }
-
-// Import Building icon
-import { Building } from 'lucide-react'
