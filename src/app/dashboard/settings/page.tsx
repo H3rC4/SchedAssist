@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Building2, KeyRound, Globe, Upload, Image as ImageIcon, Loader2, CheckCircle, Eye, EyeOff, ArrowRight } from 'lucide-react';
+import { Building2, KeyRound, Globe, Upload, Image as ImageIcon, Loader2, CheckCircle, Eye, EyeOff, ArrowRight, Sparkles, RotateCcw } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { translations, Language } from '@/lib/i18n';
 import { motion } from 'framer-motion';
@@ -25,6 +25,8 @@ export default function GeneralSettingsPage() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [isRestartingTutorial, setIsRestartingTutorial] = useState(false);
+  const [tutorialResetMessage, setTutorialResetMessage] = useState<{ text: string, type: 'success' | 'error' } | null>(null);
 
   const t = (translations[lang] || translations['es']) as any;
 
@@ -102,6 +104,29 @@ export default function GeneralSettingsPage() {
       alert(err.message);
     } finally {
       setIsUploadingLogo(false);
+    }
+  };
+
+  const handleRestartTutorial = async () => {
+    setIsRestartingTutorial(true);
+    setTutorialResetMessage(null);
+    try {
+      const res = await fetch('/api/tenant/tutorial/reset', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tenant_id: tenantId })
+      });
+      const data = await res.json();
+      if (data.success) {
+        setTutorialResetMessage({ text: 'Tutorial reiniciado. Recargando...', type: 'success' });
+        setTimeout(() => window.location.reload(), 1500);
+      } else {
+        setTutorialResetMessage({ text: data.error || 'Error al reiniciar', type: 'error' });
+      }
+    } catch (err: any) {
+      setTutorialResetMessage({ text: err.message || 'Error inesperado', type: 'error' });
+    } finally {
+      setIsRestartingTutorial(false);
     }
   };
 
@@ -253,6 +278,46 @@ export default function GeneralSettingsPage() {
           </div>
         </div>
       </form>
+
+      {/* Restart Tutorial Section */}
+      <section className="bg-white rounded-[2.5rem] border border-on-surface/5 p-8 shadow-spatial">
+        <div className="flex items-start gap-6">
+          <div className="h-14 w-14 rounded-2xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+            <Sparkles className="h-6 w-6 text-primary" />
+          </div>
+          <div className="flex-1">
+            <h2 className="text-lg font-black text-on-surface uppercase tracking-tight mb-2">
+              Interactive Tutorial
+            </h2>
+            <p className="text-sm text-on-surface/50 font-medium mb-6 leading-relaxed">
+              Restart the guided walkthrough of your dashboard. This will show you the main features again step by step.
+            </p>
+            
+            {tutorialResetMessage && (
+              <div className={`mb-4 p-4 rounded-2xl text-[10px] font-black uppercase tracking-widest border ${
+                tutorialResetMessage.type === 'success' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-red-50 text-red-600 border-red-100'
+              }`}>
+                {tutorialResetMessage.text}
+              </div>
+            )}
+            
+            <button
+              onClick={handleRestartTutorial}
+              disabled={isRestartingTutorial}
+              className="h-14 px-8 bg-primary/10 text-primary rounded-[2rem] text-[10px] font-black uppercase tracking-[0.3em] hover:bg-primary hover:text-white transition-all active:scale-95 disabled:opacity-50 flex items-center gap-3"
+            >
+              {isRestartingTutorial ? (
+                <Loader2 className="h-5 w-5 animate-spin" />
+              ) : (
+                <>
+                  <RotateCcw className="h-4 w-4" />
+                  <span>{t.restart_tutorial || 'Restart Tutorial'}</span>
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }

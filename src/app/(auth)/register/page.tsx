@@ -1,9 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { registerAction } from './actions';
-import { ShieldCheck, ArrowLeft, Mail, Lock, Building, AlertCircle, Loader2, ChevronRight, Globe, Sparkles } from 'lucide-react';
+import { ShieldCheck, ArrowLeft, Mail, Lock, Building, AlertCircle, Loader2, ChevronRight, Globe, Sparkles, CalendarCheck } from 'lucide-react';
 import { useLandingTranslation } from '@/components/LanguageContext';
 import { GoogleAuthButton } from '@/components/auth/GoogleAuthButton';
 import { MicrosoftAuthButton } from '@/components/auth/MicrosoftAuthButton';
@@ -11,10 +11,17 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Logo } from '@/components/Logo';
 
 export default function RegisterPage() {
-  const { t } = useLandingTranslation();
+  const { t, language } = useLandingTranslation();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) return null;
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -70,6 +77,30 @@ export default function RegisterPage() {
     <div className="min-h-screen w-full flex items-center justify-center bg-white p-6 overflow-hidden relative">
 
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-96 bg-primary/[0.03] blur-[120px] rounded-full -z-10 pointer-events-none" />
+
+      <AnimatePresence>
+        {loading && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-white/90 backdrop-blur-2xl"
+          >
+            <div className="relative">
+              <div className="h-32 w-32 border-[6px] border-primary/10 border-t-primary animate-spin" />
+              <div className="absolute inset-0 flex items-center justify-center">
+                <CalendarCheck className="h-10 w-10 text-primary animate-pulse" />
+              </div>
+            </div>
+            <p className="mt-12 text-xs font-black text-[#191c1e] uppercase tracking-[0.5em] animate-pulse">
+              Creating Account
+            </p>
+            <p className="mt-4 text-[10px] font-bold text-[#191c1e]/40 uppercase tracking-widest">
+              Initializing workspace...
+            </p>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <motion.div 
         initial={{ opacity: 0, y: 40 }}
