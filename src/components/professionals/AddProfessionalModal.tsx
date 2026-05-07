@@ -36,123 +36,132 @@ export function AddProfessionalModal({ isOpen, onClose, onConfirm, t, locations 
   return (
     <div className="fixed inset-0 z-[100] overflow-hidden" onClick={onClose}>
       {/* OVERLAY */}
-      <div className="absolute inset-0 bg-on-surface/40 backdrop-blur-sm animate-in fade-in duration-500" />
+      <div className="absolute inset-0 bg-primary/[0.03] blur-[120px] rounded-full -z-10 pointer-events-none" />
 
       {/* DRAWER CONTENT */}
       <div 
-        className="absolute top-0 right-0 h-full w-full max-w-md bg-surface shadow-spatial animate-in slide-in-from-right duration-700 flex flex-col border-l border-on-surface/5"
+        className="absolute top-0 left-1/2 -translate-x-1/2 h-full w-full max-w-xl bg-white border border-primary/10 p-12 md:p-16 relative overflow-hidden z-10"
         onClick={e => e.stopPropagation()}
       >
         {/* HEADER SECTION */}
-        <div className="bg-precision-surface-lowest p-6 border-b border-on-surface/5 flex-shrink-0">
-          <div className="flex items-start justify-between mb-6">
+        <div className="mb-12">
+          <div className="flex justify-center mb-8">
             <div className="h-12 w-12 rounded-xl bg-primary flex items-center justify-center text-white shadow-md">
               <UserPlus className="h-5 w-5" />
             </div>
-            <button 
-              onClick={onClose}
-              className="h-8 w-8 rounded-lg bg-surface-container-low text-on-surface-muted hover:text-on-surface hover:bg-surface-container-high transition-all active:scale-95"
-            >
-              <X className="h-4 w-4 mx-auto" />
-            </button>
           </div>
-
-          <div className="space-y-2">
-            <h2 className="text-2xl font-black text-on-surface tracking-tighter leading-none uppercase">
-              {t.newProf}
-            </h2>
-            <p className="text-[8px] font-black text-on-surface-muted uppercase tracking-widest flex items-center gap-1.5">
-              <Sparkles className="h-3 w-3 text-primary" /> {t.subtitle}
-            </p>
+          
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 border border-primary/10 bg-primary/[0.03] text-primary text-[9px] font-black uppercase tracking-[0.2em] mb-6">
+            <Sparkles className="h-3 w-3" /> {t.subtitle || 'Add New Professional'}
           </div>
+          
+          <h2 className="text-3xl font-black text-[#191c1e] tracking-tighter uppercase mb-4 text-center">
+            {t.newProf}
+          </h2>
+          <p className="text-[10px] font-black text-[#191c1e]/40 uppercase tracking-[0.4em] text-center">
+            {t.subtitleDesc || 'Professional Registration'}
+          </p>
         </div>
 
         {/* BODY SECTION / FORM */}
-        <div className="flex-1 overflow-y-auto p-6 custom-scrollbar bg-surface">
-          <form id="add-prof-form" onSubmit={handleSubmit} className="space-y-6">
+        <div className="space-y-5 relative z-10">
+          <form id="add-prof-form" onSubmit={handleSubmit} className="space-y-5">
             
-            <div className="space-y-1.5">
-              <label className="text-[8px] font-black text-on-surface-muted uppercase tracking-widest ml-1">
+            <div className="space-y-2">
+              <label className="text-[9px] font-black text-primary/60 uppercase tracking-[0.3em] ml-2">
                 {t.fullName}
               </label>
-              <input
-                required
-                autoFocus
-                value={data.full_name}
-                onChange={e => setData({ ...data, full_name: e.target.value })}
-                className="w-full h-10 bg-surface border border-on-surface/10 rounded-lg px-4 text-sm font-bold text-on-surface focus:border-primary outline-none transition-all"
-                placeholder={t.fullNamePH}
-              />
+              <div className="relative group">
+                <UserPlus className="absolute left-5 top-1/2 -translate-y-1/2 h-4 w-4 text-primary/30 group-focus-within:text-primary transition-colors" />
+                <input
+                  required
+                  autoFocus
+                  value={data.full_name}
+                  onChange={e => setData({ ...data, full_name: e.target.value })}
+                  className="w-full bg-primary/[0.03] border border-primary/20 py-4 pl-14 pr-5 text-sm font-bold text-[#191c1e] placeholder:text-primary/30 focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all outline-none"
+                  placeholder={t.fullNamePH}
+                />
+              </div>
             </div>
 
-            <div className="space-y-1.5">
-              <label className="text-[8px] font-black text-on-surface-muted uppercase tracking-widest ml-1">
+            <div className="space-y-2">
+              <label className="text-[9px] font-black text-primary/60 uppercase tracking-[0.3em] ml-2">
                 {t.specialty}
               </label>
-              <input
-                value={data.specialty}
-                onChange={e => setData({ ...data, specialty: e.target.value })}
-                className="w-full h-10 bg-surface border border-on-surface/10 rounded-lg px-4 text-sm font-bold text-on-surface focus:border-primary outline-none transition-all"
-                placeholder={t.specialtyPH}
-              />
+              <div className="relative group">
+                <Sparkles className="absolute left-5 top-1/2 -translate-y-1/2 h-4 w-4 text-primary/30 group-focus-within:text-primary transition-colors" />
+                <input
+                  value={data.specialty}
+                  onChange={e => setData({ ...data, specialty: e.target.value })}
+                  className="w-full bg-primary/[0.03] border border-primary/20 py-4 pl-14 pr-5 text-sm font-bold text-[#191c1e] placeholder:text-primary/30 focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all outline-none"
+                  placeholder={t.specialtyPH}
+                />
+              </div>
             </div>
 
             {locations.length > 0 && (
-              <div className="space-y-1.5">
-                <label className="text-[8px] font-black text-on-surface-muted uppercase tracking-widest ml-1">
+              <div className="space-y-2">
+                <label className="text-[9px] font-black text-primary/60 uppercase tracking-[0.3em] ml-2">
                   {t.locationLabel}
                 </label>
-                <div className="relative">
+                <div className="relative group">
+                  <Building className="absolute left-5 top-1/2 -translate-y-1/2 h-4 w-4 text-primary/30 group-focus-within:text-primary transition-colors" />
                   <select
                     value={data.location_id}
                     onChange={e => setData({ ...data, location_id: e.target.value })}
-                    className="w-full h-10 bg-surface border border-on-surface/10 rounded-lg px-4 text-sm font-bold text-on-surface focus:border-primary outline-none transition-all appearance-none"
+                    className="w-full bg-primary/[0.03] border border-primary/20 py-4 pl-14 pr-10 text-sm font-bold text-[#191c1e] focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all outline-none appearance-none"
                   >
                     <option value="">{t.selectLocationOptional}</option>
                     {locations.map(loc => (
                       <option key={loc.id} value={loc.id}>{loc.name}</option>
                     ))}
                   </select>
-                  <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                    <ChevronDown className="h-4 w-4 text-on-surface-muted" />
-                  </div>
+                  <ChevronRight className="absolute right-5 top-1/2 -translate-y-1/2 h-4 w-4 text-primary/30 pointer-events-none" />
                 </div>
               </div>
             )}
           </form>
+          
+          <div className="pt-4">
+            <button
+              type="submit"
+              form="add-prof-form"
+              disabled={loading || success}
+              className="w-full py-4 bg-primary text-white text-xs font-black uppercase tracking-[0.4em] transition-all shadow-xl shadow-primary/20 hover:bg-primary-light hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-3"
+            >
+              {success ? (
+                <>
+                  <CheckCircle className="h-4 w-4" />
+                  <span>{t.created}</span>
+                </>
+              ) : loading ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <span>Processing...</span>
+                </>
+              ) : (
+                <>
+                  <span>{t.createBtn}</span>
+                  <ArrowRight className="h-4 w-4" />
+                </>
+              )}
+            </button>
+          </div>
         </div>
 
         {/* FOOTER ACTION BAR */}
-        <div className="p-6 bg-precision-surface-lowest border-t border-on-surface/5 flex items-center justify-between flex-shrink-0 z-30">
+        <div className="mt-8 pt-6 border-t border-primary/10 flex flex-col items-center gap-4 text-center relative z-10">
           <button 
-            type="button"
             onClick={onClose}
-            className="px-6 py-2.5 rounded-lg text-[9px] font-black uppercase tracking-widest text-on-surface-muted hover:text-on-surface hover:bg-on-surface/5 transition-all"
+            className="text-[9px] font-black text-primary/60 uppercase tracking-widest hover:text-primary transition-colors"
           >
             {t.cancel || 'Cancel'}
-          </button>
-          
-          <button
-            form="add-prof-form"
-            type="submit"
-            disabled={loading || success}
-            className={`flex items-center justify-center gap-2 px-8 py-2.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all active:scale-95 disabled:opacity-50 shadow-sm
-              ${success ? 'bg-emerald-500 text-white' : 'bg-on-surface text-surface hover:bg-primary hover:text-white'}
-            `}
-          >
-            {success ? (
-              <><CheckCircle className="h-4 w-4 animate-in zoom-in" /> <span>{t.created}</span></>
-            ) : loading ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <>
-                <span>{t.createBtn}</span>
-                <ArrowRight className="h-4 w-4 ml-1" />
-              </>
-            )}
           </button>
         </div>
       </div>
     </div>
   )
 }
+
+// Import Building icon
+import { Building } from 'lucide-react'
