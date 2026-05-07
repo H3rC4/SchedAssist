@@ -232,7 +232,7 @@ export function OnboardingWizard({ tenantId, lang, onComplete }: OnboardingWizar
                   <div className="flex items-center gap-3 border-b border-on-surface/5 pb-3">
                     <User className="h-4 w-4 text-primary" />
                     <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-on-surface">
-                      {t.onboarding.professional_info || 'Professional Data'}
+                    Professional Data
                     </h3>
                   </div>
 
@@ -293,7 +293,7 @@ export function OnboardingWizard({ tenantId, lang, onComplete }: OnboardingWizar
                   <div className="flex items-center gap-3 border-b border-on-surface/5 pb-3">
                     <Briefcase className="h-4 w-4 text-primary" />
                     <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-on-surface">
-                      {t.onboarding.service_info || 'Service Configuration'}
+                    Service Configuration
                     </h3>
                   </div>
 
