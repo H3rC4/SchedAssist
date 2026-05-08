@@ -8,6 +8,11 @@ export default function LandingPage() {
   return (
     <div className="flex min-h-screen flex-col font-sans selection:bg-primary/30 selection:text-primary-200 overflow-x-hidden relative">
 
+      {/* DEV BANNER - Remove after testing */}
+      <div className="bg-yellow-400 text-black text-center py-3 text-sm font-bold uppercase tracking-widest z-50 relative">
+        ⚠ Developer Version - Preview Testing
+      </div>
+
       <Navbar />
 
       <LandingHero />
