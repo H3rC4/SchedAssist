@@ -425,6 +425,7 @@ export const translations = {
       nav_pricing: 'Pricing',
       nav_resources: 'Resources',
       nav_login: 'Login',
+      nav_register: 'Register',
       nav_get_started: 'Get Started',
       
       // Hero
@@ -432,7 +433,7 @@ export const translations = {
       hero_title_1: 'Precision in Patient Care,',
       hero_title_2: 'Fluidity in Clinic Flow',
       hero_description: 'The definitive clinical management platform built for speed. Experience lightning-fast scheduling and elegant patient records in one unified workspace.',
-      hero_cta_primary: 'Start Free Trial',
+      hero_cta_primary: 'Start Now',
       hero_cta_secondary: 'Watch Demo',
       features_section_title: 'Engineered for Medical Excellence',
       agenda_title: 'Intelligent Interactive Agenda',
@@ -1054,6 +1055,7 @@ tech_shadcn_desc: 'UX Elegance',
       nav_pricing: 'Precios',
       nav_resources: 'Recursos',
       nav_login: 'Iniciar Sesión',
+      nav_register: 'Registrarse',
       nav_get_started: 'Comenzar',
       
       // Hero
@@ -1061,7 +1063,7 @@ tech_shadcn_desc: 'UX Elegance',
       hero_title_1: 'Precisión en la Atención,',
       hero_title_2: 'Fluidez en el Flujo Clínico',
       hero_description: 'La plataforma de gestión clínica definitiva diseñada para la velocidad. Experimente una programación ultrarrápida y registros de pacientes elegantes en un espacio de trabajo unificado.',
-      hero_cta_primary: 'Iniciar Prueba Gratuita',
+      hero_cta_primary: 'Empieza Ahora',
       hero_cta_secondary: 'Ver Demo',
       features_section_title: 'Diseñado para la Excelencia Médica',
       agenda_title: 'Agenda Interactiva Inteligente',
@@ -1655,11 +1657,13 @@ tech_shadcn_desc: 'UX Elegance',
     
     // Landing Page
     landing: {
+      nav_login: 'Accedi',
+      nav_register: 'Registrati',
       hero_badge: "NUOVO: Next.js 14 e Shadcn/ui per la tua Clinica",
       hero_title_1: 'Precisione nella Cura,',
       hero_title_2: 'Fluidità nel Flusso Clinico',
       hero_description: 'La piattaforma definitiva per la gestione clinica progettata per la velocità. Sperimenta una programmazione fulminea e record pazienti eleganti in un unico spazio di lavoro.',
-      hero_cta_primary: 'Inizia Prova Gratuita',
+      hero_cta_primary: 'Inizia Ora',
       hero_cta_secondary: 'Guarda la Demo',
       features_section_title: 'Progettato per l\'Eccellenza Medica',
       agenda_title: 'Agenda Interattiva Inteligente',

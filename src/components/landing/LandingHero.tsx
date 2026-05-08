@@ -47,17 +47,14 @@ export function LandingHero() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8, delay: 0.4 }}
-        className="flex flex-col sm:flex-row items-center gap-4 mb-24"
+        className="mb-24"
       >
         <Link 
           href="/register" 
-          className="px-10 py-5 rounded-[2rem] bg-primary hover:bg-primary-light text-white text-xs font-black uppercase tracking-[0.2em] transition-all shadow-xl shadow-primary/20 hover:scale-105 active:scale-95 flex items-center gap-3 group"
+          className="px-12 py-6 rounded-[2rem] bg-primary hover:bg-primary-light text-white text-sm font-black uppercase tracking-[0.3em] transition-all shadow-2xl shadow-primary/30 hover:scale-105 active:scale-95 flex items-center gap-3 group"
         >
-          {t.hero_cta_primary || t.hero_cta} <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+          {t.hero_cta_primary || 'Empieza Ahora'} <ArrowRight className="h-5 w-5 group-hover:translate-x-2 transition-transform" />
         </Link>
-        <button className="px-10 py-5 rounded-[2rem] bg-primary/[0.04] border border-primary/10 text-primary/70 text-xs font-black uppercase tracking-[0.2em] hover:bg-primary/[0.08] transition-all">
-            {t.hero_cta_secondary || "Watch Video Demo"}
-        </button>
       </motion.div>
 
       <div className="relative w-full max-w-6xl">

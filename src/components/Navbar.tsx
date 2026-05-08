@@ -24,26 +24,39 @@ export function Navbar() {
           <Logo />
         </Link>
 
-          <div className="hidden md:flex items-center gap-4 relative z-10">
-            <LanguageSelector />
-            
-            <div className="w-px h-8 bg-primary/10 mx-2" />
+            <div className="hidden md:flex items-center gap-3 relative z-10">
+              <LanguageSelector />
+              
+              <div className="w-px h-8 bg-primary/10 mx-1" />
 
-            <Link 
-              href="/login" 
-              className="px-8 py-3.5 rounded-2xl bg-primary hover:bg-primary-light text-white text-[10px] font-black uppercase tracking-widest transition-all shadow-xl shadow-primary/20 active:scale-95 flex items-center gap-3"
-            >
-              {t.nav_login} <ShieldCheck className="h-4 w-4" />
-            </Link>
-          </div>
+              <Link 
+                href="/login" 
+                className="px-6 py-3 rounded-2xl text-primary text-[10px] font-black uppercase tracking-widest hover:bg-primary/[0.05] transition-all"
+              >
+                {t.nav_login || 'Log In'}
+              </Link>
+
+              <Link 
+                href="/register" 
+                className="px-8 py-3.5 rounded-2xl bg-primary hover:bg-primary-light text-white text-[10px] font-black uppercase tracking-widest transition-all shadow-xl shadow-primary/20 active:scale-95"
+              >
+                {t.nav_register || 'Register'}
+              </Link>
+            </div>
 
           <div className="flex md:hidden items-center gap-2 relative z-10">
              <LanguageSelector />
              <Link 
                href="/login" 
+               className="h-10 w-10 rounded-xl text-primary flex items-center justify-center border border-primary/20"
+             >
+               <ShieldCheck className="h-4 w-4" />
+             </Link>
+             <Link 
+               href="/register" 
                className="h-10 w-10 rounded-xl bg-primary text-white flex items-center justify-center shadow-lg"
              >
-               <ShieldCheck className="h-5 w-5" />
+               <ShieldCheck className="h-4 w-4" />
              </Link>
           </div>
 
