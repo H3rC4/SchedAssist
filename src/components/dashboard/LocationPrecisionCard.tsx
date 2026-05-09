@@ -24,22 +24,22 @@ export function LocationPrecisionCard({ location, index, savedId, onEdit, onDele
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.05, duration: 0.5 }}
-      className={`bg-white border border-primary/10 p-8 flex flex-col justify-between group relative transition-all hover:border-primary/30 rounded-none ${savedId === location.id ? 'ring-1 ring-primary ring-offset-0' : ''}`}
+      className={`bg-white border border-primary/10 p-8 flex flex-col justify-between group relative transition-all hover:border-primary/30 hover:shadow-lg rounded-2xl ${savedId === location.id ? 'ring-1 ring-primary ring-offset-0' : ''}`}
     >
       <div className="flex items-start justify-between mb-8">
-        <div className="h-14 w-14 bg-primary/[0.03] border border-primary/10 flex items-center justify-center text-primary transition-colors group-hover:bg-primary/[0.08] rounded-none">
+        <div className="h-14 w-14 bg-primary/[0.03] border border-primary/10 flex items-center justify-center text-primary transition-colors group-hover:bg-primary/[0.08] rounded-xl">
           <Building2 className="h-6 w-6" />
         </div>
         <div className="flex gap-2">
           <button 
             onClick={() => onEdit(location)} 
-            className="h-10 w-10 flex items-center justify-center bg-primary/[0.03] border border-primary/10 text-primary/40 hover:text-primary hover:bg-primary/10 transition-all rounded-none"
+            className="h-10 w-10 flex items-center justify-center bg-primary/[0.03] border border-primary/10 text-primary/40 hover:text-primary hover:bg-primary/10 transition-all rounded-xl"
           >
             <Pencil className="h-4 w-4" />
           </button>
           <button 
             onClick={() => onDelete(location.id)} 
-            className="h-10 w-10 flex items-center justify-center bg-primary/[0.03] border border-primary/10 text-primary/40 hover:text-red-600 hover:bg-red-50 transition-all rounded-none"
+            className="h-10 w-10 flex items-center justify-center bg-primary/[0.03] border border-primary/10 text-primary/40 hover:text-red-600 hover:bg-red-50 transition-all rounded-xl"
           >
             <Trash2 className="h-4 w-4" />
           </button>
@@ -66,7 +66,7 @@ export function LocationPrecisionCard({ location, index, savedId, onEdit, onDele
 
       <div className="mt-10 pt-8 border-t border-primary/10 flex items-center justify-between">
          <div className="flex items-center gap-3">
-            <div className={`h-2 w-2 rounded-none ${location.active ? 'bg-primary shadow-[0_0_8px_rgba(0,92,85,0.4)]' : 'bg-primary/20'}`} />
+            <div className={`h-2 w-2 rounded-full ${location.active ? 'bg-primary shadow-[0_0_8px_rgba(0,92,85,0.4)]' : 'bg-primary/20'}`} />
             <span className="text-[9px] font-black uppercase tracking-[0.3em] text-primary/60">
                {location.active ? (t.active_operation || 'Active Operation') : (t.inactive || 'Inactive')}
             </span>

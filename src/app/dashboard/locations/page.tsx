@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { 
   Plus, CheckCircle, X, 
-  Globe, Navigation, ArrowRight
+  Globe, Navigation, ArrowRight, Lightbulb
 } from 'lucide-react'
 import { Language, translations } from '@/lib/i18n'
 import { createClient } from '@/lib/supabase/client'
@@ -28,6 +28,7 @@ export default function LocationsPage() {
   const [editLocation, setEditLocation] = useState<Location | null>(null)
   const [lang, setLang] = useState<Language>('es')
   const [savedId, setSavedId] = useState<string | null>(null)
+  const [incompleteLocation, setIncompleteLocation] = useState<Location | null>(null)
 
   const [formData, setFormData] = useState({ name: '', address: '', city: '' })
 
@@ -52,7 +53,12 @@ export default function LocationsPage() {
   async function fetchLocations() {
     setLoading(true)
     const res = await fetch(`/api/locations?tenant_id=${tenantId}`)
-    if (res.ok) setLocations(await res.json())
+    if (res.ok) {
+      const data = await res.json()
+      setLocations(data)
+      const incomplete = data.find((loc: Location) => !loc.address && !loc.city)
+      setIncompleteLocation(incomplete || null)
+    }
     setLoading(false)
   }
 
@@ -139,6 +145,34 @@ export default function LocationsPage() {
             </div>
           </motion.div>
         </header>
+
+        {/* Tutorial Banner */}
+        {incompleteLocation && !showAddForm && !editLocation && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-8 bg-primary/[0.04] border border-primary/10 rounded-2xl p-6 flex items-start gap-5"
+          >
+            <div className="h-12 w-12 bg-primary/10 rounded-xl flex items-center justify-center shrink-0">
+              <Lightbulb className="h-5 w-5 text-primary" />
+            </div>
+            <div className="flex-1">
+              <h3 className="text-sm font-black text-on-surface uppercase tracking-tight mb-1">
+                {t.location_tutorial_title || 'Complete your location data'}
+              </h3>
+              <p className="text-xs font-bold text-on-surface/50 uppercase tracking-widest leading-relaxed mb-4">
+                {t.location_tutorial_desc || 'We created this location with your clinic name. Add the address and city so patients know exactly where to go.'}
+              </p>
+              <button 
+                onClick={() => setEditLocation(incompleteLocation)}
+                className="text-[10px] font-black text-primary uppercase tracking-[0.3em] hover:underline flex items-center gap-2"
+              >
+                {t.location_tutorial_action || 'Complete now'}
+                <ArrowRight className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          </motion.div>
+        )}
 
         {/* Locations Grid */}
         <section>

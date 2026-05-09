@@ -1094,6 +1094,7 @@ export default function PatientProfilePage() {
                                     isPDF ? 'bg-rose-50 text-rose-500' : 'bg-blue-50 text-blue-500'
                                   }`}>
                                     {isPDF ? <FileText className="h-10 w-10" /> : <File className="h-10 w-10" />}
+                                  </div>
                                 )}
                                 
                                 {/* Overlay Actions */}

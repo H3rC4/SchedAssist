@@ -676,7 +676,10 @@ tech_shadcn_desc: 'UX Elegance',
     establish_location: 'Establish Location',
     center_name: 'Center Name',
     geographic_address: 'Geographic Address',
-    city_region: 'City / Region'
+    city_region: 'City / Region',
+    location_tutorial_title: 'Complete your location data',
+    location_tutorial_desc: 'We created this location with your clinic name. Add the address and city so patients know exactly where to go.',
+    location_tutorial_action: 'Complete now'
   },
   es: {
     // General
@@ -1324,7 +1327,10 @@ tech_shadcn_desc: 'UX Elegance',
     establish_location: 'Establecer Sede',
     center_name: 'Nombre del Centro',
     geographic_address: 'Dirección Geográfica',
-    city_region: 'Ciudad / Región'
+    city_region: 'Ciudad / Región',
+    location_tutorial_title: 'Completa los datos de tu sede',
+    location_tutorial_desc: 'Creamos esta sede con el nombre de tu clínica. Agrega la dirección y ciudad para que los pacientes sepan exactamente a dónde ir.',
+    location_tutorial_action: 'Completar ahora'
   },
   it: {
     // General
@@ -1961,7 +1967,10 @@ tech_shadcn_desc: 'UX Elegance',
     establish_location: 'Stabilisci Sede',
     center_name: 'Nome del Centro',
     geographic_address: 'Indirizzo Geografico',
-    city_region: 'Città / Regione'
+    city_region: 'Città / Regione',
+    location_tutorial_title: 'Completa i dati della tua sede',
+    location_tutorial_desc: 'Abbiamo creato questa sede con il nome della tua clinica. Aggiungi indirizzo e città così i pazienti sanno esattamente dove andare.',
+    location_tutorial_action: 'Completa ora'
   }
 };
 
