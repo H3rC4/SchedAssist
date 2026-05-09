@@ -104,6 +104,7 @@ export function PatientMedicalRecordDrawer({
   const tabs = [
     { id: 'history', label: t.history || 'History', icon: HistoryIcon },
     { id: 'upcoming', label: t.upcoming || 'Upcoming', icon: CalendarDays },
+    { id: 'files', label: t.patient_files || 'Files', icon: Paperclip },
   ];
 
   return (
@@ -126,29 +127,61 @@ export function PatientMedicalRecordDrawer({
         >
           {/* Header */}
           <div className="px-8 pt-8 pb-6 bg-surface-container-lowest border-b border-surface-container-low">
-            <div className="flex items-start justify-between mb-6">
-              <div>
-                <h2 className="text-2xl font-black text-on-surface tracking-tight leading-none mb-2">
-                  {patient.first_name} {patient.last_name}
+            <div className="flex items-start justify-between mb-8">
+              <div className="min-w-0 flex-1 mr-4">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-[10px] font-black text-primary uppercase tracking-[0.3em] bg-primary/5 px-2 py-0.5 rounded-md">
+                    {t.medical_record}
+                  </span>
+                </div>
+                <h2 className="text-2xl font-black text-on-surface tracking-tighter leading-none mb-3 truncate">
+                  {patient.first_name} <span className="text-primary italic font-serif lowercase">{patient.last_name}</span>
                 </h2>
                 <div className="flex items-center gap-3">
-                  <div className="text-xs font-bold text-on-surface/60">
-                    <span className="flex items-center gap-1.5 uppercase tracking-widest bg-primary/[0.05] px-2 py-0.5 rounded-md">
+                  <a 
+                    href={`tel:${patient.phone}`}
+                    className="flex items-center gap-1.5 text-xs font-bold text-on-surface/60 hover:text-primary transition-colors"
+                  >
+                    <span className="bg-surface-container-low px-2 py-0.5 rounded-md border border-surface-container-high tracking-widest">
                       {patient.phone}
                     </span>
-                  </div>
+                  </a>
                   <button 
                     onClick={() => setIsEditingPatient(!isEditingPatient)}
-                    className="text-[10px] font-black text-primary uppercase tracking-widest hover:underline"
+                    className="flex items-center gap-2 px-3 py-1 bg-primary text-white text-[9px] font-black uppercase tracking-widest rounded-lg shadow-lg shadow-primary/10 hover:bg-primary-light transition-all active:scale-95"
                   >
                     {isEditingPatient ? t.cancel : t.edit}
                   </button>
                 </div>
               </div>
-              <div className="flex gap-2">
+              
+              <div className="flex items-center gap-1.5 shrink-0">
+                {/* Quick Actions - The "Yellow Box" from user feedback */}
+                <div className="flex items-center gap-1 p-1 bg-surface-container-low rounded-xl border border-surface-container-high shadow-inner">
+                  <a
+                    href={`tel:${patient.phone}`}
+                    title={t.call}
+                    className="p-2 rounded-lg text-on-surface/40 hover:bg-white hover:text-primary hover:shadow-sm transition-all active:scale-90"
+                  >
+                    <Phone className="h-4 w-4" />
+                  </a>
+                  <a
+                    href={`https://wa.me/${patient.phone?.replace(/\D/g, '')}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    title="WhatsApp"
+                    className="p-2 rounded-lg text-on-surface/40 hover:bg-white hover:text-emerald-500 hover:shadow-sm transition-all active:scale-90"
+                  >
+                    <MessageSquare className="h-4 w-4" />
+                  </a>
+                  {/* Clip button removed per user request */}
+                </div>
+
+                <div className="w-px h-8 bg-surface-container-low mx-1" />
+
                 <button
                   onClick={onClose}
-                  className="p-2 rounded-xl bg-surface-container-low text-on-surface/60 hover:text-on-surface transition-colors border border-surface-container-high"
+                  className="p-2.5 rounded-xl bg-surface-container-low text-on-surface/40 hover:text-on-surface transition-colors border border-surface-container-high shadow-sm hover:shadow-md active:scale-90"
                 >
                   <X className="h-5 w-5" />
                 </button>
@@ -249,7 +282,7 @@ export function PatientMedicalRecordDrawer({
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
                 </motion.div>
               ) : (
-                <div className="space-y-8">
+                <div className="space-y-8 mt-6">
                   {activeTab === 'history' && (
                     <motion.div
                       key="history"
@@ -296,11 +329,12 @@ export function PatientMedicalRecordDrawer({
                       )}
 
                       {history.length === 0 ? (
-                        <div className="py-12 text-center">
-                          <div className="h-12 w-12 bg-surface-container-low rounded-2xl flex items-center justify-center mx-auto mb-4">
-                            <AlertCircle className="h-6 w-6 text-on-surface/40" />
+                        <div className="py-20 text-center bg-on-surface/[0.02] rounded-[2rem] border border-dashed border-on-surface/10">
+                          <div className="h-16 w-16 bg-white rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-sm">
+                            <HistoryIcon className="h-8 w-8 text-on-surface/10" />
                           </div>
-                          <p className="text-sm font-medium text-on-surface/60">{t.no_remarks_yet}</p>
+                          <p className="text-xs font-black text-on-surface/30 uppercase tracking-[0.3em]">{t.no_history || t.no_remarks_yet}</p>
+                          <p className="text-[10px] font-bold text-on-surface/20 uppercase tracking-widest mt-2">{t.createFirst || 'Start by adding a note'}</p>
                         </div>
                       ) : (
                         <div className="relative pl-6 space-y-12 before:absolute before:left-0 before:top-2 before:bottom-0 before:w-px before:bg-surface-container-low">
@@ -350,11 +384,12 @@ export function PatientMedicalRecordDrawer({
                       className="grid grid-cols-1 gap-4"
                     >
                       {history.flatMap(h => h.attachments || []).length === 0 ? (
-                        <div className="py-12 text-center">
-                          <div className="h-12 w-12 bg-surface-container-low rounded-2xl flex items-center justify-center mx-auto mb-4">
-                            <Paperclip className="h-6 w-6 text-on-surface/40" />
+                        <div className="py-20 text-center bg-on-surface/[0.02] rounded-[2rem] border border-dashed border-on-surface/10">
+                          <div className="h-16 w-16 bg-white rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-sm">
+                            <Paperclip className="h-8 w-8 text-on-surface/10" />
                           </div>
-                          <p className="text-sm font-medium text-on-surface/60">No files found.</p>
+                          <p className="text-xs font-black text-on-surface/30 uppercase tracking-[0.3em]">{t.no_files || 'No clinical files found'}</p>
+                          <p className="text-[10px] font-bold text-on-surface/20 uppercase tracking-widest mt-2">{t.upload_files_desc || 'Studies and clinical documents'}</p>
                         </div>
                       ) : (
                         history.flatMap(h => h.attachments || []).map((file, idx) => (
@@ -390,9 +425,12 @@ export function PatientMedicalRecordDrawer({
                       className="space-y-4"
                     >
                       {appointments.length === 0 ? (
-                        <div className="py-20 text-center space-y-4 opacity-40">
-                          <CalendarDays className="h-12 w-12 mx-auto" />
-                          <p className="text-xs font-black uppercase tracking-widest">No upcoming appointments.</p>
+                        <div className="py-20 text-center bg-on-surface/[0.02] rounded-[2rem] border border-dashed border-on-surface/10">
+                          <div className="h-16 w-16 bg-white rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-sm">
+                            <CalendarDays className="h-8 w-8 text-on-surface/10" />
+                          </div>
+                          <p className="text-xs font-black text-on-surface/30 uppercase tracking-[0.3em]">{t.no_appointments || 'No upcoming appointments'}</p>
+                          <p className="text-[10px] font-bold text-on-surface/20 uppercase tracking-widest mt-2">{t.createFirst || 'Schedule a new visit'}</p>
                         </div>
                       ) : (
                         appointments.map(app => (
