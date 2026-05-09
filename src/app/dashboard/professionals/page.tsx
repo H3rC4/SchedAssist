@@ -156,7 +156,7 @@ export default function ProfessionalsPage() {
       </div>
 
       <AnimatePresence>
-        {(drawerMode !== 'create' || selectedProf) && (
+        {(drawerMode === 'create' || selectedProf) && (
           <ProfessionalDrawer 
             mode={selectedProf ? 'edit' : drawerMode}
             professional={selectedProf}
