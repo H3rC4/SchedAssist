@@ -979,7 +979,6 @@ export default function PatientProfilePage() {
                       {[
                         { id: 'all', label: t.all || 'Todos', icon: LayoutGrid },
                         { id: 'study', label: t.studies || 'Estudios', icon: FileSearch },
-                        { id: 'consent', label: t.consents || 'Consentimientos', icon: FileCheck },
                       ].map((filter) => (
                         <button
                           key={filter.id}
@@ -1058,8 +1057,7 @@ export default function PatientProfilePage() {
                     }))).filter(f => {
                       const matchesSearch = f.name.toLowerCase().includes(fileSearch.toLowerCase());
                       const matchesFilter = fileFilter === 'all' || 
-                                          (fileFilter === 'study' && f.type === 'study') ||
-                                          (fileFilter === 'consent' && f.name.toLowerCase().includes('consent'));
+                                          (fileFilter === 'study' && f.type === 'study');
                       return matchesSearch && matchesFilter;
                     });
 
@@ -1079,7 +1077,6 @@ export default function PatientProfilePage() {
                         {allFiles.map((file, idx) => {
                           const isPDF = file.name.toLowerCase().endsWith('.pdf');
                           const isImage = /\.(jpg|jpeg|png|webp)$/i.test(file.name);
-                          const isConsent = file.name.toLowerCase().includes('consent');
 
                           return (
                             <motion.div
@@ -1097,7 +1094,6 @@ export default function PatientProfilePage() {
                                     isPDF ? 'bg-rose-50 text-rose-500' : 'bg-blue-50 text-blue-500'
                                   }`}>
                                     {isPDF ? <FileText className="h-10 w-10" /> : <File className="h-10 w-10" />}
-                                  </div>
                                 )}
                                 
                                 {/* Overlay Actions */}
@@ -1109,13 +1105,6 @@ export default function PatientProfilePage() {
                                     <Download className="h-5 w-5" />
                                   </a>
                                 </div>
-
-                                {isConsent && (
-                                  <div className="absolute top-4 left-4 px-3 py-1.5 bg-emerald-500/90 text-white text-[9px] font-black uppercase tracking-[0.2em] rounded-xl shadow-lg flex items-center gap-2 backdrop-blur-md">
-                                    <ShieldCheck className="h-3.5 w-3.5" />
-                                    {t.verified_consent || 'Verified Consent'}
-                                  </div>
-                                )}
                               </div>
                               
                               <div className="p-5">

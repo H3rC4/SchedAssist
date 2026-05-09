@@ -75,7 +75,18 @@ export async function registerAction(formData: FormData) {
 
     if (linkError) throw linkError;
 
-    // 4. Todo bien. Devolver éxito para que el frontend inicie el checkout
+    // 4. Crear sede por defecto con el nombre de la clínica
+    await supabaseAdmin
+      .from('locations')
+      .insert([
+        {
+          tenant_id: tenant.id,
+          name: clinicName,
+          active: true
+        }
+      ]);
+
+    // 5. Todo bien. Devolver éxito para que el frontend inicie el checkout
     return { success: true };
     
   } catch (err: any) {

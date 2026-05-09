@@ -50,6 +50,15 @@ export async function createClinicAction(formData: FormData) {
 
     if (linkError) throw linkError;
 
+    // 3. Crear sede por defecto con el nombre de la clínica
+    await supabaseAdmin
+      .from('locations')
+      .insert({
+        tenant_id: tenant.id,
+        name: clinicName,
+        active: true
+      });
+
     // Redirigir al inicio para iniciar OnboardingWizard
     return { success: true };
     
