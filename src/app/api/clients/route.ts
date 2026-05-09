@@ -26,6 +26,11 @@ export async function PATCH(req: NextRequest) {
     if (data.email !== undefined) updatePayload.email = data.email
     if (data.notes !== undefined) updatePayload.notes = data.notes
     if (data.allergies !== undefined) updatePayload.allergies = data.allergies
+    if (data.address !== undefined) updatePayload.address = data.address
+    if (data.dni !== undefined) updatePayload.dni = data.dni
+    if (data.birth_date !== undefined) updatePayload.birth_date = data.birth_date
+    if (data.gender !== undefined) updatePayload.gender = data.gender
+    if (data.occupation !== undefined) updatePayload.occupation = data.occupation
 
     const result = await supabase
       .from('clients')
@@ -48,7 +53,10 @@ export async function PATCH(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    const { tenant_id, first_name, last_name, phone, email, notes, allergies } = await req.json();
+    const { 
+      tenant_id, first_name, last_name, phone, email, notes, allergies,
+      address, dni, birth_date, gender, occupation
+    } = await req.json();
 
     if (!tenant_id || !first_name || !last_name || !phone) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
@@ -71,7 +79,12 @@ export async function POST(req: NextRequest) {
         phone,
         email,
         notes,
-        allergies
+        allergies,
+        address,
+        dni,
+        birth_date,
+        gender,
+        occupation
       })
       .select()
       .single();

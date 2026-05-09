@@ -24,6 +24,7 @@ interface MedicalEntry {
   id: string;
   created_at: string;
   content: any;
+  record_type?: string;
   professionals?: { full_name: string };
   attachments?: { name: string, url: string, type?: string }[];
 }
@@ -36,6 +37,11 @@ interface Patient {
   email?: string;
   notes: string | null;
   allergies?: string | null;
+  address?: string | null;
+  dni?: string | null;
+  birth_date?: string | null;
+  gender?: string | null;
+  occupation?: string | null;
   created_at: string;
 }
 
@@ -237,7 +243,7 @@ export default function PatientProfilePage() {
 
   useEffect(() => { if (tenant?.id) fetchData() }, [fetchData, tenant?.id])
 
-  const saveField = async (field: string, value: string): Promise<boolean> => {
+  const saveField = async (field: keyof Patient, value: string): Promise<boolean> => {
     if (!patient || !tenant) return false
     try {
       const res = await fetch('/api/clients', {
@@ -1049,9 +1055,9 @@ export default function PatientProfilePage() {
                     const allFiles = history.flatMap(h => (h.attachments || []).map(file => ({
                       ...file,
                       recordId: h.id,
-                      date: h.date,
+                      date: h.created_at,
                       professional: h.professionals?.full_name || 'System',
-                      type: h.type // 'study', 'note', etc.
+                      type: h.record_type
                     }))).filter(f => {
                       const matchesSearch = f.name.toLowerCase().includes(fileSearch.toLowerCase());
                       const matchesFilter = fileFilter === 'all' || 
