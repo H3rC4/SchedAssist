@@ -1,16 +1,16 @@
 "use client"
 
 import { useState, useEffect } from 'react'
-import { Users, UserPlus, Loader2, Search, ArrowRight, Plus } from 'lucide-react'
+import { Users, UserPlus, Loader2, Search, Plus } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useProfessionals, AvailabilityRule } from '@/hooks/useProfessionals'
 import { AnimatePresence } from 'framer-motion'
-import { AddProfessionalModal } from '@/components/professionals/AddProfessionalModal'
-import { ProfessionalDetailDrawer } from '@/components/professionals/ProfessionalDetailDrawer'
+import { ProfessionalDrawer } from '@/components/professionals/ProfessionalDrawer'
 import { ProfessionalCard } from '@/components/professionals/ProfessionalCard'
-import { translations, Language } from '@/lib/i18n'
 
 import { useLandingTranslation } from '@/components/LanguageContext'
+
+type DrawerMode = 'create' | 'success' | 'edit'
 
 export default function ProfessionalsPage() {
   const { language: lang, fullT: T_ui } = useLandingTranslation()
@@ -32,7 +32,7 @@ export default function ProfessionalsPage() {
     locations
   } = useProfessionals()
 
-  const [showAddForm, setShowAddForm] = useState(false)
+  const [drawerMode, setDrawerMode] = useState<DrawerMode>('create')
   const [editRules, setEditRules] = useState<AvailabilityRule[]>([])
   const [searchQuery, setSearchQuery] = useState('')
 
@@ -40,6 +40,7 @@ export default function ProfessionalsPage() {
 
   useEffect(() => {
     if (selectedProf) {
+      setDrawerMode('edit')
       setEditRules([...selectedProf.availability_rules].sort((a,b) => a.day_of_week - b.day_of_week))
     }
   }, [selectedProf])
@@ -63,12 +64,22 @@ export default function ProfessionalsPage() {
 
   const handleCreateProfessional = async (data: any) => {
     const res = await createProfessional(data)
-    if (res.success && res.prof) {
+    if (res.success) {
       setTimeout(() => {
-        selectProfessional(res.prof)
-      }, 1500)
+        setDrawerMode('success')
+      }, 500)
+      setTimeout(() => {
+        if (res.prof) {
+          selectProfessional(res.prof)
+        }
+      }, 2200)
     }
     return res
+  }
+
+  const handleCloseDrawer = () => {
+    selectProfessional(null)
+    setDrawerMode('create')
   }
 
   const filteredProfessionals = professionals.filter(p => 
@@ -78,14 +89,12 @@ export default function ProfessionalsPage() {
 
   return (
     <div className="flex-1 bg-surface min-h-screen p-2 md:p-3 animate-in fade-in duration-700">
-      {/* BACKGROUND DECOR */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden opacity-[0.02]">
         <div className="absolute -top-[10%] -right-[10%] w-[60%] h-[60%] rounded-full bg-primary blur-[120px]" />
         <div className="absolute top-[40%] -left-[10%] w-[40%] h-[40%] rounded-full bg-primary blur-[100px]" />
       </div>
 
       <div className="max-w-[1400px] mx-auto">
-        {/* COMPACT HEADER */}
         <div className="relative z-10 mb-4 md:mb-6">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-3">
             <div className="max-w-2xl">
@@ -97,7 +106,7 @@ export default function ProfessionalsPage() {
               </p>
             </div>
             <button 
-              onClick={() => setShowAddForm(true)}
+              onClick={() => setDrawerMode('create')}
               className="flex items-center justify-center gap-3 px-6 py-3 bg-primary text-white rounded-2xl font-black text-[10.5px] uppercase tracking-[0.2em] hover:bg-primary/90 hover:shadow-xl hover:-translate-y-0.5 transition-all active:scale-95 shadow-lg group"
             >
               <span>{T_ui.add_professional_btn}</span>
@@ -105,7 +114,6 @@ export default function ProfessionalsPage() {
             </button>
           </div>
 
-          {/* COMPACT SEARCH BAR */}
           <div className="mt-4 max-w-sm">
             <div className="relative group">
               <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none text-on-surface-muted group-focus-within:text-primary transition-colors">
@@ -122,7 +130,6 @@ export default function ProfessionalsPage() {
           </div>
         </div>
 
-        {/* LIST SECTION */}
         <div className="relative z-10 flex flex-col gap-3 max-w-4xl">
           {filteredProfessionals.length === 0 ? (
             <div className="col-span-full py-12 text-center bg-precision-surface-lowest/50 backdrop-blur-sm rounded-xl border border-dashed border-on-surface/10">
@@ -148,44 +155,26 @@ export default function ProfessionalsPage() {
         </div>
       </div>
 
-      {/* MODALS SECTION */}
-      <AddProfessionalModal 
-        isOpen={showAddForm} 
-        onClose={() => setShowAddForm(false)} 
-        onConfirm={handleCreateProfessional}
-        locations={locations}
-        t={{
-          newProf: T_ui.new_professional,
-          subtitle: T_ui.staff_subtitle,
-          fullName: T_ui.fullName,
-          fullNamePH: T_ui.fullNamePH,
-          specialty: T_ui.specialty,
-          specialtyPH: T_ui.specialtyPH,
-          created: T_ui.created,
-          createBtn: T_ui.create,
-          locationLabel: T_ui.location_label,
-          selectLocationOptional: T_ui.select_location_optional
-        }}
-      />
-
       <AnimatePresence>
-        {selectedProf && (
-          <ProfessionalDetailDrawer 
+        {(drawerMode !== 'create' || selectedProf) && (
+          <ProfessionalDrawer 
+            mode={selectedProf ? 'edit' : drawerMode}
             professional={selectedProf}
-            locations={locations}
-            onClose={() => selectProfessional(null)}
+            onClose={handleCloseDrawer}
             activeTab={activeTab}
             setActiveTab={setActiveTab}
             editRules={editRules}
             updateRule={updateRule}
             toggleLunchBreak={toggleLunchBreak}
             overrides={overrides}
-            onDelete={() => deleteProfessional(selectedProf.id)}
-            onSave={(generalInfo?: any) => updateAvailability(selectedProf.id, editRules, generalInfo)}
-            addOverride={(date, formData) => addOverride(selectedProf.id, { date, ...formData })}
-            deleteOverride={(id) => deleteOverride(selectedProf.id, id)}
+            onDelete={() => { if (selectedProf) deleteProfessional(selectedProf.id) }}
+            onSave={(generalInfo?: any) => { if (selectedProf) updateAvailability(selectedProf.id, editRules, generalInfo) }}
+            addOverride={(date, formData) => { if (selectedProf) addOverride(selectedProf.id, { date, ...formData }) }}
+            deleteOverride={(id) => { if (selectedProf) deleteOverride(selectedProf.id, id) }}
             saving={saving}
             saved={saved}
+            locations={locations}
+            onCreate={handleCreateProfessional}
           />
         )}
       </AnimatePresence>
