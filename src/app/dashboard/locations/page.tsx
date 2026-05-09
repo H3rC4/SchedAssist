@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { 
   Plus, CheckCircle, X, 
   Globe, Navigation, ArrowRight, Lightbulb
@@ -19,6 +20,7 @@ interface Location {
 }
 
 export default function LocationsPage() {
+  const router = useRouter()
   const supabase = createClient()
   const [locations, setLocations] = useState<Location[]>([])
   const [tenantId, setTenantId] = useState('')
@@ -106,6 +108,10 @@ export default function LocationsPage() {
     if (!confirm(t.confirm_delete_location || '¿Seguro que deseas eliminar esta sede?')) return
     const res = await fetch(`/api/locations?id=${id}&tenant_id=${tenantId}`, { method: 'DELETE' })
     if (res.ok) fetchLocations()
+  }
+
+  function handleViewSchedule(location: Location) {
+    router.push(`/dashboard/appointments?location_id=${location.id}&location_name=${encodeURIComponent(location.name)}`)
   }
 
   const t = translations[lang] || translations['en']
@@ -203,6 +209,7 @@ export default function LocationsPage() {
                   savedId={savedId}
                   onEdit={setEditLocation}
                   onDelete={handleDeleteLocation}
+                  onViewSchedule={handleViewSchedule}
                   t={t}
                 />
               ))}

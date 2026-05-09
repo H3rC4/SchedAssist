@@ -15,10 +15,11 @@ interface LocationPrecisionCardProps {
   savedId: string | null
   onEdit: (location: Location) => void
   onDelete: (id: string) => void
+  onViewSchedule?: (location: Location) => void
   t: any
 }
 
-export function LocationPrecisionCard({ location, index, savedId, onEdit, onDelete, t }: LocationPrecisionCardProps) {
+export function LocationPrecisionCard({ location, index, savedId, onEdit, onDelete, onViewSchedule, t }: LocationPrecisionCardProps) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -71,10 +72,12 @@ export function LocationPrecisionCard({ location, index, savedId, onEdit, onDele
                {location.active ? (t.active_operation || 'Active Operation') : (t.inactive || 'Inactive')}
             </span>
          </div>
-         <button className="text-[10px] font-black uppercase tracking-[0.4em] text-primary hover:translate-x-2 transition-transform flex items-center gap-2 group/btn">
-            <span>{t.view_schedule || 'View Schedule'}</span>
-            <ArrowRight className="h-3.5 w-3.5 group-hover/btn:translate-x-1 transition-transform" />
-         </button>
+          <button
+            onClick={() => onViewSchedule?.(location)}
+            className="text-[10px] font-black uppercase tracking-[0.4em] text-primary hover:translate-x-2 transition-transform flex items-center gap-2 group/btn">
+             <span>{t.view_schedule || 'View Schedule'}</span>
+             <ArrowRight className="h-3.5 w-3.5 group-hover/btn:translate-x-1 transition-transform" />
+          </button>
       </div>
     </motion.div>
   )

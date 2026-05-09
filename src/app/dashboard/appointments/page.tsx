@@ -4,7 +4,8 @@ import { useState, Suspense, useEffect } from 'react'
 import { format, parseISO } from 'date-fns'
 import { es, enUS, it } from 'date-fns/locale'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Plus, Calendar as CalendarIcon, List, LayoutGrid, Clock, ShieldCheck, Activity, Target, ArrowRight, X } from 'lucide-react'
+import { Plus, Calendar as CalendarIcon, List, LayoutGrid, Clock, ShieldCheck, Activity, Target, ArrowRight, X, Building2 } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 
 import { useAppointments, Appointment } from '@/hooks/useAppointments'
 import { MiniCalendar } from '@/components/appointments/MiniCalendar'
@@ -54,6 +55,7 @@ function AppointmentsContent() {
     selectedDate,
     currentMonth,
     tenantId,
+    locationId,
     services,
     professionals,
     availableSlots,
@@ -62,6 +64,7 @@ function AppointmentsContent() {
     blockReason,
     loading,
     setSelectedDate,
+    setLocationId,
     navigateMonth,
     fetchSlots,
     pendingCalls,
@@ -80,8 +83,23 @@ function AppointmentsContent() {
   const [viewMode, setViewMode] = useState<'daily' | 'weekly'>('daily')
   const [toast, setToast] = useState<{ message: string; type: 'error' | 'success' } | null>(null)
   const [callNotes, setCallNotes] = useState<{[key: string]: string}>({})
+  const [allLocations, setAllLocations] = useState<{ id: string; name: string }[]>([])
   
   const searchParams = useSearchParams()
+  const router = useRouter()
+
+  useEffect(() => {
+    const locId = searchParams.get('location_id')
+    setLocationId(locId || null)
+  }, [searchParams, setLocationId])
+
+  useEffect(() => {
+    if (tenantId) {
+      fetch(`/api/locations?tenant_id=${tenantId}`)
+        .then(r => r.json())
+        .then(data => setAllLocations(data))
+    }
+  }, [tenantId])
 
   useEffect(() => {
     const action = searchParams.get('action')
@@ -122,6 +140,19 @@ function AppointmentsContent() {
     }
   }
 
+  const handleLocationChange = (locId: string) => {
+    if (locId) {
+      const loc = allLocations.find(l => l.id === locId)
+      router.push(`/dashboard/appointments?location_id=${locId}&location_name=${encodeURIComponent(loc?.name || '')}`)
+    } else {
+      router.push('/dashboard/appointments')
+    }
+  }
+
+  const handleClearLocationFilter = () => {
+    router.push('/dashboard/appointments')
+  }
+
   const T = t // Use global translation
   const locales = { es, en: enUS, it }
   const currentLocale = locales[lang as keyof typeof locales] || enUS
@@ -156,6 +187,18 @@ function AppointmentsContent() {
         </div>
 
         <div className="flex items-center gap-3">
+          {allLocations.length > 0 && (
+            <select
+              value={locationId || ''}
+              onChange={e => handleLocationChange(e.target.value)}
+              className="h-9 px-3 rounded-xl bg-on-surface/5 border-none text-[9px] font-black uppercase tracking-wider text-on-surface/60 focus:ring-2 focus:ring-primary/20 outline-none cursor-pointer"
+            >
+              <option value="">{T.all_locations || 'All Locations'}</option>
+              {allLocations.map(loc => (
+                <option key={loc.id} value={loc.id}>{loc.name}</option>
+              ))}
+            </select>
+          )}
           <div className="flex p-1 bg-on-surface/5 rounded-xl">
             <button 
               onClick={() => setViewMode('daily')}
@@ -183,6 +226,24 @@ function AppointmentsContent() {
           </button>
         </div>
       </div>
+
+      {locationId && (
+        <div className="px-4 md:px-6 py-2 bg-primary/[0.03] border-b border-primary/10 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Building2 className="h-3.5 w-3.5 text-primary/60" />
+            <span className="text-[10px] font-black text-primary/80 uppercase tracking-wider">
+              {T.filtering_by_location(searchParams.get('location_name') || '')}
+            </span>
+          </div>
+          <button
+            onClick={handleClearLocationFilter}
+            className="flex items-center gap-1.5 text-[9px] font-black text-primary/50 uppercase tracking-wider hover:text-primary transition-colors"
+          >
+            <X className="h-3 w-3" />
+            {T.clear_filter || 'Clear'}
+          </button>
+        </div>
+      )}
 
       {/* Main Content Area */}
       <div className="flex flex-col lg:flex-row flex-1 overflow-hidden">
@@ -328,6 +389,7 @@ function AppointmentsContent() {
             lang={lang}
             services={services}
             professionals={professionals}
+            locationId={locationId}
             onClose={() => {
               setShowNewModal(false)
               setReschedulePatient(undefined)

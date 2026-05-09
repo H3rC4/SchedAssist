@@ -12,6 +12,7 @@ export interface Appointment {
   notes?: string;
   cancellation_reason?: string;
   cancellation_notified?: boolean;
+  location_id?: string | null;
   rescheduled_from_appointment_id?: string;
   clients: { id: string; first_name: string; last_name: string; phone: string } | null;
   services: { name: string } | null;
@@ -44,6 +45,7 @@ export function useAppointments() {
   const [appointments, setAppointments] = useState<Appointment[]>([])
   const [allMonthApps, setAllMonthApps] = useState<Appointment[]>([])
   const [tenantId, setTenantId] = useState<string>('')
+  const [locationId, setLocationId] = useState<string | null>(null)
   const [services, setServices] = useState<any[]>([])
   const [professionals, setProfessionals] = useState<any[]>([])
   const [availableSlots, setAvailableSlots] = useState<string[]>([])
@@ -56,8 +58,7 @@ export function useAppointments() {
   const [loading, setLoading] = useState(true)
   const lastSlotParams = useRef<{p: string, d: string, s?: string} | null>(null)
 
-  const fetchMeta = useCallback(async (tenantId: string) => {
-    // Check cache first
+  const fetchMeta = useCallback(async (tenantId: string, locId?: string | null) => {
     if (appointmentsCache.meta) {
       setServices(appointmentsCache.meta.services);
       setProfessionals(appointmentsCache.meta.professionals);
@@ -65,7 +66,11 @@ export function useAppointments() {
     }
 
     const { data: s } = await supabase.from('services').select('id, name').eq('tenant_id', tenantId).eq('active', true)
-    const { data: p } = await supabase.from('professionals').select('id, full_name').eq('tenant_id', tenantId).eq('active', true)
+    let profQuery = supabase.from('professionals').select('id, full_name').eq('tenant_id', tenantId).eq('active', true)
+    if (locId) {
+      profQuery = profQuery.eq('location_id', locId)
+    }
+    const { data: p } = await profQuery
     
     if (s && p) {
       const meta = { services: s, professionals: p };
@@ -75,51 +80,68 @@ export function useAppointments() {
     }
   }, [supabase])
 
-  const fetchMonthAppointments = useCallback(async (tenantId: string, month: Date, force = false) => {
+  const fetchMonthAppointments = useCallback(async (tenantId: string, month: Date, locId?: string | null, force = false) => {
     const start = format(startOfMonth(month), 'yyyy-MM-dd')
     const end = format(endOfMonth(month), 'yyyy-MM-dd')
-    const cacheKey = `${tenantId}-${start}-${end}`;
+    const cacheKey = `${tenantId}-${locId || 'all'}-${start}-${end}`;
 
     if (!force && appointmentsCache.months[cacheKey]) {
       setAllMonthApps(appointmentsCache.months[cacheKey]);
       return;
     }
 
-    const { data } = await supabase.from('appointments').select('*, clients(*), services(*), professionals(*)')
+    let query = supabase.from('appointments').select('*, clients(*), services(*), professionals(*)')
       .eq('tenant_id', tenantId).neq('status', 'cancelled')
       .gte('start_at', `${start}T00:00:00Z`).lte('start_at', `${end}T23:59:59Z`)
+    
+    if (locId) {
+      query = query.eq('location_id', locId)
+    }
+    
+    const { data } = await query
     
     if (data) {
       appointmentsCache.months[cacheKey] = data;
       setAllMonthApps(data as any[])
     }
 
-    // Fetch pending notifications (any cancelled app where cancellation_notified is false)
-    const { data: pending } = await supabase.from('appointments')
+    let pendingQuery = supabase.from('appointments')
       .select('*, clients(*), services(*), professionals(*)')
       .eq('tenant_id', tenantId)
       .eq('status', 'cancelled')
       .eq('cancellation_reason', 'professional_cancellation')
       .eq('cancellation_notified', false)
       .order('start_at', { ascending: true })
+    
+    if (locId) {
+      pendingQuery = pendingQuery.eq('location_id', locId)
+    }
+    
+    const { data: pending } = await pendingQuery
     if (pending) setPendingCalls(pending as any[])
   }, [supabase])
 
-  const fetchDayAppointments = useCallback(async (tenantId: string, date: Date, force = false) => {
+  const fetchDayAppointments = useCallback(async (tenantId: string, date: Date, locId?: string | null, force = false) => {
     const dateStr = format(date, 'yyyy-MM-dd')
-    const cacheKey = `${tenantId}-${dateStr}`;
+    const cacheKey = `${tenantId}-${locId || 'all'}-${dateStr}`;
 
     if (!force && appointmentsCache.days[cacheKey]) {
       setAppointments(appointmentsCache.days[cacheKey]);
       return;
     }
 
-    const { data } = await supabase.from('appointments')
+    let query = supabase.from('appointments')
       .select('*, clients(*), services(*), professionals(*)')
       .eq('tenant_id', tenantId)
       .not('status', 'in', '("cancelled","rescheduled")')
       .gte('start_at', `${dateStr}T00:00:00Z`).lte('start_at', `${dateStr}T23:59:59Z`)
       .order('start_at', { ascending: true })
+    
+    if (locId) {
+      query = query.eq('location_id', locId)
+    }
+    
+    const { data } = await query
     
     if (data) {
       appointmentsCache.days[cacheKey] = data;
@@ -163,13 +185,12 @@ export function useAppointments() {
 
   const refresh = useCallback(() => {
     if (tenantId) {
-      // Clear cache for current month and day to force reload
       appointmentsCache.days = {};
       appointmentsCache.months = {};
-      fetchDayAppointments(tenantId, selectedDate, true)
-      fetchMonthAppointments(tenantId, currentMonth, true)
+      fetchDayAppointments(tenantId, selectedDate, locationId, true)
+      fetchMonthAppointments(tenantId, currentMonth, locationId, true)
     }
-  }, [tenantId, selectedDate, currentMonth, fetchDayAppointments, fetchMonthAppointments])
+  }, [tenantId, selectedDate, currentMonth, locationId, fetchDayAppointments, fetchMonthAppointments])
 
   const init = useCallback(async () => {
     setLoading(true)
@@ -186,9 +207,9 @@ export function useAppointments() {
       setLang(tenant.settings?.language || 'es')
       
       await Promise.all([
-        fetchMeta(tenant.id),
-        fetchMonthAppointments(tenant.id, currentMonth),
-        fetchDayAppointments(tenant.id, selectedDate)
+        fetchMeta(tenant.id, locationId),
+        fetchMonthAppointments(tenant.id, currentMonth, locationId),
+        fetchDayAppointments(tenant.id, selectedDate, locationId)
       ])
     }
     setLoading(false)
@@ -197,6 +218,17 @@ export function useAppointments() {
   useEffect(() => {
     init()
   }, [init])
+
+  useEffect(() => {
+    if (tenantId) {
+      appointmentsCache.meta = null
+      appointmentsCache.days = {}
+      appointmentsCache.months = {}
+      fetchMeta(tenantId, locationId)
+      fetchDayAppointments(tenantId, selectedDate, locationId, true)
+      fetchMonthAppointments(tenantId, currentMonth, locationId, true)
+    }
+  }, [locationId])
 
   // Real-time subscription
   useEffect(() => {
@@ -213,8 +245,8 @@ export function useAppointments() {
         // Clear caches on change to ensure consistency
         appointmentsCache.days = {};
         appointmentsCache.months = {};
-        fetchMonthAppointments(tenantId, currentMonth, true)
-        fetchDayAppointments(tenantId, selectedDate, true)
+        fetchMonthAppointments(tenantId, currentMonth, locationId, true)
+        fetchDayAppointments(tenantId, selectedDate, locationId, true)
       })
       .subscribe()
 
@@ -301,6 +333,7 @@ export function useAppointments() {
     selectedDate,
     currentMonth,
     tenantId,
+    locationId,
     services,
     professionals,
     availableSlots,
@@ -312,6 +345,7 @@ export function useAppointments() {
     pendingCalls,
     notifyingId,
     setSelectedDate,
+    setLocationId,
     navigateMonth,
     fetchSlots,
     cancelAppointment,

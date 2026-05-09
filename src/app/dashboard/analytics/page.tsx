@@ -68,6 +68,21 @@ export default function AnalyticsPage() {
     </div>
   )
 
+  const NoDataPlaceholder = ({ title, description }: { title?: string, description?: string }) => (
+    <div className="h-full w-full flex flex-col items-center justify-center p-8 text-center min-h-[300px]">
+      <div className="h-20 w-20 rounded-[2rem] bg-slate-50 flex items-center justify-center mb-6 relative overflow-hidden group">
+        <Activity className="h-10 w-10 text-slate-200 group-hover:scale-110 transition-transform duration-500" />
+        <div className="absolute inset-0 bg-gradient-to-tr from-primary-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+      </div>
+      <p className="text-sm font-black text-slate-400 uppercase tracking-[0.3em] mb-2">
+        {title || t.no_data_analytics}
+      </p>
+      <p className="text-[10px] font-bold text-slate-300 uppercase tracking-[0.2em] max-w-[240px] leading-relaxed">
+        {description || t.no_data_analytics_desc}
+      </p>
+    </div>
+  )
+
   const CustomTooltip = ({ active, payload, label, formatter }: any) => {
     if (active && payload && payload.length) {
       return (
@@ -146,12 +161,12 @@ export default function AnalyticsPage() {
             <div>
               <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">{t.top_professional_revenue}</p>
               <h3 className="text-2xl font-black text-gray-900 tracking-tight truncate max-w-[150px]">
-                {data.revenueByProfessional[0]?.name || 'N/A'}
+                {data.revenueByProfessional?.[0]?.name || 'N/A'}
               </h3>
             </div>
           </div>
           <p className="text-xs font-bold text-gray-500">
-            {t.generated} <span className="text-emerald-600 font-black">${(data.revenueByProfessional[0]?.revenue || 0).toLocaleString()}</span> {t.this_year}.
+            {t.generated} <span className="text-emerald-600 font-black">${(data.revenueByProfessional?.[0]?.revenue || 0).toLocaleString()}</span> {t.this_year}.
           </p>
         </div>
 
@@ -164,12 +179,12 @@ export default function AnalyticsPage() {
             <div>
               <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">{t.star_service}</p>
               <h3 className="text-xl font-black text-gray-900 tracking-tight leading-tight truncate max-w-[150px]">
-                {data.popularServices[0]?.name || 'N/A'}
+                {data.popularServices?.[0]?.name || 'N/A'}
               </h3>
             </div>
           </div>
           <p className="text-xs font-bold text-gray-500">
-            {t.performed} <span className="text-primary-600 font-black">{data.popularServices[0]?.count || 0} {t.times}</span>.
+            {t.performed} <span className="text-primary-600 font-black">{data.popularServices?.[0]?.count || 0} {t.times}</span>.
           </p>
         </div>
       </div>
@@ -178,79 +193,93 @@ export default function AnalyticsPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         
         {/* Revenue by Professional */}
-        <div className="bg-white rounded-[2.5rem] p-8 border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
+        <div className="bg-white rounded-[2.5rem] p-8 border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] flex flex-col">
           <h3 className="text-lg font-black text-gray-900 mb-6">{t.revenue_by_professional}</h3>
-          <div className="h-[300px] w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={data.revenueByProfessional} margin={{ top: 10, right: 10, left: -20, bottom: 0 }} layout="vertical">
-                <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="#f1f5f9" />
-                <XAxis type="number" tick={{ fill: '#94a3b8', fontSize: 10, fontWeight: 700 }} axisLine={false} tickLine={false} />
-                <YAxis dataKey="name" type="category" tick={{ fill: '#64748b', fontSize: 11, fontWeight: 600 }} axisLine={false} tickLine={false} width={100} />
-                <RechartsTooltip content={<CustomTooltip formatter={(val: number) => `$${val.toLocaleString()}`} />} cursor={{ fill: 'transparent' }} />
-                <Bar dataKey="revenue" fill="#6366f1" radius={[0, 4, 4, 0]}>
-                  {data.revenueByProfessional.map((entry: any, index: number) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
+          <div className="h-[300px] w-full flex items-center justify-center">
+            {data.revenueByProfessional?.length > 0 ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={data.revenueByProfessional} margin={{ top: 10, right: 10, left: -20, bottom: 0 }} layout="vertical">
+                  <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="#f1f5f9" />
+                  <XAxis type="number" tick={{ fill: '#94a3b8', fontSize: 10, fontWeight: 700 }} axisLine={false} tickLine={false} />
+                  <YAxis dataKey="name" type="category" tick={{ fill: '#64748b', fontSize: 11, fontWeight: 600 }} axisLine={false} tickLine={false} width={100} />
+                  <RechartsTooltip content={<CustomTooltip formatter={(val: number) => `$${val.toLocaleString()}`} />} cursor={{ fill: 'transparent' }} />
+                  <Bar dataKey="revenue" fill="#6366f1" radius={[0, 4, 4, 0]}>
+                    {data.revenueByProfessional.map((entry: any, index: number) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <NoDataPlaceholder />
+            )}
           </div>
         </div>
 
         {/* Popular Services */}
-        <div className="bg-white rounded-[2.5rem] p-8 border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
+        <div className="bg-white rounded-[2.5rem] p-8 border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] flex flex-col">
           <h3 className="text-lg font-black text-gray-900 mb-6">{t.service_demand}</h3>
-          <div className="h-[300px] w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={data.popularServices}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={70}
-                  outerRadius={100}
-                  paddingAngle={5}
-                  dataKey="count"
-                  nameKey="name"
-                  stroke="none"
-                >
-                  {data.popularServices.map((entry: any, index: number) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+          <div className="h-[300px] w-full flex flex-col items-center justify-center">
+            {data.popularServices?.length > 0 ? (
+              <>
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={data.popularServices}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={70}
+                      outerRadius={100}
+                      paddingAngle={5}
+                      dataKey="count"
+                      nameKey="name"
+                      stroke="none"
+                    >
+                      {data.popularServices.map((entry: any, index: number) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <RechartsTooltip content={<CustomTooltip formatter={(val: number) => t.citas_count(val)} />} />
+                  </PieChart>
+                </ResponsiveContainer>
+                <div className="mt-4 flex flex-wrap gap-4 justify-center">
+                  {data.popularServices.slice(0, 4).map((srv: any, index: number) => (
+                    <div key={srv.name} className="flex items-center gap-2">
+                      <div className="w-2 h-2 rounded-full" style={{ backgroundColor: COLORS[index % COLORS.length] }} />
+                      <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">{srv.name}</span>
+                    </div>
                   ))}
-                </Pie>
-                <RechartsTooltip content={<CustomTooltip formatter={(val: number) => t.citas_count(val)} />} />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
-          <div className="mt-4 flex flex-wrap gap-4 justify-center">
-            {data.popularServices.slice(0, 4).map((srv: any, index: number) => (
-              <div key={srv.name} className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full" style={{ backgroundColor: COLORS[index % COLORS.length] }} />
-                <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">{srv.name}</span>
-              </div>
-            ))}
+                </div>
+              </>
+            ) : (
+              <NoDataPlaceholder />
+            )}
           </div>
         </div>
 
         {/* Monthly Trend */}
-        <div className="lg:col-span-2 bg-white rounded-[2.5rem] p-8 border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
+        <div className="lg:col-span-2 bg-white rounded-[2.5rem] p-8 border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] flex flex-col">
           <h3 className="text-lg font-black text-gray-900 mb-6">{t.appointments_volume_year}</h3>
-          <div className="h-[300px] w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={data.appointmentsByMonth} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                <defs>
-                  <linearGradient id="colorMonth" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/>
-                    <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                <XAxis dataKey="month" tick={{ fill: '#94a3b8', fontSize: 10, fontWeight: 700 }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fill: '#94a3b8', fontSize: 10, fontWeight: 700 }} axisLine={false} tickLine={false} />
-                <RechartsTooltip content={<CustomTooltip formatter={(val: number) => t.total_appointments_trend(val)} />} />
-                <Area type="monotone" dataKey="count" stroke="#10b981" strokeWidth={4} fillOpacity={1} fill="url(#colorMonth)" />
-              </AreaChart>
-            </ResponsiveContainer>
+          <div className="h-[300px] w-full flex items-center justify-center">
+            {data.totalAppointments > 0 ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={data.appointmentsByMonth} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id="colorMonth" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/>
+                      <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                  <XAxis dataKey="month" tick={{ fill: '#94a3b8', fontSize: 10, fontWeight: 700 }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fill: '#94a3b8', fontSize: 10, fontWeight: 700 }} axisLine={false} tickLine={false} />
+                  <RechartsTooltip content={<CustomTooltip formatter={(val: number) => t.total_appointments_trend(val)} />} />
+                  <Area type="monotone" dataKey="count" stroke="#10b981" strokeWidth={4} fillOpacity={1} fill="url(#colorMonth)" />
+                </AreaChart>
+              </ResponsiveContainer>
+            ) : (
+              <NoDataPlaceholder />
+            )}
           </div>
         </div>
 

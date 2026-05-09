@@ -617,6 +617,8 @@ tech_shadcn_desc: 'UX Elegance',
     appointments_volume_year: 'Appointment Volume (Current Year)',
     total_appointments_trend: (val: number) => `${val} total appointments`,
     citas_count: (val: number) => `${val} appts`,
+    no_data_analytics: 'No Data to Display',
+    no_data_analytics_desc: 'Start scheduling appointments to see metrics here.',
     
     // WhatsApp Page
     payment_success: 'Payment Successful!',
@@ -677,7 +679,10 @@ tech_shadcn_desc: 'UX Elegance',
     city_region: 'City / Region',
     location_tutorial_title: 'Complete your location data',
     location_tutorial_desc: 'We created this location with your clinic name. Add the address and city so patients know exactly where to go.',
-    location_tutorial_action: 'Complete now'
+    location_tutorial_action: 'Complete now',
+    filtering_by_location: (name: string) => `Filtering: ${name}`,
+    all_locations: 'All Locations',
+    clear_filter: 'Clear'
   },
   es: {
     // General
@@ -1273,6 +1278,8 @@ tech_shadcn_desc: 'UX Elegance',
     appointments_volume_year: 'Volumen de Citas (Año Actual)',
     total_appointments_trend: (val: number) => `${val} citas totales`,
     citas_count: (val: number) => `${val} citas`,
+    no_data_analytics: 'Sin Datos para Mostrar',
+    no_data_analytics_desc: 'Comienza a agendar turnos para ver métricas aquí.',
 
     // Booking Portal Access
     booking_portal: 'Portal de Reservas Público',
@@ -1344,7 +1351,10 @@ tech_shadcn_desc: 'UX Elegance',
     city_region: 'Ciudad / Región',
     location_tutorial_title: 'Completa los datos de tu sede',
     location_tutorial_desc: 'Creamos esta sede con el nombre de tu clínica. Agrega la dirección y ciudad para que los pacientes sepan exactamente a dónde ir.',
-    location_tutorial_action: 'Completar ahora'
+    location_tutorial_action: 'Completar ahora',
+    filtering_by_location: (name: string) => `Filtrando: ${name}`,
+    all_locations: 'Todas las Sedes',
+    clear_filter: 'Limpiar'
   },
   it: {
     // General
@@ -1891,6 +1901,8 @@ tech_shadcn_desc: 'UX Elegance',
     appointments_volume_year: 'Volume Appuntamenti (Anno Corrente)',
     total_appointments_trend: (val: number) => `${val} appuntamenti totali`,
     citas_count: (val: number) => `${val} appt`,
+    no_data_analytics: 'Nessun Dato da Mostrare',
+    no_data_analytics_desc: 'Inizia a programmare appuntamenti per vedere le metriche qui.',
 
     operational_pulse: 'Polso Operativo',
     export_insights: 'Esporta Insights',
@@ -1981,7 +1993,10 @@ tech_shadcn_desc: 'UX Elegance',
     city_region: 'Città / Regione',
     location_tutorial_title: 'Completa i dati della tua sede',
     location_tutorial_desc: 'Abbiamo creato questa sede con il nome della tua clinica. Aggiungi indirizzo e città così i pazienti sanno esattamente dove andare.',
-    location_tutorial_action: 'Completa ora'
+    location_tutorial_action: 'Completa ora',
+    filtering_by_location: (name: string) => `Filtrando: ${name}`,
+    all_locations: 'Tutte le Sedi',
+    clear_filter: 'Pulisci'
   }
 };
 

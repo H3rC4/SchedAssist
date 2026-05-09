@@ -107,6 +107,7 @@ export class AppointmentService {
     notes?: string;
     created_by_user_id?: string;
     rescheduled_from_appointment_id?: string | null;
+    location_id?: string | null;
   }) {
     // 1. Availability Check (Rules + Overrides + Lunch Breaks)
     const isAvailable = await this.isProfessionalAvailable(supabase, {
@@ -142,6 +143,7 @@ export class AppointmentService {
         client_id: params.client_id,
         professional_id: params.professional_id,
         service_id: params.service_id,
+        location_id: params.location_id || null,
         start_at: params.start_at,
         end_at: params.end_at,
         source: params.source,

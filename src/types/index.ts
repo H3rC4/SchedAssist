@@ -69,12 +69,24 @@ export interface Client {
   updated_at: string;
 }
 
+export interface Location {
+  id: string;
+  tenant_id: string;
+  name: string;
+  address?: string;
+  city?: string;
+  active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface Appointment {
   id: string;
   tenant_id: string;
   client_id: string;
   professional_id: string;
   service_id: string;
+  location_id?: string | null;
   status: AppointmentStatus;
   source: AppointmentSource;
   start_at: string;

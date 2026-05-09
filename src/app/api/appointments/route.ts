@@ -12,6 +12,7 @@ export async function GET(req: NextRequest) {
   const date = searchParams.get('date')
   const tenantId = searchParams.get('tenant_id')
   const clientId = searchParams.get('client_id')
+  const locationId = searchParams.get('location_id')
   const upcoming = searchParams.get('upcoming') === 'true'
   const supabase = createClient()
 
@@ -45,6 +46,10 @@ export async function GET(req: NextRequest) {
     query = query.eq('client_id', clientId);
   }
 
+  if (locationId) {
+    query = query.eq('location_id', locationId);
+  }
+
   if (date) {
     query = query
       .gte('start_at', `${date}T00:00:00Z`)
@@ -63,7 +68,7 @@ export async function GET(req: NextRequest) {
 // POST: Create a new appointment manually (Refactored to use Service)
 export async function POST(req: NextRequest) {
   const body = await req.json()
-  const { tenant_id, first_name, last_name, phone, service_id, professional_id, start_at, end_at, notes } = body
+  const { tenant_id, first_name, last_name, phone, service_id, professional_id, start_at, end_at, notes, location_id } = body
   const supabase = createClient()
   const { data: { user } } = await supabase.auth.getUser();
   
@@ -122,6 +127,7 @@ export async function POST(req: NextRequest) {
       end_at,
       source: 'dashboard',
       notes: notes || null,
+      location_id: location_id || null,
       rescheduled_from_appointment_id: body.rescheduled_from_appointment_id || null
     })
 
