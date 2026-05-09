@@ -587,9 +587,6 @@ export default function PatientProfilePage() {
                 </div>
               </div>
               <div className="flex items-center gap-3">
-                <span className="hidden sm:inline-flex text-[9px] font-black text-white uppercase tracking-widest border border-white/40 bg-white/10 backdrop-blur-sm px-3 py-1.5 rounded-lg">
-                  {t.protocol_required || 'Protocol Required'}
-                </span>
                 <button 
                   onClick={() => saveField('allergies', '')}
                   className="p-2 text-white/50 hover:text-white transition-colors"
