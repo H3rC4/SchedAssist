@@ -106,22 +106,22 @@ export default function LocationsPage() {
 
   return (
     <div className="min-h-full bg-surface pb-20">
-      <div className="max-w-[1200px] mx-auto px-6 md:px-8">
+      <div className="max-w-[1200px] mx-auto px-3 md:px-4">
         
         {/* Compact Header */}
-        <header className="py-12 md:py-16">
+        <header className="py-6 md:py-8">
           <motion.div 
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
-            <div className="flex items-center gap-3 mb-6">
+            <div className="flex items-center gap-3 mb-3">
               <div className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
               <p className="text-[10px] font-black text-on-surface/40 uppercase tracking-[0.4em]">{t.global_presence || 'Global Presence'}</p>
             </div>
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
                <div>
-                  <h1 className="text-4xl md:text-5xl font-black text-on-surface tracking-tight leading-none mb-4">
+                  <h1 className="text-4xl md:text-5xl font-black text-on-surface tracking-tight leading-none mb-2">
                     {t.nav_locations || 'Locations'} <br />
                     <span className="text-primary italic font-serif lowercase">{t.management || 'management'}</span>
                   </h1>
