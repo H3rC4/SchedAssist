@@ -865,11 +865,11 @@ export default function PatientProfilePage() {
                                 
                                 {item.type === 'appointment' && (
                                   <div className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border shadow-sm ${
-                                    item.status === 'confirmed' ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : 
-                                    item.status === 'pending' ? 'bg-amber-50 border-amber-200 text-amber-700' : 
+                                    (item as any).status === 'confirmed' ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : 
+                                    (item as any).status === 'pending' ? 'bg-amber-50 border-amber-200 text-amber-700' : 
                                     'bg-slate-50 border-slate-200 text-slate-600'
                                   }`}>
-                                    {t[item.status] || item.status}
+                                    {t[(item as any).status] || (item as any).status}
                                   </div>
                                 )}
                               </div>
