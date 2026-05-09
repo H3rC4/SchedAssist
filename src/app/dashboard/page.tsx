@@ -195,19 +195,15 @@ export default function DashboardPage() {
                <p className="text-[10px] font-medium text-on-surface-muted max-w-lg leading-relaxed">
                  {t.welcome} <span className="text-on-surface font-bold">{tenantName}</span>. {t.bot_appointments_will_appear}
                </p>
-               <div className="flex items-center gap-2">
-                  <button 
-                    onClick={() => setShowExportModal(true)}
-                    className="precision-button-tonal py-1 px-2.5 text-[8px] flex items-center gap-1.5"
-                  >
-                    <FileDown className="h-3 w-3" />
-                    {t.export_report}
-                  </button>
-                  <Link href="/dashboard/appointments?new=true" className="precision-button-primary py-1 px-2.5 text-[8px] group flex items-center gap-1">
-                    <span>{t.new_appointment}</span>
-                    <Plus className="h-2.5 w-2.5 group-hover:rotate-90 transition-transform" />
-                  </Link>
-               </div>
+                <div className="flex items-center gap-2">
+                   <button 
+                     onClick={() => setShowExportModal(true)}
+                     className="precision-button-tonal py-1 px-2.5 text-[8px] flex items-center gap-1.5"
+                   >
+                     <FileDown className="h-3 w-3" />
+                     {t.generate_report}
+                   </button>
+                </div>
             </div>
           </motion.div>
         </header>
