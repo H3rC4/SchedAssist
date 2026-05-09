@@ -10,7 +10,7 @@ import { ProfessionalCard } from '@/components/professionals/ProfessionalCard'
 
 import { useLandingTranslation } from '@/components/LanguageContext'
 
-type DrawerMode = 'create' | 'success' | 'edit'
+type DrawerMode = 'create' | 'edit'
 
 export default function ProfessionalsPage() {
   const { language: lang, fullT: T_ui } = useLandingTranslation()
@@ -72,15 +72,8 @@ export default function ProfessionalsPage() {
 
   const handleCreateProfessional = async (data: any) => {
     const res = await createProfessional(data)
-    if (res.success) {
-      setTimeout(() => {
-        setDrawerMode('success')
-      }, 500)
-      setTimeout(() => {
-        if (res.prof) {
-          selectProfessional(res.prof)
-        }
-      }, 2200)
+    if (res.success && res.prof) {
+      selectProfessional(res.prof)
     }
     return res
   }

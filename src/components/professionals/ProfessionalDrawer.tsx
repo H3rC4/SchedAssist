@@ -18,7 +18,7 @@ import { useLandingTranslation } from '@/components/LanguageContext'
 import { dateLocales } from '@/lib/i18n'
 import { motion, AnimatePresence } from 'framer-motion'
 
-type DrawerMode = 'create' | 'success' | 'edit'
+type DrawerMode = 'create' | 'edit'
 
 interface ProfessionalDrawerProps {
   mode: DrawerMode
@@ -88,7 +88,6 @@ export function ProfessionalDrawer({
 
   const [createData, setCreateData] = useState({ full_name: '', specialty: '', location_id: '' })
   const [createLoading, setCreateLoading] = useState(false)
-  const [createdProf, setCreatedProf] = useState<Professional | null>(null)
 
   const [calendarMonth, setCalendarMonth] = useState(new Date())
   const [overrideModal, setOverrideModal] = useState<{ date: string } | null>(null)
@@ -128,7 +127,7 @@ export function ProfessionalDrawer({
     const { data } = await supabase
       .from('appointments')
       .select('id, start_at, clients(first_name, last_name)')
-      .eq('professional_id', professional?.id || createdProf?.id || '')
+      .eq('professional_id', professional?.id || '')
       .gte('start_at', dateStr)
       .lte('start_at', dateStr + 'T23:59:59')
       .neq('status', 'cancelled')
@@ -226,10 +225,7 @@ export function ProfessionalDrawer({
     e.preventDefault()
     if (!createData.full_name) return
     setCreateLoading(true)
-    const res = await onCreate(createData)
-    if (res.success && res.prof) {
-      setCreatedProf(res.prof)
-    }
+    await onCreate(createData)
     setCreateLoading(false)
   }
 
@@ -237,7 +233,7 @@ export function ProfessionalDrawer({
     deleteOverride(id)
   }
 
-  const profId = professional?.id || createdProf?.id || ''
+  const profId = professional?.id || ''
 
   return (
     <div className="fixed inset-0 z-50 overflow-hidden" onClick={onClose}>
@@ -357,36 +353,6 @@ export function ProfessionalDrawer({
                 )}
               </button>
             </div>
-          </div>
-        )}
-
-        {/* ==================== SUCCESS MODE ==================== */}
-        {mode === 'success' && createdProf && (
-          <div className="flex flex-col h-full items-center justify-center p-8">
-            <motion.div
-              initial={{ scale: 0, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ type: "spring", damping: 20, stiffness: 300 }}
-              className="h-20 w-20 rounded-full bg-emerald-500/10 flex items-center justify-center mb-6"
-            >
-              <CheckCircle className="h-10 w-10 text-emerald-500" />
-            </motion.div>
-            <motion.h3 
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className="text-lg font-black text-on-surface uppercase tracking-tighter text-center mb-2"
-            >
-              {T.professional_created || 'Profesional creado exitosamente'}
-            </motion.h3>
-            <motion.p 
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-              className="text-[8px] font-black text-on-surface-muted uppercase tracking-[0.3em] text-center"
-            >
-              {createdProf.full_name}
-            </motion.p>
           </div>
         )}
 
