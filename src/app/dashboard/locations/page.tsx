@@ -106,7 +106,7 @@ export default function LocationsPage() {
 
   return (
     <div className="min-h-full bg-surface pb-20">
-      <div className="max-w-[1200px] mx-auto px-3 md:px-4">
+      <div className="max-w-[1200px] mx-auto px-1.5 md:px-2">
         
         {/* Compact Header */}
         <header className="py-6 md:py-8">
