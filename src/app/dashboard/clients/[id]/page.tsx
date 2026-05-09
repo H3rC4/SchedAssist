@@ -9,7 +9,8 @@ import {
   ExternalLink, AlertCircle, ArrowLeft, Edit2,
   Upload, User, Phone, Mail, ShieldAlert, X, Check, Trash2,
   MessageSquare, AlertTriangle, Activity, Bell, CreditCard, CheckCircle2,
-  MapPin, Briefcase, Fingerprint, QrCode
+  MapPin, Briefcase, Fingerprint, QrCode,
+  Search, LayoutGrid, FileSearch, FolderOpen, Eye, Download, File as FileIcon
 } from 'lucide-react'
 import { format, parseISO, differenceInYears } from 'date-fns'
 import { es } from 'date-fns/locale/es'
@@ -869,7 +870,7 @@ export default function PatientProfilePage() {
                                     (item as any).status === 'pending' ? 'bg-amber-50 border-amber-200 text-amber-700' : 
                                     'bg-slate-50 border-slate-200 text-slate-600'
                                   }`}>
-                                    {t[(item as any).status] || (item as any).status}
+                                    {t[(item as any).status as keyof typeof t] || (item as any).status}
                                   </div>
                                 )}
                               </div>
@@ -931,14 +932,14 @@ export default function PatientProfilePage() {
                                         </div>
                                       )}
 
-                                      {(item.professionals || item.type === 'system') && (
+                                      {((item as any).professionals || item.type === 'system') && (
                                         <div className="mt-4 pt-4 border-t border-slate-50 flex items-center justify-between">
                                           <div className="flex items-center gap-2">
                                             <div className="h-6 w-6 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center">
                                               <User className="h-3 w-3 text-slate-400" />
                                             </div>
                                             <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                                              {item.type === 'system' ? 'System Automator' : `${t.by_label} ${item.professionals.full_name}`}
+                                              {item.type === 'system' ? 'System Automator' : `${t.by_label} ${(item as any).professionals.full_name}`}
                                             </p>
                                           </div>
                                           {item.type === 'appointment' && (
@@ -1097,7 +1098,7 @@ export default function PatientProfilePage() {
                                   <div className={`h-20 w-20 rounded-3xl flex items-center justify-center transition-all duration-300 shadow-sm ${
                                     isPDF ? 'bg-rose-50 text-rose-500' : 'bg-blue-50 text-blue-500'
                                   }`}>
-                                    {isPDF ? <FileText className="h-10 w-10" /> : <File className="h-10 w-10" />}
+                                    {isPDF ? <FileText className="h-10 w-10" /> : <FileIcon className="h-10 w-10" />}
                                   </div>
                                 )}
                                 
