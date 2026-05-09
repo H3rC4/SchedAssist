@@ -8,9 +8,10 @@ import {
   History as HistoryIcon, CalendarDays, Paperclip,
   ExternalLink, AlertCircle, ArrowLeft, Edit2,
   Upload, User, Phone, Mail, ShieldAlert, X, Check, Trash2,
-  MessageSquare, AlertTriangle, Activity, Bell, CreditCard, CheckCircle2
+  MessageSquare, AlertTriangle, Activity, Bell, CreditCard, CheckCircle2,
+  MapPin, Briefcase, Fingerprint, QrCode
 } from 'lucide-react'
-import { format, parseISO } from 'date-fns'
+import { format, parseISO, differenceInYears } from 'date-fns'
 import { es } from 'date-fns/locale/es'
 import { it } from 'date-fns/locale/it'
 import { enUS } from 'date-fns/locale/en-US'
