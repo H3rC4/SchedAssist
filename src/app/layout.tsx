@@ -8,8 +8,29 @@ import { LanguageProvider } from "@/components/LanguageContext";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "SchedAssist",
-  description: "Multi-tenant appointment booking platform",
+  metadataBase: new URL('https://www.schedassist.com'),
+  title: {
+    default: 'SchedAssist - Plataforma Inteligente de Turnos y Gestión Médica',
+    template: '%s | SchedAssist',
+  },
+  description: 'Automatiza tus citas con IA y WhatsApp. La plataforma SaaS ideal para clínicas y profesionales de la salud.',
+  keywords: ['turnos medicos', 'agendamiento', 'saas', 'whatsapp bot', 'clinicas', 'software medico'],
+  openGraph: {
+    type: 'website',
+    locale: 'es_AR',
+    url: 'https://www.schedassist.com',
+    title: 'SchedAssist - Appointment Automation',
+    description: 'Automatiza tus citas con IA y WhatsApp.',
+    siteName: 'SchedAssist',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'SchedAssist',
+    description: 'Automatiza tus citas con IA y WhatsApp.',
+  },
+  alternates: {
+    canonical: '/',
+  },
 };
 
 export default function RootLayout({
