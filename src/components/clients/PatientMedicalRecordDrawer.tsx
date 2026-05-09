@@ -103,7 +103,6 @@ export function PatientMedicalRecordDrawer({
 
   const tabs = [
     { id: 'history', label: t.history || 'History', icon: HistoryIcon },
-    { id: 'files', label: t.files || 'Files', icon: Paperclip },
     { id: 'upcoming', label: t.upcoming || 'Upcoming', icon: CalendarDays },
   ];
 
@@ -115,7 +114,7 @@ export function PatientMedicalRecordDrawer({
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           onClick={onClose}
-          className="absolute inset-0 bg-secondary-900/40 backdrop-blur-[2px]"
+          className="absolute inset-0 bg-primary-950/40 backdrop-blur-[2px]"
         />
 
         <motion.div
@@ -129,18 +128,18 @@ export function PatientMedicalRecordDrawer({
           <div className="px-8 pt-8 pb-6 bg-surface-container-lowest border-b border-surface-container-low">
             <div className="flex items-start justify-between mb-6">
               <div>
-                <h2 className="text-2xl font-black text-secondary-900 tracking-tight leading-none mb-2">
+                <h2 className="text-2xl font-black text-on-surface tracking-tight leading-none mb-2">
                   {patient.first_name} {patient.last_name}
                 </h2>
                 <div className="flex items-center gap-3">
-                  <div className="text-xs font-bold text-secondary-600">
-                    <span className="flex items-center gap-1.5 uppercase tracking-widest bg-secondary-100 px-2 py-0.5 rounded-md">
+                  <div className="text-xs font-bold text-on-surface/60">
+                    <span className="flex items-center gap-1.5 uppercase tracking-widest bg-primary/[0.05] px-2 py-0.5 rounded-md">
                       {patient.phone}
                     </span>
                   </div>
                   <button 
                     onClick={() => setIsEditingPatient(!isEditingPatient)}
-                    className="text-[10px] font-black text-primary-600 uppercase tracking-widest hover:underline"
+                    className="text-[10px] font-black text-primary uppercase tracking-widest hover:underline"
                   >
                     {isEditingPatient ? t.cancel : t.edit}
                   </button>
@@ -149,7 +148,7 @@ export function PatientMedicalRecordDrawer({
               <div className="flex gap-2">
                 <button
                   onClick={onClose}
-                  className="p-2 rounded-xl bg-surface-container-low text-secondary-600 hover:text-secondary-900 transition-colors border border-surface-container-mid"
+                  className="p-2 rounded-xl bg-surface-container-low text-on-surface/60 hover:text-on-surface transition-colors border border-surface-container-high"
                 >
                   <X className="h-5 w-5" />
                 </button>
@@ -162,32 +161,32 @@ export function PatientMedicalRecordDrawer({
                   initial={{ height: 0, opacity: 0 }}
                   animate={{ height: 'auto', opacity: 1 }}
                   exit={{ height: 0, opacity: 0 }}
-                  className="overflow-hidden mb-6 space-y-4 bg-primary-50/30 p-4 rounded-2xl border border-primary-100"
+                  className="overflow-hidden mb-6 space-y-4 bg-primary/[0.03] p-4 rounded-2xl border border-primary/10"
                 >
                   <div className="grid grid-cols-2 gap-4">
                     <input 
                       value={editFirstName}
                       onChange={e => setEditFirstName(e.target.value)}
                       placeholder={t.first_name}
-                      className="bg-white p-3 rounded-xl text-sm font-bold border border-primary-100 outline-none focus:ring-2 focus:ring-primary-500"
+                      className="bg-white p-3 rounded-xl text-sm font-bold border border-primary/10 outline-none focus:ring-4 focus:ring-primary/10"
                     />
                     <input 
                       value={editLastName}
                       onChange={e => setEditLastName(e.target.value)}
                       placeholder={t.last_name}
-                      className="bg-white p-3 rounded-xl text-sm font-bold border border-primary-100 outline-none focus:ring-2 focus:ring-primary-500"
+                      className="bg-white p-3 rounded-xl text-sm font-bold border border-primary/10 outline-none focus:ring-4 focus:ring-primary/10"
                     />
                   </div>
                   <input 
                     value={editPhone}
                     onChange={e => setEditPhone(e.target.value)}
                     placeholder={t.phone}
-                    className="w-full bg-white p-3 rounded-xl text-sm font-bold border border-primary-100 outline-none focus:ring-2 focus:ring-primary-500"
+                    className="w-full bg-white p-3 rounded-xl text-sm font-bold border border-primary/10 outline-none focus:ring-4 focus:ring-primary/10"
                   />
                   <button
                     onClick={handleUpdatePatientInfo}
                     disabled={isSaving}
-                    className="w-full bg-primary-600 text-white py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest active:scale-95 transition-all shadow-md"
+                    className="w-full bg-primary text-white py-3 rounded-xl text-[10px] font-black uppercase tracking-widest active:scale-95 transition-all shadow-xl shadow-primary/20"
                   >
                     {isSaving ? '...' : t.save_changes || t.save}
                   </button>
@@ -197,16 +196,16 @@ export function PatientMedicalRecordDrawer({
 
             <div className="grid grid-cols-2 gap-3">
               <div className="bg-surface-container-low/50 rounded-2xl p-4 border border-surface-container-low">
-                <p className="text-[10px] font-black text-secondary-500 uppercase tracking-widest mb-1">{t.last_visit}</p>
-                <p className="text-sm font-bold text-secondary-900">
+                <p className="text-[10px] font-black text-on-surface/40 uppercase tracking-widest mb-1">{t.last_visit}</p>
+                <p className="text-sm font-bold text-on-surface">
                   {patient.last_visit ? format(new Date(patient.last_visit), 'dd MMM yyyy') : '---'}
                 </p>
               </div>
               <div className="bg-surface-container-low/50 rounded-2xl p-4 border border-surface-container-low">
-                <p className="text-[10px] font-black text-secondary-500 uppercase tracking-widest mb-1">{t.status}</p>
+                <p className="text-[10px] font-black text-on-surface/40 uppercase tracking-widest mb-1">{t.status}</p>
                 <div className="flex items-center gap-2">
-                  <div className={`h-2 w-2 rounded-full ${patient.is_active !== false ? 'bg-success-500' : 'bg-secondary-400'}`} />
-                  <p className="text-sm font-bold text-secondary-900">{patient.is_active !== false ? t.active_status : t.inactive_status}</p>
+                  <div className={`h-2 w-2 rounded-full ${patient.is_active !== false ? 'bg-emerald-500' : 'bg-slate-400'}`} />
+                  <p className="text-sm font-bold text-on-surface">{patient.is_active !== false ? t.active_status : t.inactive_status}</p>
                 </div>
               </div>
             </div>
@@ -220,7 +219,7 @@ export function PatientMedicalRecordDrawer({
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id as any)}
                   className={`py-4 flex items-center gap-2 text-[10px] font-black uppercase tracking-widest transition-all relative ${
-                    activeTab === tab.id ? 'text-primary-600' : 'text-secondary-500 hover:text-secondary-900'
+                    activeTab === tab.id ? 'text-primary' : 'text-on-surface/50 hover:text-on-surface'
                   }`}
                 >
                   <tab.icon className="h-3 w-3" />
@@ -228,7 +227,7 @@ export function PatientMedicalRecordDrawer({
                   {activeTab === tab.id && (
                     <motion.div
                       layoutId="activeTab"
-                      className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary-600"
+                      className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary"
                     />
                   )}
                 </button>
@@ -247,7 +246,7 @@ export function PatientMedicalRecordDrawer({
                   exit={{ opacity: 0 }}
                   className="h-full flex items-center justify-center"
                 >
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600" />
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
                 </motion.div>
               ) : (
                 <div className="space-y-8">
@@ -260,25 +259,25 @@ export function PatientMedicalRecordDrawer({
                       className="space-y-6"
                     >
                       {isAddingNote && (
-                        <div className="bg-surface-container-low/30 rounded-3xl p-6 border border-primary-100 shadow-sm">
+                        <div className="bg-primary/[0.03] rounded-3xl p-6 border border-primary/10 shadow-sm">
                           <div className="flex items-center gap-2 mb-4">
-                            <div className="h-6 w-6 rounded-full bg-primary-100 text-primary-600 flex items-center justify-center">
+                            <div className="h-6 w-6 rounded-full bg-primary/10 text-primary flex items-center justify-center">
                               <Plus className="h-3 w-3" />
                             </div>
-                            <h4 className="text-[10px] font-black text-primary-600 uppercase tracking-widest">{t.add_note}</h4>
+                            <h4 className="text-[10px] font-black text-primary uppercase tracking-widest">{t.add_note}</h4>
                           </div>
                           <textarea
                             autoFocus
                             value={newNoteContent}
                             onChange={(e) => setNewNoteContent(e.target.value)}
                             placeholder={t.add_comment_placeholder || '...'}
-                            className="w-full bg-white rounded-2xl p-4 text-sm font-medium text-secondary-900 min-h-[120px] border-none ring-1 ring-surface-container-low focus:ring-2 focus:ring-primary-500 outline-none transition-all resize-none shadow-inner"
+                            className="w-full bg-white rounded-2xl p-4 text-sm font-medium text-on-surface min-h-[120px] border-none ring-1 ring-primary/10 focus:ring-4 focus:ring-primary/10 outline-none transition-all resize-none shadow-inner"
                           />
                           <div className="flex items-center gap-3 mt-4">
                             <button
                               onClick={handleSaveNote}
                               disabled={isSaving || !newNoteContent.trim()}
-                              className="bg-secondary-900 text-white px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest disabled:opacity-50 active:scale-95 transition-all flex items-center gap-2 shadow-md"
+                              className="bg-primary text-white px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest disabled:opacity-50 active:scale-95 transition-all flex items-center gap-2 shadow-xl shadow-primary/20"
                             >
                               {isSaving ? <div className="h-3 w-3 animate-spin rounded-full border-2 border-white/30 border-t-white" /> : <FileText className="h-3 w-3" />}
                               {t.save_note || t.save}
@@ -288,7 +287,7 @@ export function PatientMedicalRecordDrawer({
                                 setIsAddingNote(false);
                                 setNewNoteContent('');
                               }}
-                              className="text-secondary-600 hover:text-secondary-900 px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all"
+                              className="text-on-surface/60 hover:text-on-surface px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all"
                             >
                               {t.cancel}
                             </button>
@@ -299,21 +298,21 @@ export function PatientMedicalRecordDrawer({
                       {history.length === 0 ? (
                         <div className="py-12 text-center">
                           <div className="h-12 w-12 bg-surface-container-low rounded-2xl flex items-center justify-center mx-auto mb-4">
-                            <AlertCircle className="h-6 w-6 text-secondary-400" />
+                            <AlertCircle className="h-6 w-6 text-on-surface/40" />
                           </div>
-                          <p className="text-sm font-medium text-secondary-600">{t.no_remarks_yet}</p>
+                          <p className="text-sm font-medium text-on-surface/60">{t.no_remarks_yet}</p>
                         </div>
                       ) : (
                         <div className="relative pl-6 space-y-12 before:absolute before:left-0 before:top-2 before:bottom-0 before:w-px before:bg-surface-container-low">
                           {history.map((record) => (
                             <div key={record.id} className="relative">
-                              <div className="absolute -left-[25px] top-1.5 h-2 w-2 rounded-full bg-primary-600 ring-4 ring-surface-container-lowest" />
-                              <div className="flex items-center gap-2 text-[10px] font-black text-secondary-500 uppercase tracking-widest mb-3">
+                              <div className="absolute -left-[25px] top-1.5 h-2 w-2 rounded-full bg-primary ring-4 ring-surface-container-lowest" />
+                              <div className="flex items-center gap-2 text-[10px] font-black text-on-surface/40 uppercase tracking-widest mb-3">
                                 <Clock className="h-3 w-3" />
                                 {format(new Date(record.created_at), 'dd MMM yyyy, HH:mm')}
                               </div>
                               <div className="bg-white rounded-[2rem] p-6 shadow-sm border border-surface-container-low">
-                                <p className="text-sm font-medium text-secondary-800 leading-relaxed whitespace-pre-wrap">
+                                <p className="text-sm font-medium text-on-surface/80 leading-relaxed whitespace-pre-wrap">
                                   {record.record_type === 'medical_note' 
                                     ? (typeof record.content === 'string' ? record.content : JSON.stringify(record.content))
                                     : (typeof record.content === 'string' ? record.content : (record.content?.observations || JSON.stringify(record.content)))}
@@ -326,9 +325,9 @@ export function PatientMedicalRecordDrawer({
                                         href={file.url}
                                         target="_blank"
                                         rel="noreferrer"
-                                        className="flex items-center gap-2 px-3 py-1.5 bg-surface-container-low/80 hover:bg-surface-container-low rounded-xl text-[10px] font-bold text-secondary-700 transition-colors border border-surface-container-mid"
+                                        className="flex items-center gap-2 px-3 py-1.5 bg-surface-container-low/80 hover:bg-surface-container-low rounded-xl text-[10px] font-bold text-on-surface/80 transition-colors border border-surface-container-high"
                                       >
-                                        <Paperclip className="h-3 w-3 text-secondary-500" />
+                                        <Paperclip className="h-3 w-3 text-on-surface/40" />
                                         {file.name || `File ${fidx + 1}`}
                                       </a>
                                     ))}
@@ -353,9 +352,9 @@ export function PatientMedicalRecordDrawer({
                       {history.flatMap(h => h.attachments || []).length === 0 ? (
                         <div className="py-12 text-center">
                           <div className="h-12 w-12 bg-surface-container-low rounded-2xl flex items-center justify-center mx-auto mb-4">
-                            <Paperclip className="h-6 w-6 text-secondary-400" />
+                            <Paperclip className="h-6 w-6 text-on-surface/40" />
                           </div>
-                          <p className="text-sm font-medium text-secondary-600">No files found.</p>
+                          <p className="text-sm font-medium text-on-surface/60">No files found.</p>
                         </div>
                       ) : (
                         history.flatMap(h => h.attachments || []).map((file, idx) => (
@@ -364,18 +363,18 @@ export function PatientMedicalRecordDrawer({
                             href={file.url}
                             target="_blank"
                             rel="noreferrer"
-                            className="flex items-center gap-4 p-4 bg-white rounded-2xl border border-surface-container-low hover:border-primary-600/30 transition-all group shadow-sm"
+                            className="flex items-center gap-4 p-4 bg-white rounded-2xl border border-surface-container-low hover:border-primary/30 transition-all group shadow-sm"
                           >
-                            <div className="h-10 w-10 bg-surface-container-low rounded-xl flex items-center justify-center text-secondary-400 group-hover:bg-primary-50 group-hover:text-primary-600 transition-colors">
+                            <div className="h-10 w-10 bg-surface-container-low rounded-xl flex items-center justify-center text-on-surface/40 group-hover:bg-primary/10 group-hover:text-primary transition-colors">
                               <FileText className="h-5 w-5" />
                             </div>
                             <div className="flex-1 min-w-0">
-                              <p className="text-sm font-bold text-secondary-900 truncate">{file.name || 'Untitled File'}</p>
-                              <p className="text-[10px] font-black text-secondary-500 uppercase tracking-widest mt-0.5">
+                              <p className="text-sm font-bold text-on-surface truncate">{file.name || 'Untitled File'}</p>
+                              <p className="text-[10px] font-black text-on-surface/40 uppercase tracking-widest mt-0.5">
                                 {file.type || 'Document'}
                               </p>
                             </div>
-                            <ExternalLink className="h-4 w-4 text-secondary-400 group-hover:text-primary-600 transition-colors" />
+                            <ExternalLink className="h-4 w-4 text-on-surface/40 group-hover:text-primary transition-colors" />
                           </a>
                         ))
                       )}
@@ -399,20 +398,20 @@ export function PatientMedicalRecordDrawer({
                         appointments.map(app => (
                           <div
                             key={app.id}
-                            className="flex items-center justify-between p-6 bg-surface-container-lowest rounded-2xl border border-surface-container-low hover:border-primary-600/10 transition-all group"
+                            className="flex items-center justify-between p-6 bg-surface-container-lowest rounded-2xl border border-surface-container-low hover:border-primary/10 transition-all group"
                           >
                             <div className="flex items-center gap-4">
-                              <div className="h-12 w-12 rounded-xl bg-primary-600/5 flex items-center justify-center text-primary-600">
+                              <div className="h-12 w-12 rounded-xl bg-primary/[0.05] flex items-center justify-center text-primary">
                                 <Calendar className="h-5 w-5" />
                               </div>
                               <div>
-                                <p className="text-xs font-black text-secondary-900 uppercase tracking-widest">{app.services?.name}</p>
-                                <p className="text-[10px] font-bold text-secondary-600 uppercase tracking-widest">
+                                <p className="text-xs font-black text-on-surface uppercase tracking-widest">{app.services?.name}</p>
+                                <p className="text-[10px] font-bold text-on-surface/60 uppercase tracking-widest">
                                   {format(parseISO(app.start_at), 'EEEE, MMMM d', { locale: dateLocale })} @ {format(parseISO(app.start_at), 'HH:mm')}
                                 </p>
                               </div>
                             </div>
-                            <ChevronRight className="h-5 w-5 text-secondary-200 group-hover:text-primary-600 transition-colors" />
+                            <ChevronRight className="h-5 w-5 text-on-surface/20 group-hover:text-primary transition-colors" />
                           </div>
                         ))
                       )}
@@ -430,14 +429,14 @@ export function PatientMedicalRecordDrawer({
                 setActiveTab('history');
                 setIsAddingNote(true);
               }}
-              className="flex items-center justify-center gap-2 bg-surface-container-low hover:bg-surface-container-mid text-secondary-900 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all shadow-sm"
+              className="flex items-center justify-center gap-2 bg-primary hover:bg-primary-light text-white py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all shadow-xl shadow-primary/20"
             >
               <Plus className="h-3 w-3" />
               {t.add_note}
             </button>
             <button
               onClick={onScheduleAppointment}
-              className="flex items-center justify-center gap-2 bg-secondary-900 hover:bg-secondary-800 text-white py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all shadow-lg"
+              className="flex items-center justify-center gap-2 bg-primary hover:bg-primary-light text-white py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all shadow-xl shadow-primary/20"
             >
               <Calendar className="h-3 w-3" />
               {t.schedule_appointment}

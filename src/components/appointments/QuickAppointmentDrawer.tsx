@@ -122,7 +122,7 @@ export function QuickAppointmentDrawer({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="absolute inset-0 bg-on-surface/40 backdrop-blur-[2px]"
+        className="absolute inset-0 bg-primary-950/40 backdrop-blur-[2px]"
       />
       
       <motion.div 
@@ -133,7 +133,7 @@ export function QuickAppointmentDrawer({
         className={`relative bg-surface overflow-hidden flex flex-col ${
           variant === 'drawer' 
             ? 'w-full max-w-xl h-full shadow-2xl' 
-            : 'w-full max-w-2xl max-h-[90vh] rounded-none border-2 border-slate-800 shadow-[8px_8px_0_0_#1e293b]'
+            : 'w-full max-w-2xl max-h-[90vh] rounded-3xl border border-primary/10 shadow-spatial'
         }`}
         onClick={e => e.stopPropagation()}
       >
@@ -214,7 +214,7 @@ export function QuickAppointmentDrawer({
                   value={formData.first_name}
                   onChange={e => setFormData({ ...formData, first_name: e.target.value })}
                   placeholder={T.name}
-                  className="w-full bg-on-surface/5 border-none rounded-2xl px-6 py-4 text-sm font-bold text-on-surface focus:bg-white focus:ring-2 focus:ring-primary/20 transition-all outline-none"
+                  className="w-full bg-on-surface/5 border-none rounded-2xl px-6 py-4 text-sm font-bold text-on-surface focus:bg-white focus:ring-4 focus:ring-primary/10 transition-all outline-none"
                 />
               </div>
               <div className="space-y-2">
@@ -223,7 +223,7 @@ export function QuickAppointmentDrawer({
                   value={formData.last_name}
                   onChange={e => setFormData({ ...formData, last_name: e.target.value })}
                   placeholder={T.last_name}
-                  className="w-full bg-on-surface/5 border-none rounded-2xl px-6 py-4 text-sm font-bold text-on-surface focus:bg-white focus:ring-2 focus:ring-primary/20 transition-all outline-none"
+                  className="w-full bg-on-surface/5 border-none rounded-2xl px-6 py-4 text-sm font-bold text-on-surface focus:bg-white focus:ring-4 focus:ring-primary/10 transition-all outline-none"
                 />
               </div>
             </div>
@@ -236,7 +236,7 @@ export function QuickAppointmentDrawer({
                   value={formData.phone}
                   onChange={e => setFormData({ ...formData, phone: e.target.value })}
                   placeholder={T.phone}
-                  className="w-full bg-on-surface/5 border-none rounded-2xl pl-14 pr-6 py-4 text-sm font-bold text-on-surface focus:bg-white focus:ring-2 focus:ring-primary/20 transition-all outline-none"
+                  className="w-full bg-on-surface/5 border-none rounded-2xl pl-14 pr-6 py-4 text-sm font-bold text-on-surface focus:bg-white focus:ring-4 focus:ring-primary/10 transition-all outline-none"
                 />
               </div>
             </div>
@@ -257,7 +257,7 @@ export function QuickAppointmentDrawer({
                 <select 
                   value={formData.service_id}
                   onChange={e => setFormData({ ...formData, service_id: e.target.value })}
-                  className="w-full bg-on-surface/5 border-none rounded-2xl px-6 py-4 text-sm font-bold text-on-surface focus:bg-white focus:ring-2 focus:ring-primary/20 transition-all outline-none appearance-none"
+                  className="w-full bg-on-surface/5 border-none rounded-2xl px-6 py-4 text-sm font-bold text-on-surface focus:bg-white focus:ring-4 focus:ring-primary/10 transition-all outline-none appearance-none"
                 >
                   <option value="">{T.selectOption}</option>
                   {services.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
@@ -268,7 +268,7 @@ export function QuickAppointmentDrawer({
                 <select 
                   value={formData.professional_id}
                   onChange={e => setFormData({ ...formData, professional_id: e.target.value, time: '' })}
-                  className="w-full bg-on-surface/5 border-none rounded-2xl px-6 py-4 text-sm font-bold text-on-surface focus:bg-white focus:ring-2 focus:ring-primary/20 transition-all outline-none appearance-none"
+                  className="w-full bg-on-surface/5 border-none rounded-2xl px-6 py-4 text-sm font-bold text-on-surface focus:bg-white focus:ring-4 focus:ring-primary/10 transition-all outline-none appearance-none"
                 >
                   <option value="">{T.selectOption}</option>
                   {professionals.map(p => <option key={p.id} value={p.id}>{p.full_name}</option>)}
@@ -365,7 +365,7 @@ export function QuickAppointmentDrawer({
               onChange={e => setFormData({ ...formData, notes: e.target.value })}
               placeholder={T.notes_ph}
               rows={3}
-              className="w-full bg-on-surface/5 border-none rounded-2xl px-6 py-4 text-sm font-medium text-on-surface focus:bg-white focus:ring-2 focus:ring-primary/20 transition-all outline-none resize-none"
+              className="w-full bg-on-surface/5 border-none rounded-2xl px-6 py-4 text-sm font-medium text-on-surface focus:bg-white focus:ring-4 focus:ring-primary/10 transition-all outline-none resize-none"
             />
           </section>
         </div>
@@ -375,9 +375,9 @@ export function QuickAppointmentDrawer({
           <button 
             onClick={handleCreateAppointment}
             disabled={loading || saveSuccess || isBlocked || !formData.first_name || !formData.professional_id || !formData.time || !formData.service_id}
-            className={`w-full py-5 rounded-full font-black text-[11px] uppercase tracking-[0.4em] shadow-xl transition-all duration-500 flex items-center justify-center gap-3 active:scale-[0.98] disabled:opacity-30 disabled:cursor-not-allowed
-              ${saveSuccess ? 'bg-success text-white' : 'bg-primary text-white hover:shadow-primary/20 hover:-translate-y-0.5'}
-              ${variant === 'modal' ? 'rounded-none border-2 border-slate-900 shadow-[4px_4px_0_0_#0f172a] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0_0_#0f172a]' : ''}
+            className={`w-full py-5 rounded-full font-black text-[11px] uppercase tracking-[0.4em] shadow-xl shadow-primary/20 transition-all duration-500 flex items-center justify-center gap-3 active:scale-[0.98] disabled:opacity-30 disabled:cursor-not-allowed
+              ${saveSuccess ? 'bg-emerald-500 text-white' : 'bg-primary text-white hover:bg-primary-light hover:-translate-y-0.5'}
+              ${variant === 'modal' ? 'rounded-2xl border border-primary/10 shadow-spatial' : ''}
             `}
           >
             {saveSuccess ? (

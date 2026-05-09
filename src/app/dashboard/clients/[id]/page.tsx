@@ -81,11 +81,11 @@ function InlineEdit({ label, value, onSave, multiline = false, icon, t }: {
       <div className="flex items-center justify-between mb-1">
         <div className="flex items-center gap-2">
           {icon && <span className="text-slate-400">{icon}</span>}
-          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{label}</p>
+          <p className="text-[9px] font-black text-primary/60 uppercase tracking-[0.3em]">{label}</p>
         </div>
         {!editing && (
           <button onClick={() => { setDraft(value); setEditing(true); setStatus('idle') }}
-            className="opacity-0 group-hover:opacity-100 p-1 rounded text-slate-400 hover:text-primary-600 transition-all">
+            className="opacity-0 group-hover:opacity-100 p-1 rounded text-slate-400 hover:text-primary transition-all">
             <Edit2 className="h-3 w-3" />
           </button>
         )}
@@ -102,15 +102,15 @@ function InlineEdit({ label, value, onSave, multiline = false, icon, t }: {
         <div className="flex flex-col gap-2">
           {multiline ? (
             <textarea value={draft} onChange={e => setDraft(e.target.value)}
-              className="w-full bg-white border border-primary-300 rounded-lg p-2 text-sm font-medium text-slate-900 min-h-[80px] outline-none focus:ring-2 focus:ring-primary-500 resize-none" />
+              className="w-full bg-primary/[0.03] border border-primary/20 rounded-xl p-3 text-sm font-bold text-slate-900 min-h-[100px] outline-none focus:ring-4 focus:ring-primary/10 transition-all resize-none" />
           ) : (
             <input value={draft} onChange={e => setDraft(e.target.value)}
               onKeyDown={e => { if (e.key === 'Enter') handleSave() }}
-              className="w-full bg-white border border-primary-300 rounded-lg p-2 text-sm font-medium text-slate-900 outline-none focus:ring-2 focus:ring-primary-500" />
+              className="w-full bg-primary/[0.03] border border-primary/20 rounded-xl p-3 text-sm font-bold text-slate-900 outline-none focus:ring-4 focus:ring-primary/10 transition-all" />
           )}
           <div className="flex gap-2">
             <button onClick={handleSave} disabled={saving}
-              className="flex-1 flex items-center justify-center gap-1 bg-slate-900 text-white py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest disabled:opacity-60 transition-all">
+              className="flex-1 flex items-center justify-center gap-2 bg-primary text-white py-2 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] disabled:opacity-60 transition-all shadow-lg shadow-primary/20">
               {saving
                 ? <div className="h-3 w-3 animate-spin rounded-full border-2 border-white/30 border-t-white" />
                 : <Check className="h-3 w-3" />}
@@ -472,7 +472,7 @@ export default function PatientProfilePage() {
       <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-8">
         <AlertCircle className="h-16 w-16 text-slate-300 mb-4" />
         <h1 className="text-2xl font-black text-slate-900 mb-2">{t.error}</h1>
-        <button onClick={() => router.back()} className="text-primary-600 font-bold hover:underline">{t.back}</button>
+        <button onClick={() => router.back()} className="text-primary font-bold hover:underline">{t.back}</button>
       </div>
     )
   }
@@ -495,7 +495,7 @@ export default function PatientProfilePage() {
           </button>
 
           {/* Avatar + name */}
-          <div className="h-9 w-9 rounded-full bg-primary-100 flex items-center justify-center text-primary-600 shrink-0">
+          <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center text-primary shrink-0">
             <User className="h-4 w-4" />
           </div>
           <div className="flex-1 min-w-0">
@@ -540,23 +540,13 @@ export default function PatientProfilePage() {
                 </a>
               )}
               
-              <div className="w-px h-4 bg-slate-200 mx-1" />
-
-              {/* Upload File shortcut */}
-              <button
-                onClick={() => fileInputRef.current?.click()}
-                title={t.add_study}
-                className="p-2.5 rounded-xl text-slate-600 hover:bg-white hover:text-primary-600 hover:shadow-sm transition-all active:scale-95"
-              >
-                <Paperclip className="h-4 w-4" />
-              </button>
             </div>
 
             <div className="w-px h-6 bg-slate-200 mx-1" />
 
             <button
               onClick={() => setShowNewAppointment(true)}
-              className="flex items-center gap-2 bg-primary-600 text-white px-5 py-2.5 rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-primary-700 transition-all shadow-lg shadow-primary-600/20 active:scale-95"
+              className="flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-primary-light transition-all shadow-lg shadow-primary/20 active:scale-95"
             >
               <Plus className="h-4 w-4" />
               {t.new_appointment}
@@ -660,10 +650,10 @@ export default function PatientProfilePage() {
 
           {/* 3. CONTACT INFO SECTION */}
           <div className="p-6 space-y-6 border-b border-slate-100">
-            <div className="flex items-center gap-2 opacity-40">
-              <div className="h-px flex-1 bg-slate-900" />
-              <span className="text-[9px] font-black uppercase tracking-[0.3em]">{t.contact || 'Contacto'}</span>
-              <div className="h-px flex-1 bg-slate-900" />
+            <div className="flex items-center gap-2">
+              <div className="h-px flex-1 bg-primary/10" />
+              <span className="text-[9px] font-black text-primary/60 uppercase tracking-[0.4em]">{t.contact || 'Contacto'}</span>
+              <div className="h-px flex-1 bg-primary/10" />
             </div>
 
             <InlineEdit
@@ -691,10 +681,10 @@ export default function PatientProfilePage() {
 
           {/* 4. IDENTITY & CLINICAL CONTEXT */}
           <div className="p-6 space-y-6 border-b border-slate-100">
-            <div className="flex items-center gap-2 opacity-40">
-              <div className="h-px flex-1 bg-slate-900" />
-              <span className="text-[9px] font-black uppercase tracking-[0.3em]">{t.identity || 'Identidad'}</span>
-              <div className="h-px flex-1 bg-slate-900" />
+            <div className="flex items-center gap-2">
+              <div className="h-px flex-1 bg-primary/10" />
+              <span className="text-[9px] font-black text-primary/60 uppercase tracking-[0.4em]">{t.identity || 'Identidad'}</span>
+              <div className="h-px flex-1 bg-primary/10" />
             </div>
 
             <InlineEdit
@@ -741,10 +731,10 @@ export default function PatientProfilePage() {
 
           {/* 5. GENERAL NOTES */}
           <div className="p-6 flex-1">
-             <div className="flex items-center gap-2 mb-4 opacity-40">
-              <div className="h-px flex-1 bg-slate-900" />
-              <span className="text-[9px] font-black uppercase tracking-[0.3em]">{t.notes || 'Observaciones'}</span>
-              <div className="h-px flex-1 bg-slate-900" />
+             <div className="flex items-center gap-2 mb-4">
+              <div className="h-px flex-1 bg-primary/10" />
+              <span className="text-[9px] font-black text-primary/60 uppercase tracking-[0.4em]">{t.notes || 'Observaciones'}</span>
+              <div className="h-px flex-1 bg-primary/10" />
             </div>
             <InlineEdit
               label=""
@@ -759,7 +749,7 @@ export default function PatientProfilePage() {
           <div className="p-6 bg-slate-50 border-t border-slate-100">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">{t.since || 'Registrado desde'}</p>
+                <p className="text-[9px] font-black text-primary/60 uppercase tracking-[0.3em] mb-1">{t.since || 'Registrado desde'}</p>
                 <p className="text-xs font-bold text-slate-800">{format(new Date(patient.created_at), 'dd MMM yyyy')}</p>
               </div>
               <div className="h-10 w-10 bg-white border border-slate-200 rounded-xl flex items-center justify-center">
@@ -777,7 +767,7 @@ export default function PatientProfilePage() {
             {TABS.map(tab => (
               <button key={tab.id}
                 onClick={() => setActiveTab(tab.id as any)}
-                className={`py-4 flex items-center gap-2 text-[10px] font-black uppercase tracking-widest transition-all relative border-b-2 ${activeTab === tab.id ? 'text-primary-600 border-primary-600' : 'text-slate-500 border-transparent hover:text-slate-900'}`}>
+                className={`py-4 flex items-center gap-2 text-[10px] font-black uppercase tracking-widest transition-all relative border-b-2 ${activeTab === tab.id ? 'text-primary border-primary' : 'text-slate-500 border-transparent hover:text-slate-900'}`}>
                 <tab.icon className="h-3 w-3" />
                 {tab.label}
               </button>
@@ -796,25 +786,25 @@ export default function PatientProfilePage() {
                   <div className="flex items-center justify-between">
                     <h3 className="text-lg font-black text-slate-900">{t.clinical_history}</h3>
                     <button onClick={() => setIsAddingNote(!isAddingNote)}
-                      className="flex items-center gap-2 px-4 py-2 bg-slate-900 text-white rounded-lg text-[10px] font-black uppercase tracking-widest shadow active:scale-95 transition-all">
-                      <Plus className="h-3 w-3" />
+                      className="flex items-center gap-2 px-5 py-2.5 bg-primary text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.3em] shadow-lg shadow-primary/20 active:scale-95 transition-all">
+                      <Plus className="h-3.5 w-3.5" />
                       {t.add_note}
                     </button>
                   </div>
 
                   {isAddingNote && (
                     <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }}
-                      className="bg-primary-50 rounded-xl p-5 border border-primary-200">
+                      className="bg-primary/5 rounded-xl p-5 border border-primary/20">
                       <textarea value={newNoteContent} onChange={e => setNewNoteContent(e.target.value)}
                         placeholder={t.add_comment_placeholder || 'Observaciones clínicas...'}
-                        className="w-full bg-white rounded-lg p-3 text-sm font-medium text-slate-900 min-h-[120px] border border-slate-200 outline-none focus:ring-2 focus:ring-primary-500 resize-none" />
-                      <div className="flex justify-end gap-3 mt-3">
+                        className="w-full bg-white rounded-lg p-3 text-sm font-medium text-slate-900 min-h-[120px] border border-slate-200 outline-none focus:ring-2 focus:ring-primary/50 resize-none" />
+                      <div className="flex justify-end gap-3 mt-4">
                         <button onClick={() => { setIsAddingNote(false); setNewNoteContent('') }}
-                          className="px-4 py-2 text-[10px] font-black uppercase tracking-widest text-slate-500 bg-white rounded-lg border border-slate-200">
+                          className="px-5 py-2.5 text-[10px] font-black uppercase tracking-widest text-slate-500 bg-white rounded-xl border border-slate-200 hover:bg-slate-50 transition-all">
                           {t.cancel}
                         </button>
                         <button onClick={handleAddNote} disabled={isSaving || !newNoteContent.trim()}
-                          className="px-5 py-2 bg-slate-900 text-white rounded-lg text-[10px] font-black uppercase tracking-widest active:scale-95 transition-all shadow disabled:opacity-50">
+                          className="px-6 py-2.5 bg-primary text-white rounded-xl text-[10px] font-black uppercase tracking-[0.3em] active:scale-95 transition-all shadow-lg shadow-primary/20 disabled:opacity-50">
                           {isSaving ? t.saving : t.save}
                         </button>
                       </div>
@@ -830,9 +820,9 @@ export default function PatientProfilePage() {
                     <div className="relative pl-10 space-y-8 before:absolute before:left-0 before:top-2 before:bottom-0 before:w-px before:bg-gradient-to-b before:from-slate-200 before:via-slate-200 before:to-transparent">
                       {items.map(item => {
                         const Icon = item.type === 'appointment' ? CalendarDays : (item.type === 'study' ? Paperclip : (item.type === 'system' ? CheckCircle2 : FileText))
-                        const colorClass = item.type === 'appointment' ? 'bg-blue-500' : (item.type === 'study' ? 'bg-purple-500' : (item.type === 'system' ? 'bg-emerald-500' : 'bg-slate-500'))
-                        const lightBg = item.type === 'appointment' ? 'bg-blue-50' : (item.type === 'study' ? 'bg-purple-50' : (item.type === 'system' ? 'bg-emerald-50' : 'bg-slate-50'))
-                        const iconColor = item.type === 'appointment' ? 'text-blue-600' : (item.type === 'study' ? 'text-purple-600' : (item.type === 'system' ? 'text-emerald-600' : 'text-slate-600'))
+                        const colorClass = item.type === 'appointment' ? 'bg-primary' : (item.type === 'study' ? 'bg-indigo-500' : (item.type === 'system' ? 'bg-slate-900' : 'bg-primary-light'))
+                        const lightBg = item.type === 'appointment' ? 'bg-primary/10' : (item.type === 'study' ? 'bg-indigo-50' : (item.type === 'system' ? 'bg-slate-100' : 'bg-primary/5'))
+                        const iconColor = item.type === 'appointment' ? 'text-primary' : (item.type === 'study' ? 'text-indigo-600' : (item.type === 'system' ? 'text-slate-900' : 'text-primary-light'))
                         
                         return (
                            <div key={item.id} className="relative group/item">
@@ -855,7 +845,7 @@ export default function PatientProfilePage() {
                                 
                                 {item.type === 'note' && (
                                   <div className="flex items-center gap-1 opacity-0 group-hover/item:opacity-100 transition-opacity">
-                                    <button onClick={() => { setEditingNoteId(item.id); setEditNoteContent(item.description); }} className="p-1.5 text-slate-400 hover:text-primary-600 rounded-lg bg-white border border-slate-200 transition-all hover:shadow-md active:scale-95">
+                                    <button onClick={() => { setEditingNoteId(item.id); setEditNoteContent(item.description); }} className="p-1.5 text-slate-400 hover:text-primary rounded-lg bg-white border border-slate-200 transition-all hover:shadow-md active:scale-95">
                                       <Edit2 className="h-3 w-3" />
                                     </button>
                                     <button onClick={() => handleDeleteNote(item.id)} className="p-1.5 text-slate-400 hover:text-red-600 rounded-lg bg-white border border-slate-200 transition-all hover:shadow-md active:scale-95">
@@ -875,24 +865,24 @@ export default function PatientProfilePage() {
                                 )}
                               </div>
                               
-                              <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden group-hover/item:border-primary-200 group-hover/item:shadow-md transition-all duration-300">
+                              <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden group-hover/item:border-primary/20 group-hover/item:shadow-md transition-all duration-300">
                                 <div className="p-5">
                                   {editingNoteId === item.id ? (
                                     <div className="space-y-4">
                                       <textarea 
                                         value={editNoteContent} 
                                         onChange={e => setEditNoteContent(e.target.value)}
-                                        className="w-full bg-slate-50 rounded-xl p-4 text-sm font-medium text-slate-900 min-h-[120px] border border-slate-200 outline-none focus:ring-2 focus:ring-primary-500 resize-none transition-all"
+                                        className="w-full bg-slate-50 rounded-xl p-4 text-sm font-medium text-slate-900 min-h-[120px] border border-slate-200 outline-none focus:ring-2 focus:ring-primary/50 resize-none transition-all"
                                       />
                                       <div className="flex justify-end gap-2">
-                                        <button onClick={() => setEditingNoteId(null)} className="px-4 py-2 text-[10px] font-black uppercase tracking-widest text-slate-500 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors">
+                                        <button onClick={() => setEditingNoteId(null)} className="px-5 py-2.5 text-[10px] font-black uppercase tracking-widest text-slate-500 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors">
                                           {t.cancel}
                                         </button>
                                         <button onClick={async () => {
                                           if (await handleEditNote(item.id, editNoteContent)) {
                                             setEditingNoteId(null);
                                           }
-                                        }} className="px-5 py-2 text-[10px] font-black uppercase tracking-widest text-white bg-slate-900 rounded-xl shadow-lg shadow-slate-900/20 active:scale-95 transition-all">
+                                        }} className="px-6 py-2.5 text-[10px] font-black uppercase tracking-[0.3em] text-white bg-primary rounded-xl shadow-lg shadow-primary/20 active:scale-95 transition-all">
                                           {t.save}
                                         </button>
                                       </div>
@@ -904,7 +894,7 @@ export default function PatientProfilePage() {
                                         {item.type === 'appointment' && (
                                           <button 
                                             onClick={() => setSelectedAppointment(item.raw)}
-                                            className="p-1.5 rounded-lg text-slate-400 hover:text-primary-600 hover:bg-primary-50 transition-all"
+                                            className="p-1.5 rounded-lg text-slate-400 hover:text-primary hover:bg-primary/5 transition-all"
                                           >
                                             <ExternalLink className="h-3.5 w-3.5" />
                                           </button>
@@ -919,7 +909,7 @@ export default function PatientProfilePage() {
                                           {item.raw.attachments.map((file: any, fidx: number) => (
                                             <a key={fidx} href={file.url} target="_blank" rel="noreferrer" 
                                               className="flex items-center gap-3 px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl hover:border-primary-400 hover:bg-white transition-all group/file shadow-sm hover:shadow-md">
-                                              <div className="h-8 w-8 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-slate-400 group-hover/file:text-primary-600 group-hover/file:border-primary-100 transition-all">
+                                              <div className="h-8 w-8 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-slate-400 group-hover/file:text-primary group-hover/file:border-primary/10 transition-all">
                                                 <FileText className="h-4 w-4" />
                                               </div>
                                               <div className="flex-1 min-w-0">
@@ -943,7 +933,7 @@ export default function PatientProfilePage() {
                                             </p>
                                           </div>
                                           {item.type === 'appointment' && (
-                                            <div className="flex items-center gap-1 text-[9px] font-black text-primary-600 uppercase tracking-[0.2em]">
+                                            <div className="flex items-center gap-1 text-[9px] font-black text-primary uppercase tracking-[0.2em]">
                                               <Activity className="h-3 w-3" />
                                               Active Record
                                             </div>
@@ -988,9 +978,9 @@ export default function PatientProfilePage() {
                         <button
                           key={filter.id}
                           onClick={() => setFileFilter(filter.id as any)}
-                          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
+                          className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition-all ${
                             fileFilter === filter.id 
-                              ? 'bg-slate-900 text-white shadow-md' 
+                              ? 'bg-primary text-white shadow-lg shadow-primary/20 scale-105' 
                               : 'text-slate-400 hover:bg-slate-50 hover:text-slate-600'
                           }`}
                         >
@@ -1015,7 +1005,7 @@ export default function PatientProfilePage() {
                         onClick={() => fileInputRef.current?.click()}
                         className="cursor-pointer flex flex-col items-center"
                       >
-                        <div className="h-20 w-20 bg-slate-50 rounded-3xl border border-slate-100 flex items-center justify-center text-slate-400 group-hover:bg-primary-50 group-hover:text-primary-600 transition-all mb-6 relative shadow-inner">
+                        <div className="h-20 w-20 bg-slate-50 rounded-3xl border border-slate-100 flex items-center justify-center text-slate-400 group-hover:bg-primary/5 group-hover:text-primary transition-all mb-6 relative shadow-inner">
                           {isUploading ? (
                              <div className="h-10 w-10 animate-spin rounded-full border-[3px] border-primary/20 border-t-primary" />
                           ) : (
@@ -1038,11 +1028,11 @@ export default function PatientProfilePage() {
                           <motion.div 
                             initial={{ width: 0 }}
                             animate={{ width: "100%" }}
-                            className={`h-full ${uploadProgress.startsWith('✓') ? 'bg-emerald-500' : 'bg-primary-500'}`}
+                            className={`h-full ${uploadProgress.startsWith('✓') ? 'bg-emerald-500' : 'bg-primary/50'}`}
                           />
                         </div>
                         <p className={`mt-4 text-[10px] font-black uppercase tracking-[0.3em] flex items-center gap-2 ${
-                          uploadProgress.startsWith('✓') ? 'text-emerald-600' : 'text-primary-600'
+                          uploadProgress.startsWith('✓') ? 'text-emerald-600' : 'text-primary'
                         }`}>
                           {uploadProgress.startsWith('✓') ? <CheckCircle2 className="h-4 w-4" /> : <Activity className="h-4 w-4 animate-pulse" />}
                           {uploadProgress}
@@ -1141,10 +1131,10 @@ export default function PatientProfilePage() {
                                     </p>
                                   </div>
                                   <div className="flex flex-col items-end">
-                                    <p className="text-[9px] font-black text-slate-900 uppercase">
+                                    <p className="text-[9px] font-black text-primary uppercase">
                                       {format(new Date(file.date), 'dd MMM')}
                                     </p>
-                                    <p className="text-[8px] font-bold text-slate-400 uppercase tracking-tighter">
+                                    <p className="text-[8px] font-bold text-primary/40 uppercase tracking-tighter">
                                       {format(new Date(file.date), 'yyyy')}
                                     </p>
                                   </div>
@@ -1178,9 +1168,9 @@ export default function PatientProfilePage() {
                       {appointments.map(app => (
                         <div key={app.id}
                           onClick={() => setSelectedAppointment(app)}
-                          className="flex items-center justify-between p-5 bg-white rounded-xl border border-slate-200 hover:border-primary-600/30 cursor-pointer transition-all group shadow-sm">
+                          className="flex items-center justify-between p-5 bg-white rounded-xl border border-slate-200 hover:border-primary/30 cursor-pointer transition-all group shadow-sm">
                           <div className="flex items-center gap-4">
-                            <div className="h-12 w-12 rounded-lg bg-slate-50 border border-slate-200 flex flex-col items-center justify-center text-primary-600 shadow-sm group-hover:border-primary-600 transition-all">
+                            <div className="h-12 w-12 rounded-lg bg-slate-50 border border-slate-200 flex flex-col items-center justify-center text-primary shadow-sm group-hover:border-primary transition-all">
                               <span className="text-[9px] font-black uppercase">{format(parseISO(app.start_at), 'MMM')}</span>
                               <span className="text-base font-black">{format(parseISO(app.start_at), 'dd')}</span>
                             </div>
@@ -1198,7 +1188,7 @@ export default function PatientProfilePage() {
                               </div>
                             </div>
                           </div>
-                          <ChevronRight className="h-5 w-5 text-slate-300 group-hover:text-primary-600 group-hover:translate-x-1 transition-all" />
+                          <ChevronRight className="h-5 w-5 text-slate-300 group-hover:text-primary group-hover:translate-x-1 transition-all" />
                         </div>
                       ))}
                     </div>

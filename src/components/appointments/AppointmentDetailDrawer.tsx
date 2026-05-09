@@ -244,9 +244,20 @@ export function AppointmentDetailDrawer({
               <button 
                 onClick={handleMarkNotified}
                 disabled={updating}
-                className="w-full py-4 rounded-xl bg-emerald-500 text-white font-black text-[9px] uppercase tracking-[0.2em] hover:opacity-90 transition-all flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20"
+                className="w-full py-4 rounded-xl bg-primary text-white font-black text-[9px] uppercase tracking-[0.2em] hover:opacity-90 transition-all flex items-center justify-center gap-2 shadow-lg shadow-primary/20"
               >
                 <CheckCircle className="h-3.5 w-3.5" /> {T.mark_rescheduled_btn}
+              </button>
+            )}
+
+            {!isCancelled && (
+              <button 
+                onClick={handleToggleAttended}
+                disabled={updating}
+                className="w-full py-4 rounded-xl bg-emerald-500 text-white font-black text-[9px] uppercase tracking-[0.2em] hover:opacity-90 transition-all flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20"
+              >
+                <CheckCircle className="h-3.5 w-3.5" /> 
+                {appointment.status === 'attended' ? (T.mark_confirmed_btn || 'Mark as Confirmed') : (T.mark_attended_btn || 'Mark as Attended')}
               </button>
             )}
 
