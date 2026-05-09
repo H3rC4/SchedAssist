@@ -106,7 +106,7 @@ export default function LocationsPage() {
 
   return (
     <div className="min-h-full bg-surface pb-20">
-      <div className="max-w-[1200px] mx-auto px-1.5 md:px-2">
+      <div className="w-full px-4 md:px-8">
         
         {/* Compact Header */}
         <header className="py-6 md:py-8">
@@ -119,11 +119,11 @@ export default function LocationsPage() {
               <div className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
               <p className="text-[10px] font-black text-on-surface/40 uppercase tracking-[0.4em]">{t.global_presence || 'Global Presence'}</p>
             </div>
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
-               <div>
-                  <h1 className="text-4xl md:text-5xl font-black text-on-surface tracking-tight leading-none mb-2">
-                    {t.nav_locations || 'Locations'} <br />
-                    <span className="text-primary italic font-serif lowercase">{t.management || 'management'}</span>
+            <div className="flex flex-col md:flex-row md:items-start justify-between gap-8">
+               <div className="flex-1">
+                  <h1 className="text-4xl md:text-5xl font-black text-on-surface tracking-tight leading-none mb-2 uppercase">
+                    {t.nav_locations || 'Locations'}
+                    <span className="text-primary italic font-serif lowercase ml-3">{t.management || 'management'}</span>
                   </h1>
                   <p className="text-xs font-bold text-on-surface/40 uppercase tracking-widest max-w-lg leading-relaxed">
                     {t.locations_subtitle || 'Strategically manage your physical reach and patient touchpoints.'}
@@ -131,7 +131,7 @@ export default function LocationsPage() {
                </div>
                <button 
                  onClick={() => setShowAddForm(true)}
-                 className="bg-primary text-white px-8 py-4 rounded-full font-black text-[11px] uppercase tracking-[0.4em] shadow-xl shadow-primary/20 hover:-translate-y-0.5 transition-all active:scale-[0.98] flex items-center gap-3"
+                 className="bg-primary text-white px-8 py-4 rounded-full font-black text-[11px] uppercase tracking-[0.4em] shadow-xl shadow-primary/20 hover:-translate-y-0.5 transition-all active:scale-[0.98] flex items-center gap-3 shrink-0"
                >
                  {t.add_location || 'Add Location'}
                  <Plus className="h-4 w-4" />
