@@ -143,9 +143,9 @@ export default function ServicesPage() {
       {/* SERVICES GRID */}
       <section>
         {loading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+          <div className="space-y-3">
             {[1, 2, 3, 4].map(i => (
-              <div key={i} className="h-80 precision-surface-lowest animate-pulse" />
+              <div key={i} className="h-20 precision-surface-lowest animate-pulse rounded-xl" />
             ))}
           </div>
         ) : services.length === 0 ? (
@@ -165,7 +165,7 @@ export default function ServicesPage() {
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 items-start">
+          <div className="space-y-3">
             {services.map((service, idx) => (
               <ServicePrecisionCard
                 key={service.id}

@@ -134,6 +134,8 @@ export default function PatientProfilePage() {
   const [isSaving, setIsSaving] = useState(false)
   const [newNoteContent, setNewNoteContent] = useState('')
   const [isAddingNote, setIsAddingNote] = useState(false)
+  const [editingNoteId, setEditingNoteId] = useState<string | null>(null)
+  const [editNoteContent, setEditNoteContent] = useState('')
   const [isUploading, setIsUploading] = useState(false)
   const [uploadProgress, setUploadProgress] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -231,6 +233,37 @@ export default function PatientProfilePage() {
       }
     } finally {
       setIsSaving(false)
+    }
+  }
+
+  const handleDeleteNote = async (recordId: string) => {
+    const confirmMsg = lang === 'es' ? '¿Eliminar este registro?' : 'Delete this record?'
+    if (!window.confirm(confirmMsg)) return
+    try {
+      const res = await fetch(`/api/clinical-records?id=${recordId}`, { method: 'DELETE' })
+      if (res.ok) {
+        setHistory(prev => prev.filter(h => h.id !== recordId))
+      }
+    } catch (e) {
+      console.error(e)
+    }
+  }
+
+  const handleEditNote = async (recordId: string, newContent: string) => {
+    try {
+      const res = await fetch(`/api/clinical-records?id=${recordId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content: newContent })
+      })
+      if (res.ok) {
+        setHistory(prev => prev.map(h => h.id === recordId ? { ...h, content: newContent } : h))
+        return true
+      }
+      return false
+    } catch (e) {
+      console.error(e)
+      return false
     }
   }
 
@@ -368,8 +401,19 @@ export default function PatientProfilePage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600" />
+      <div className="flex-1 min-h-screen bg-slate-50 flex flex-col items-center justify-center p-8">
+        <div className="relative">
+          <div className="h-24 w-24 border-[4px] border-primary/10 border-t-primary animate-spin rounded-full" />
+          <div className="absolute inset-0 flex items-center justify-center">
+            <User className="h-8 w-8 text-primary animate-pulse" />
+          </div>
+        </div>
+        <p className="mt-8 text-xs font-black text-[#191c1e] uppercase tracking-[0.4em] animate-pulse">
+          {t.loading || 'Cargando Paciente'}
+        </p>
+        <p className="mt-3 text-[10px] font-bold text-[#191c1e]/40 uppercase tracking-widest">
+          {t.loading_desc || 'Recuperando historial...'}
+        </p>
       </div>
     )
   }
@@ -550,41 +594,62 @@ export default function PatientProfilePage() {
                     </motion.div>
                   )}
 
-                  {history.length === 0 ? (
+                  {history.filter(h => !h.attachments || h.attachments.length === 0).length === 0 ? (
                     <div className="py-24 text-center text-slate-400">
                       <HistoryIcon className="h-10 w-10 mx-auto mb-3 opacity-20" />
                       <p className="text-sm font-medium">{t.no_history}</p>
                     </div>
                   ) : (
                     <div className="relative pl-6 space-y-8 before:absolute before:left-0 before:top-2 before:bottom-0 before:w-px before:bg-slate-200">
-                      {history.map(record => (
-                        <div key={record.id} className="relative">
+                      {history.filter(h => !h.attachments || h.attachments.length === 0).map(record => (
+                        <div key={record.id} className="relative group/note">
                           <div className="absolute -left-[29px] top-2 h-4 w-4 rounded-full bg-primary-600 ring-4 ring-white" />
-                          <div className="flex items-center gap-3 mb-2">
-                            <span className="text-[10px] font-black text-primary-600 uppercase tracking-widest bg-primary-50 px-2 py-1 rounded">
-                              {format(new Date(record.created_at), 'dd MMM yyyy, HH:mm')}
-                            </span>
-                            {record.professionals && (
-                              <span className="text-[10px] font-black text-slate-500 uppercase">
-                                {t.by_label} {record.professionals.full_name}
+                          <div className="flex items-center justify-between gap-3 mb-2">
+                            <div className="flex items-center gap-3">
+                              <span className="text-[10px] font-black text-primary-600 uppercase tracking-widest bg-primary-50 px-2 py-1 rounded">
+                                {format(new Date(record.created_at), 'dd MMM yyyy, HH:mm')}
                               </span>
-                            )}
+                              {record.professionals && (
+                                <span className="text-[10px] font-black text-slate-500 uppercase">
+                                  {t.by_label} {record.professionals.full_name}
+                                </span>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-1 opacity-0 group-hover/note:opacity-100 transition-opacity">
+                              <button onClick={() => { setEditingNoteId(record.id); setEditNoteContent(typeof record.content === 'string' ? record.content : (record.content?.observations || '')); }} className="p-1.5 text-slate-400 hover:text-primary-600 rounded bg-slate-100 transition-colors" title={lang === 'es' ? 'Editar' : 'Edit'}>
+                                <Edit2 className="h-3 w-3" />
+                              </button>
+                              <button onClick={() => handleDeleteNote(record.id)} className="p-1.5 text-slate-400 hover:text-red-600 rounded bg-slate-100 transition-colors" title={lang === 'es' ? 'Eliminar' : 'Delete'}>
+                                <Trash2 className="h-3 w-3" />
+                              </button>
+                            </div>
                           </div>
                           <div className="bg-white border-y sm:border sm:rounded-none sm:border-slate-200 shadow-sm overflow-hidden">
                             <div className="p-5">
-                              <p className="text-sm font-medium text-slate-800 leading-relaxed whitespace-pre-wrap">
-                                {typeof record.content === 'string' ? record.content : (record.content?.observations || JSON.stringify(record.content))}
-                              </p>
-                              {record.attachments && record.attachments.length > 0 && (
-                                <div className="mt-4 flex flex-wrap gap-2">
-                                  {record.attachments.map((file, fidx) => (
-                                    <a key={fidx} href={file.url} target="_blank" rel="noreferrer"
-                                      className="flex items-center gap-2 px-3 py-1.5 bg-slate-50 hover:bg-slate-100 rounded-lg text-[10px] font-bold text-slate-700 border border-slate-200 transition-colors">
-                                      <Paperclip className="h-3 w-3 text-slate-400" />
-                                      {file.name || `Archivo ${fidx + 1}`}
-                                    </a>
-                                  ))}
+                              {editingNoteId === record.id ? (
+                                <div className="space-y-3">
+                                  <textarea 
+                                    value={editNoteContent} 
+                                    onChange={e => setEditNoteContent(e.target.value)}
+                                    className="w-full bg-slate-50 rounded-lg p-3 text-sm font-medium text-slate-900 min-h-[100px] border border-slate-200 outline-none focus:ring-2 focus:ring-primary-500 resize-none"
+                                  />
+                                  <div className="flex justify-end gap-2">
+                                    <button onClick={() => setEditingNoteId(null)} className="px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-slate-500 bg-white border border-slate-200 rounded-lg">
+                                      {t.cancel}
+                                    </button>
+                                    <button onClick={async () => {
+                                      if (await handleEditNote(record.id, editNoteContent)) {
+                                        setEditingNoteId(null);
+                                      }
+                                    }} className="px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-white bg-primary rounded-lg shadow-sm active:scale-95 transition-all">
+                                      {t.save}
+                                    </button>
+                                  </div>
                                 </div>
+                              ) : (
+                                <p className="text-sm font-medium text-slate-800 leading-relaxed whitespace-pre-wrap">
+                                  {typeof record.content === 'string' ? record.content : (record.content?.observations || JSON.stringify(record.content))}
+                                </p>
                               )}
                             </div>
                           </div>
@@ -652,25 +717,56 @@ export default function PatientProfilePage() {
                       {history.filter(h => h.attachments && h.attachments.length > 0).map(record => (
                         record.attachments?.map((file, fidx) => (
                           <div key={`${record.id}-${fidx}`} className="flex items-center gap-4 p-4 bg-white rounded-xl border border-slate-200 hover:border-primary-600/30 transition-all group shadow-sm">
-                            <a href={file.url} target="_blank" rel="noreferrer" className="h-10 w-10 bg-slate-100 rounded-none flex items-center justify-center text-slate-400 group-hover:bg-primary-50 group-hover:text-primary-600 transition-colors">
+                            <a href={file.url} target="_blank" rel="noreferrer" className="h-10 w-10 bg-slate-100 rounded-none flex items-center justify-center text-slate-400 group-hover:bg-primary-50 group-hover:text-primary-600 transition-colors shrink-0">
                               <FileText className="h-5 w-5" />
                             </a>
                             <div className="flex-1 min-w-0">
-                              <a href={file.url} target="_blank" rel="noreferrer">
-                                <p className="text-sm font-bold text-slate-900 truncate hover:text-primary-600 transition-colors cursor-pointer">{file.name || t.document_fallback}</p>
-                              </a>
-                              <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mt-0.5">{file.type || t.clinical_study_label}</p>
+                              {editingNoteId === record.id ? (
+                                <div className="flex flex-col gap-1.5">
+                                  <input 
+                                    value={editNoteContent}
+                                    onChange={e => setEditNoteContent(e.target.value)}
+                                    className="w-full bg-slate-50 border border-slate-200 rounded p-1.5 text-xs font-medium outline-none focus:ring-1 focus:ring-primary-500"
+                                  />
+                                  <div className="flex items-center gap-1">
+                                    <button onClick={async () => {
+                                      if (await handleEditNote(record.id, editNoteContent)) {
+                                        setEditingNoteId(null);
+                                      }
+                                    }} className="p-1.5 text-white bg-primary hover:bg-primary-light rounded transition-colors shadow-sm">
+                                      <Check className="h-3 w-3" />
+                                    </button>
+                                    <button onClick={() => setEditingNoteId(null)} className="p-1.5 text-slate-500 bg-slate-100 hover:bg-slate-200 rounded transition-colors">
+                                      <X className="h-3 w-3" />
+                                    </button>
+                                  </div>
+                                </div>
+                              ) : (
+                                <>
+                                  <a href={file.url} target="_blank" rel="noreferrer">
+                                    <p className="text-sm font-bold text-slate-900 truncate hover:text-primary-600 transition-colors cursor-pointer">
+                                      {typeof record.content === 'string' && record.content !== '' && !record.content.startsWith('Estudio') ? record.content : (file.name || t.document_fallback)}
+                                    </p>
+                                  </a>
+                                  <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mt-0.5">{file.type || t.clinical_study_label}</p>
+                                </>
+                              )}
                             </div>
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                              {!editingNoteId && (
+                                <button onClick={() => { setEditingNoteId(record.id); setEditNoteContent(typeof record.content === 'string' && record.content !== '' && !record.content.startsWith('Estudio') ? record.content : file.name); }} className="p-1.5 text-slate-400 hover:text-primary-600 hover:bg-slate-100 rounded transition-colors" title={lang === 'es' ? 'Editar nombre' : 'Edit name'}>
+                                  <Edit2 className="h-3.5 w-3.5" />
+                                </button>
+                              )}
                               <button
                                 onClick={() => handleDeleteFile(record.id, file.url)}
-                                className="p-2 text-slate-300 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
+                                className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-slate-100 rounded transition-colors"
                                 title={lang === 'es' ? 'Eliminar' : 'Delete'}
                               >
-                                <Trash2 className="h-4 w-4" />
+                                <Trash2 className="h-3.5 w-3.5" />
                               </button>
-                              <a href={file.url} target="_blank" rel="noreferrer" className="p-2 text-slate-300 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-all">
-                                <ExternalLink className="h-4 w-4" />
+                              <a href={file.url} target="_blank" rel="noreferrer" className="p-1.5 text-slate-400 hover:text-primary-600 hover:bg-slate-100 rounded transition-colors" title={lang === 'es' ? 'Abrir' : 'Open'}>
+                                <ExternalLink className="h-3.5 w-3.5" />
                               </a>
                             </div>
                           </div>
