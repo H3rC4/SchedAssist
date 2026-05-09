@@ -23,16 +23,16 @@ export function DashboardCharts({ chartData, statusData, revenue, lang = 'es' }:
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       return (
-        <div className="bg-white border border-primary/10 p-6 rounded-none shadow-2xl">
-          <p className="text-[9px] font-black text-primary/40 uppercase tracking-[0.4em] mb-2">
-            {format(parseISO(label), 'EEE d MMM', { locale: dateLocale }).toUpperCase()}
+        <div className="bg-white border border-primary/10 p-4 rounded-xl shadow-2xl">
+          <p className="text-[7px] font-black text-on-surface-muted uppercase tracking-[0.3em] mb-1">
+            {format(parseISO(label), 'EEE d MMM', { locale: dateLocale })}
           </p>
           <div className="flex items-baseline gap-2">
-            <span className="text-3xl font-black text-[#191c1e] tracking-tighter italic">
+            <span className="text-2xl font-black text-on-surface tracking-tighter">
               {payload[0].value}
             </span>
-            <span className="text-[10px] font-black text-primary/60 uppercase tracking-widest">
-              {t.appointments.toUpperCase()}
+            <span className="text-[7px] font-black text-primary uppercase tracking-[0.2em]">
+              {t.appointments}
             </span>
           </div>
         </div>
@@ -44,19 +44,15 @@ export function DashboardCharts({ chartData, statusData, revenue, lang = 'es' }:
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
       {/* ── Activity Area Chart ── */}
-      <div className="lg:col-span-8 bg-white border border-primary/10 p-10 relative overflow-hidden group">
-        <div className="absolute top-0 left-0 w-1 h-full bg-primary/5 group-hover:bg-primary transition-colors" />
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-12">
+      <div className="lg:col-span-8 precision-surface-lowest p-6 md:p-8">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
           <div>
-            <div className="flex items-center gap-4 mb-3">
-              <div className="h-px w-8 bg-primary" />
-              <p className="text-[10px] font-black text-primary/40 uppercase tracking-[0.5em]">{t.appointments_volume.toUpperCase()}</p>
-            </div>
-            <h3 className="text-4xl font-black text-[#191c1e] tracking-tighter uppercase italic">{t.weekly_activity}</h3>
+            <p className="text-[7px] font-black text-on-surface-muted uppercase tracking-[0.3em] mb-1">{t.appointments_volume}</p>
+            <h3 className="text-sm font-black text-on-surface tracking-tighter uppercase">{t.weekly_activity}</h3>
           </div>
-          <div className="inline-flex items-center gap-4 px-5 py-2 border border-primary/10 bg-primary/[0.03] text-primary text-[10px] font-black uppercase tracking-[0.4em]">
-            <div className="h-2 w-2 bg-primary shadow-[0_0_10px_rgba(0,92,85,0.4)]" />
-            <span>OPERATIONAL SCAN</span>
+          <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary/5 text-primary text-[7px] font-black uppercase tracking-[0.2em] rounded-full">
+            <div className="h-1.5 w-1.5 bg-primary rounded-full" />
+            <span>SCAN</span>
           </div>
         </div>
 
@@ -100,27 +96,25 @@ export function DashboardCharts({ chartData, statusData, revenue, lang = 'es' }:
       </div>
 
       {/* ── Distribution + Revenue ── */}
-      <div className="lg:col-span-4 bg-white border border-primary/10 p-10 flex flex-col relative overflow-hidden group">
-        <div className="absolute top-0 left-0 w-1 h-full bg-secondary/20 group-hover:bg-secondary transition-colors" />
-        <div className="flex items-center gap-4 mb-8">
-          <div className="h-px w-8 bg-secondary" />
-          <h3 className="text-xl font-black text-[#191c1e] tracking-tighter uppercase italic">{t.distribution}</h3>
+      <div className="lg:col-span-4 precision-surface-lowest p-6 md:p-8 flex flex-col">
+        <div className="flex items-center gap-3 mb-6">
+          <p className="text-[7px] font-black text-on-surface-muted uppercase tracking-[0.3em]">{t.distribution}</p>
         </div>
 
         {/* Donut chart */}
-        <div className="h-[220px] w-full flex-shrink-0 mb-10">
+        <div className="h-[200px] w-full flex-shrink-0 mb-8">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie
                 data={statusData}
                 cx="50%"
                 cy="50%"
-                innerRadius={70}
-                outerRadius={95}
+                innerRadius={60}
+                outerRadius={85}
                 paddingAngle={0}
                 dataKey="value"
                 stroke="#fff"
-                strokeWidth={3}
+                strokeWidth={2}
               >
                 {statusData.map((_, index) => (
                   <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
@@ -130,8 +124,8 @@ export function DashboardCharts({ chartData, statusData, revenue, lang = 'es' }:
                 contentStyle={{
                   backgroundColor: '#ffffff',
                   border: '1px solid rgba(0,92,85,0.1)',
-                  padding: '16px',
-                  borderRadius: '0px',
+                  padding: '12px',
+                  borderRadius: '8px',
                   boxShadow: '0 20px 40px rgba(0,0,0,0.1)'
                 }}
                 itemStyle={{
@@ -146,40 +140,40 @@ export function DashboardCharts({ chartData, statusData, revenue, lang = 'es' }:
         </div>
 
         {/* Legend */}
-        <div className="space-y-4 mb-12 flex-1">
+        <div className="space-y-3 mb-8 flex-1">
           {statusData.map((item, index) => (
-            <div key={item.name} className="flex items-center justify-between border-b border-primary/5 pb-3 group/item">
-              <div className="flex items-center gap-4">
+            <div key={item.name} className="flex items-center justify-between border-b border-primary/5 pb-2 group/item">
+              <div className="flex items-center gap-3">
                 <div
-                  className="h-3 w-3 rounded-none transition-transform group-hover/item:scale-125"
+                  className="h-2.5 w-2.5 rounded-sm transition-transform group-hover/item:scale-110"
                   style={{ backgroundColor: COLORS[index % COLORS.length] }}
                 />
-                <span className="text-[10px] font-black text-primary/40 uppercase tracking-[0.3em] group-hover/item:text-primary transition-colors">
-                  {item.name === 'completed' ? t.confirmed.toUpperCase()
-                    : item.name === 'cancelled' ? t.canceled.toUpperCase()
-                    : item.name === 'pending'   ? t.pending.toUpperCase()
-                    : item.name.toUpperCase()}
+                <span className="text-[8px] font-black text-on-surface-muted uppercase tracking-[0.2em] group-hover/item:text-primary transition-colors">
+                  {item.name === 'completed' ? t.confirmed
+                    : item.name === 'cancelled' ? t.canceled
+                    : item.name === 'pending'   ? t.pending
+                    : item.name}
                 </span>
               </div>
-              <span className="text-base font-black text-[#191c1e] tracking-tighter italic">{item.value}</span>
+              <span className="text-sm font-black text-on-surface tracking-tighter">{item.value}</span>
             </div>
           ))}
         </div>
 
         {/* Revenue */}
-        <div className="mt-auto pt-10 border-t border-primary/10 relative">
-          <p className="text-[10px] font-black text-primary/40 uppercase tracking-[0.5em] mb-4">
-            {t.estimated_revenue.toUpperCase()}
+        <div className="mt-auto pt-6 border-t border-primary/10">
+          <p className="text-[7px] font-black text-on-surface-muted uppercase tracking-[0.3em] mb-2">
+            {t.estimated_revenue}
           </p>
-          <div className="flex items-baseline gap-3 mb-8">
-             <span className="text-2xl font-black text-primary/30">$</span>
-             <p className="text-5xl font-black text-[#191c1e] tracking-tighter uppercase italic">
+          <div className="flex items-baseline gap-2 mb-4">
+             <span className="text-lg font-black text-primary/30">$</span>
+             <p className="text-2xl font-black text-on-surface tracking-tighter">
                {revenue.toLocaleString()}
              </p>
           </div>
-          <div className="inline-flex items-center gap-4 px-5 py-2 border border-primary/10 bg-primary/[0.03] text-primary text-[10px] font-black uppercase tracking-[0.4em]">
-            <div className="h-1.5 w-1.5 bg-primary shadow-[0_0_8px_rgba(0,92,85,0.4)]" />
-            <span>{t.appointments_completed.toUpperCase()}</span>
+          <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary/5 text-primary text-[7px] font-black uppercase tracking-[0.2em] rounded-full">
+            <div className="h-1.5 w-1.5 bg-primary rounded-full" />
+            <span>{t.appointments_completed}</span>
           </div>
         </div>
       </div>

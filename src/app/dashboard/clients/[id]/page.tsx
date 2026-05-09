@@ -502,7 +502,7 @@ export default function PatientProfilePage() {
         <main className="flex-1 overflow-y-auto flex flex-col bg-slate-50">
 
           {/* Tab bar */}
-          <div className="bg-white border-b border-slate-200 px-6 flex gap-6 shrink-0">
+          <div className="bg-white border-b border-slate-200 px-6 flex gap-6 shrink-0 sticky top-0 z-20">
             {TABS.map(tab => (
               <button key={tab.id}
                 onClick={() => setActiveTab(tab.id as any)}

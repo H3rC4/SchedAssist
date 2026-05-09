@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { X, UserPlus, Save, AlertCircle } from 'lucide-react'
+import { X, UserPlus, Save, AlertCircle, Check } from 'lucide-react'
 
 interface NewPatientDrawerProps {
   isOpen: boolean;
@@ -23,6 +23,7 @@ export function NewPatientDrawer({
   const [phone, setPhone] = useState('')
   const [notes, setNotes] = useState('')
   const [isSaving, setIsSaving] = useState(false)
+  const [isSuccess, setIsSuccess] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -38,12 +39,17 @@ export function NewPatientDrawer({
         phone: phone,
         notes: notes
       })
-      // Reset form
-      setFirstName('')
-      setLastName('')
-      setPhone('')
-      setNotes('')
-      onClose()
+      
+      setIsSuccess(true)
+      
+      setTimeout(() => {
+        setIsSuccess(false)
+        setFirstName('')
+        setLastName('')
+        setPhone('')
+        setNotes('')
+        onClose()
+      }, 1500)
     } catch (err: any) {
       setError(err.message || 'Error creating patient')
     } finally {
@@ -161,15 +167,49 @@ export function NewPatientDrawer({
           <div className="p-8 border-t border-surface-container-low bg-white">
             <button
               onClick={handleSubmit}
-              disabled={isSaving || !firstName || !lastName || !phone}
-              className="w-full flex items-center justify-center gap-3 bg-secondary-900 hover:bg-secondary-800 text-white py-4 rounded-2xl text-xs font-black uppercase tracking-widest transition-all shadow-lg disabled:opacity-50 active:scale-[0.98]"
+              disabled={isSaving || isSuccess || !firstName || !lastName || !phone}
+              className={`w-full flex items-center justify-center py-4 rounded-2xl text-xs font-black uppercase tracking-widest transition-all shadow-lg disabled:opacity-50 active:scale-[0.98] ${
+                isSuccess 
+                  ? 'bg-emerald-500 hover:bg-emerald-600 text-white shadow-emerald-500/20' 
+                  : 'bg-primary hover:bg-primary-light text-white shadow-primary/20'
+              }`}
             >
-              {isSaving ? (
-                <div className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
-              ) : (
-                <UserPlus className="h-4 w-4" />
-              )}
-              {t.create_patient || t.save}
+              <AnimatePresence mode="wait">
+                {isSuccess ? (
+                  <motion.div
+                    key="success"
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.8 }}
+                    className="flex items-center gap-2"
+                  >
+                    <Check className="h-4 w-4" />
+                    {t.saved || 'Carga exitosa'}
+                  </motion.div>
+                ) : isSaving ? (
+                  <motion.div
+                    key="saving"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="flex items-center gap-2"
+                  >
+                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                    {t.saving || 'Guardando...'}
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="idle"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="flex items-center gap-2"
+                  >
+                    <UserPlus className="h-4 w-4" />
+                    {t.create_patient || t.save}
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </button>
             <button
               onClick={onClose}

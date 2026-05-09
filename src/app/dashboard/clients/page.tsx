@@ -172,7 +172,7 @@ export default function ClientsPage() {
         </div>
         <button 
           onClick={() => setIsNewPatientOpen(true)}
-          className="flex items-center gap-2 bg-primary-600 text-white px-6 py-3 rounded-xl font-black uppercase tracking-widest text-[10px] hover:bg-primary-700 transition-all shadow-lg shadow-primary-600/20 active:scale-95"
+          className="flex items-center gap-2 bg-primary text-white px-6 py-3 rounded-xl font-black uppercase tracking-widest text-[10px] hover:bg-primary-light transition-all shadow-lg shadow-primary/20 active:scale-95"
         >
           <Plus className="h-4 w-4" />
           {t.new_patient}
