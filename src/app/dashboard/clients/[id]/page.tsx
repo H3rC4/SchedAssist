@@ -409,10 +409,10 @@ export default function PatientProfilePage() {
           </div>
         </div>
         <p className="mt-8 text-xs font-black text-[#191c1e] uppercase tracking-[0.4em] animate-pulse">
-          {t.loading || 'Cargando Paciente'}
+          {(t as any).loading || 'Cargando Paciente'}
         </p>
         <p className="mt-3 text-[10px] font-bold text-[#191c1e]/40 uppercase tracking-widest">
-          {t.loading_desc || 'Recuperando historial...'}
+          {(t as any).loading_desc || 'Recuperando historial...'}
         </p>
       </div>
     )

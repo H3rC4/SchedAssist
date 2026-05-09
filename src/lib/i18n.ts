@@ -12,6 +12,7 @@ export const translations = {
   en: {
     // General
     loading: 'Loading...',
+    loading_desc: 'Retrieving data...',
     save: 'Save',
     cancel: 'Cancel',
     delete: 'Delete',
@@ -655,6 +656,7 @@ tech_shadcn_desc: 'UX Elegance',
   es: {
     // General
     loading: 'Cargando...',
+    loading_desc: 'Recuperando historial...',
     save: 'Guardar',
     cancel: 'Cancelar',
     delete: 'Eliminar',
@@ -1296,6 +1298,7 @@ tech_shadcn_desc: 'UX Elegance',
   it: {
     // General
     loading: 'Caricamento...',
+    loading_desc: 'Recupero cronologia...',
     save: 'Salva',
     cancel: 'Annulla',
     delete: 'Elimina',
