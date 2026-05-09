@@ -7,7 +7,8 @@ import {
   Calendar, Clock, FileText, Plus, ChevronRight,
   History as HistoryIcon, CalendarDays, Paperclip,
   ExternalLink, AlertCircle, ArrowLeft, Edit2,
-  Upload, User, Phone, Mail, ShieldAlert, X, Check, Trash2
+  Upload, User, Phone, Mail, ShieldAlert, X, Check, Trash2,
+  MessageSquare, AlertTriangle, Activity, Bell, CreditCard, CheckCircle2
 } from 'lucide-react'
 import { format, parseISO } from 'date-fns'
 import { es } from 'date-fns/locale/es'
@@ -136,6 +137,8 @@ export default function PatientProfilePage() {
   const [isAddingNote, setIsAddingNote] = useState(false)
   const [editingNoteId, setEditingNoteId] = useState<string | null>(null)
   const [editNoteContent, setEditNoteContent] = useState('')
+  const [fileSearch, setFileSearch] = useState('')
+  const [fileFilter, setFileFilter] = useState<'all' | 'study' | 'consent' | 'other'>('all')
   const [isUploading, setIsUploading] = useState(false)
   const [uploadProgress, setUploadProgress] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -145,6 +148,44 @@ export default function PatientProfilePage() {
   const [professionals, setProfessionals] = useState<any[]>([])
   const [availableSlots, setAvailableSlots] = useState<string[]>([])
   const [slotLoading, setSlotLoading] = useState(false)
+
+  // ── TIMELINE LOGIC ──────────────────────────────────────────────
+  const timelineItems = useEffect(() => {}, []) // Cleaning up previous mistake if any
+
+  const combinedTimeline = (history: MedicalEntry[], appointments: any[]) => {
+    const records = history.map(h => ({
+      id: h.id,
+      type: h.attachments && h.attachments.length > 0 ? 'study' : 'note' as const,
+      date: new Date(h.created_at),
+      title: h.attachments && h.attachments.length > 0 ? (h.attachments[0].name || 'Estudio') : 'Nota Médica',
+      description: typeof h.content === 'string' ? h.content : (h.content?.observations || ''),
+      professionals: h.professionals,
+      raw: h
+    }))
+
+    const apps = appointments.map(a => ({
+      id: a.id,
+      type: 'appointment' as const,
+      date: new Date(`${a.date}T${a.time || '00:00'}`),
+      title: 'Turno Programado',
+      description: `${a.services?.name || 'Servicio'} con ${a.professionals?.full_name || 'Profesional'}`,
+      status: a.status,
+      raw: a
+    }))
+
+    const patientCreated = patient ? [{
+      id: 'creation',
+      type: 'system' as const,
+      date: new Date(patient.created_at),
+      title: 'Paciente Registrado',
+      description: 'El paciente fue dado de alta en el sistema.',
+      icon: CheckCircle2
+    }] : []
+
+    return [...records, ...apps, ...patientCreated].sort((a, b) => b.date.getTime() - a.date.getTime())
+  }
+
+  const items = combinedTimeline(history, appointments)
 
   const lang = (tenant?.settings?.language as 'en' | 'es' | 'it') || 'es'
   const t = translations[lang] || translations['en']
@@ -456,14 +497,59 @@ export default function PatientProfilePage() {
             <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-0.5">{t.medical_record}</p>
           </div>
 
-          {/* Right actions — fill the empty orange area */}
-          <div className="flex items-center gap-3 shrink-0">
-            <span className="hidden md:block text-[10px] font-black text-slate-400 uppercase tracking-widest">
-              {t.phone || 'Tel'}: {patient.phone || ''}
-            </span>
+          {/* Right actions — quick actions bar */}
+          <div className="flex items-center gap-2 shrink-0">
+            {/* Quick Actions Group */}
+            <div className="hidden md:flex items-center gap-1.5 p-1 bg-slate-100 rounded-2xl border border-slate-200">
+              {/* Call */}
+              <a
+                href={`tel:${patient.phone}`}
+                title={t.call}
+                className="p-2.5 rounded-xl text-slate-600 hover:bg-white hover:text-blue-600 hover:shadow-sm transition-all active:scale-95"
+              >
+                <Phone className="h-4 w-4" />
+              </a>
+
+              {/* WhatsApp */}
+              <a
+                href={`https://wa.me/${patient.phone?.replace(/\D/g, '')}`}
+                target="_blank"
+                rel="noreferrer"
+                title="WhatsApp"
+                className="p-2.5 rounded-xl text-slate-600 hover:bg-white hover:text-emerald-600 hover:shadow-sm transition-all active:scale-95"
+              >
+                <MessageSquare className="h-4 w-4" />
+              </a>
+
+              {/* Send Email */}
+              {patient.email && (
+                <a
+                  href={`mailto:${patient.email}`}
+                  title={t.email}
+                  className="p-2.5 rounded-xl text-slate-600 hover:bg-white hover:text-amber-600 hover:shadow-sm transition-all active:scale-95"
+                >
+                  <Mail className="h-4 w-4" />
+                </a>
+              )}
+              
+              <div className="w-px h-4 bg-slate-200 mx-1" />
+
+              {/* Upload File shortcut */}
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                title={t.add_study}
+                className="p-2.5 rounded-xl text-slate-600 hover:bg-white hover:text-primary-600 hover:shadow-sm transition-all active:scale-95"
+              >
+                <Paperclip className="h-4 w-4" />
+              </button>
+            </div>
+
+            <div className="w-px h-6 bg-slate-200 mx-1" />
+
             <button
               onClick={() => setShowNewAppointment(true)}
-              className="flex items-center gap-1.5 bg-slate-900 text-white px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-slate-800 transition-all shadow-sm active:scale-95">
+              className="flex items-center gap-2 bg-primary-600 text-white px-5 py-2.5 rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-primary-700 transition-all shadow-lg shadow-primary-600/20 active:scale-95"
+            >
               <Plus className="h-4 w-4" />
               {t.new_appointment}
             </button>
@@ -471,73 +557,209 @@ export default function PatientProfilePage() {
         </div>
       </div>
 
+      {/* ── CRITICAL ALERTS BANNER ────────────────────────────────────────── */}
+      <AnimatePresence>
+        {patient.allergies && (
+          <motion.div 
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            className="bg-gradient-to-r from-red-600 to-red-500 border-b border-red-700 overflow-hidden relative"
+          >
+            {/* Decorative background icon */}
+            <ShieldAlert className="absolute right-10 top-1/2 -translate-y-1/2 h-24 w-24 text-white/5 pointer-events-none" />
+
+            <div className="px-6 py-4 flex items-center justify-between relative z-10">
+              <div className="flex items-center gap-4">
+                <div className="h-10 w-10 bg-white/20 backdrop-blur-md flex items-center justify-center rounded-xl shadow-inner shadow-white/20">
+                  <AlertTriangle className="h-5 w-5 text-white animate-pulse" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2 mb-0.5">
+                    <p className="text-[10px] font-black text-white/70 uppercase tracking-[0.2em] leading-none">
+                      {t.critical_alert}
+                    </p>
+                    <span className="h-1.5 w-1.5 rounded-full bg-white animate-ping" />
+                  </div>
+                  <p className="text-base font-black text-white leading-none tracking-tight">
+                    {t.allergies}: <span className="uppercase">{patient.allergies}</span>
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="hidden sm:inline-flex text-[9px] font-black text-white uppercase tracking-widest border border-white/40 bg-white/10 backdrop-blur-sm px-3 py-1.5 rounded-lg">
+                  {t.protocol_required || 'Protocol Required'}
+                </span>
+                <button 
+                  onClick={() => saveField('allergies', '')}
+                  className="p-2 text-white/50 hover:text-white transition-colors"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* ── BODY ───────────────────────────────────────────────────────── */}
       <div className="flex flex-1 overflow-hidden">
 
-        {/* LEFT PANEL — straight edges, no rounded corners */}
-        <aside className="w-72 shrink-0 bg-white border-r border-slate-200 overflow-y-auto flex flex-col rounded-none">
-
-          {/* Allergies — danger zone */}
-          <div className="bg-red-50 border-b border-red-200 p-5">
-            <div className="flex items-center gap-2 mb-3">
-              <ShieldAlert className="h-3.5 w-3.5 text-red-600" />
-              <h2 className="text-[10px] font-black text-red-700 uppercase tracking-widest">{t.allergies}</h2>
+        {/* LEFT PANEL — High Fidelity Patient Identity Card */}
+        <aside className="w-80 shrink-0 bg-white border-r border-slate-200 overflow-y-auto flex flex-col rounded-none scrollbar-hide">
+          
+          {/* 1. PROFILE HEADER CARD */}
+          <div className="p-6 bg-slate-50/50 border-b border-slate-100">
+            <div className="flex flex-col items-center text-center">
+              <div className="h-20 w-20 rounded-3xl bg-primary text-white flex items-center justify-center text-2xl font-black shadow-xl shadow-primary/20 mb-4 border-4 border-white">
+                {patient.first_name[0]}{patient.last_name?.[0]}
+              </div>
+              <h2 className="text-lg font-black text-slate-900 leading-tight uppercase tracking-tight">
+                {patient.first_name} <br />
+                <span className="text-primary">{patient.last_name}</span>
+              </h2>
+              <div className="mt-3 flex items-center gap-2">
+                <span className="px-3 py-1 bg-emerald-100 text-emerald-700 text-[9px] font-black uppercase tracking-[0.2em] rounded-full">
+                  {t.active_member || 'Activo'}
+                </span>
+                <span className="px-3 py-1 bg-slate-200 text-slate-600 text-[9px] font-black uppercase tracking-[0.2em] rounded-full">
+                  {t.patient_id || 'ID'}: #{patient.id.slice(0, 5)}
+                </span>
+              </div>
             </div>
-            <InlineEdit
-              label=""
-              value={patient.allergies || ''}
-              onSave={v => saveField('allergies', v)}
-              multiline
-              t={t}
-            />
           </div>
 
-          {/* Patient data — all editable */}
-          <div className="p-5 border-b border-slate-100 space-y-5 flex-1">
-            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{t.patient_info}</p>
+          {/* 2. CRITICAL HEALTH INFO (If exists) */}
+          <AnimatePresence>
+            {patient.allergies && (
+              <motion.div 
+                initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }}
+                className="bg-rose-50 p-5 border-b border-rose-100"
+              >
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="h-6 w-6 bg-rose-100 rounded-lg flex items-center justify-center">
+                    <ShieldAlert className="h-3.5 w-3.5 text-rose-600" />
+                  </div>
+                  <h3 className="text-[10px] font-black text-rose-700 uppercase tracking-widest">{t.allergies}</h3>
+                </div>
+                <InlineEdit
+                  label=""
+                  value={patient.allergies || ''}
+                  onSave={v => saveField('allergies', v)}
+                  multiline
+                  t={t}
+                />
+              </motion.div>
+            )}
+          </AnimatePresence>
 
-            <InlineEdit
-              label={t.first_name || 'Nombre'}
-              value={patient.first_name || ''}
-              onSave={v => saveField('first_name', v)}
-              icon={<User className="h-3 w-3" />}
-              t={t}
-            />
-            <InlineEdit
-              label={t.last_name || 'Apellido'}
-              value={patient.last_name || ''}
-              onSave={v => saveField('last_name', v)}
-              icon={<User className="h-3 w-3" />}
-              t={t}
-            />
+          {/* 3. CONTACT INFO SECTION */}
+          <div className="p-6 space-y-6 border-b border-slate-100">
+            <div className="flex items-center gap-2 opacity-40">
+              <div className="h-px flex-1 bg-slate-900" />
+              <span className="text-[9px] font-black uppercase tracking-[0.3em]">{t.contact || 'Contacto'}</span>
+              <div className="h-px flex-1 bg-slate-900" />
+            </div>
+
             <InlineEdit
               label={t.phone || 'Teléfono'}
               value={patient.phone || ''}
               onSave={v => saveField('phone', v)}
-              icon={<Phone className="h-3 w-3" />}
+              icon={<Phone className="h-3.5 w-3.5" />}
               t={t}
             />
             <InlineEdit
               label={t.email || 'Email'}
               value={patient.email || ''}
               onSave={v => saveField('email', v)}
-              icon={<Mail className="h-3 w-3" />}
+              icon={<Mail className="h-3.5 w-3.5" />}
               t={t}
             />
             <InlineEdit
-              label={t.notes || 'Notas'}
+              label={t.address || 'Dirección'}
+              value={patient.address || ''}
+              onSave={v => saveField('address', v)}
+              icon={<MapPin className="h-3.5 w-3.5" />}
+              t={t}
+            />
+          </div>
+
+          {/* 4. IDENTITY & CLINICAL CONTEXT */}
+          <div className="p-6 space-y-6 border-b border-slate-100">
+            <div className="flex items-center gap-2 opacity-40">
+              <div className="h-px flex-1 bg-slate-900" />
+              <span className="text-[9px] font-black uppercase tracking-[0.3em]">{t.identity || 'Identidad'}</span>
+              <div className="h-px flex-1 bg-slate-900" />
+            </div>
+
+            <InlineEdit
+              label={t.dni || 'DNI / NIE'}
+              value={patient.dni || ''}
+              onSave={v => saveField('dni', v)}
+              icon={<Fingerprint className="h-3.5 w-3.5" />}
+              t={t}
+            />
+            
+            <div className="grid grid-cols-2 gap-4">
+              <InlineEdit
+                label={t.birth_date || 'Nacimiento'}
+                value={patient.birth_date || ''}
+                onSave={v => saveField('birth_date', v)}
+                icon={<Calendar className="h-3.5 w-3.5" />}
+                t={t}
+              />
+              <div className="flex flex-col gap-1 px-3 py-2 bg-slate-50 rounded-xl border border-slate-100">
+                <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{t.age || 'Edad'}</span>
+                <span className="text-sm font-black text-primary">
+                  {patient.birth_date ? (
+                    `${differenceInYears(new Date(), new Date(patient.birth_date))} ${t.years_old || 'años'}`
+                  ) : '--'}
+                </span>
+              </div>
+            </div>
+
+            <InlineEdit
+              label={t.gender || 'Género'}
+              value={patient.gender || ''}
+              onSave={v => saveField('gender', v)}
+              icon={<User className="h-3.5 w-3.5" />}
+              t={t}
+            />
+            <InlineEdit
+              label={t.occupation || 'Ocupación'}
+              value={patient.occupation || ''}
+              onSave={v => saveField('occupation', v)}
+              icon={<Briefcase className="h-3.5 w-3.5" />}
+              t={t}
+            />
+          </div>
+
+          {/* 5. GENERAL NOTES */}
+          <div className="p-6 flex-1">
+             <div className="flex items-center gap-2 mb-4 opacity-40">
+              <div className="h-px flex-1 bg-slate-900" />
+              <span className="text-[9px] font-black uppercase tracking-[0.3em]">{t.notes || 'Observaciones'}</span>
+              <div className="h-px flex-1 bg-slate-900" />
+            </div>
+            <InlineEdit
+              label=""
               value={patient.notes || ''}
               onSave={v => saveField('notes', v)}
               multiline
               t={t}
             />
+          </div>
 
-            <div>
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 flex items-center gap-2">
-                <Calendar className="h-3 w-3" />
-                {t.since || 'Miembro desde'}
-              </p>
-              <p className="text-sm font-bold text-slate-800">{format(new Date(patient.created_at), 'dd MMM yyyy')}</p>
+          {/* 6. FOOTER METADATA */}
+          <div className="p-6 bg-slate-50 border-t border-slate-100">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">{t.since || 'Registrado desde'}</p>
+                <p className="text-xs font-bold text-slate-800">{format(new Date(patient.created_at), 'dd MMM yyyy')}</p>
+              </div>
+              <div className="h-10 w-10 bg-white border border-slate-200 rounded-xl flex items-center justify-center">
+                <QrCode className="h-5 w-5 text-slate-300" />
+              </div>
             </div>
           </div>
         </aside>
@@ -594,186 +816,351 @@ export default function PatientProfilePage() {
                     </motion.div>
                   )}
 
-                  {history.filter(h => !h.attachments || h.attachments.length === 0).length === 0 ? (
+                  {items.length === 0 ? (
                     <div className="py-24 text-center text-slate-400">
                       <HistoryIcon className="h-10 w-10 mx-auto mb-3 opacity-20" />
                       <p className="text-sm font-medium">{t.no_history}</p>
                     </div>
                   ) : (
-                    <div className="relative pl-6 space-y-8 before:absolute before:left-0 before:top-2 before:bottom-0 before:w-px before:bg-slate-200">
-                      {history.filter(h => !h.attachments || h.attachments.length === 0).map(record => (
-                        <div key={record.id} className="relative group/note">
-                          <div className="absolute -left-[29px] top-2 h-4 w-4 rounded-full bg-primary-600 ring-4 ring-white" />
-                          <div className="flex items-center justify-between gap-3 mb-2">
-                            <div className="flex items-center gap-3">
-                              <span className="text-[10px] font-black text-primary-600 uppercase tracking-widest bg-primary-50 px-2 py-1 rounded">
-                                {format(new Date(record.created_at), 'dd MMM yyyy, HH:mm')}
-                              </span>
-                              {record.professionals && (
-                                <span className="text-[10px] font-black text-slate-500 uppercase">
-                                  {t.by_label} {record.professionals.full_name}
-                                </span>
-                              )}
+                    <div className="relative pl-10 space-y-8 before:absolute before:left-0 before:top-2 before:bottom-0 before:w-px before:bg-gradient-to-b before:from-slate-200 before:via-slate-200 before:to-transparent">
+                      {items.map(item => {
+                        const Icon = item.type === 'appointment' ? CalendarDays : (item.type === 'study' ? Paperclip : (item.type === 'system' ? CheckCircle2 : FileText))
+                        const colorClass = item.type === 'appointment' ? 'bg-blue-500' : (item.type === 'study' ? 'bg-purple-500' : (item.type === 'system' ? 'bg-emerald-500' : 'bg-slate-500'))
+                        const lightBg = item.type === 'appointment' ? 'bg-blue-50' : (item.type === 'study' ? 'bg-purple-50' : (item.type === 'system' ? 'bg-emerald-50' : 'bg-slate-50'))
+                        const iconColor = item.type === 'appointment' ? 'text-blue-600' : (item.type === 'study' ? 'text-purple-600' : (item.type === 'system' ? 'text-emerald-600' : 'text-slate-600'))
+                        
+                        return (
+                           <div key={item.id} className="relative group/item">
+                            {/* Dot on line */}
+                            <div className={`absolute -left-[45px] top-1.5 h-6 w-6 rounded-full ${colorClass} ring-4 ring-white z-10 flex items-center justify-center shadow-lg shadow-slate-200`}>
+                              <Icon className="h-3 w-3 text-white" />
                             </div>
-                            <div className="flex items-center gap-1 opacity-0 group-hover/note:opacity-100 transition-opacity">
-                              <button onClick={() => { setEditingNoteId(record.id); setEditNoteContent(typeof record.content === 'string' ? record.content : (record.content?.observations || '')); }} className="p-1.5 text-slate-400 hover:text-primary-600 rounded bg-slate-100 transition-colors" title={lang === 'es' ? 'Editar' : 'Edit'}>
-                                <Edit2 className="h-3 w-3" />
-                              </button>
-                              <button onClick={() => handleDeleteNote(record.id)} className="p-1.5 text-slate-400 hover:text-red-600 rounded bg-slate-100 transition-colors" title={lang === 'es' ? 'Eliminar' : 'Delete'}>
-                                <Trash2 className="h-3 w-3" />
-                              </button>
-                            </div>
-                          </div>
-                          <div className="bg-white border-y sm:border sm:rounded-none sm:border-slate-200 shadow-sm overflow-hidden">
-                            <div className="p-5">
-                              {editingNoteId === record.id ? (
-                                <div className="space-y-3">
-                                  <textarea 
-                                    value={editNoteContent} 
-                                    onChange={e => setEditNoteContent(e.target.value)}
-                                    className="w-full bg-slate-50 rounded-lg p-3 text-sm font-medium text-slate-900 min-h-[100px] border border-slate-200 outline-none focus:ring-2 focus:ring-primary-500 resize-none"
-                                  />
-                                  <div className="flex justify-end gap-2">
-                                    <button onClick={() => setEditingNoteId(null)} className="px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-slate-500 bg-white border border-slate-200 rounded-lg">
-                                      {t.cancel}
-                                    </button>
-                                    <button onClick={async () => {
-                                      if (await handleEditNote(record.id, editNoteContent)) {
-                                        setEditingNoteId(null);
-                                      }
-                                    }} className="px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-white bg-primary rounded-lg shadow-sm active:scale-95 transition-all">
-                                      {t.save}
-                                    </button>
+                            
+                            {/* Content */}
+                            <div className="flex flex-col gap-2">
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest bg-white px-2 py-1 rounded border border-slate-100">
+                                    {format(item.date, 'dd MMM yyyy, HH:mm')}
+                                  </span>
+                                  <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest ${lightBg} ${iconColor} border border-current/10`}>
+                                    {item.type === 'appointment' ? (t.appointment || 'Cita') : (item.type === 'study' ? (t.study_label || 'Estudio') : (item.type === 'system' ? 'Sistema' : (t.note || 'Nota')))}
                                   </div>
                                 </div>
-                              ) : (
-                                <p className="text-sm font-medium text-slate-800 leading-relaxed whitespace-pre-wrap">
-                                  {typeof record.content === 'string' ? record.content : (record.content?.observations || JSON.stringify(record.content))}
-                                </p>
-                              )}
+                                
+                                {item.type === 'note' && (
+                                  <div className="flex items-center gap-1 opacity-0 group-hover/item:opacity-100 transition-opacity">
+                                    <button onClick={() => { setEditingNoteId(item.id); setEditNoteContent(item.description); }} className="p-1.5 text-slate-400 hover:text-primary-600 rounded-lg bg-white border border-slate-200 transition-all hover:shadow-md active:scale-95">
+                                      <Edit2 className="h-3 w-3" />
+                                    </button>
+                                    <button onClick={() => handleDeleteNote(item.id)} className="p-1.5 text-slate-400 hover:text-red-600 rounded-lg bg-white border border-slate-200 transition-all hover:shadow-md active:scale-95">
+                                      <Trash2 className="h-3 w-3" />
+                                    </button>
+                                  </div>
+                                )}
+                                
+                                {item.type === 'appointment' && (
+                                  <div className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border shadow-sm ${
+                                    item.status === 'confirmed' ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : 
+                                    item.status === 'pending' ? 'bg-amber-50 border-amber-200 text-amber-700' : 
+                                    'bg-slate-50 border-slate-200 text-slate-600'
+                                  }`}>
+                                    {t[item.status] || item.status}
+                                  </div>
+                                )}
+                              </div>
+                              
+                              <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden group-hover/item:border-primary-200 group-hover/item:shadow-md transition-all duration-300">
+                                <div className="p-5">
+                                  {editingNoteId === item.id ? (
+                                    <div className="space-y-4">
+                                      <textarea 
+                                        value={editNoteContent} 
+                                        onChange={e => setEditNoteContent(e.target.value)}
+                                        className="w-full bg-slate-50 rounded-xl p-4 text-sm font-medium text-slate-900 min-h-[120px] border border-slate-200 outline-none focus:ring-2 focus:ring-primary-500 resize-none transition-all"
+                                      />
+                                      <div className="flex justify-end gap-2">
+                                        <button onClick={() => setEditingNoteId(null)} className="px-4 py-2 text-[10px] font-black uppercase tracking-widest text-slate-500 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors">
+                                          {t.cancel}
+                                        </button>
+                                        <button onClick={async () => {
+                                          if (await handleEditNote(item.id, editNoteContent)) {
+                                            setEditingNoteId(null);
+                                          }
+                                        }} className="px-5 py-2 text-[10px] font-black uppercase tracking-widest text-white bg-slate-900 rounded-xl shadow-lg shadow-slate-900/20 active:scale-95 transition-all">
+                                          {t.save}
+                                        </button>
+                                      </div>
+                                    </div>
+                                  ) : (
+                                    <>
+                                      <div className="flex items-start justify-between gap-4 mb-2">
+                                        <h4 className="text-sm font-black text-slate-900 tracking-tight">{item.title}</h4>
+                                        {item.type === 'appointment' && (
+                                          <button 
+                                            onClick={() => setSelectedAppointment(item.raw)}
+                                            className="p-1.5 rounded-lg text-slate-400 hover:text-primary-600 hover:bg-primary-50 transition-all"
+                                          >
+                                            <ExternalLink className="h-3.5 w-3.5" />
+                                          </button>
+                                        )}
+                                      </div>
+                                      <p className="text-sm font-medium text-slate-600 leading-relaxed whitespace-pre-wrap">
+                                        {item.description}
+                                      </p>
+                                      
+                                      {item.type === 'study' && item.raw.attachments && (
+                                        <div className="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                          {item.raw.attachments.map((file: any, fidx: number) => (
+                                            <a key={fidx} href={file.url} target="_blank" rel="noreferrer" 
+                                              className="flex items-center gap-3 px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl hover:border-primary-400 hover:bg-white transition-all group/file shadow-sm hover:shadow-md">
+                                              <div className="h-8 w-8 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-slate-400 group-hover/file:text-primary-600 group-hover/file:border-primary-100 transition-all">
+                                                <FileText className="h-4 w-4" />
+                                              </div>
+                                              <div className="flex-1 min-w-0">
+                                                <p className="text-[11px] font-black text-slate-900 truncate uppercase tracking-tight">{file.name}</p>
+                                                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Click to view</p>
+                                              </div>
+                                              <ExternalLink className="h-3 w-3 text-slate-300" />
+                                            </a>
+                                          ))}
+                                        </div>
+                                      )}
+
+                                      {(item.professionals || item.type === 'system') && (
+                                        <div className="mt-4 pt-4 border-t border-slate-50 flex items-center justify-between">
+                                          <div className="flex items-center gap-2">
+                                            <div className="h-6 w-6 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center">
+                                              <User className="h-3 w-3 text-slate-400" />
+                                            </div>
+                                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                                              {item.type === 'system' ? 'System Automator' : `${t.by_label} ${item.professionals.full_name}`}
+                                            </p>
+                                          </div>
+                                          {item.type === 'appointment' && (
+                                            <div className="flex items-center gap-1 text-[9px] font-black text-primary-600 uppercase tracking-[0.2em]">
+                                              <Activity className="h-3 w-3" />
+                                              Active Record
+                                            </div>
+                                          )}
+                                        </div>
+                                      )}
+                                    </>
+                                  )}
+                                </div>
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      ))}
+                        )
+                      })}
                     </div>
                   )}
                 </motion.div>
               )}
 
-              {/* FILES */}
               {activeTab === 'files' && (
                 <motion.div key="files"
                   initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
-                  className="space-y-6">
+                  className="space-y-8">
 
-                  {/* Hidden file input */}
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    className="hidden"
-                    accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.xls,.xlsx"
-                    onChange={handleFileUpload}
-                  />
-
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-lg font-black text-slate-900">{t.patient_files || 'Estudios y Archivos'}</h3>
-                    <button
-                      onClick={() => fileInputRef.current?.click()}
-                      disabled={isUploading}
-                      className="flex items-center gap-2 px-4 py-2 bg-slate-900 text-white rounded-lg text-[10px] font-black uppercase tracking-widest shadow active:scale-95 transition-all disabled:opacity-60">
-                      {isUploading
-                        ? <div className="h-3 w-3 animate-spin rounded-full border-2 border-white/30 border-t-white" />
-                        : <Upload className="h-3 w-3" />}
-                      {isUploading ? t.saving : (t.add_study || 'Agregar Estudio')}
-                    </button>
-                  </div>
-
-                  {/* Upload progress */}
-                  {uploadProgress && (
-                    <motion.div
-                      initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }}
-                      className={`flex items-center gap-2 px-4 py-3 rounded-lg text-sm font-bold ${
-                        uploadProgress.startsWith('✓')
-                          ? 'bg-green-50 text-green-700 border border-green-200'
-                          : uploadProgress.startsWith('Error')
-                          ? 'bg-red-50 text-red-700 border border-red-200'
-                          : 'bg-blue-50 text-blue-700 border border-blue-200'
-                      }`}>
-                      {isUploading && <div className="h-3 w-3 animate-spin rounded-full border-2 border-current/30 border-t-current" />}
-                      {uploadProgress}
-                    </motion.div>
-                  )}
-
-                  {history.flatMap(h => h.attachments || []).length === 0 && !isUploading ? (
-                    <div
-                      onClick={() => fileInputRef.current?.click()}
-                      className="py-24 text-center text-slate-400 border-2 border-dashed border-slate-200 rounded-xl cursor-pointer hover:border-primary-300 hover:text-primary-400 transition-all">
-                      <Upload className="h-10 w-10 mx-auto mb-3 opacity-30" />
-                      <p className="text-sm font-bold">{t.no_files_desc}</p>
-                      <p className="text-xs text-slate-400 mt-1">PDF, JPG, PNG, DOC, XLS</p>
+                  {/* SEARCH & FILTERS */}
+                  <div className="flex flex-col md:flex-row gap-4">
+                    <div className="relative flex-1 group">
+                      <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-primary transition-colors" />
+                      <input
+                        type="text"
+                        placeholder={t.search_files || "Search documents..."}
+                        value={fileSearch}
+                        onChange={(e) => setFileSearch(e.target.value)}
+                        className="w-full bg-white border border-slate-200 py-3.5 pl-12 pr-4 rounded-2xl text-sm font-medium focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all outline-none shadow-sm"
+                      />
                     </div>
-                  ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {history.filter(h => h.attachments && h.attachments.length > 0).map(record => (
-                        record.attachments?.map((file, fidx) => (
-                          <div key={`${record.id}-${fidx}`} className="flex items-center gap-4 p-4 bg-white rounded-xl border border-slate-200 hover:border-primary-600/30 transition-all group shadow-sm">
-                            <a href={file.url} target="_blank" rel="noreferrer" className="h-10 w-10 bg-slate-100 rounded-none flex items-center justify-center text-slate-400 group-hover:bg-primary-50 group-hover:text-primary-600 transition-colors shrink-0">
-                              <FileText className="h-5 w-5" />
-                            </a>
-                            <div className="flex-1 min-w-0">
-                              {editingNoteId === record.id ? (
-                                <div className="flex flex-col gap-1.5">
-                                  <input 
-                                    value={editNoteContent}
-                                    onChange={e => setEditNoteContent(e.target.value)}
-                                    className="w-full bg-slate-50 border border-slate-200 rounded p-1.5 text-xs font-medium outline-none focus:ring-1 focus:ring-primary-500"
-                                  />
-                                  <div className="flex items-center gap-1">
-                                    <button onClick={async () => {
-                                      if (await handleEditNote(record.id, editNoteContent)) {
-                                        setEditingNoteId(null);
-                                      }
-                                    }} className="p-1.5 text-white bg-primary hover:bg-primary-light rounded transition-colors shadow-sm">
-                                      <Check className="h-3 w-3" />
-                                    </button>
-                                    <button onClick={() => setEditingNoteId(null)} className="p-1.5 text-slate-500 bg-slate-100 hover:bg-slate-200 rounded transition-colors">
-                                      <X className="h-3 w-3" />
-                                    </button>
-                                  </div>
-                                </div>
-                              ) : (
-                                <>
-                                  <a href={file.url} target="_blank" rel="noreferrer">
-                                    <p className="text-sm font-bold text-slate-900 truncate hover:text-primary-600 transition-colors cursor-pointer">
-                                      {typeof record.content === 'string' && record.content !== '' && !record.content.startsWith('Estudio') ? record.content : (file.name || t.document_fallback)}
-                                    </p>
-                                  </a>
-                                  <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mt-0.5">{file.type || t.clinical_study_label}</p>
-                                </>
-                              )}
-                            </div>
-                            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                              {!editingNoteId && (
-                                <button onClick={() => { setEditingNoteId(record.id); setEditNoteContent(typeof record.content === 'string' && record.content !== '' && !record.content.startsWith('Estudio') ? record.content : file.name); }} className="p-1.5 text-slate-400 hover:text-primary-600 hover:bg-slate-100 rounded transition-colors" title={lang === 'es' ? 'Editar nombre' : 'Edit name'}>
-                                  <Edit2 className="h-3.5 w-3.5" />
-                                </button>
-                              )}
-                              <button
-                                onClick={() => handleDeleteFile(record.id, file.url)}
-                                className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-slate-100 rounded transition-colors"
-                                title={lang === 'es' ? 'Eliminar' : 'Delete'}
-                              >
-                                <Trash2 className="h-3.5 w-3.5" />
-                              </button>
-                              <a href={file.url} target="_blank" rel="noreferrer" className="p-1.5 text-slate-400 hover:text-primary-600 hover:bg-slate-100 rounded transition-colors" title={lang === 'es' ? 'Abrir' : 'Open'}>
-                                <ExternalLink className="h-3.5 w-3.5" />
-                              </a>
-                            </div>
-                          </div>
-                        ))
+                    <div className="flex gap-2 p-1.5 bg-white border border-slate-200 rounded-2xl shadow-sm">
+                      {[
+                        { id: 'all', label: t.all || 'Todos', icon: LayoutGrid },
+                        { id: 'study', label: t.studies || 'Estudios', icon: FileSearch },
+                        { id: 'consent', label: t.consents || 'Consentimientos', icon: FileCheck },
+                      ].map((filter) => (
+                        <button
+                          key={filter.id}
+                          onClick={() => setFileFilter(filter.id as any)}
+                          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
+                            fileFilter === filter.id 
+                              ? 'bg-slate-900 text-white shadow-md' 
+                              : 'text-slate-400 hover:bg-slate-50 hover:text-slate-600'
+                          }`}
+                        >
+                          <filter.icon className="h-3.5 w-3.5" />
+                          {filter.label}
+                        </button>
                       ))}
                     </div>
-                  )}
+                  </div>
+
+                  {/* UPLOADER ZONE */}
+                  <div className="bg-white border-2 border-dashed border-slate-200 rounded-[2rem] overflow-hidden hover:border-primary/40 hover:bg-primary/[0.01] transition-all group">
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      className="hidden"
+                      accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.xls,.xlsx"
+                      onChange={handleFileUpload}
+                    />
+                    <div className="p-10 flex flex-col items-center justify-center text-center">
+                      <div 
+                        onClick={() => fileInputRef.current?.click()}
+                        className="cursor-pointer flex flex-col items-center"
+                      >
+                        <div className="h-20 w-20 bg-slate-50 rounded-3xl border border-slate-100 flex items-center justify-center text-slate-400 group-hover:bg-primary-50 group-hover:text-primary-600 transition-all mb-6 relative shadow-inner">
+                          {isUploading ? (
+                             <div className="h-10 w-10 animate-spin rounded-full border-[3px] border-primary/20 border-t-primary" />
+                          ) : (
+                            <Upload className="h-8 w-8 group-hover:scale-110 transition-transform" />
+                          )}
+                          {!isUploading && (
+                             <div className="absolute -top-2 -right-2 h-7 w-7 bg-primary text-white rounded-xl flex items-center justify-center shadow-lg animate-bounce">
+                              <Plus className="h-4 w-4" />
+                            </div>
+                          )}
+                        </div>
+                        <h4 className="text-base font-black text-slate-900 tracking-tight mb-2">{t.upload_files_title || "Upload Clinical Assets"}</h4>
+                        <p className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.2em]">{t.upload_files_desc || "PDF, Images or Documents up to 10MB"}</p>
+                      </div>
+                    </div>
+                    
+                    {uploadProgress && (
+                      <div className="px-10 pb-8">
+                        <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                          <motion.div 
+                            initial={{ width: 0 }}
+                            animate={{ width: "100%" }}
+                            className={`h-full ${uploadProgress.startsWith('✓') ? 'bg-emerald-500' : 'bg-primary-500'}`}
+                          />
+                        </div>
+                        <p className={`mt-4 text-[10px] font-black uppercase tracking-[0.3em] flex items-center gap-2 ${
+                          uploadProgress.startsWith('✓') ? 'text-emerald-600' : 'text-primary-600'
+                        }`}>
+                          {uploadProgress.startsWith('✓') ? <CheckCircle2 className="h-4 w-4" /> : <Activity className="h-4 w-4 animate-pulse" />}
+                          {uploadProgress}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* FILE GRID */}
+                  {(() => {
+                    const allFiles = history.flatMap(h => (h.attachments || []).map(file => ({
+                      ...file,
+                      recordId: h.id,
+                      date: h.date,
+                      professional: h.professionals?.full_name || 'System',
+                      type: h.type // 'study', 'note', etc.
+                    }))).filter(f => {
+                      const matchesSearch = f.name.toLowerCase().includes(fileSearch.toLowerCase());
+                      const matchesFilter = fileFilter === 'all' || 
+                                          (fileFilter === 'study' && f.type === 'study') ||
+                                          (fileFilter === 'consent' && f.name.toLowerCase().includes('consent'));
+                      return matchesSearch && matchesFilter;
+                    });
+
+                    if (allFiles.length === 0 && !isUploading) {
+                      return (
+                        <div className="py-24 text-center">
+                          <div className="h-24 w-24 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6 border border-slate-100 shadow-inner">
+                            <FolderOpen className="h-10 w-10 text-slate-300" />
+                          </div>
+                          <p className="text-sm font-black text-slate-400 uppercase tracking-[0.3em]">{t.no_results_files || "No clinical files found"}</p>
+                        </div>
+                      );
+                    }
+
+                    return (
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {allFiles.map((file, idx) => {
+                          const isPDF = file.name.toLowerCase().endsWith('.pdf');
+                          const isImage = /\.(jpg|jpeg|png|webp)$/i.test(file.name);
+                          const isConsent = file.name.toLowerCase().includes('consent');
+
+                          return (
+                            <motion.div
+                              key={`${file.recordId}-${idx}`}
+                              layout
+                              initial={{ opacity: 0, y: 20 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              className="group/card bg-white border border-slate-200 rounded-[1.5rem] overflow-hidden shadow-sm hover:shadow-2xl hover:-translate-y-1 transition-all duration-300"
+                            >
+                              <div className="aspect-[4/3] bg-slate-50 relative flex items-center justify-center border-b border-slate-100 overflow-hidden">
+                                {isImage ? (
+                                  <img src={file.url} alt={file.name} className="w-full h-full object-cover group-hover/card:scale-110 transition-transform duration-700" />
+                                ) : (
+                                  <div className={`h-20 w-20 rounded-3xl flex items-center justify-center transition-all duration-300 shadow-sm ${
+                                    isPDF ? 'bg-rose-50 text-rose-500' : 'bg-blue-50 text-blue-500'
+                                  }`}>
+                                    {isPDF ? <FileText className="h-10 w-10" /> : <File className="h-10 w-10" />}
+                                  </div>
+                                )}
+                                
+                                {/* Overlay Actions */}
+                                <div className="absolute inset-0 bg-slate-900/40 opacity-0 group-hover/card:opacity-100 transition-opacity flex items-center justify-center gap-3 backdrop-blur-[2px]">
+                                  <a href={file.url} target="_blank" rel="noreferrer" className="p-3.5 bg-white text-slate-900 rounded-2xl hover:bg-primary hover:text-white transition-all shadow-xl hover:scale-110">
+                                    <Eye className="h-5 w-5" />
+                                  </a>
+                                  <a href={file.url} download={file.name} className="p-3.5 bg-white text-slate-900 rounded-2xl hover:bg-primary hover:text-white transition-all shadow-xl hover:scale-110">
+                                    <Download className="h-5 w-5" />
+                                  </a>
+                                </div>
+
+                                {isConsent && (
+                                  <div className="absolute top-4 left-4 px-3 py-1.5 bg-emerald-500/90 text-white text-[9px] font-black uppercase tracking-[0.2em] rounded-xl shadow-lg flex items-center gap-2 backdrop-blur-md">
+                                    <ShieldCheck className="h-3.5 w-3.5" />
+                                    {t.verified_consent || 'Verified Consent'}
+                                  </div>
+                                )}
+                              </div>
+                              
+                              <div className="p-5">
+                                <div className="flex items-start justify-between gap-3 mb-4">
+                                  <div className="flex-1 min-w-0">
+                                    <p className="text-[11px] font-black text-slate-900 uppercase tracking-tight truncate">
+                                      {file.name}
+                                    </p>
+                                    <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-1">
+                                      {isPDF ? 'Adobe PDF Document' : (isImage ? 'Digital Image' : 'Clinical Asset')}
+                                    </p>
+                                  </div>
+                                  <button 
+                                    onClick={() => handleDeleteFile(file.recordId, file.url)}
+                                    className="p-2 text-slate-300 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-all"
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </button>
+                                </div>
+                                
+                                <div className="flex items-center justify-between pt-4 border-t border-slate-50">
+                                  <div className="flex items-center gap-2">
+                                    <div className="h-7 w-7 rounded-full bg-slate-50 flex items-center justify-center border border-slate-200">
+                                      <User className="h-3.5 w-3.5 text-slate-400" />
+                                    </div>
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest truncate max-w-[120px]">
+                                      {file.professional}
+                                    </p>
+                                  </div>
+                                  <div className="flex flex-col items-end">
+                                    <p className="text-[9px] font-black text-slate-900 uppercase">
+                                      {format(new Date(file.date), 'dd MMM')}
+                                    </p>
+                                    <p className="text-[8px] font-bold text-slate-400 uppercase tracking-tighter">
+                                      {format(new Date(file.date), 'yyyy')}
+                                    </p>
+                                  </div>
+                                </div>
+                              </div>
+                            </motion.div>
+                          );
+                        })}
+                      </div>
+                    );
+                  })()}
                 </motion.div>
               )}
 

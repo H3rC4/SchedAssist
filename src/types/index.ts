@@ -57,7 +57,13 @@ export interface Client {
   last_name: string;
   phone: string;
   email?: string;
+  dni?: string;
+  birth_date?: string;
+  gender?: string;
+  address?: string;
+  occupation?: string;
   notes?: string;
+  allergies?: string;
   whatsapp_opt_in: boolean;
   created_at: string;
   updated_at: string;
