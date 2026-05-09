@@ -32,7 +32,7 @@ export default function ProfessionalsPage() {
     locations
   } = useProfessionals()
 
-  const [drawerMode, setDrawerMode] = useState<DrawerMode>('create')
+  const [drawerMode, setDrawerMode] = useState<DrawerMode | null>(null)
   const [editRules, setEditRules] = useState<AvailabilityRule[]>([])
   const [searchQuery, setSearchQuery] = useState('')
 
@@ -44,6 +44,14 @@ export default function ProfessionalsPage() {
       setEditRules([...selectedProf.availability_rules].sort((a,b) => a.day_of_week - b.day_of_week))
     }
   }, [selectedProf])
+
+  useEffect(() => {
+    if (saved && drawerMode === 'edit') {
+      setTimeout(() => {
+        handleCloseDrawer()
+      }, 1000)
+    }
+  }, [saved])
 
   const updateRule = (day: number, field: string, value: any) => {
     setEditRules(rules => rules.map(r => r.day_of_week === day ? { ...r, [field]: value } : r))
@@ -79,7 +87,7 @@ export default function ProfessionalsPage() {
 
   const handleCloseDrawer = () => {
     selectProfessional(null)
-    setDrawerMode('create')
+    setDrawerMode(null)
   }
 
   const filteredProfessionals = professionals.filter(p => 
@@ -156,7 +164,7 @@ export default function ProfessionalsPage() {
       </div>
 
       <AnimatePresence>
-        {(drawerMode === 'create' || selectedProf) && (
+        {drawerMode && (
           <ProfessionalDrawer 
             mode={selectedProf ? 'edit' : drawerMode}
             professional={selectedProf}
