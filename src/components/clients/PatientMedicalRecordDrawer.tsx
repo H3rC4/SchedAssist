@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { X, Calendar, Clock, FileText, Plus, ChevronRight, History as HistoryIcon, CalendarDays, Paperclip, ExternalLink, AlertCircle } from 'lucide-react'
+import { X, Calendar, Clock, FileText, Plus, ChevronRight, History as HistoryIcon, CalendarDays, Paperclip, ExternalLink, AlertCircle, Phone, MessageSquare } from 'lucide-react'
 import { format, parseISO } from 'date-fns'
 import { es } from 'date-fns/locale/es'
 import { it } from 'date-fns/locale/it'
