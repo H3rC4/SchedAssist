@@ -13,8 +13,8 @@ interface LocationPrecisionCardProps {
   location: Location
   index: number
   savedId: string | null
-  onEdit: (location: Location) => void
-  onDelete: (id: string) => void
+  onEdit?: (location: Location) => void
+  onDelete?: (id: string) => void
   onViewSchedule?: (location: Location) => void
   t: any
 }
@@ -32,18 +32,22 @@ export function LocationPrecisionCard({ location, index, savedId, onEdit, onDele
           <Building2 className="h-6 w-6" />
         </div>
         <div className="flex gap-2">
-          <button 
-            onClick={() => onEdit(location)} 
-            className="h-10 w-10 flex items-center justify-center bg-primary/[0.03] border border-primary/10 text-primary/40 hover:text-primary hover:bg-primary/10 transition-all rounded-xl"
-          >
-            <Pencil className="h-4 w-4" />
-          </button>
-          <button 
-            onClick={() => onDelete(location.id)} 
-            className="h-10 w-10 flex items-center justify-center bg-primary/[0.03] border border-primary/10 text-primary/40 hover:text-red-600 hover:bg-red-50 transition-all rounded-xl"
-          >
-            <Trash2 className="h-4 w-4" />
-          </button>
+          {onEdit && (
+            <button
+              onClick={() => onEdit(location)}
+              className="h-10 w-10 flex items-center justify-center bg-primary/[0.03] border border-primary/10 text-primary/40 hover:text-primary hover:bg-primary/10 transition-all rounded-xl"
+            >
+              <Pencil className="h-4 w-4" />
+            </button>
+          )}
+          {onDelete && (
+            <button
+              onClick={() => onDelete(location.id)}
+              className="h-10 w-10 flex items-center justify-center bg-primary/[0.03] border border-primary/10 text-primary/40 hover:text-red-600 hover:bg-red-50 transition-all rounded-xl"
+            >
+              <Trash2 className="h-4 w-4" />
+            </button>
+          )}
         </div>
       </div>
 

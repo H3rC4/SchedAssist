@@ -15,8 +15,8 @@ interface ServicePrecisionCardProps {
   index: number
   savedId: string | null
   durationLabels: Record<number, string>
-  onEdit: (service: Service) => void
-  onDelete: (id: string) => void
+  onEdit?: (service: Service) => void
+  onDelete?: (id: string) => void
 }
 
 const getServiceIcon = (name: string) => {
@@ -56,20 +56,26 @@ export function ServicePrecisionCard({ service, index, savedId, durationLabels, 
         <span className="text-[7px] font-black text-on-surface-muted uppercase tracking-widest px-2 py-1 bg-primary/5 rounded-full">{t.reserved}</span>
       )}
       
-      <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-        <button 
-          onClick={() => onEdit(service)} 
-          className="h-8 w-8 rounded-lg flex items-center justify-center text-on-surface-muted/40 hover:text-primary hover:bg-primary/5 transition-all"
-        >
-          <Pencil className="h-3.5 w-3.5" />
-        </button>
-        <button 
-          onClick={() => onDelete(service.id)} 
-          className="h-8 w-8 rounded-lg flex items-center justify-center text-on-surface-muted/40 hover:text-red-600 hover:bg-red-50 transition-all"
-        >
-          <Trash2 className="h-3.5 w-3.5" />
-        </button>
-      </div>
+      {(onEdit || onDelete) && (
+        <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+          {onEdit && (
+            <button
+              onClick={() => onEdit(service)}
+              className="h-8 w-8 rounded-lg flex items-center justify-center text-on-surface-muted/40 hover:text-primary hover:bg-primary/5 transition-all"
+            >
+              <Pencil className="h-3.5 w-3.5" />
+            </button>
+          )}
+          {onDelete && (
+            <button
+              onClick={() => onDelete(service.id)}
+              className="h-8 w-8 rounded-lg flex items-center justify-center text-on-surface-muted/40 hover:text-red-600 hover:bg-red-50 transition-all"
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+            </button>
+          )}
+        </div>
+      )}
     </motion.div>
   )
 }

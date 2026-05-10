@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { CreditCard, Zap, Calendar, ArrowUpRight, Loader2 } from 'lucide-react';
+import { CreditCard, Calendar, Loader2 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { translations, Language } from '@/lib/i18n';
 
@@ -32,24 +32,6 @@ export default function BillingSettingsPage() {
 
   const t = (translations[lang] || translations['es']) as any;
 
-  const [isRedirecting, setIsRedirecting] = useState(false);
-
-  const handleManageSubscription = async () => {
-    setIsRedirecting(true);
-    try {
-      const res = await fetch('/api/billing/portal', { method: 'POST' });
-      const data = await res.json();
-      if (data.url) {
-        window.location.href = data.url;
-      } else {
-        alert(data.error || 'Error redirecting to Stripe');
-      }
-    } catch (err) {
-      alert('Error redirecting to Stripe');
-    } finally {
-      setIsRedirecting(false);
-    }
-  };
 
   if (loading) {
     return (
@@ -69,53 +51,6 @@ export default function BillingSettingsPage() {
           {t.billing_desc}
         </p>
       </header>
-
-      {/* Current Plan */}
-      <section className="bg-primary rounded-[3rem] p-12 text-white shadow-xl shadow-primary/20 relative overflow-hidden">
-        <Zap className="absolute top-[-2rem] right-[-2rem] h-64 w-64 text-white/5 rotate-12" />
-        
-        <div className="relative z-10 space-y-10">
-          <div className="flex items-start justify-between">
-            <div className="space-y-2">
-              <h2 className="text-sm font-black uppercase tracking-[0.3em] text-white/60">{t.current_plan}</h2>
-              <p className="text-5xl font-black tracking-tighter uppercase">{t.professional_plus || 'Professional'} <span className="text-white/40 italic">Plus</span></p>
-            </div>
-            <div className="px-6 py-2 bg-white/10 backdrop-blur-md rounded-full border border-white/20 text-[10px] font-black uppercase tracking-widest">
-              {t.renews_on ? t.renews_on('May 24, 2026') : 'Renews May 24, 2026'}
-            </div>
-          </div>
-
-          <div className="flex items-center gap-12">
-             <div className="space-y-1">
-               <p className="text-[10px] font-black text-white/40 uppercase tracking-widest">{t.monthly_cost}</p>
-               <p className="text-3xl font-black">$89.00 <span className="text-xs text-white/40 font-bold italic">/ mo</span></p>
-             </div>
-             <div className="h-12 w-[1px] bg-white/10" />
-             <div className="space-y-1">
-               <p className="text-[10px] font-black text-white/40 uppercase tracking-widest">{t.payment_method}</p>
-               <p className="text-lg font-black uppercase tracking-tight">Visa ending in •••• 4242</p>
-             </div>
-          </div>
-
-          <div className="flex flex-wrap gap-4">
-            <button 
-              onClick={handleManageSubscription}
-              disabled={isRedirecting}
-              className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest bg-white text-primary px-8 py-4 rounded-2xl hover:bg-surface transition-all active:scale-95 disabled:opacity-50"
-            >
-              {isRedirecting ? <Loader2 className="h-4 w-4 animate-spin" /> : <>{t.manage_subscription} <ArrowUpRight className="h-4 w-4" /></>}
-            </button>
-
-            <button 
-              onClick={handleManageSubscription}
-              disabled={isRedirecting}
-              className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest bg-white/10 text-white border border-white/20 px-8 py-4 rounded-2xl hover:bg-white/20 transition-all active:scale-95 disabled:opacity-50"
-            >
-              {t.cancel_subscription}
-            </button>
-          </div>
-        </div>
-      </section>
 
       {/* Invoices */}
       <section className="space-y-8">

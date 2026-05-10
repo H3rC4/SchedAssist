@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { verifyTenantAccess } from '@/lib/auth-utils';
 
 export async function POST(req: NextRequest) {
   try {
@@ -11,33 +12,35 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { tenant_id } = body;
+    const { tenant_id, language } = body;
 
     if (!tenant_id) {
       return NextResponse.json({ error: 'Tenant ID required' }, { status: 400 });
     }
 
-    // Verificar que el usuario pertenece al tenant
-    const { data: tenantUser } = await supabase
-      .from('tenant_users')
-      .select('tenant_id, role, tenants(settings)')
-      .eq('tenant_id', tenant_id)
-      .eq('user_id', user.id)
-      .single();
-
-    if (!tenantUser) {
-      return NextResponse.json({ error: 'Unauthorized for this tenant' }, { status: 403 });
+    // Verificar acceso del usuario al tenant
+    const access = await verifyTenantAccess(supabase, user, tenant_id);
+    if (!access.authorized) {
+      return NextResponse.json({ error: access.error }, { status: access.status });
     }
 
-    const currentSettings = (tenantUser.tenants as any)?.settings || {};
+    // Obtener configuración actual
+    const { data: tenant } = await supabase
+      .from('tenants')
+      .select('settings')
+      .eq('id', tenant_id)
+      .single();
 
-    // Actualizar el valor en la base de datos
+    const currentSettings = tenant?.settings || {};
+
+    // Actualizar el valor en la base de datos, incluyendo el idioma si se proporcionó
     const { error: updateError } = await supabase
       .from('tenants')
       .update({
         settings: {
           ...currentSettings,
-          onboarding_completed: true
+          onboarding_completed: true,
+          lang: language || currentSettings.lang || 'es'
         }
       })
       .eq('id', tenant_id);
@@ -49,6 +52,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ success: true });
 
   } catch (err: any) {
+    console.error('Onboarding API Error:', err);
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }

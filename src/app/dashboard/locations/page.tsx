@@ -31,6 +31,7 @@ export default function LocationsPage() {
   const [lang, setLang] = useState<Language>('es')
   const [savedId, setSavedId] = useState<string | null>(null)
   const [incompleteLocation, setIncompleteLocation] = useState<Location | null>(null)
+  const [userRole, setUserRole] = useState<string | null>(null)
 
   const [formData, setFormData] = useState({ name: '', address: '', city: '' })
 
@@ -42,13 +43,16 @@ export default function LocationsPage() {
     if (!user) return
     const { data: tuData } = await supabase
       .from('tenant_users')
-      .select('tenant_id, tenants(id, settings)')
+      .select('role, tenant_id, tenants(id, settings)')
       .eq('user_id', user.id)
       .limit(1).single()
-    if (tuData?.tenants) {
-      const tenant = tuData.tenants as any
-      setTenantId(tenant.id)
-      setLang((tenant.settings?.language as Language) || 'es')
+    if (tuData) {
+      setUserRole(tuData.role)
+      if (tuData.tenants) {
+        const tenant = tuData.tenants as any
+        setTenantId(tenant.id)
+        setLang((tenant.settings?.language as Language) || 'es')
+      }
     }
   }
 
@@ -141,13 +145,15 @@ export default function LocationsPage() {
                     {t.locations_subtitle || 'Strategically manage your physical reach and patient touchpoints.'}
                   </p>
                </div>
-               <button 
-                 onClick={() => setShowAddForm(true)}
-                 className="bg-primary text-white px-8 py-4 rounded-full font-black text-[11px] uppercase tracking-[0.4em] shadow-xl shadow-primary/20 hover:-translate-y-0.5 transition-all active:scale-[0.98] flex items-center gap-3 shrink-0"
-               >
-                 {t.add_location || 'Add Location'}
-                 <Plus className="h-4 w-4" />
-               </button>
+               {userRole !== 'secretary' && (
+                 <button
+                   onClick={() => setShowAddForm(true)}
+                   className="bg-primary text-white px-8 py-4 rounded-full font-black text-[11px] uppercase tracking-[0.4em] shadow-xl shadow-primary/20 hover:-translate-y-0.5 transition-all active:scale-[0.98] flex items-center gap-3 shrink-0"
+                 >
+                   {t.add_location || 'Add Location'}
+                   <Plus className="h-4 w-4" />
+                 </button>
+               )}
             </div>
           </motion.div>
         </header>
@@ -207,8 +213,8 @@ export default function LocationsPage() {
                   location={loc}
                   index={idx}
                   savedId={savedId}
-                  onEdit={setEditLocation}
-                  onDelete={handleDeleteLocation}
+                  onEdit={userRole !== 'secretary' ? setEditLocation : undefined}
+                  onDelete={userRole !== 'secretary' ? handleDeleteLocation : undefined}
                   onViewSchedule={handleViewSchedule}
                   t={t}
                 />

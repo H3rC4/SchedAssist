@@ -37,7 +37,7 @@ interface ProfessionalDrawerProps {
   saving: boolean
   saved: boolean
   locations?: any[]
-  onCreate: (data: { full_name: string, specialty: string, location_id?: string }) => Promise<{ success: boolean, prof?: Professional }>
+  onCreate: (data: { full_name: string, specialty: string, email: string, phone: string, location_id?: string }) => Promise<{ success: boolean, prof?: Professional }>
 }
 
 export function ProfessionalDrawer({
@@ -86,7 +86,7 @@ export function ProfessionalDrawer({
     location_id: professional?.location_id || ''
   })
 
-  const [createData, setCreateData] = useState({ full_name: '', specialty: '', location_id: '' })
+  const [createData, setCreateData] = useState({ full_name: '', specialty: '', email: '', phone: '', location_id: '' })
   const [createLoading, setCreateLoading] = useState(false)
 
   const [calendarMonth, setCalendarMonth] = useState(new Date())
@@ -223,7 +223,7 @@ export function ProfessionalDrawer({
 
   const handleCreateProfessional = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!createData.full_name) return
+    if (!createData.full_name || !createData.email || !createData.phone) return
     setCreateLoading(true)
     await onCreate(createData)
     setCreateLoading(false)
@@ -309,6 +309,44 @@ export function ProfessionalDrawer({
                       className="w-full h-11 bg-surface border border-on-surface/10 rounded-xl pl-11 pr-4 text-sm font-bold text-on-surface focus:border-primary focus:ring-1 focus:ring-primary/20 outline-none transition-all"
                       placeholder={T.specialtyPH}
                     />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-[8px] font-black text-on-surface-muted uppercase tracking-[0.2em] ml-2">
+                      {T.email || 'Email'}
+                    </label>
+                    <div className="relative group">
+                      <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-on-surface-muted/40 group-focus-within:text-primary transition-colors" />
+                      <input
+                        required
+                        type="email"
+                        value={createData.email}
+                        onChange={e => setCreateData({ ...createData, email: e.target.value })}
+                        className="w-full h-11 bg-surface border border-on-surface/10 rounded-xl pl-11 pr-4 text-sm font-bold text-on-surface focus:border-primary focus:ring-1 focus:ring-primary/20 outline-none transition-all"
+                        placeholder="doctor@example.com"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-[8px] font-black text-on-surface-muted uppercase tracking-[0.2em] ml-2">
+                      {T.phone || 'Celular'}
+                    </label>
+                    <div className="relative group">
+                      <div className="absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-muted/40 font-bold text-xs group-focus-within:text-primary transition-colors">
+                        +
+                      </div>
+                      <input
+                        required
+                        type="tel"
+                        value={createData.phone}
+                        onChange={e => setCreateData({ ...createData, phone: e.target.value })}
+                        className="w-full h-11 bg-surface border border-on-surface/10 rounded-xl pl-8 pr-4 text-sm font-bold text-on-surface focus:border-primary focus:ring-1 focus:ring-primary/20 outline-none transition-all"
+                        placeholder="54911..."
+                      />
+                    </div>
                   </div>
                 </div>
 

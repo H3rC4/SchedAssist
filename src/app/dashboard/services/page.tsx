@@ -27,6 +27,7 @@ export default function ServicesPage() {
   const supabase = createClient()
   const [services, setServices] = useState<Service[]>([])
   const [tenantId, setTenantId] = useState('')
+  const [userRole, setUserRole] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [showAddForm, setShowAddForm] = useState(false)
@@ -43,12 +44,15 @@ export default function ServicesPage() {
     if (!user) return
     const { data: tuData } = await supabase
       .from('tenant_users')
-      .select('tenant_id, tenants(id, settings)')
+      .select('role, tenant_id, tenants(id, settings)')
       .eq('user_id', user.id)
       .limit(1).single()
-    if (tuData?.tenants) {
-      const tenant = tuData.tenants as any
-      setTenantId(tenant.id)
+    if (tuData) {
+      setUserRole(tuData.role)
+      if (tuData.tenants) {
+        const tenant = tuData.tenants as any
+        setTenantId(tenant.id)
+      }
     }
   }
 
@@ -130,13 +134,15 @@ export default function ServicesPage() {
             </p>
           </div>
           
-          <button 
-            onClick={() => setShowAddForm(true)}
-            className="precision-button-primary h-11 px-6 text-[10px] uppercase tracking-widest flex items-center gap-3 shrink-0"
-          >
-            <span>{t.create.toUpperCase()}</span>
-            <Plus className="h-4 w-4" />
-          </button>
+          {userRole !== 'secretary' && (
+            <button 
+              onClick={() => setShowAddForm(true)}
+              className="precision-button-primary h-11 px-6 text-[10px] uppercase tracking-widest flex items-center gap-3 shrink-0"
+            >
+              <span>{t.create.toUpperCase()}</span>
+              <Plus className="h-4 w-4" />
+            </button>
+          )}
         </div>
       </div>
 
@@ -157,12 +163,14 @@ export default function ServicesPage() {
             <p className="text-[11px] text-on-surface-muted font-medium mb-8 max-w-xs mx-auto leading-relaxed">
               {t.onboarding.services_desc_empty}
             </p>
-            <button 
-              onClick={() => setShowAddForm(true)}
-              className="precision-button-primary py-2 px-6 text-[10px] tracking-widest uppercase"
-            >
-              {t.create}
-            </button>
+            {userRole !== 'secretary' && (
+              <button 
+                onClick={() => setShowAddForm(true)}
+                className="precision-button-primary py-2 px-6 text-[10px] tracking-widest uppercase"
+              >
+                {t.create}
+              </button>
+            )}
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -173,14 +181,15 @@ export default function ServicesPage() {
                 index={idx}
                 savedId={savedId}
                 durationLabels={duration_labels}
-                onEdit={setEditService}
-                onDelete={handleDeleteService}
+                onEdit={userRole !== 'secretary' ? setEditService : undefined}
+                onDelete={userRole !== 'secretary' ? handleDeleteService : undefined}
               />
             ))}
           </div>
         )}
       </section>
-      {/* CONFIGURATION DRAWER */}
+      {/* CONFIGURATION DRAWER — only for non-secretary roles */}
+      {userRole !== 'secretary' && (
       <AnimatePresence>
         {(showAddForm || editService) && (
           <div className="fixed inset-0 z-[100] flex items-center justify-end overflow-hidden" onClick={() => { setShowAddForm(false); setEditService(null) }}>
@@ -324,6 +333,7 @@ export default function ServicesPage() {
           </div>
         )}
       </AnimatePresence>
+      )}
     </div>
   )
 }

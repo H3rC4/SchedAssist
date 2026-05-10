@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState, useCallback } from 'react'
+import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer,
@@ -10,6 +11,7 @@ import { translations, Language } from '@/lib/i18n'
 import { TrendingUp, AlertTriangle, Users, DollarSign, Activity, MapPin, ChevronDown } from 'lucide-react'
 
 export default function AnalyticsPage() {
+  const router = useRouter()
   const supabase = createClient()
   const [tenantId, setTenantId] = useState('')
   const [lang, setLang] = useState<Language>('es')
@@ -26,9 +28,15 @@ export default function AnalyticsPage() {
 
     const { data: tuData } = await supabase
       .from('tenant_users')
-      .select('tenant_id, tenants(id, settings)')
+      .select('tenant_id, role, tenants(id, settings)')
       .eq('user_id', user.id)
       .limit(1).single()
+
+    // Guard: secretary cannot access analytics
+    if (tuData?.role === 'secretary') {
+      router.replace('/dashboard')
+      return
+    }
 
     if (tuData?.tenants) {
       const tenant = tuData.tenants as any
