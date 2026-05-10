@@ -251,7 +251,7 @@ export default function WhatsAppSettingsPage() {
               </p>
             </div>
             <div className="px-8 py-4 bg-white/10 backdrop-blur-xl rounded-[2rem] border border-white/20 text-[10px] font-black uppercase tracking-[0.3em] flex flex-col items-center gap-1 shadow-lg">
-              <span className="text-white/40 text-[8px] tracking-[0.4em]">{t.renews_on('').split(' ')[0]}</span>
+              <span className="text-white/40 text-[8px] tracking-[0.4em]">{t.renews_on ? t.renews_on('MAY 24, 2026').split(' ')[0] : 'Renews'}</span>
               <span className="text-lg tracking-tighter">MAY 24, 2026</span>
             </div>
           </div>
