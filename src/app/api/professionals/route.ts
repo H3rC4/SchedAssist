@@ -42,16 +42,16 @@ export async function GET(req: NextRequest) {
 // POST: Add a new professional
 export async function POST(req: NextRequest) {
   const body = await req.json()
-  const { tenant_id, full_name, specialty, active } = body
+  const { tenant_id, full_name, specialty, email, phone, active, location_id } = body
 
-  if (!tenant_id || !full_name) {
-    return NextResponse.json({ error: 'tenant_id and full_name required' }, { status: 400 })
+  if (!tenant_id || !full_name || !email) {
+    return NextResponse.json({ error: 'tenant_id, full_name and email required' }, { status: 400 })
   }
 
   const supabase = createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const { data: { user: currentUser } } = await supabase.auth.getUser();
   
-  const access = await verifyTenantAccess(supabase, user, tenant_id, ['admin', 'owner', 'tenant_admin']);
+  const access = await verifyTenantAccess(supabase, currentUser, tenant_id, ['admin', 'owner', 'tenant_admin']);
   if (!access.authorized) {
     return NextResponse.json({ error: access.error }, { status: access.status });
   }
@@ -62,15 +62,18 @@ export async function POST(req: NextRequest) {
 
   // Generate auth credentials
   const randomSuffix = Math.random().toString(36).substring(2, 8);
-  const normalizedName = full_name.toLowerCase().replace(/[^a-z0-9]/g, '');
-  const auth_email = `dr.${normalizedName}@schedassist.com`;
   const auth_password_hint = randomSuffix + 'X!';
 
   // Create user in Supabase Auth
   const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
-    email: auth_email,
+    email: email,
     password: auth_password_hint,
     email_confirm: true,
+    user_metadata: {
+      full_name,
+      phone,
+      role: 'professional'
+    }
   });
 
   if (authError) {
@@ -97,9 +100,11 @@ export async function POST(req: NextRequest) {
       tenant_id, 
       full_name, 
       specialty, 
+      phone,
+      location_id,
       active: active ?? true,
       user_id: userId,
-      auth_email,
+      auth_email: email,
       auth_password_hint
     }])
     .select()

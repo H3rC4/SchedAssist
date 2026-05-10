@@ -32,6 +32,7 @@ export interface Professional {
   user_id?: string;
   full_name: string;
   specialty?: string;
+  phone?: string;
   active: boolean;
   auth_email?: string;
   auth_password_hint?: string;

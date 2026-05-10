@@ -19,6 +19,7 @@ export interface Professional {
   tenant_id: string;
   full_name: string;
   specialty: string | null;
+  phone?: string;
   active: boolean;
   auth_email?: string;
   auth_password_hint?: string;
@@ -94,7 +95,7 @@ export function useProfessionals() {
     setOverrides(data || [])
   }
 
-  const selectProfessional = (prof: Professional | null) => {
+  const selectProfessional = (prof: Professional | null, tab: 'schedule' | 'exceptions' | 'access' = 'schedule') => {
     if (prof) {
       // Repair if rules are missing
       const rules = [...(prof.availability_rules || [])];
@@ -112,14 +113,14 @@ export function useProfessionals() {
       
       setSelectedProf(prof)
       fetchOverrides(prof.id)
-      setActiveTab('schedule')
+      setActiveTab(tab)
       setSaved(false)
     } else {
       setSelectedProf(null)
     }
   }
 
-  const createProfessional = async (data: { full_name: string, specialty: string, location_id?: string }) => {
+  const createProfessional = async (data: { full_name: string, specialty: string, email: string, phone: string, location_id?: string }) => {
     setSaving(true)
     try {
       const res = await fetch('/api/professionals', {
@@ -129,6 +130,8 @@ export function useProfessionals() {
           tenant_id: tenantId,
           full_name: data.full_name,
           specialty: data.specialty || null,
+          email: data.email,
+          phone: data.phone,
           location_id: data.location_id || null,
           active: true
         })
