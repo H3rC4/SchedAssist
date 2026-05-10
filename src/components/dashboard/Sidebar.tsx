@@ -30,14 +30,15 @@ const groupLabels = {
 
 interface SidebarProps {
   lang?: Language
+  userRoleProp?: string | null
 }
 
-export function Sidebar({ lang = 'es' }: SidebarProps) {
+export function Sidebar({ lang = 'es', userRoleProp }: SidebarProps) {
   const pathname = usePathname()
   const supabase = createClient()
   const [activeTenant, setActiveTenant] = useState<any>(null)
-  const [userRole, setUserRole] = useState<string | null>(null)
-  const [roleLoading, setRoleLoading] = useState(true)
+  const [userRole, setUserRole] = useState<string | null>(userRoleProp || null)
+  const [roleLoading, setRoleLoading] = useState(!userRoleProp)
   const [showSupportModal, setShowSupportModal] = useState(false)
 
   const [isHovered, setIsHovered] = useState(false)
@@ -62,6 +63,9 @@ export function Sidebar({ lang = 'es' }: SidebarProps) {
   }, [])
 
   const filteredNavItems = navItemsBase.filter(item => {
+    // If we're still loading the role and no prop was provided, show nothing
+    if (roleLoading && !userRoleProp) return false
+
     if (userRole === 'professional') {
       return ['dashboard', 'appointments', 'professionals', 'settings'].includes(item.id)
     }

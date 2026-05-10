@@ -90,7 +90,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const pathname = usePathname()
   const { setLanguage } = useLandingTranslation()
   const [tenantInfo, setTenantInfo] = useState<{
-    id: string; status: string; trial_ends_at: string | null; settings: any; lang: Language
+    id: string; status: string; trial_ends_at: string | null; settings: any; lang: Language; role: string
   } | null>(null)
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const [forcePasswordChange, setForcePasswordChange] = useState(false)
@@ -116,7 +116,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           status: t.subscription_status,
           trial_ends_at: t.trial_ends_at,
           settings: t.settings || {},
-          lang: detectedLang
+          lang: detectedLang,
+          role: data.role
         })
         setLanguage(detectedLang)
         if (data.role === 'professional') {
@@ -166,7 +167,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               transition={{ type: 'spring', damping: 28, stiffness: 220 }}
               className="fixed inset-y-0 left-0 z-[70] w-64 p-3 md:hidden"
             >
-              <Sidebar lang={tenantInfo?.lang} />
+              <Sidebar lang={tenantInfo?.lang} userRoleProp={tenantInfo?.role} />
               <button
                 onClick={() => setIsSidebarOpen(false)}
                 className="absolute top-5 right-[-2.75rem] h-10 w-10 bg-white rounded-xl flex items-center justify-center shadow-float text-on-surface-muted"
@@ -191,7 +192,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
       {/* Desktop sidebar */}
       <div className="hidden md:flex flex-shrink-0 transition-all duration-500 ease-in-out">
-        <Sidebar lang={tenantInfo?.lang} />
+        <Sidebar lang={tenantInfo?.lang} userRoleProp={tenantInfo?.role} />
       </div>
 
       {/* Main content column */}

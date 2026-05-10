@@ -95,9 +95,9 @@ export async function middleware(request: NextRequest) {
         .single()
 
       if (tenantUser?.role === 'secretary') {
-        const restrictedPaths = ['/dashboard/analytics', '/dashboard/settings', '/dashboard/page.tsx', '/dashboard/dashboard']
+        const restrictedPaths = ['/dashboard/analytics', '/dashboard/settings', '/dashboard/dashboard']
         const isRestricted = restrictedPaths.some(p => request.nextUrl.pathname === p || request.nextUrl.pathname.startsWith(p))
-        const isRootDashboard = request.nextUrl.pathname === '/dashboard'
+        const isRootDashboard = request.nextUrl.pathname === '/dashboard' || request.nextUrl.pathname === '/dashboard/'
         
         if (isRestricted || isRootDashboard) {
           return NextResponse.redirect(new URL('/dashboard/appointments', request.url))
