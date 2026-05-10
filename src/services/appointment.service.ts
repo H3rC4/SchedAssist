@@ -1,8 +1,9 @@
 import { Appointment, AppointmentStatus, AppointmentSource } from '@/types'
 import { AuditService } from './audit.service'
 import { MessageService } from './message.service'
+import { NotificationService } from './notification.service'
 import { differenceInHours, parseISO, format } from 'date-fns'
-import { translations } from '@/lib/i18n'
+import { translations, Language } from '@/lib/i18n'
 
 export class AppointmentService {
   /**
@@ -167,6 +168,32 @@ export class AppointmentService {
       new_value: data
     });
 
+    // 5. Notification
+    try {
+      const [{ data: tenantCfg }, { data: clientData }, { data: profData }] = await Promise.all([
+        supabase.from('tenants').select('settings').eq('id', params.tenant_id).single(),
+        supabase.from('clients').select('first_name, last_name').eq('id', params.client_id).single(),
+        supabase.from('professionals').select('full_name').eq('id', params.professional_id).single(),
+      ])
+      const lang: Language = tenantCfg?.settings?.language || 'es'
+      const t = translations[lang] || translations['es']
+      const patientName = clientData ? `${clientData.first_name} ${clientData.last_name}` : '—'
+      const profName = profData?.full_name || '—'
+      const startDate = parseISO(params.start_at)
+      const dateStr = format(startDate, lang === 'en' ? 'MM/dd/yyyy' : 'dd/MM/yyyy')
+      const timeStr = format(startDate, 'HH:mm')
+
+      await NotificationService.createNotification(supabase, {
+        tenant_id: params.tenant_id,
+        type: 'appointment_created',
+        title: t.notification_new_appointment,
+        body: t.notify_body_created(patientName, profName, dateStr, timeStr),
+        metadata: { appointment_id: data.id, client_id: params.client_id, professional_id: params.professional_id },
+      })
+    } catch (notifErr) {
+      console.error('[AppointmentService] Failed to create notification:', notifErr)
+    }
+
     return data;
   }
 
@@ -222,7 +249,44 @@ export class AppointmentService {
       new_value: data
     })
 
-    // 5. Notify waitlisted patients if auto-notify is enabled for this tenant
+    // 5. Notification
+    try {
+      const [{ data: tenantCfg }, { data: clientData }, { data: profData }] = await Promise.all([
+        supabase.from('tenants').select('settings').eq('id', params.tenant_id).single(),
+        supabase.from('clients').select('first_name, last_name').eq('id', appointment.client_id).single(),
+        supabase.from('professionals').select('full_name').eq('id', appointment.professional_id).single(),
+      ])
+      const lang: Language = tenantCfg?.settings?.language || 'es'
+      const t = translations[lang] || translations['es']
+      const patientName = clientData ? `${clientData.first_name} ${clientData.last_name}` : '—'
+      const profName = profData?.full_name || '—'
+      const startDate = parseISO(appointment.start_at)
+      const dateStr = format(startDate, lang === 'en' ? 'MM/dd/yyyy' : 'dd/MM/yyyy')
+      const isProfessionalCancellation = params.reason === 'professional_cancellation'
+
+      const notifType = isProfessionalCancellation
+        ? 'professional_blocked' as const
+        : 'appointment_cancelled' as const
+
+      let body: string
+      if (isProfessionalCancellation) {
+        body = t.notify_body_blocked(profName, dateStr, 1)
+      } else {
+        body = t.notify_body_cancelled(patientName, profName, dateStr)
+      }
+
+      await NotificationService.createNotification(supabase, {
+        tenant_id: params.tenant_id,
+        type: notifType,
+        title: isProfessionalCancellation ? t.notification_professional_blocked : t.notification_appointment_cancelled,
+        body,
+        metadata: { appointment_id: appointment.id, client_id: appointment.client_id, professional_id: appointment.professional_id },
+      })
+    } catch (notifErr) {
+      console.error('[AppointmentService] Failed to create notification:', notifErr)
+    }
+
+    // 6. Notify waitlisted patients if auto-notify is enabled for this tenant
     try {
       const { data: tenantCfg } = await supabase
         .from('tenants').select('settings').eq('id', params.tenant_id).single()
@@ -379,7 +443,92 @@ export class AppointmentService {
       .update({ rescheduled_from_appointment_id: params.appointment_id })
       .eq('id', newAppointment.id)
 
+    // 6. Notification for reschedule
+    try {
+      const [{ data: tenantCfg }, { data: clientData }, { data: profData }] = await Promise.all([
+        supabase.from('tenants').select('settings').eq('id', params.tenant_id).single(),
+        supabase.from('clients').select('first_name, last_name').eq('id', oldAppointment.client_id).single(),
+        supabase.from('professionals').select('full_name').eq('id', oldAppointment.professional_id).single(),
+      ])
+      const lang: Language = tenantCfg?.settings?.language || 'es'
+      const t = translations[lang] || translations['es']
+      const patientName = clientData ? `${clientData.first_name} ${clientData.last_name}` : '—'
+      const profName = profData?.full_name || '—'
+      const oldDate = parseISO(oldAppointment.start_at)
+      const newDate = parseISO(params.new_start_at)
+      const dateFmt = (d: Date) => format(d, lang === 'en' ? 'MM/dd/yyyy HH:mm' : 'dd/MM/yyyy HH:mm')
+
+      await NotificationService.createNotification(supabase, {
+        tenant_id: params.tenant_id,
+        type: 'appointment_rescheduled',
+        title: t.notification_appointment_rescheduled,
+        body: t.notify_body_rescheduled(patientName, dateFmt(oldDate), dateFmt(newDate), profName),
+        metadata: {
+          appointment_id: newAppointment.id,
+          old_appointment_id: params.appointment_id,
+          client_id: oldAppointment.client_id,
+          professional_id: oldAppointment.professional_id,
+        },
+      })
+    } catch (notifErr) {
+      console.error('[AppointmentService] Failed to create notification:', notifErr)
+    }
+
     return newAppointment
+  }
+
+  /**
+   * Confirm an appointment (patient responded YES to reminder).
+   * Updates status to 'confirmed' and creates a notification.
+   */
+  static async confirmAppointment(supabase: any, params: {
+    appointment_id: string;
+    tenant_id: string;
+  }) {
+    const { data: appointment, error: fetchErr } = await supabase
+      .from('appointments')
+      .select('*')
+      .eq('id', params.appointment_id)
+      .eq('tenant_id', params.tenant_id)
+      .single()
+
+    if (fetchErr || !appointment) throw new Error('Cita no encontrada.')
+
+    const { data, error } = await supabase
+      .from('appointments')
+      .update({ status: 'confirmed', updated_at: new Date().toISOString() })
+      .eq('id', params.appointment_id)
+      .select('*')
+      .single()
+
+    if (error) throw error
+
+    try {
+      const [{ data: tenantCfg }, { data: clientData }, { data: profData }] = await Promise.all([
+        supabase.from('tenants').select('settings').eq('id', params.tenant_id).single(),
+        supabase.from('clients').select('first_name, last_name').eq('id', appointment.client_id).single(),
+        supabase.from('professionals').select('full_name').eq('id', appointment.professional_id).single(),
+      ])
+      const lang: Language = tenantCfg?.settings?.language || 'es'
+      const t = translations[lang] || translations['es']
+      const patientName = clientData ? `${clientData.first_name} ${clientData.last_name}` : '—'
+      const profName = profData?.full_name || '—'
+      const startDate = parseISO(appointment.start_at)
+      const dateStr = format(startDate, lang === 'en' ? 'MM/dd/yyyy' : 'dd/MM/yyyy')
+      const timeStr = format(startDate, 'HH:mm')
+
+      await NotificationService.createNotification(supabase, {
+        tenant_id: params.tenant_id,
+        type: 'appointment_confirmed',
+        title: t.notification_appointment_confirmed,
+        body: t.notify_body_confirmed(patientName, profName, dateStr, timeStr),
+        metadata: { appointment_id: appointment.id, client_id: appointment.client_id, professional_id: appointment.professional_id },
+      })
+    } catch (notifErr) {
+      console.error('[AppointmentService] Failed to create notification:', notifErr)
+    }
+
+    return data
   }
 
   /**

@@ -123,6 +123,26 @@ export interface BlockedSlot {
   created_at: string;
 }
 
+export type NotificationType =
+  | "appointment_created"
+  | "appointment_cancelled"
+  | "appointment_rescheduled"
+  | "professional_blocked"
+  | "appointment_confirmed"
+  | "appointment_attended";
+
+export interface Notification {
+  id: string;
+  tenant_id: string;
+  user_id?: string | null;
+  type: NotificationType;
+  title: string;
+  body: string;
+  metadata: Record<string, any>;
+  read: boolean;
+  created_at: string;
+}
+
 export interface AuditLog {
   id: string;
   tenant_id: string;

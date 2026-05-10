@@ -963,7 +963,12 @@ export async function executeStateMachine(ctx: BotContext): Promise<boolean> {
       const keywordsNo = translations[lang].keywordsNo;
 
       if (keywordsYes.some(k => msgLower === k)) {
-        await ctx.supabase.from('appointments').update({ status: 'confirmed' }).in('id', awaitingApps.map(a => a.id));
+        for (const app of awaitingApps) {
+          await AppointmentService.confirmAppointment(ctx.supabase, {
+            appointment_id: app.id,
+            tenant_id: ctx.tenant.id,
+          });
+        }
         await MessageService.sendMessage({
           channel: ctx.channel,
           tenant_id: ctx.tenant.id,
@@ -976,7 +981,13 @@ export async function executeStateMachine(ctx: BotContext): Promise<boolean> {
       }
 
       if (keywordsNo.some(k => msgLower === k)) {
-        await ctx.supabase.from('appointments').update({ status: 'cancelled' }).in('id', awaitingApps.map(a => a.id));
+        for (const app of awaitingApps) {
+          await AppointmentService.cancelAppointment(ctx.supabase, {
+            appointment_id: app.id,
+            tenant_id: ctx.tenant.id,
+            reason: 'Cancelado por usuario via bot',
+          });
+        }
         await MessageService.sendMessage({
           channel: ctx.channel,
           tenant_id: ctx.tenant.id,

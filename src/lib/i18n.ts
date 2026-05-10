@@ -337,7 +337,6 @@ export const translations = {
     // WhatsApp Tab
     whatsapp_integration: 'WhatsApp Integration',
     whatsapp_integration_desc: 'Automated Patient Communication Gateway',
-    active_status: 'Active Status',
     add_account: 'Add New Account',
     connect_business: 'Connect Business Account',
     account_label: 'Account Label',
@@ -555,9 +554,6 @@ tech_shadcn_desc: 'UX Elegance',
       step_settings_title: 'System Settings',
       step_settings_content: 'Configure your clinic identity, language, logo, password security, billing, WhatsApp integration, and restart this guided tour anytime.',
       skip: 'Skip Tour',
-      back: 'Back',
-      next: 'Next',
-      finish: 'Finish',
       step_label: (current: number, total: number) => `Step ${current} of ${total}`
     },
     onboarding: {
@@ -713,7 +709,32 @@ tech_shadcn_desc: 'UX Elegance',
     location_tutorial_action: 'Complete now',
     filtering_by_location: (name: string) => `Filtering: ${name}`,
     all_locations: 'All Locations',
-    clear_filter: 'Clear'
+    clear_filter: 'Clear',
+
+    // Notifications
+    notifications_title: 'Live Notifications',
+    notifications_empty: 'No notifications yet',
+    notifications_empty_desc: 'Appointment activity will appear here in real time.',
+    notifications_mark_all_read: 'Mark all read',
+    notification_new_appointment: 'New Appointment',
+    notification_appointment_cancelled: 'Appointment Cancelled',
+    notification_appointment_rescheduled: 'Appointment Rescheduled',
+    notification_professional_blocked: 'Day Cancelled',
+    notification_appointment_confirmed: 'Appointment Confirmed',
+    notification_appointment_attended: 'Appointment Attended',
+    notification_status_changed: 'Status Changed',
+    notify_body_created: (patient: string, professional: string, date: string, time: string) =>
+      `${patient} booked with ${professional} for ${date} at ${time}`,
+    notify_body_cancelled: (patient: string, professional: string, date: string) =>
+      `${patient}'s appointment with ${professional} on ${date} was cancelled`,
+    notify_body_rescheduled: (patient: string, oldDate: string, newDate: string, professional: string) =>
+      `${patient} moved from ${oldDate} to ${newDate} with ${professional}`,
+    notify_body_blocked: (professional: string, date: string, count: number) =>
+      `${professional} cancelled ${date}. ${count} appointment(s) need to be rescheduled.`,
+    notify_body_confirmed: (patient: string, professional: string, date: string, time: string) =>
+      `${patient} confirmed appointment with ${professional} for ${date} at ${time}`,
+    notify_body_attended: (patient: string, professional: string, date: string) =>
+      `${patient} attended appointment with ${professional} on ${date}`,
   },
   es: {
     // General
@@ -1028,7 +1049,6 @@ tech_shadcn_desc: 'UX Elegance',
     // WhatsApp Tab
     whatsapp_integration: 'Integración de WhatsApp',
     whatsapp_integration_desc: 'Pasarela de Comunicación Automatizada con el Paciente',
-    active_status: 'Estado Activo',
     add_account: 'Añadir Nueva Cuenta',
     connect_business: 'Conectar Cuenta Business',
     account_label: 'Etiqueta de la Cuenta',
@@ -1246,9 +1266,6 @@ tech_shadcn_desc: 'UX Elegance',
       step_settings_title: 'Configuracion del Sistema',
       step_settings_content: 'Configura la identidad de tu clinica, idioma, logo, seguridad de contraseña, facturacion, integracion con WhatsApp y reinicia este tour cuando quieras.',
       skip: 'Saltar Tour',
-      back: 'Volver',
-      next: 'Siguiente',
-      finish: 'Finalizar',
       step_label: (current: number, total: number) => `Paso ${current} de ${total}`
     },
     onboarding: {
@@ -1415,7 +1432,32 @@ tech_shadcn_desc: 'UX Elegance',
     location_tutorial_action: 'Completar ahora',
     filtering_by_location: (name: string) => `Filtrando: ${name}`,
     all_locations: 'Todas las Sedes',
-    clear_filter: 'Limpiar'
+    clear_filter: 'Limpiar',
+
+    // Notifications
+    notifications_title: 'Notificaciones en Vivo',
+    notifications_empty: 'Sin notificaciones',
+    notifications_empty_desc: 'La actividad de turnos aparecerá aquí en tiempo real.',
+    notifications_mark_all_read: 'Marcar todo leído',
+    notification_new_appointment: 'Nueva Cita',
+    notification_appointment_cancelled: 'Cita Cancelada',
+    notification_appointment_rescheduled: 'Cita Reagendada',
+    notification_professional_blocked: 'Día Cancelado',
+    notification_appointment_confirmed: 'Cita Confirmada',
+    notification_appointment_attended: 'Cita Atendida',
+    notification_status_changed: 'Estado Cambiado',
+    notify_body_created: (patient: string, professional: string, date: string, time: string) =>
+      `${patient} agendó con ${professional} para el ${date} a las ${time}`,
+    notify_body_cancelled: (patient: string, professional: string, date: string) =>
+      `Cita de ${patient} con ${professional} del ${date} fue cancelada`,
+    notify_body_rescheduled: (patient: string, oldDate: string, newDate: string, professional: string) =>
+      `${patient} pasó del ${oldDate} al ${newDate} con ${professional}`,
+    notify_body_blocked: (professional: string, date: string, count: number) =>
+      `${professional} canceló el ${date}. ${count} cita(s) pendientes de reagendar.`,
+    notify_body_confirmed: (patient: string, professional: string, date: string, time: string) =>
+      `${patient} confirmó cita con ${professional} para el ${date} a las ${time}`,
+    notify_body_attended: (patient: string, professional: string, date: string) =>
+      `${patient} asistió a cita con ${professional} el ${date}`,
   },
   it: {
     // General
@@ -1689,7 +1731,6 @@ tech_shadcn_desc: 'UX Elegance',
     // WhatsApp Tab
     whatsapp_integration: 'Integrazione WhatsApp',
     whatsapp_integration_desc: 'Gateway di Comunicazione Automatizzata con il Paziente',
-    active_status: 'Stato Attivo',
     add_account: 'Aggiungi Nuovo Account',
     connect_business: 'Connetti Account Business',
     account_label: 'Etichetta Account',
@@ -1893,9 +1934,6 @@ tech_shadcn_desc: 'UX Elegance',
       step_settings_title: 'Configurazione Sistema',
       step_settings_content: 'Configura identita della clinica, lingua, logo, sicurezza password, fatturazione, integrazione WhatsApp e riavvia questo tour quando vuoi.',
       skip: 'Salta Tour',
-      back: 'Indietro',
-      next: 'Successivo',
-      finish: 'Completa',
       step_label: (current: number, total: number) => `Passaggio ${current} di ${total}`
     },
     onboarding: {
@@ -2082,7 +2120,32 @@ tech_shadcn_desc: 'UX Elegance',
     location_tutorial_action: 'Completa ora',
     filtering_by_location: (name: string) => `Filtrando: ${name}`,
     all_locations: 'Tutte le Sedi',
-    clear_filter: 'Pulisci'
+    clear_filter: 'Pulisci',
+
+    // Notifications
+    notifications_title: 'Notifiche in Tempo Reale',
+    notifications_empty: 'Nessuna notifica',
+    notifications_empty_desc: "L'attività degli appuntamenti apparirà qui in tempo reale.",
+    notifications_mark_all_read: 'Segna tutto come letto',
+    notification_new_appointment: 'Nuovo Appuntamento',
+    notification_appointment_cancelled: 'Appuntamento Cancellato',
+    notification_appointment_rescheduled: 'Appuntamento Riprogrammato',
+    notification_professional_blocked: 'Giorno Cancellato',
+    notification_appointment_confirmed: 'Appuntamento Confermato',
+    notification_appointment_attended: 'Appuntamento Completato',
+    notification_status_changed: 'Stato Cambiato',
+    notify_body_created: (patient: string, professional: string, date: string, time: string) =>
+      `${patient} ha prenotato con ${professional} per il ${date} alle ${time}`,
+    notify_body_cancelled: (patient: string, professional: string, date: string) =>
+      `Appuntamento di ${patient} con ${professional} del ${date} è stato cancellato`,
+    notify_body_rescheduled: (patient: string, oldDate: string, newDate: string, professional: string) =>
+      `${patient} è passato dal ${oldDate} al ${newDate} con ${professional}`,
+    notify_body_blocked: (professional: string, date: string, count: number) =>
+      `${professional} ha cancellato il ${date}. ${count} appuntamento/i da riprogrammare.`,
+    notify_body_confirmed: (patient: string, professional: string, date: string, time: string) =>
+      `${patient} ha confermato appuntamento con ${professional} per il ${date} alle ${time}`,
+    notify_body_attended: (patient: string, professional: string, date: string) =>
+      `${patient} ha completato appuntamento con ${professional} il ${date}`,
   }
 };
 

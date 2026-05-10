@@ -3,17 +3,19 @@
 import { useEffect, useState } from 'react'
 import { Language, translations } from '@/lib/i18n'
 import { usePathname } from 'next/navigation'
-import { LogOut, Menu, X, Bell } from 'lucide-react'
+import { LogOut, Menu, X } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { Sidebar } from '@/components/dashboard/Sidebar'
 import { TrialBanner } from '@/components/dashboard/TrialBanner'
 import { OnboardingWizard } from '@/components/dashboard/OnboardingWizard'
 import { GuidedTour } from '@/components/dashboard/GuidedTour'
+import { NotificationBell } from '@/components/dashboard/NotificationBell'
+import { NotificationDrawer } from '@/components/dashboard/NotificationDrawer'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ForcePasswordChangeGate } from '@/components/dashboard/ForcePasswordChangeGate'
 import { useLandingTranslation } from '@/components/LanguageContext'
 
-function DashboardHeader({ lang = 'es', onMenuClick }: { lang?: Language; onMenuClick: () => void }) {
+function DashboardHeader({ lang = 'es', tenantId, onMenuClick, onBellClick }: { lang?: Language; tenantId?: string; onMenuClick: () => void; onBellClick: () => void }) {
   const supabase = createClient()
   const [tenantName, setTenantName] = useState('')
   const [tenantEmail, setTenantEmail] = useState('')
@@ -69,9 +71,9 @@ function DashboardHeader({ lang = 'es', onMenuClick }: { lang?: Language; onMenu
 
       {/* Right: actions */}
       <div className="flex items-center gap-1.5">
-        <button className="p-1.5 rounded-lg text-on-surface-muted hover:bg-surface-container-low transition-colors">
-          <Bell className="h-4.5 w-4.5" />
-        </button>
+        {tenantId && (
+          <NotificationBell tenantId={tenantId} lang={lang} onClick={onBellClick} />
+        )}
         <button
           onClick={handleSignOut}
           className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-on-surface-muted hover:bg-surface-container-low hover:text-on-surface transition-colors"
@@ -92,6 +94,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   } | null>(null)
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const [forcePasswordChange, setForcePasswordChange] = useState(false)
+  const [isNotificationDrawerOpen, setIsNotificationDrawerOpen] = useState(false)
 
   useEffect(() => {
     const supabase = createClient()
@@ -196,13 +199,25 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         {tenantInfo && pathname !== '/dashboard/settings/billing' && (
           <TrialBanner status={tenantInfo.status} trialEndsAt={tenantInfo.trial_ends_at} lang={tenantInfo.lang} />
         )}
-        <DashboardHeader lang={tenantInfo?.lang} onMenuClick={() => setIsSidebarOpen(true)} />
+        <DashboardHeader lang={tenantInfo?.lang} tenantId={tenantInfo?.id} onMenuClick={() => setIsSidebarOpen(true)} onBellClick={() => setIsNotificationDrawerOpen(true)} />
 
         {/* Page scroll container */}
         <main className="flex-1 overflow-y-auto custom-scrollbar">
           {children}
         </main>
       </div>
+
+      {/* Notification Drawer */}
+      {tenantInfo?.id && (
+        <NotificationDrawer
+          tenantId={tenantInfo.id}
+          lang={tenantInfo.lang}
+          isOpen={isNotificationDrawerOpen}
+          onClose={() => setIsNotificationDrawerOpen(false)}
+          onMarkAllRead={() => {}}
+          translations={translations[tenantInfo.lang] || translations['es']}
+        />
+      )}
     </div>
   )
 }

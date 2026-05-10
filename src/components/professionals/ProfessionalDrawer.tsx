@@ -142,13 +142,13 @@ export function ProfessionalDrawer({
     setInternalSaving(true)
     try {
       if (overrideForm.type === 'block') {
-        const supabase = createClient()
+        const tenantId = professional?.tenant_id
         for (const app of overrideConflicts) {
-          await supabase.from('appointments').update({ 
-            status: 'cancelled', 
-            cancellation_notified: false,
-            cancellation_reason: 'professional_cancellation' 
-          }).eq('id', app.id)
+          if (tenantId) {
+            await fetch(`/api/appointments?id=${app.id}&tenant_id=${tenantId}&reason=professional_cancellation&admin_override=true`, {
+              method: 'DELETE',
+            })
+          }
         }
       }
       await (addOverride as any)(overrideModal.date, overrideForm)

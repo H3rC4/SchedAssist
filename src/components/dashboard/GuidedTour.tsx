@@ -323,23 +323,21 @@ export function GuidedTour({ tenantId, lang = "es", onComplete }: GuidedTourProp
                       className="h-10 px-4 text-[10px] font-black text-primary/60 uppercase tracking-widest hover:text-primary transition-colors flex items-center gap-2"
                     >
                       <ArrowLeft className="h-3.5 w-3.5" />
-                      {t.back}
+                      {fullT.back}
                     </button>
                   )}
                   {currentStep < STEPS.length - 1 ? (
                     <button
                       onClick={nextStep}
                       className="h-10 px-5 bg-primary text-white text-[10px] font-black uppercase tracking-[0.3em] shadow-lg shadow-primary/20 transition-all active:scale-95 flex items-center gap-2 hover:bg-primary-light"
-                    >
-                      <span>{t.next}</span>
+                      <span>{fullT.next}</span>
                       <ArrowRight className="h-3.5 w-3.5" />
                     </button>
                   ) : (
                     <button
                       onClick={handleFinish}
                       className="h-10 px-5 bg-primary text-white text-[10px] font-black uppercase tracking-[0.3em] shadow-lg shadow-primary/20 transition-all active:scale-95 flex items-center gap-2 hover:bg-primary-light"
-                    >
-                      <span>{t.finish}</span>
+                      <span>{fullT.finish}</span>
                       <CheckCircle2 className="h-3.5 w-3.5" />
                     </button>
                   )}

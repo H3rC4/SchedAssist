@@ -201,11 +201,14 @@ export async function DELETE(req: NextRequest) {
       }
     }
 
+    const reason = searchParams.get('reason') || 'Cancelado desde Dashboard'
+    const isAdminOverride = searchParams.get('admin_override') === 'true'
+
     const data = await AppointmentService.cancelAppointment(supabase, {
       appointment_id: id,
       tenant_id: access.tenantId!,
-      reason: 'Cancelado desde Dashboard',
-      is_admin_override: true 
+      reason,
+      is_admin_override: isAdminOverride
     })
 
     return NextResponse.json(data)

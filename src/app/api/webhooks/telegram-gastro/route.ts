@@ -129,7 +129,10 @@ export async function POST(req: NextRequest) {
       .single();
 
     if (appToConfirm) {
-      await supabase.from('appointments').update({ status: 'confirmed' }).eq('id', appToConfirm.id);
+      await AppointmentService.confirmAppointment(supabase, {
+        appointment_id: appToConfirm.id,
+        tenant_id: tenant.id,
+      });
       await MessageService.sendMessage({
         channel: CHANNEL,
         chat_id: chatId,

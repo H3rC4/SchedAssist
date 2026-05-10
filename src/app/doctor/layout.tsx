@@ -2,15 +2,17 @@
 
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { LogOut, Menu, X, Bell } from 'lucide-react'
+import { LogOut, Menu, X } from 'lucide-react'
 import { ForcePasswordChangeGate } from '@/components/dashboard/ForcePasswordChangeGate'
+import { NotificationBell } from '@/components/dashboard/NotificationBell'
+import { NotificationDrawer } from '@/components/dashboard/NotificationDrawer'
 import { usePathname } from 'next/navigation'
 import { useLandingTranslation } from '@/components/LanguageContext'
 import { DoctorSidebar } from '@/components/doctor/DoctorSidebar'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Language, translations } from '@/lib/i18n'
 
-function DoctorHeader({ profName, specialty, lang = 'es', onMenuClick }: { profName: string, specialty: string, lang?: Language; onMenuClick: () => void }) {
+function DoctorHeader({ profName, specialty, lang = 'es', tenantId, onMenuClick, onBellClick }: { profName: string, specialty: string, lang?: Language; tenantId?: string; onMenuClick: () => void; onBellClick: () => void }) {
   const supabase = createClient()
   const t = translations[lang] || translations['es']
 
@@ -49,9 +51,9 @@ function DoctorHeader({ profName, specialty, lang = 'es', onMenuClick }: { profN
 
       {/* Right: actions */}
       <div className="flex items-center gap-1.5">
-        <button className="p-1.5 rounded-lg text-on-surface-muted hover:bg-surface-container-low transition-colors">
-          <Bell className="h-4.5 w-4.5" />
-        </button>
+        {tenantId && (
+          <NotificationBell tenantId={tenantId} lang={lang} onClick={onBellClick} />
+        )}
         <button
           onClick={handleSignOut}
           className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-black uppercase tracking-widest text-on-surface-muted hover:bg-surface-container-low hover:text-red-500 transition-colors"
@@ -69,9 +71,11 @@ export default function DoctorLayout({ children }: { children: React.ReactNode }
   const supabase = createClient()
   const [profName, setProfName] = useState('')
   const [specialty, setSpecialty] = useState('')
+  const [tenantId, setTenantId] = useState('')
   const [forcePassword, setForcePassword] = useState(false)
   const [loading, setLoading] = useState(true)
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
+  const [isNotificationDrawerOpen, setIsNotificationDrawerOpen] = useState(false)
 
   useEffect(() => {
     async function load() {
@@ -87,6 +91,7 @@ export default function DoctorLayout({ children }: { children: React.ReactNode }
 
       if (tuData?.tenants) {
         const t = tuData.tenants as any
+        setTenantId(tuData.tenant_id)
         const detectedLang = (t.settings?.language as Language) || 'es'
         setLanguage(detectedLang)
         
@@ -171,13 +176,27 @@ export default function DoctorLayout({ children }: { children: React.ReactNode }
           profName={profName} 
           specialty={specialty} 
           lang={language} 
+          tenantId={tenantId}
           onMenuClick={() => setIsSidebarOpen(true)} 
+          onBellClick={() => setIsNotificationDrawerOpen(true)}
         />
         
         <main className="flex-1 overflow-y-auto custom-scrollbar p-6 md:p-10">
           {children}
         </main>
       </div>
+
+      {/* Notification Drawer */}
+      {tenantId && (
+        <NotificationDrawer
+          tenantId={tenantId}
+          lang={language}
+          isOpen={isNotificationDrawerOpen}
+          onClose={() => setIsNotificationDrawerOpen(false)}
+          onMarkAllRead={() => {}}
+          translations={translations[language] || translations['es']}
+        />
+      )}
     </div>
   )
 }

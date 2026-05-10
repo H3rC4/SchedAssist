@@ -317,14 +317,18 @@ export function useAppointments() {
       appointmentsCache.months[key] = updateLocalState(appointmentsCache.months[key]);
     });
 
-    const { error } = await supabase.from('appointments').update({ status }).eq('id', id)
+    const res = await fetch('/api/appointments/status', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id, status, tenant_id: tenantId }),
+    })
     
     // We don't call refresh() here because Real-time subscription will handle it, 
     // and we already updated the local state and cache optimistically.
-    if (error) {
+    if (!res.ok) {
        refresh(); // Revert on error
     }
-    return !error
+    return res.ok
   }
 
   return {

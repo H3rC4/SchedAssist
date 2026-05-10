@@ -38,3 +38,6 @@ README.md
 # OS
 .DS_Store
 Thumbs.db
+# SCRATCH / BUILD INFO
+scratch/
+*.tsbuildinfo
