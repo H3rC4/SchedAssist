@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Smartphone, CheckCircle2, Zap, Loader2, QrCode, Plus, MessageSquare, Trash2, ArrowRight, X, AlertCircle, ArrowUpRight } from 'lucide-react';
+import { Smartphone, CheckCircle2, Zap, Loader2, QrCode, Plus, MessageSquare, Trash2, ArrowRight, X, AlertCircle, ArrowUpRight, Sparkles, CreditCard } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { translations, Language } from '@/lib/i18n';
 import { motion, AnimatePresence } from 'framer-motion';
