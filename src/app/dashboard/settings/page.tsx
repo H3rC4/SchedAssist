@@ -1,12 +1,14 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Building2, KeyRound, Globe, Upload, Image as ImageIcon, Loader2, CheckCircle, Eye, EyeOff, ArrowRight, Sparkles, RotateCcw } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { translations, Language } from '@/lib/i18n';
 import { motion } from 'framer-motion';
 
 export default function GeneralSettingsPage() {
+  const router = useRouter();
   const [lang, setLang] = useState<Language>('es');
   const [tenantId, setTenantId] = useState('');
   const [tenantSettings, setTenantSettings] = useState<any>({});
@@ -36,16 +38,22 @@ export default function GeneralSettingsPage() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      setIsGoogleUser(user.app_metadata.provider === 'google' || !!user.identities?.some(id => id.provider === 'google'));
-
-      const { data } = await supabase
+      // Guard: secretary cannot access settings
+      const { data: tuData } = await supabase
         .from('tenant_users')
-        .select('tenant_id, tenants(*)')
+        .select('role, tenant_id, tenants(*)')
         .eq('user_id', user.id)
         .single();
 
-      if (data?.tenants) {
-        const tenant = data.tenants as any;
+      if (tuData?.role === 'secretary') {
+        router.replace('/dashboard');
+        return;
+      }
+
+      setIsGoogleUser(user.app_metadata.provider === 'google' || !!user.identities?.some(id => id.provider === 'google'));
+
+      if (tuData?.tenants) {
+        const tenant = tuData.tenants as any;
         setTenantId(tenant.id);
         const s = tenant.settings || {};
         setTenantSettings(s);
@@ -311,7 +319,7 @@ export default function GeneralSettingsPage() {
               ) : (
                 <>
                   <RotateCcw className="h-4 w-4" />
-                  <span>{t.restart_tutorial || 'Restart Tutorial'}</span>
+                  <span>{t.onboarding?.restart_tutorial || 'Restart Tutorial'}</span>
                 </>
               )}
             </button>

@@ -5,7 +5,8 @@ import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import {
   Calendar, Users, Briefcase, Settings, LayoutDashboard,
-  Clock, Layers, LifeBuoy, Mail, TrendingUp, MapPin, Zap, X, ChevronRight, LogOut
+  Clock, Layers, LifeBuoy, Mail, TrendingUp, MapPin, Zap, X, ChevronRight, LogOut,
+  ShieldCheck
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { Language, translations } from '@/lib/i18n'
@@ -62,6 +63,10 @@ export function Sidebar({ lang = 'es' }: SidebarProps) {
     if (userRole === 'professional') {
       return ['dashboard', 'appointments', 'professionals', 'settings'].includes(item.id)
     }
+    if (userRole === 'secretary') {
+      // Secretary sees manage section fully + services/locations (read-only), but NOT analytics or settings
+      return !['analytics', 'settings'].includes(item.id)
+    }
     return true
   })
 
@@ -116,6 +121,7 @@ export function Sidebar({ lang = 'es' }: SidebarProps) {
                     <Link
                       key={item.id}
                       href={item.href}
+                      data-tour={`sidebar-${item.id}`}
                       className={`group flex items-center justify-between rounded-2xl px-4 py-3.5 transition-all duration-300 ${
                         active
                           ? 'bg-primary/5 text-primary shadow-sm ring-1 ring-primary/10'
@@ -149,7 +155,24 @@ export function Sidebar({ lang = 'es' }: SidebarProps) {
       </nav>
 
       {/* Footer Section */}
-      <div className="p-4 mt-auto">
+      <div className="p-4 mt-auto space-y-3">
+        {/* Role badge for non-admin roles */}
+        {userRole && userRole !== 'tenant_admin' && isExpanded && (
+          <div className={`mx-2 px-3 py-2 rounded-xl flex items-center gap-2 ${
+            userRole === 'secretary'
+              ? 'bg-amber-50 border border-amber-100'
+              : 'bg-primary/5 border border-primary/10'
+          }`}>
+            <ShieldCheck className={`h-3.5 w-3.5 flex-shrink-0 ${
+              userRole === 'secretary' ? 'text-amber-500' : 'text-primary'
+            }`} />
+            <span className={`text-[9px] font-black uppercase tracking-[0.2em] ${
+              userRole === 'secretary' ? 'text-amber-600' : 'text-primary'
+            }`}>
+              {userRole === 'secretary' ? 'Secretaria' : 'Profesional'}
+            </span>
+          </div>
+        )}
         <div className={`flex items-center justify-between px-2 ${isExpanded ? '' : 'flex-col gap-4'}`}>
             <button 
               onClick={() => setShowSupportModal(true)}

@@ -7,6 +7,7 @@ import { useProfessionals, AvailabilityRule } from '@/hooks/useProfessionals'
 import { AnimatePresence } from 'framer-motion'
 import { ProfessionalDrawer } from '@/components/professionals/ProfessionalDrawer'
 import { ProfessionalCard } from '@/components/professionals/ProfessionalCard'
+import { SecretaryModal } from '@/components/dashboard/SecretaryModal'
 
 import { useLandingTranslation } from '@/components/LanguageContext'
 
@@ -35,8 +36,29 @@ export default function ProfessionalsPage() {
   const [drawerMode, setDrawerMode] = useState<DrawerMode | null>(null)
   const [editRules, setEditRules] = useState<AvailabilityRule[]>([])
   const [searchQuery, setSearchQuery] = useState('')
+  const [showSecretaryModal, setShowSecretaryModal] = useState(false)
+  const [userRole, setUserRole] = useState<string | null>(null)
+  const [tenantId, setTenantId] = useState<string>('')
 
   const supabase = createClient()
+
+  // Fetch user role
+  useEffect(() => {
+    async function fetchRole() {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+      const { data } = await supabase
+        .from('tenant_users')
+        .select('role, tenant_id')
+        .eq('user_id', user.id)
+        .single()
+      if (data) {
+        setUserRole(data.role)
+        setTenantId(data.tenant_id)
+      }
+    }
+    fetchRole()
+  }, [])
 
   useEffect(() => {
     if (selectedProf) {
@@ -73,7 +95,7 @@ export default function ProfessionalsPage() {
   const handleCreateProfessional = async (data: any) => {
     const res = await createProfessional(data)
     if (res.success && res.prof) {
-      selectProfessional(res.prof)
+      selectProfessional(res.prof, 'access')
     }
     return res
   }
@@ -106,17 +128,35 @@ export default function ProfessionalsPage() {
                 {T_ui.staff_subtitle}
               </p>
             </div>
-            <button 
-              onClick={() => setDrawerMode('create')}
-              className="flex items-center justify-center gap-3 px-6 py-3 bg-primary text-white rounded-2xl font-black text-[10.5px] uppercase tracking-[0.2em] hover:bg-primary/90 hover:shadow-xl hover:-translate-y-0.5 transition-all active:scale-95 shadow-lg group"
-            >
-              <span>{T_ui.add_professional_btn}</span>
-              <Plus className="h-[15px] w-[15px] group-hover:rotate-90 transition-transform duration-300" />
-            </button>
+            <div className="flex items-center gap-3">
+              {/* Secretary button — admin only */}
+              {userRole === 'tenant_admin' && (
+                <button
+                  onClick={() => setShowSecretaryModal(true)}
+                  className="flex items-center justify-center gap-2 px-4 py-3 bg-amber-50 border border-amber-100 text-amber-600 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] hover:bg-amber-100 hover:shadow-md hover:-translate-y-0.5 transition-all active:scale-95"
+                >
+                  <UserPlus className="h-[14px] w-[14px]" />
+                  <span className="hidden sm:inline">
+                    {lang === 'es' ? 'Secretaria' : lang === 'it' ? 'Segretaria' : 'Secretary'}
+                  </span>
+                </button>
+              )}
+              {/* New Professional button — admin only */}
+              {userRole === 'tenant_admin' && (
+                  <button
+                    onClick={() => setDrawerMode('create')}
+                    data-tour="staff-add-btn"
+                    className="flex items-center justify-center gap-3 px-6 py-3 bg-primary text-white rounded-2xl font-black text-[10.5px] uppercase tracking-[0.2em] hover:bg-primary/90 hover:shadow-xl hover:-translate-y-0.5 transition-all active:scale-95 shadow-lg group"
+                  >
+                  <span>{T_ui.add_professional_btn}</span>
+                  <Plus className="h-[15px] w-[15px] group-hover:rotate-90 transition-transform duration-300" />
+                </button>
+              )}
+            </div>
           </div>
 
           <div className="mt-4 max-w-sm">
-            <div className="relative group">
+            <div className="relative group" data-tour="staff-search">
               <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none text-on-surface-muted group-focus-within:text-primary transition-colors">
                 <Search className="h-3 w-3" />
               </div>
@@ -143,8 +183,8 @@ export default function ProfessionalsPage() {
               </p>
             </div>
           ) : (
-            filteredProfessionals.map((prof) => (
-              <div key={prof.id} className="h-full">
+            filteredProfessionals.map((prof, idx) => (
+              <div key={prof.id} className="h-full" data-tour={idx === 0 ? "staff-card" : undefined}>
                 <ProfessionalCard 
                   professional={prof} 
                   onClick={() => selectProfessional(prof)} 
@@ -158,7 +198,7 @@ export default function ProfessionalsPage() {
 
       <AnimatePresence>
         {drawerMode && (
-          <ProfessionalDrawer 
+          <ProfessionalDrawer
             mode={selectedProf ? 'edit' : drawerMode}
             professional={selectedProf}
             onClose={handleCloseDrawer}
@@ -176,6 +216,17 @@ export default function ProfessionalsPage() {
             saved={saved}
             locations={locations}
             onCreate={handleCreateProfessional}
+          />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {showSecretaryModal && (
+          <SecretaryModal
+            tenantId={tenantId}
+            lang={lang}
+            onClose={() => setShowSecretaryModal(false)}
+            onSuccess={() => {}}
           />
         )}
       </AnimatePresence>

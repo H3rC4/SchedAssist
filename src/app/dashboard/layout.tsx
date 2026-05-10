@@ -7,7 +7,7 @@ import { createClient } from '@/lib/supabase/client'
 import { Sidebar } from '@/components/dashboard/Sidebar'
 import { TrialBanner } from '@/components/dashboard/TrialBanner'
 import { OnboardingWizard } from '@/components/dashboard/OnboardingWizard'
-import { InteractiveTutorial } from '@/components/dashboard/InteractiveTutorial'
+import { GuidedTour } from '@/components/dashboard/GuidedTour'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ForcePasswordChangeGate } from '@/components/dashboard/ForcePasswordChangeGate'
 import { useLandingTranslation } from '@/components/LanguageContext'
@@ -178,7 +178,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <OnboardingWizard tenantId={tenantInfo.id} lang={tenantInfo.lang} onComplete={handleOnboardingComplete} />
       )}
       {tenantInfo && tenantInfo.settings?.onboarding_completed && !tenantInfo.settings?.tutorial_completed && (
-        <InteractiveTutorial tenantId={tenantInfo.id} lang={tenantInfo.lang} onComplete={handleTutorialComplete} />
+        <GuidedTour tenantId={tenantInfo.id} lang={tenantInfo.lang} onComplete={handleTutorialComplete} />
       )}
       {forcePasswordChange && (
         <ForcePasswordChangeGate lang={tenantInfo?.lang} onSuccess={() => setForcePasswordChange(false)} />
