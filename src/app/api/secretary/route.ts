@@ -89,7 +89,26 @@ export async function POST(req: NextRequest) {
     if (tuError) {
       // Cleanup: delete the auth user since tenant_users insert failed
       await supabaseAdmin.auth.admin.deleteUser(newUserId)
-      return NextResponse.json({ error: `DB Error: ${tuError.message}` }, { status: 500 })
+      return NextResponse.json({ error: `DB Error (tenant_users): ${tuError.message}` }, { status: 500 })
+    }
+
+    // Also insert into professionals table so they appear in the staff list
+    const { error: profError } = await supabaseAdmin.from('professionals').insert({
+      tenant_id,
+      user_id: newUserId,
+      full_name,
+      phone,
+      active: true,
+      specialty: 'Secretary',
+      auth_email: email,
+      auth_password_hint: auth_password
+    })
+
+    if (profError) {
+      // Cleanup
+      await supabaseAdmin.from('tenant_users').delete().eq('user_id', newUserId).eq('tenant_id', tenant_id)
+      await supabaseAdmin.auth.admin.deleteUser(newUserId)
+      return NextResponse.json({ error: `DB Error (professionals): ${profError.message}` }, { status: 500 })
     }
   }
 
@@ -117,6 +136,27 @@ export async function DELETE(req: NextRequest) {
   const access = await verifyTenantAccess(supabase, user, tenantId, ['tenant_admin'])
   if (!access.authorized) return NextResponse.json({ error: access.error }, { status: access.status })
 
+  // 1. Get professional ID first to cleanup rules
+  const { data: prof } = await supabase
+    .from('professionals')
+    .select('id')
+    .eq('user_id', secretaryUserId)
+    .eq('tenant_id', tenantId)
+    .single()
+  
+  if (prof) {
+    // Delete availability rules
+    await supabase.from('availability_rules').delete().eq('professional_id', prof.id)
+  }
+
+  // 2. Delete from professionals table
+  await supabase
+    .from('professionals')
+    .delete()
+    .eq('tenant_id', tenantId)
+    .eq('user_id', secretaryUserId)
+
+  // 3. Delete from tenant_users
   const { error } = await supabase
     .from('tenant_users')
     .delete()

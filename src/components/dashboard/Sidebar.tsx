@@ -64,8 +64,8 @@ export function Sidebar({ lang = 'es' }: SidebarProps) {
       return ['dashboard', 'appointments', 'professionals', 'settings'].includes(item.id)
     }
     if (userRole === 'secretary') {
-      // Secretary sees manage section fully + services/locations (read-only), but NOT analytics or settings
-      return !['analytics', 'settings'].includes(item.id)
+      // Secretary sees manage section fully + services/locations (read-only), but NOT analytics or settings or dashboard
+      return !['dashboard', 'analytics', 'settings'].includes(item.id)
     }
     return true
   })
@@ -84,7 +84,7 @@ export function Sidebar({ lang = 'es' }: SidebarProps) {
     >
       {/* Brand Section */}
       <div className={`h-14 flex items-center border-b border-on-surface/5 transition-all duration-500 ${isExpanded ? 'px-8' : 'justify-center'}`}>
-        <Link href="/dashboard" className="flex items-center gap-3 group">
+        <Link href={userRole === 'secretary' ? '/dashboard/appointments' : '/dashboard'} className="flex items-center gap-3 group">
           <div className="h-8 w-8 rounded-xl bg-primary flex items-center justify-center transition-transform duration-500 group-hover:rotate-12 shadow-spatial flex-shrink-0">
             <Zap className="h-4 w-4 text-white fill-white" />
           </div>

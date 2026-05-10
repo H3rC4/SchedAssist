@@ -41,9 +41,14 @@ export default function DashboardPage() {
 
     const { data: tuData } = await supabase
       .from('tenant_users')
-      .select('tenant_id, tenants(id, name, slug, settings)')
+      .select('tenant_id, role, tenants(id, name, slug, settings)')
       .eq('user_id', user.id)
       .limit(1).single()
+
+    if (tuData?.role === 'secretary') {
+      window.location.href = '/dashboard/appointments'
+      return
+    }
 
     if (!tuData?.tenants) return
     const tenant = tuData.tenants as any

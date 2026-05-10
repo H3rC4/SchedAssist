@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { Language, translations } from '@/lib/i18n'
+import { usePathname } from 'next/navigation'
 import { LogOut, Menu, X, Bell } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { Sidebar } from '@/components/dashboard/Sidebar'
@@ -84,6 +85,7 @@ function DashboardHeader({ lang = 'es', onMenuClick }: { lang?: Language; onMenu
 }
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname()
   const { setLanguage } = useLandingTranslation()
   const [tenantInfo, setTenantInfo] = useState<{
     id: string; status: string; trial_ends_at: string | null; settings: any; lang: Language
@@ -191,7 +193,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
       {/* Main content column */}
       <div className="flex-1 flex flex-col overflow-hidden">
-        {tenantInfo && (
+        {tenantInfo && pathname !== '/dashboard/settings/billing' && (
           <TrialBanner status={tenantInfo.status} trialEndsAt={tenantInfo.trial_ends_at} lang={tenantInfo.lang} />
         )}
         <DashboardHeader lang={tenantInfo?.lang} onMenuClick={() => setIsSidebarOpen(true)} />

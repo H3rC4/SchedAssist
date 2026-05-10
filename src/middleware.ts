@@ -85,6 +85,25 @@ export async function middleware(request: NextRequest) {
     if (isSuperAdmin && !request.nextUrl.pathname.startsWith('/dashboard/pay')) {
       return NextResponse.redirect(new URL('/superadmin', request.url))
     }
+
+    // Role-based restrictions for dashboard
+    if (request.nextUrl.pathname.startsWith('/dashboard')) {
+      const { data: tenantUser } = await supabase
+        .from('tenant_users')
+        .select('role')
+        .eq('user_id', user.id)
+        .single()
+
+      if (tenantUser?.role === 'secretary') {
+        const restrictedPaths = ['/dashboard/analytics', '/dashboard/settings', '/dashboard/page.tsx', '/dashboard/dashboard']
+        const isRestricted = restrictedPaths.some(p => request.nextUrl.pathname === p || request.nextUrl.pathname.startsWith(p))
+        const isRootDashboard = request.nextUrl.pathname === '/dashboard'
+        
+        if (isRestricted || isRootDashboard) {
+          return NextResponse.redirect(new URL('/dashboard/appointments', request.url))
+        }
+      }
+    }
   }
 
   // Protect /doctor routes - require login
@@ -109,6 +128,9 @@ export async function middleware(request: NextRequest) {
         
       if (tenantUser?.role === 'professional') {
         return NextResponse.redirect(new URL('/doctor', request.url))
+      }
+      if (tenantUser?.role === 'secretary') {
+        return NextResponse.redirect(new URL('/dashboard/appointments', request.url))
       }
       return NextResponse.redirect(new URL('/dashboard', request.url))
     }

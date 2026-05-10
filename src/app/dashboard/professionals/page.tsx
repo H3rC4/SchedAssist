@@ -30,7 +30,8 @@ export default function ProfessionalsPage() {
     updateAvailability,
     addOverride,
     deleteOverride,
-    locations
+    locations,
+    refresh
   } = useProfessionals()
 
   const [drawerMode, setDrawerMode] = useState<DrawerMode | null>(null)
@@ -226,7 +227,10 @@ export default function ProfessionalsPage() {
             tenantId={tenantId}
             lang={lang}
             onClose={() => setShowSecretaryModal(false)}
-            onSuccess={() => {}}
+            onSuccess={() => {
+              refresh()
+              setShowSecretaryModal(false)
+            }}
           />
         )}
       </AnimatePresence>

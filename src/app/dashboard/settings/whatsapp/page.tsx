@@ -118,22 +118,33 @@ export default function WhatsAppSettingsPage() {
   const isConnected = accounts.length > 0;
 
   return (
-    <div className="space-y-16 animate-in fade-in duration-700">
+    <div className="space-y-16 animate-in fade-in slide-in-from-bottom-4 duration-1000">
       {/* Header */}
-      <header className="flex flex-col md:flex-row md:items-end justify-between gap-8">
+      <header className="flex flex-col md:flex-row md:items-end justify-between gap-8 relative">
+        <div className="absolute -top-12 -left-12 w-64 h-64 bg-primary/5 blur-[100px] rounded-full -z-10" />
         <div>
           <h1 className="text-4xl md:text-5xl font-black text-on-surface tracking-tighter uppercase mb-2">
-            WhatsApp <span className="text-primary italic font-serif lowercase">{t.integration || 'Integration'}</span>
+            {t.whatsapp_integration?.split(' ')[0]} <span className="text-primary italic font-serif lowercase">{t.whatsapp_integration?.split(' ').slice(1).join(' ')}</span>
           </h1>
           <p className="text-[10px] font-black text-on-surface/30 uppercase tracking-[0.4em]">
-            {t.whapi_desc || 'Automated Patient Communication Gateway'}
+            {t.whatsapp_integration_desc}
           </p>
         </div>
         <button 
           onClick={() => setShowAddForm(!showAddForm)}
-          className="px-8 py-4 rounded-2xl bg-slate-900 text-white text-[10px] font-black uppercase tracking-widest shadow-lg hover:-translate-y-1 transition-all active:scale-95"
+          className="px-8 py-4 bg-slate-900 text-white text-[10px] font-black uppercase tracking-[0.4em] shadow-xl shadow-slate-900/20 hover:bg-slate-800 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3 group"
         >
-          {showAddForm ? t.cancel || 'Cancel' : t.add_account || 'Add New Account'}
+          {showAddForm ? (
+            <>
+              <X className="h-4 w-4" />
+              <span>{t.cancel}</span>
+            </>
+          ) : (
+            <>
+              <Plus className="h-4 w-4" />
+              <span>{t.add_account}</span>
+            </>
+          )}
         </button>
       </header>
 
@@ -141,53 +152,81 @@ export default function WhatsAppSettingsPage() {
       <AnimatePresence>
         {showAddForm && (
           <motion.section 
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
+            initial={{ height: 0, opacity: 0, y: -20 }}
+            animate={{ height: 'auto', opacity: 1, y: 0 }}
+            exit={{ height: 0, opacity: 0, y: -20 }}
             className="overflow-hidden"
           >
-            <div className="bg-white rounded-[2.5rem] border border-primary/20 p-10 shadow-spatial space-y-8">
-              <h3 className="text-xl font-black text-on-surface uppercase tracking-tight">{t.connect_business || 'Connect Business Account'}</h3>
-              <form onSubmit={handleAddAccount} className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div className="space-y-3">
-                   <label className="text-[10px] font-black text-on-surface/30 uppercase tracking-widest ml-1">{t.account_label || 'Account Label'}</label>
-                   <input 
-                     type="text" 
-                     value={newAccount.label}
-                     onChange={e => setNewAccount({...newAccount, label: e.target.value})}
-                     className="w-full h-14 bg-on-surface/[0.03] rounded-2xl border-2 border-transparent px-6 font-bold text-on-surface focus:bg-white focus:border-primary transition-all outline-none"
-                     placeholder="e.g. Main Clinic WhatsApp"
-                   />
+            <div className="bg-white rounded-[3rem] border border-primary/20 p-10 shadow-spatial space-y-10 relative overflow-hidden">
+              <div className="absolute top-0 right-0 p-8 opacity-[0.02] pointer-events-none select-none">
+                <Plus className="h-24 w-24 text-primary" />
+              </div>
+              
+              <div className="flex items-center gap-4">
+                <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+                  <Smartphone className="h-5 w-5" />
                 </div>
-                <div className="space-y-3">
-                   <label className="text-[10px] font-black text-on-surface/30 uppercase tracking-widest ml-1">{t.phone_id_label || 'Phone Number ID'}</label>
-                   <input 
-                     type="text" 
-                     value={newAccount.phone_number_id}
-                     onChange={e => setNewAccount({...newAccount, phone_number_id: e.target.value})}
-                     className="w-full h-14 bg-on-surface/[0.03] rounded-2xl border-2 border-transparent px-6 font-bold text-on-surface focus:bg-white focus:border-primary transition-all outline-none"
-                   />
+                <h3 className="text-xl font-black text-on-surface uppercase tracking-tight">{t.connect_business}</h3>
+              </div>
+
+              <form onSubmit={handleAddAccount} className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                <div className="space-y-4">
+                   <label className="text-[10px] font-black text-primary/60 uppercase tracking-[0.3em] ml-2">{t.account_label}</label>
+                   <div className="relative group/input">
+                     <input 
+                       type="text" 
+                       value={newAccount.label}
+                       onChange={e => setNewAccount({...newAccount, label: e.target.value})}
+                       className="w-full h-16 bg-primary/[0.06] rounded-2xl border border-primary/20 px-6 font-bold text-on-surface focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all outline-none"
+                       placeholder="e.g. Main Clinic WhatsApp"
+                     />
+                   </div>
                 </div>
-                <div className="md:col-span-2 space-y-3">
-                   <label className="text-[10px] font-black text-on-surface/30 uppercase tracking-widest ml-1">{t.token_label || 'Access Token'}</label>
-                   <input 
-                     type="password" 
-                     value={newAccount.access_token}
-                     onChange={e => setNewAccount({...newAccount, access_token: e.target.value})}
-                     className="w-full h-14 bg-on-surface/[0.03] rounded-2xl border-2 border-transparent px-6 font-bold text-on-surface focus:bg-white focus:border-primary transition-all outline-none"
-                   />
+                <div className="space-y-4">
+                   <label className="text-[10px] font-black text-primary/60 uppercase tracking-[0.3em] ml-2">{t.phone_id_label}</label>
+                   <div className="relative group/input">
+                     <input 
+                       type="text" 
+                       value={newAccount.phone_number_id}
+                       onChange={e => setNewAccount({...newAccount, phone_number_id: e.target.value})}
+                       className="w-full h-16 bg-primary/[0.06] rounded-2xl border border-primary/20 px-6 font-bold text-on-surface focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all outline-none"
+                     />
+                   </div>
+                </div>
+                <div className="md:col-span-2 space-y-4">
+                   <label className="text-[10px] font-black text-primary/60 uppercase tracking-[0.3em] ml-2">{t.token_label}</label>
+                   <div className="relative group/input">
+                     <input 
+                       type="password" 
+                       value={newAccount.access_token}
+                       onChange={e => setNewAccount({...newAccount, access_token: e.target.value})}
+                       className="w-full h-16 bg-primary/[0.06] rounded-2xl border border-primary/20 px-6 font-bold text-on-surface focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all outline-none"
+                     />
+                   </div>
                 </div>
                 {formError && (
-                  <div className="md:col-span-2 p-4 bg-red-50 text-red-600 rounded-2xl text-xs font-black uppercase tracking-widest flex items-center gap-2">
-                    <AlertCircle className="h-4 w-4" /> {formError}
-                  </div>
+                  <motion.div 
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    className="md:col-span-2 p-6 bg-red-50 border border-red-200 text-red-600 rounded-2xl text-[10px] font-black uppercase tracking-widest flex items-center gap-4"
+                  >
+                    <div className="h-10 w-10 bg-red-100 rounded-xl flex items-center justify-center shrink-0">
+                      <AlertCircle className="h-5 w-5" />
+                    </div>
+                    {formError}
+                  </motion.div>
                 )}
                 <button 
                   type="submit" 
                   disabled={isProcessing}
-                  className="md:col-span-2 h-16 bg-primary text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-primary/20"
+                  className="md:col-span-2 h-20 bg-primary text-white rounded-[2rem] text-[10px] font-black uppercase tracking-[0.4em] shadow-xl shadow-primary/20 hover:bg-primary-light hover:scale-[1.01] active:scale-95 transition-all flex items-center justify-center gap-4"
                 >
-                  {isProcessing ? <Loader2 className="h-5 w-5 animate-spin mx-auto" /> : t.confirm_integration || 'Confirm Integration'}
+                  {isProcessing ? <Loader2 className="h-6 w-6 animate-spin" /> : (
+                    <>
+                      <span>{t.confirm_integration}</span>
+                      <ArrowRight className="h-5 w-5" />
+                    </>
+                  )}
                 </button>
               </form>
             </div>
@@ -195,46 +234,63 @@ export default function WhatsAppSettingsPage() {
         )}
       </AnimatePresence>
 
-      {/* Current Plan */}
-      <section className="bg-primary rounded-[3rem] p-12 text-white shadow-xl shadow-primary/20 relative overflow-hidden">
-        <Zap className="absolute top-[-2rem] right-[-2rem] h-64 w-64 text-white/5 rotate-12" />
+      {/* Current Plan - THE GREEN BOX */}
+      <section className="bg-primary rounded-[4rem] p-12 text-white shadow-2xl shadow-primary/30 relative overflow-hidden group">
+        <div className="absolute top-[-4rem] right-[-4rem] h-96 w-96 bg-white/5 rounded-full blur-[80px] group-hover:scale-110 transition-transform duration-1000" />
+        <Zap className="absolute top-[-2rem] right-[-2rem] h-64 w-64 text-white/5 rotate-12 group-hover:rotate-[30deg] transition-transform duration-1000" />
         
-        <div className="relative z-10 space-y-10">
-          <div className="flex items-start justify-between">
-            <div className="space-y-2">
-              <h2 className="text-sm font-black uppercase tracking-[0.3em] text-white/60">{t.current_plan}</h2>
-              <p className="text-5xl font-black tracking-tighter uppercase">{t.professional_plus || 'Professional'} <span className="text-white/40 italic">Plus</span></p>
+        <div className="relative z-10 space-y-12">
+          <div className="flex flex-col md:flex-row md:items-start justify-between gap-8">
+            <div className="space-y-3">
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-white/10 backdrop-blur-md rounded-full border border-white/20 text-[9px] font-black uppercase tracking-[0.2em]">
+                <Sparkles className="h-3 w-3" /> {t.active_status}
+              </div>
+              <h2 className="text-sm font-black uppercase tracking-[0.4em] text-white/40">{t.current_plan}</h2>
+              <p className="text-5xl md:text-6xl font-black tracking-tighter uppercase leading-none">
+                {t.professional_plus?.split(' ')[0]} <span className="text-white/30 italic font-serif lowercase">{t.professional_plus?.split(' ').slice(1).join(' ')}</span>
+              </p>
             </div>
-            <div className="px-6 py-2 bg-white/10 backdrop-blur-md rounded-full border border-white/20 text-[10px] font-black uppercase tracking-widest">
-              {t.renews_on ? t.renews_on('May 24, 2026') : 'Renews May 24, 2026'}
+            <div className="px-8 py-4 bg-white/10 backdrop-blur-xl rounded-[2rem] border border-white/20 text-[10px] font-black uppercase tracking-[0.3em] flex flex-col items-center gap-1 shadow-lg">
+              <span className="text-white/40 text-[8px] tracking-[0.4em]">{t.renews_on('').split(' ')[0]}</span>
+              <span className="text-lg tracking-tighter">MAY 24, 2026</span>
             </div>
           </div>
 
-          <div className="flex items-center gap-12">
-             <div className="space-y-1">
-               <p className="text-[10px] font-black text-white/40 uppercase tracking-widest">{t.monthly_cost}</p>
-               <p className="text-3xl font-black">$89.00 <span className="text-xs text-white/40 font-bold italic">/ mo</span></p>
+          <div className="flex flex-wrap items-center gap-16">
+             <div className="space-y-2">
+               <p className="text-[10px] font-black text-white/40 uppercase tracking-[0.3em]">{t.monthly_cost}</p>
+               <p className="text-4xl font-black tracking-tight">$89.00 <span className="text-sm text-white/30 font-bold italic lowercase">/ mo</span></p>
              </div>
-             <div className="h-12 w-[1px] bg-white/10" />
-             <div className="space-y-1">
-               <p className="text-[10px] font-black text-white/40 uppercase tracking-widest">{t.payment_method}</p>
-               <p className="text-lg font-black uppercase tracking-tight">Visa ending in •••• 4242</p>
+             <div className="h-16 w-[1px] bg-white/10 hidden md:block" />
+             <div className="space-y-2">
+               <p className="text-[10px] font-black text-white/40 uppercase tracking-[0.3em]">{t.payment_method}</p>
+               <div className="flex items-center gap-4">
+                 <div className="h-10 w-14 bg-white/10 rounded-xl flex items-center justify-center border border-white/10">
+                   <CreditCard className="h-6 w-6" />
+                 </div>
+                 <p className="text-xl font-black uppercase tracking-tight">Visa •••• 4242</p>
+               </div>
              </div>
           </div>
 
-          <div className="flex flex-wrap gap-4">
+          <div className="flex flex-wrap gap-6 pt-4">
             <button 
               onClick={handleManageSubscription}
               disabled={isRedirecting}
-              className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest bg-white text-primary px-8 py-4 rounded-2xl hover:bg-surface transition-all active:scale-95 disabled:opacity-50"
+              className="flex items-center gap-3 text-[10px] font-black uppercase tracking-[0.4em] bg-white text-primary px-10 py-5 rounded-[2rem] hover:bg-slate-50 hover:-translate-y-1 transition-all active:scale-95 disabled:opacity-50 shadow-xl shadow-white/10 group/btn"
             >
-              {isRedirecting ? <Loader2 className="h-4 w-4 animate-spin" /> : <>{t.manage_subscription} <ArrowUpRight className="h-4 w-4" /></>}
+              {isRedirecting ? <Loader2 className="h-5 w-5 animate-spin" /> : (
+                <>
+                  <span>{t.manage_subscription}</span>
+                  <ArrowUpRight className="h-5 w-5 group-hover/btn:translate-x-1 group-hover/btn:-translate-y-1 transition-transform" />
+                </>
+              )}
             </button>
 
             <button 
               onClick={handleManageSubscription}
               disabled={isRedirecting}
-              className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest bg-white/10 text-white border border-white/20 px-8 py-4 rounded-2xl hover:bg-white/20 transition-all active:scale-95 disabled:opacity-50"
+              className="flex items-center gap-3 text-[10px] font-black uppercase tracking-[0.4em] bg-white/10 text-white border border-white/20 px-10 py-5 rounded-[2rem] hover:bg-white/20 transition-all active:scale-95 disabled:opacity-50"
             >
               {t.cancel_subscription}
             </button>
@@ -243,34 +299,41 @@ export default function WhatsAppSettingsPage() {
       </section>
 
       {/* Integration Status Card */}
-      <section className="bg-white rounded-[2.5rem] border border-on-surface/5 p-10 md:p-12 shadow-spatial">
-        <div className="flex flex-col md:flex-row items-start justify-between gap-12">
-          <div className="space-y-8 flex-1">
-            <div className="space-y-2">
-              <h3 className="text-xl font-black text-on-surface uppercase tracking-tight">
-                {t.integration_status || 'Integration Status'}
+      <section className="bg-white rounded-[3rem] border border-primary/10 p-10 md:p-16 shadow-spatial relative overflow-hidden group">
+        <div className="absolute top-0 right-0 p-12 opacity-[0.02] pointer-events-none select-none group-hover:opacity-[0.05] transition-opacity">
+          <Smartphone className="h-48 w-48 text-primary" />
+        </div>
+        
+        <div className="flex flex-col lg:flex-row items-start justify-between gap-16 relative z-10">
+          <div className="space-y-10 flex-1">
+            <div className="space-y-4">
+              <h3 className="text-2xl font-black text-on-surface uppercase tracking-tight">
+                {t.integration_status}
               </h3>
               <div className="flex items-center gap-3">
-                <div className={`flex items-center gap-2 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${
-                  isConnected ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 'bg-amber-50 text-amber-600 border border-amber-100'
+                <div className={`flex items-center gap-3 px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-[0.2em] border shadow-sm ${
+                  isConnected ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-amber-50 text-amber-600 border-amber-100'
                 }`}>
-                  <CheckCircle2 className={`h-3 w-3 ${isConnected ? '' : 'animate-pulse'}`} />
-                  {isConnected ? t.active_instance || 'Active Instance' : t.link_required || 'Link Required'}
+                  <div className={`h-2 w-2 rounded-full ${isConnected ? 'bg-emerald-500' : 'bg-amber-500 animate-pulse'}`} />
+                  {isConnected ? t.active_instance : t.link_required}
                 </div>
               </div>
             </div>
             
-            <p className="text-sm font-medium text-on-surface/50 leading-relaxed max-w-sm">
+            <p className="text-sm font-medium text-on-surface/50 leading-relaxed max-w-lg">
               {isConnected 
-                ? t.whatsapp_active_desc || 'Your primary account is linked. Automated reminders and clinical follow-ups are active.' 
-                : t.whatsapp_inactive_desc || 'Connect your WhatsApp Business API account to enable automated reminders.'}
+                ? t.whatsapp_active_desc 
+                : t.whatsapp_inactive_desc}
             </p>
 
             <div className="flex flex-wrap gap-4">
               {accounts.map(acc => (
-                <div key={acc.id} className="flex items-center gap-3 bg-on-surface/[0.03] px-6 py-3 rounded-2xl border border-on-surface/5">
-                  <span className="text-[10px] font-black uppercase tracking-widest text-on-surface/60">{acc.label}</span>
-                  <button onClick={() => handleDeleteAccount(acc.id)} className="text-on-surface/20 hover:text-red-500 transition-colors">
+                <div key={acc.id} className="flex items-center gap-4 bg-primary/[0.03] px-8 py-4 rounded-[1.5rem] border border-primary/10 group/acc hover:border-primary/30 transition-all">
+                  <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                    <Smartphone className="h-4 w-4" />
+                  </div>
+                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-on-surface">{acc.label}</span>
+                  <button onClick={() => handleDeleteAccount(acc.id)} className="ml-4 text-on-surface/20 hover:text-red-500 transition-colors">
                     <Trash2 className="h-4 w-4" />
                   </button>
                 </div>
@@ -278,16 +341,17 @@ export default function WhatsAppSettingsPage() {
             </div>
           </div>
 
-          <div className="flex items-center gap-8 p-8 bg-on-surface/[0.02] rounded-[2rem] border border-on-surface/5">
-            <div className="p-4 bg-white rounded-2xl shadow-sm">
-              <QrCode className="h-24 w-24 text-on-surface/20" />
+          <div className="flex items-center gap-10 p-10 bg-primary/[0.02] rounded-[3rem] border border-primary/10 shadow-inner group/qr hover:bg-primary/[0.04] transition-all">
+            <div className="p-6 bg-white rounded-[2rem] shadow-xl shadow-primary/5 border border-primary/5">
+              <QrCode className="h-32 w-32 text-on-surface/10 group-hover/qr:text-primary/20 transition-colors" />
             </div>
-            <div className="space-y-4 max-w-[180px]">
-              <p className="text-[11px] font-bold text-on-surface/60 leading-tight">
-                {t.qr_notice || 'Business accounts require API configuration. Standard QR pairing is for personal instances.'}
+            <div className="space-y-6 max-w-[200px]">
+              <p className="text-[11px] font-bold text-on-surface/50 leading-relaxed uppercase tracking-tight">
+                {t.qr_notice}
               </p>
-              <button className="flex items-center gap-2 text-[10px] font-black text-primary uppercase tracking-widest hover:translate-x-2 transition-transform">
-                {t.read_docs || 'Read Documentation'} <ArrowRight className="h-4 w-4" />
+              <button className="flex items-center gap-3 text-[10px] font-black text-primary uppercase tracking-[0.2em] group/link">
+                <span>{t.read_docs}</span>
+                <ArrowRight className="h-4 w-4 group-hover/link:translate-x-3 transition-transform" />
               </button>
             </div>
           </div>
@@ -295,49 +359,60 @@ export default function WhatsAppSettingsPage() {
       </section>
 
       {/* Automated Reminders Switch */}
-      <section className="bg-white rounded-[2rem] border border-on-surface/5 p-8 md:p-10 flex items-center justify-between group cursor-pointer hover:shadow-lg transition-all" onClick={() => setRemindersEnabled(!remindersEnabled)}>
-        <div className="space-y-2">
-          <h3 className="text-lg font-black text-on-surface uppercase tracking-tight">{t.auto_reminders || 'Automated Reminders'}</h3>
-          <p className="text-xs font-medium text-on-surface/40">{t.reminders_desc || 'Send automatic confirmations 24 hours before scheduled visits.'}</p>
+      <section 
+        className="bg-white rounded-[3rem] border border-primary/10 p-10 md:p-12 flex items-center justify-between group cursor-pointer hover:shadow-xl hover:border-primary/30 transition-all relative overflow-hidden" 
+        onClick={() => setRemindersEnabled(!remindersEnabled)}
+      >
+        <div className="absolute inset-0 bg-gradient-to-r from-primary/[0.02] to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+        <div className="space-y-3 relative z-10">
+          <h3 className="text-xl font-black text-on-surface uppercase tracking-tight">{t.auto_reminders}</h3>
+          <p className="text-xs font-medium text-on-surface/40 max-w-md">{t.reminders_desc}</p>
         </div>
-        <div className="flex items-center gap-6">
-          <span className="text-[10px] font-black text-on-surface/40 uppercase tracking-widest">{remindersEnabled ? t.on || 'On' : t.off || 'Off'}</span>
-          <div className={`h-8 w-14 rounded-full flex items-center px-1 transition-all ${remindersEnabled ? 'bg-primary' : 'bg-on-surface/10'}`}>
+        <div className="flex items-center gap-8 relative z-10">
+          <span className="text-[10px] font-black text-on-surface/40 uppercase tracking-[0.4em]">{remindersEnabled ? t.on : t.off}</span>
+          <div className={`h-10 w-18 rounded-full flex items-center px-1.5 transition-all duration-500 ${remindersEnabled ? 'bg-primary' : 'bg-on-surface/10'}`}>
             <motion.div 
-              animate={{ x: remindersEnabled ? 24 : 0 }}
-              className="h-6 w-6 rounded-full bg-white shadow-md" 
-            />
+              animate={{ x: remindersEnabled ? 32 : 0 }}
+              transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+              className="h-7 w-7 rounded-full bg-white shadow-lg flex items-center justify-center"
+            >
+              <div className={`h-1.5 w-1.5 rounded-full ${remindersEnabled ? 'bg-primary' : 'bg-on-surface/20'}`} />
+            </motion.div>
           </div>
         </div>
       </section>
 
       {/* Message Templates */}
-      <section className="space-y-8">
-        <div className="flex items-end justify-between px-2">
-          <h3 className="text-2xl font-black text-on-surface tracking-tighter uppercase">{t.clinical_templates || 'Clinical Templates'}</h3>
-          <button className="text-[10px] font-black text-primary uppercase tracking-widest hover:underline">
-            {t.manage_templates || 'Manage Cloud API Templates'}
+      <section className="space-y-10">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 px-4">
+          <div className="space-y-2">
+            <h3 className="text-3xl font-black text-on-surface tracking-tighter uppercase">{t.clinical_templates?.split(' ')[0]} <span className="text-primary italic font-serif lowercase">{t.clinical_templates?.split(' ').slice(1).join(' ')}</span></h3>
+            <p className="text-[10px] font-black text-on-surface/30 uppercase tracking-[0.4em]">Proprietary Clinical Logic Modules</p>
+          </div>
+          <button className="text-[10px] font-black text-primary uppercase tracking-[0.3em] hover:tracking-[0.4em] transition-all flex items-center gap-2 group">
+            {t.manage_templates} <ArrowRight className="h-4 w-4 group-hover:translate-x-2 transition-transform" />
           </button>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {[
-            { id: 1, name: 'CONFIRMATION_REMINDER', text: t.template_conf_text || 'Hi [Patient], your visit is confirmed for [Date] at [Time]. Please confirm attendance.' },
-            { id: 2, name: 'WAITLIST_OFFER', text: t.template_wait_text || 'Good news! A slot opened for today at [Time]. Would you like to take it?' },
-            { id: 3, name: 'POST_VISIT_FEEDBACK', text: t.template_feedback_text || 'Thank you for visiting [Clinic]. Please rate your experience: [Link]' },
+            { id: 1, name: 'CONFIRMATION_REMINDER', text: t.template_conf_text },
+            { id: 2, name: 'WAITLIST_OFFER', text: t.template_wait_text },
+            { id: 3, name: 'POST_VISIT_FEEDBACK', text: t.template_feedback_text },
           ].map((item) => (
-            <div key={item.id} className="bg-white rounded-[2rem] border border-on-surface/5 p-8 flex flex-col gap-6 group hover:shadow-xl transition-all">
-              <div className="space-y-4 flex-1">
-                <div className="flex items-center gap-2">
-                   <div className="h-2 w-2 rounded-full bg-emerald-500" />
-                   <h4 className="text-[10px] font-black text-on-surface uppercase tracking-widest">{item.name}</h4>
+            <div key={item.id} className="bg-white rounded-[3rem] border border-primary/10 p-10 flex flex-col gap-10 group hover:shadow-2xl hover:border-primary/20 transition-all relative overflow-hidden">
+              <div className="absolute -bottom-10 -right-10 h-32 w-32 bg-primary/[0.02] rounded-full blur-[40px] group-hover:bg-primary/[0.05] transition-colors" />
+              <div className="space-y-6 flex-1 relative z-10">
+                <div className="flex items-center gap-3">
+                   <div className="h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]" />
+                   <h4 className="text-[10px] font-black text-on-surface/60 uppercase tracking-[0.3em]">{item.name}</h4>
                 </div>
-                <p className="text-xs font-medium text-on-surface/40 leading-relaxed italic">
+                <p className="text-xs font-bold text-on-surface/40 leading-relaxed italic">
                   "{item.text}"
                 </p>
               </div>
-              <button className="w-full py-3 rounded-xl border border-on-surface/5 text-[9px] font-black uppercase tracking-widest hover:bg-on-surface/5 transition-all">
-                {t.preview_logic || 'Preview Logic'}
+              <button className="w-full py-4 rounded-2xl bg-primary/[0.03] border border-primary/10 text-[9px] font-black uppercase tracking-[0.3em] hover:bg-primary hover:text-white hover:border-primary hover:scale-[1.05] transition-all active:scale-95 shadow-lg shadow-transparent hover:shadow-primary/20">
+                {t.preview_logic}
               </button>
             </div>
           ))}
