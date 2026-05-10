@@ -60,14 +60,28 @@ export async function POST(req: NextRequest) {
   const { createClient: createAdminClient } = require('@supabase/supabase-js');
   const supabaseAdmin = createAdminClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
 
-  // Generate auth credentials
-  const randomSuffix = Math.random().toString(36).substring(2, 8);
-  const auth_password_hint = randomSuffix + 'X!';
+  // 1. Check if professional record already exists for this tenant and email
+  const { data: existingProf } = await supabaseAdmin
+    .from('professionals')
+    .select('*')
+    .eq('tenant_id', tenant_id)
+    .eq('auth_email', email)
+    .single();
 
-  // Create user in Supabase Auth
+  if (existingProf) {
+    return NextResponse.json(existingProf, { status: 200 });
+  }
+
+  let userId;
+  let auth_password_hint: string | null = null;
+
+  // 2. Try to create user in Supabase Auth
+  const randomSuffix = Math.random().toString(36).substring(2, 8);
+  const tempPassword = randomSuffix + 'X!';
+
   const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
     email: email,
-    password: auth_password_hint,
+    password: tempPassword,
     email_confirm: true,
     user_metadata: {
       full_name,
@@ -77,24 +91,48 @@ export async function POST(req: NextRequest) {
   });
 
   if (authError) {
-    return NextResponse.json({ error: `Auth Error: ${authError.message}` }, { status: 500 })
+    // If user already exists, we find their ID
+    if (authError.message.toLowerCase().includes('already registered') || authError.message.toLowerCase().includes('already exists')) {
+      const { data: { users }, error: listError } = await supabaseAdmin.auth.admin.listUsers();
+      if (listError) return NextResponse.json({ error: `List Users Error: ${listError.message}` }, { status: 500 });
+      
+      const existingUser = users.find((u: any) => u.email?.toLowerCase() === email.toLowerCase());
+      if (!existingUser) {
+        return NextResponse.json({ error: 'User conflict detected but user could not be retrieved.' }, { status: 500 });
+      }
+      userId = existingUser.id;
+    } else {
+      return NextResponse.json({ error: `Auth Error: ${authError.message}` }, { status: 500 });
+    }
+  } else {
+    userId = authData.user.id;
+    auth_password_hint = tempPassword;
   }
 
-  const userId = authData.user.id;
+  // 3. Insert into tenant_users (if not already there)
+  const { data: existingTU } = await supabaseAdmin
+    .from('tenant_users')
+    .select('*')
+    .eq('tenant_id', tenant_id)
+    .eq('user_id', userId)
+    .single();
 
-  // Insert into tenant_users
-  const { error: tuError } = await supabaseAdmin.from('tenant_users').insert({
-    tenant_id,
-    user_id: userId,
-    role: 'professional'
-  });
+  if (!existingTU) {
+    const { error: tuError } = await supabaseAdmin.from('tenant_users').insert({
+      tenant_id,
+      user_id: userId,
+      role: 'professional'
+    });
 
-  if (tuError) {
-    await supabaseAdmin.auth.admin.deleteUser(userId);
-    return NextResponse.json({ error: `Tenant User Error: ${tuError.message}` }, { status: 500 })
+    if (tuError) {
+      // If we created the user just now, maybe we should cleanup? 
+      // But if they existed, we definitely shouldn't.
+      return NextResponse.json({ error: `Tenant User Error: ${tuError.message}` }, { status: 500 });
+    }
   }
 
-  const { data, error } = await supabaseAdmin
+  // 4. Finally insert into professionals record
+  const { data: newProf, error: profError } = await supabaseAdmin
     .from('professionals')
     .insert([{ 
       tenant_id, 
@@ -110,13 +148,13 @@ export async function POST(req: NextRequest) {
     .select()
     .single()
 
-  if (error) {
-    await supabaseAdmin.auth.admin.deleteUser(userId); // rollback
-    return NextResponse.json({ error: error.message }, { status: 500 })
+  if (profError) {
+    return NextResponse.json({ error: profError.message }, { status: 500 })
   }
 
-  return NextResponse.json(data, { status: 201 })
+  return NextResponse.json(newProf, { status: 201 })
 }
+
 
 // PATCH: Update professional info or availability rules
 export async function PATCH(req: NextRequest) {

@@ -577,7 +577,8 @@ tech_shadcn_desc: 'UX Elegance',
       identity_shield: 'Identity Shield Active',
       identity_shield_desc: "Your clinical environment is now isolated and secure. Let's configure the basics to start receiving patients.",
       operational_pulse_sync: 'Operational Pulse Synchronized',
-      sync_progress_btn: 'Synchronize Progress'
+      sync_progress_btn: 'Synchronize Progress',
+      team_note: "Don't worry, you can edit or remove professionals anytime from the staff management section."
     },
     registration: {
       title: 'Almost ready!',
@@ -1289,7 +1290,8 @@ tech_shadcn_desc: 'UX Elegance',
       identity_shield: 'Escudo de Identidad Activo',
       identity_shield_desc: 'Tu entorno clínico está ahora aislado y seguro. Configuremos lo básico para comenzar a recibir pacientes.',
       operational_pulse_sync: 'Pulso Operativo Sincronizado',
-      sync_progress_btn: 'Sincronizar Progreso'
+      sync_progress_btn: 'Sincronizar Progreso',
+      team_note: 'No te preocupes, podrás editar o eliminar profesionales en cualquier momento desde la gestión de equipo.'
     },
     registration: {
       title: '¡Casi listo!',
@@ -1957,7 +1959,8 @@ tech_shadcn_desc: 'UX Elegance',
       identity_shield: 'Scudo d\'Identità Attivo',
       identity_shield_desc: 'Il tuo ambiente clinico è ora isolato e sicuro. Configura le basi per iniziare a ricevere i pazienti.',
       operational_pulse_sync: 'Polso Operativo Sincronizzato',
-      sync_progress_btn: 'Sincronizza Progresso'
+      sync_progress_btn: 'Sincronizza Progresso',
+      team_note: 'Non preoccuparti, potrai modificare o eliminare i professionisti in qualsiasi momento dalla gestione del team.'
     },
     registration: {
       title: 'Quasi pronto!',

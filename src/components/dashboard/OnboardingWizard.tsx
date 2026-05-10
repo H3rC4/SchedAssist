@@ -21,6 +21,8 @@ import {
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { translations, Language } from '@/lib/i18n'
+import { createClient } from '@/lib/supabase/client'
+import { useEffect } from 'react'
 
 interface OnboardingWizardProps {
   tenantId: string
@@ -37,6 +39,8 @@ export function OnboardingWizard({ tenantId, tenantName, lang, onComplete }: Onb
 
   const [profName, setProfName] = useState('')
   const [profSpecialty, setProfSpecialty] = useState('')
+  const [profEmail, setProfEmail] = useState('')
+  const [profPhone, setProfPhone] = useState('')
   
   const [serviceName, setServiceName] = useState('')
   const [serviceDuration, setServiceDuration] = useState('30')
@@ -53,6 +57,17 @@ export function OnboardingWizard({ tenantId, tenantName, lang, onComplete }: Onb
     { code: 'it', label: 'Italiano', flag: '🇮🇹' },
   ]
 
+  useEffect(() => {
+    async function loadUser() {
+      const supabase = createClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user?.email) {
+        setProfEmail(user.email)
+      }
+    }
+    loadUser()
+  }, [])
+
   async function handleProfessionalSubmit(e: React.FormEvent) {
     e.preventDefault()
     setLoading(true)
@@ -66,7 +81,9 @@ export function OnboardingWizard({ tenantId, tenantName, lang, onComplete }: Onb
             id: profId,
             tenant_id: tenantId,
             full_name: profName,
-            specialty: profSpecialty
+            specialty: profSpecialty,
+            email: profEmail,
+            phone: profPhone
           })
         })
         if (res.ok) {
@@ -82,7 +99,9 @@ export function OnboardingWizard({ tenantId, tenantName, lang, onComplete }: Onb
           body: JSON.stringify({
             tenant_id: tenantId,
             full_name: profName,
-            specialty: profSpecialty
+            specialty: profSpecialty,
+            email: profEmail,
+            phone: profPhone
           })
         })
         if (res.ok) {
@@ -406,6 +425,44 @@ export function OnboardingWizard({ tenantId, tenantName, lang, onComplete }: Onb
                       />
                     </div>
                   </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2 group">
+                      <label className="text-[10px] font-black text-primary/60 uppercase tracking-[0.3em] ml-2 transition-colors group-focus-within:text-primary">
+                        {t.email}
+                      </label>
+                      <div className="relative">
+                        <Globe className="absolute left-6 top-1/2 -translate-y-1/2 h-4 w-4 text-primary/30 group-focus-within:text-primary transition-colors" />
+                        <input
+                          required
+                          type="email"
+                          value={profEmail}
+                          onChange={(e) => setProfEmail(e.target.value)}
+                          placeholder="doctor@example.com"
+                          className="w-full bg-primary/[0.03] border border-primary/20 rounded-2xl pl-14 pr-6 py-5 text-sm font-bold text-on-surface placeholder:text-primary/20 focus:bg-white focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all outline-none"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-2 group">
+                      <label className="text-[10px] font-black text-primary/60 uppercase tracking-[0.3em] ml-2 transition-colors group-focus-within:text-primary">
+                        {t.phone}
+                      </label>
+                      <div className="relative">
+                        <Briefcase className="absolute left-6 top-1/2 -translate-y-1/2 h-4 w-4 text-primary/30 group-focus-within:text-primary transition-colors" />
+                        <input
+                          value={profPhone}
+                          onChange={(e) => setProfPhone(e.target.value)}
+                          placeholder="+1 234 567 890"
+                          className="w-full bg-primary/[0.03] border border-primary/20 rounded-2xl pl-14 pr-6 py-5 text-sm font-bold text-on-surface placeholder:text-primary/20 focus:bg-white focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all outline-none"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <p className="text-[10px] font-bold text-primary/40 uppercase tracking-widest px-2 leading-relaxed">
+                    {t.onboarding.team_note}
+                  </p>
                 </div>
 
                 {error && (
@@ -562,7 +619,7 @@ export function OnboardingWizard({ tenantId, tenantName, lang, onComplete }: Onb
               >
                 <button
                   onClick={handleProfessionalSubmit}
-                  disabled={loading || !profName || !profSpecialty}
+                  disabled={loading || !profName || !profSpecialty || !profEmail}
                   className="w-full py-5 bg-primary text-white text-xs font-black uppercase tracking-[0.4em] rounded-2xl shadow-2xl shadow-primary/20 hover:bg-primary-light hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-3 group transition-all duration-500 disabled:opacity-30 disabled:pointer-events-none"
                 >
                   {loading ? (
