@@ -37,6 +37,7 @@ export function Sidebar({ lang = 'es' }: SidebarProps) {
   const supabase = createClient()
   const [activeTenant, setActiveTenant] = useState<any>(null)
   const [userRole, setUserRole] = useState<string | null>(null)
+  const [roleLoading, setRoleLoading] = useState(true)
   const [showSupportModal, setShowSupportModal] = useState(false)
 
   const [isHovered, setIsHovered] = useState(false)
@@ -45,7 +46,7 @@ export function Sidebar({ lang = 'es' }: SidebarProps) {
   useEffect(() => {
     async function fetchData() {
       const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return
+      if (!user) { setRoleLoading(false); return }
       const { data: tuData } = await supabase
         .from('tenant_users')
         .select('tenant_id, role, tenants(id, name, slug, settings)')
@@ -55,6 +56,7 @@ export function Sidebar({ lang = 'es' }: SidebarProps) {
         setUserRole(tuData.role)
         if (tuData.tenants) setActiveTenant(tuData.tenants)
       }
+      setRoleLoading(false)
     }
     fetchData()
   }, [])
@@ -106,7 +108,24 @@ export function Sidebar({ lang = 'es' }: SidebarProps) {
 
       {/* Navigation */}
       <nav className="flex-1 px-4 space-y-10 overflow-y-auto custom-scrollbar">
-        {groups.map(group => {
+        {roleLoading ? (
+          <div className="space-y-10">
+            {[4, 4].map((count, gi) => (
+              <div key={gi} className="space-y-4">
+                <div className={`px-4 h-3 w-16 bg-on-surface/[0.04] rounded animate-pulse transition-opacity duration-300 ${isExpanded ? 'opacity-100' : 'opacity-0 h-0 overflow-hidden'}`} />
+                <div className="space-y-1">
+                  {Array.from({ length: count }).map((_, i) => (
+                    <div key={i} className="flex items-center gap-4 px-4 py-3.5">
+                      <div className="h-5 w-5 rounded bg-on-surface/[0.04] animate-pulse flex-shrink-0" />
+                      {isExpanded && <div className="h-3.5 w-24 bg-on-surface/[0.04] rounded animate-pulse" />}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          groups.map(group => {
           const items = filteredNavItems.filter(i => i.group === group)
           if (items.length === 0) return null
           return (
@@ -151,7 +170,8 @@ export function Sidebar({ lang = 'es' }: SidebarProps) {
               </div>
             </div>
           )
-        })}
+        })
+        )}
       </nav>
 
       {/* Footer Section */}
