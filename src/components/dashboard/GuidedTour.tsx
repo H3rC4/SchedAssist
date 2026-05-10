@@ -224,24 +224,26 @@ export function GuidedTour({ tenantId, lang = "es", onComplete }: GuidedTourProp
     }
 
     const tooltipW = 380
+    const TOOLTIP_H = 350
     const gap = 24
     const rect = targetRect
+    const maxTop = window.innerHeight - TOOLTIP_H - 16
 
     if (tooltipSide === "right") {
       return {
-        top: Math.max(16, rect.top),
+        top: Math.min(Math.max(16, rect.top), maxTop),
         left: rect.right + gap,
       }
     }
     if (tooltipSide === "left") {
       return {
-        top: Math.max(16, rect.top),
+        top: Math.min(Math.max(16, rect.top), maxTop),
         left: rect.left - tooltipW - gap,
       }
     }
     return {
-      top: Math.max(16, rect.bottom + gap),
-      left: Math.max(16, rect.left + rect.width / 2 - tooltipW / 2),
+      top: Math.min(Math.max(16, rect.bottom + gap), maxTop),
+      left: Math.max(16, Math.min(rect.left + rect.width / 2 - tooltipW / 2, window.innerWidth - tooltipW - 16)),
     }
   }
 
@@ -249,11 +251,11 @@ export function GuidedTour({ tenantId, lang = "es", onComplete }: GuidedTourProp
 
   return createPortal(
     <div className="fixed inset-0 z-[150] pointer-events-auto">
-      <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px] transition-all duration-500" />
+      <div className="absolute inset-0 bg-black/25 transition-all duration-500" />
 
       {showSpotlight && targetRect && (
         <div
-          className="absolute bg-transparent ring-[100vw] ring-black/40 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] pointer-events-none"
+          className="absolute bg-transparent ring-[100vw] ring-black/25 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] pointer-events-none"
           style={{
             top: targetRect.top - 6,
             left: targetRect.left - 6,
