@@ -322,6 +322,11 @@ export const translations = {
     system_language_label: 'System Language',
     clinic_logo: 'Clinic Logo',
     recommended_logo: 'Recommended: 512x512 PNG',
+    save_changes: 'Save Changes',
+    change_password: 'Change Password',
+    tutorial_title: 'Interactive Tutorial',
+    tutorial_desc: 'Restart the guided walkthrough of your dashboard. This will show you the main features again step by step.',
+    restart_tutorial: 'Restart Tutorial',
     
     // WhatsApp Tab
     whatsapp_config: 'WhatsApp Configuration',
@@ -1017,6 +1022,11 @@ tech_shadcn_desc: 'UX Elegance',
     system_language_label: 'Idioma del Sistema',
     clinic_logo: 'Logo de la Clínica',
     recommended_logo: 'Recomendado: 512x512 PNG',
+    save_changes: 'Guardar Cambios',
+    change_password: 'Cambiar Contraseña',
+    tutorial_title: 'Tutorial Interactivo',
+    tutorial_desc: 'Reinicia el recorrido guiado por tu panel. Esto te mostrará las funciones principales paso a paso.',
+    restart_tutorial: 'Reiniciar Tutorial',
     
     // WhatsApp Tab
     whatsapp_config: 'Configuración de WhatsApp',
@@ -1685,6 +1695,11 @@ tech_shadcn_desc: 'UX Elegance',
     system_language_label: 'Lingua di Sistema',
     clinic_logo: 'Logo della Clinica',
     recommended_logo: 'Consigliato: 512x512 PNG',
+    save_changes: 'Salva Modifiche',
+    change_password: 'Cambia Password',
+    tutorial_title: 'Tutorial Interattivo',
+    tutorial_desc: 'Riavvia il tour guidato del tuo pannello. Ti mostrerà le funzioni principali passo dopo passo.',
+    restart_tutorial: 'Riavvia Tutorial',
     
     // WhatsApp Tab
     whatsapp_config: 'Configurazione WhatsApp',

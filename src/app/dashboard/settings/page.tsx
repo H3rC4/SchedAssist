@@ -165,23 +165,23 @@ export default function GeneralSettingsPage() {
                   type="text"
                   value={contactPhone}
                   onChange={(e) => setContactPhone(e.target.value)}
-                  className="w-full h-14 bg-on-surface/[0.03] rounded-2xl border-2 border-transparent px-6 font-bold text-on-surface focus:bg-white focus:border-primary transition-all outline-none"
+                  className="w-full h-14 bg-on-surface/[0.05] rounded-2xl border border-on-surface/5 px-6 font-bold text-on-surface focus:bg-white focus:border-primary transition-all outline-none"
                 />
               </div>
               <div className="space-y-3">
                 <label className="text-[10px] font-black text-on-surface/30 uppercase tracking-widest ml-1">{t.primary_color}</label>
-                <div className="flex gap-3">
+                <div className="flex gap-3 items-center">
                   <input
                     type="color"
                     value={primaryColor}
                     onChange={(e) => setPrimaryColor(e.target.value)}
-                    className="h-14 w-20 rounded-2xl border border-on-surface/10 p-1 cursor-pointer bg-white"
+                    className="h-14 w-14 rounded-2xl border border-on-surface/10 p-1 cursor-pointer bg-white flex-shrink-0"
                   />
                   <input
                     type="text"
                     value={primaryColor}
                     onChange={(e) => setPrimaryColor(e.target.value)}
-                    className="flex-1 h-14 bg-on-surface/[0.03] rounded-2xl border-2 border-transparent px-6 font-bold text-on-surface focus:bg-white focus:border-primary transition-all outline-none uppercase"
+                    className="w-full h-14 bg-on-surface/[0.05] rounded-2xl border border-on-surface/5 px-6 font-bold text-on-surface focus:bg-white focus:border-primary transition-all outline-none uppercase"
                   />
                 </div>
               </div>
@@ -192,7 +192,7 @@ export default function GeneralSettingsPage() {
               <select
                 value={selectedLang}
                 onChange={(e) => setSelectedLang(e.target.value as Language)}
-                className="w-full h-14 bg-on-surface/[0.03] rounded-2xl border-2 border-transparent px-6 font-bold text-on-surface focus:bg-white focus:border-primary transition-all outline-none appearance-none"
+                className="w-full h-14 bg-on-surface/[0.05] rounded-2xl border border-on-surface/5 px-6 font-bold text-on-surface focus:bg-white focus:border-primary transition-all outline-none appearance-none"
               >
                 <option value="en">English (US)</option>
                 <option value="es">Español</option>
@@ -217,7 +217,7 @@ export default function GeneralSettingsPage() {
                       type={showPassword ? "text" : "password"}
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="w-full h-14 bg-on-surface/[0.03] rounded-2xl border-2 border-transparent px-6 font-bold text-on-surface focus:bg-white focus:border-primary transition-all outline-none"
+                      className="w-full h-14 bg-on-surface/[0.05] rounded-2xl border border-on-surface/5 px-6 font-bold text-on-surface focus:bg-white focus:border-primary transition-all outline-none"
                     />
                     <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-on-surface/20">
                       {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -230,7 +230,7 @@ export default function GeneralSettingsPage() {
                     type={showPassword ? "text" : "password"}
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="w-full h-14 bg-on-surface/[0.03] rounded-2xl border-2 border-transparent px-6 font-bold text-on-surface focus:bg-white focus:border-primary transition-all outline-none"
+                    className="w-full h-14 bg-on-surface/[0.05] rounded-2xl border border-on-surface/5 px-6 font-bold text-on-surface focus:bg-white focus:border-primary transition-all outline-none"
                   />
                 </div>
               </div>
@@ -240,13 +240,13 @@ export default function GeneralSettingsPage() {
 
         {/* Right: Logo & Save */}
         <div className="lg:col-span-5 space-y-8">
-          <section className="bg-white rounded-[2.5rem] border border-on-surface/5 p-8 shadow-spatial">
-            <div className="space-y-8">
-              <div className="h-48 w-full rounded-3xl bg-on-surface/[0.02] border-2 border-dashed border-on-surface/10 flex flex-col items-center justify-center relative overflow-hidden group hover:border-primary transition-colors">
+          <section className="bg-white rounded-[2.5rem] border border-on-surface/5 p-10 shadow-spatial">
+            <div className="space-y-8 flex flex-col items-center">
+              <div className="h-56 w-56 rounded-[2rem] bg-on-surface/[0.02] border-2 border-dashed border-on-surface/10 flex flex-col items-center justify-center relative overflow-hidden group hover:border-primary transition-all shadow-inner">
                 {logoUrl ? (
-                  <img src={logoUrl} alt="Logo" className="h-32 w-32 object-contain" />
+                  <img src={logoUrl} alt="Logo" className="h-40 w-40 object-contain p-4" />
                 ) : (
-                  <ImageIcon className="h-12 w-12 text-on-surface/10" />
+                  <ImageIcon className="h-16 w-16 text-on-surface/10" />
                 )}
                 {isUploadingLogo && (
                   <div className="absolute inset-0 bg-white/80 backdrop-blur-sm flex items-center justify-center">
@@ -261,68 +261,76 @@ export default function GeneralSettingsPage() {
                   disabled={isUploadingLogo}
                 />
               </div>
-              <div className="text-center">
-                <p className="text-[10px] font-black text-on-surface/30 uppercase tracking-widest">{t.clinic_logo}</p>
-                <p className="text-[9px] font-medium text-on-surface/20 mt-1 uppercase">{t.recommended_logo}</p>
+              <div className="text-center space-y-2">
+                <p className="text-[11px] font-black text-on-surface/40 uppercase tracking-[0.2em]">{t.clinic_logo}</p>
+                <p className="text-[9px] font-bold text-on-surface/20 uppercase tracking-widest">{t.recommended_logo}</p>
               </div>
             </div>
           </section>
 
           <div className="pt-4">
              {message && (
-               <div className={`mb-6 p-4 rounded-2xl text-[10px] font-black uppercase tracking-widest border ${
+               <div className={`mb-6 p-6 rounded-2xl text-xs font-black uppercase tracking-widest border flex items-center gap-3 ${
                  message.type === 'success' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-red-50 text-red-600 border-red-100'
                }`}>
+                 <CheckCircle className="h-4 w-4" />
                  {message.text}
                </div>
              )}
              <button
                 type="submit"
                 disabled={isSaving}
-                className="w-full h-16 bg-primary text-white rounded-[2rem] text-[10px] font-black uppercase tracking-[0.3em] shadow-lg shadow-primary/20 hover:-translate-y-1 transition-all active:scale-95 disabled:opacity-50"
+                className="w-full h-20 bg-primary text-white rounded-[2.5rem] text-xs font-black uppercase tracking-[0.4em] shadow-xl shadow-primary/20 hover:-translate-y-1 transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center gap-4 group"
              >
-                {isSaving ? <Loader2 className="h-5 w-5 animate-spin mx-auto" /> : t.save_changes}
+                {isSaving ? <Loader2 className="h-6 w-6 animate-spin" /> : (
+                  <>
+                    <span>{t.save_changes}</span>
+                    <ArrowRight className="h-5 w-5 group-hover:translate-x-2 transition-transform" />
+                  </>
+                )}
              </button>
           </div>
         </div>
       </form>
 
       {/* Restart Tutorial Section */}
-      <section className="bg-white rounded-[2.5rem] border border-on-surface/5 p-8 shadow-spatial">
-        <div className="flex items-start gap-6">
-          <div className="h-14 w-14 rounded-2xl bg-primary/10 flex items-center justify-center flex-shrink-0">
-            <Sparkles className="h-6 w-6 text-primary" />
+      <section className="bg-white rounded-[2.5rem] border border-on-surface/5 p-8 md:p-12 shadow-spatial">
+        <div className="flex flex-col md:flex-row items-center md:items-start gap-8">
+          <div className="h-20 w-20 rounded-3xl bg-primary/10 flex items-center justify-center flex-shrink-0 shadow-lg shadow-primary/5">
+            <Sparkles className="h-10 w-10 text-primary" />
           </div>
-          <div className="flex-1">
-            <h2 className="text-lg font-black text-on-surface uppercase tracking-tight mb-2">
-              Interactive Tutorial
+          <div className="flex-1 text-center md:text-left">
+            <h2 className="text-2xl font-black text-on-surface uppercase tracking-tight mb-3">
+              {t.tutorial_title}
             </h2>
-            <p className="text-sm text-on-surface/50 font-medium mb-6 leading-relaxed">
-              Restart the guided walkthrough of your dashboard. This will show you the main features again step by step.
+            <p className="text-sm text-on-surface/50 font-medium mb-8 leading-relaxed max-w-2xl">
+              {t.tutorial_desc}
             </p>
             
             {tutorialResetMessage && (
-              <div className={`mb-4 p-4 rounded-2xl text-[10px] font-black uppercase tracking-widest border ${
+              <div className={`mb-6 p-5 rounded-2xl text-[10px] font-black uppercase tracking-widest border inline-flex items-center gap-3 ${
                 tutorialResetMessage.type === 'success' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-red-50 text-red-600 border-red-100'
               }`}>
                 {tutorialResetMessage.text}
               </div>
             )}
             
-            <button
-              onClick={handleRestartTutorial}
-              disabled={isRestartingTutorial}
-              className="h-14 px-8 bg-primary/10 text-primary rounded-[2rem] text-[10px] font-black uppercase tracking-[0.3em] hover:bg-primary hover:text-white transition-all active:scale-95 disabled:opacity-50 flex items-center gap-3"
-            >
-              {isRestartingTutorial ? (
-                <Loader2 className="h-5 w-5 animate-spin" />
-              ) : (
-                <>
-                  <RotateCcw className="h-4 w-4" />
-                  <span>{t.onboarding?.restart_tutorial || 'Restart Tutorial'}</span>
-                </>
-              )}
-            </button>
+            <div className="flex justify-center md:justify-start">
+              <button
+                onClick={handleRestartTutorial}
+                disabled={isRestartingTutorial}
+                className="h-16 px-10 bg-primary/10 text-primary rounded-full text-[10px] font-black uppercase tracking-[0.3em] hover:bg-primary hover:text-white transition-all active:scale-95 disabled:opacity-50 flex items-center gap-4"
+              >
+                {isRestartingTutorial ? (
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                ) : (
+                  <>
+                    <RotateCcw className="h-4 w-4" />
+                    <span>{t.restart_tutorial}</span>
+                  </>
+                )}
+              </button>
+            </div>
           </div>
         </div>
       </section>
