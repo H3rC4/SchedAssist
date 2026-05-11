@@ -598,10 +598,10 @@ export default function PatientProfilePage() {
       </AnimatePresence>
 
       {/* ── BODY ───────────────────────────────────────────────────────── */}
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-col md:flex-row flex-1 overflow-hidden">
 
         {/* LEFT PANEL — High Fidelity Patient Identity Card */}
-        <aside className="w-80 shrink-0 bg-white border-r border-slate-200 overflow-y-auto flex flex-col rounded-none scrollbar-hide">
+        <aside className="w-full md:w-80 shrink-0 bg-white border-b md:border-b-0 md:border-r border-slate-200 overflow-y-auto flex flex-col rounded-none scrollbar-hide max-h-[40vh] md:max-h-none">
           
           {/* 1. PROFILE HEADER CARD */}
           <div className="p-6 bg-slate-50/50 border-b border-slate-100">

@@ -84,9 +84,21 @@ function AppointmentsContent() {
   const [toast, setToast] = useState<{ message: string; type: 'error' | 'success' } | null>(null)
   const [callNotes, setCallNotes] = useState<{[key: string]: string}>({})
   const [allLocations, setAllLocations] = useState<{ id: string; name: string }[]>([])
-  
+
   const searchParams = useSearchParams()
   const router = useRouter()
+
+  // Force daily view on mobile
+  useEffect(() => {
+    function handleResize() {
+      if (window.innerWidth < 768 && viewMode === 'weekly') {
+        setViewMode('daily')
+      }
+    }
+    handleResize()
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [viewMode])
 
   useEffect(() => {
     const locId = searchParams.get('location_id')
@@ -186,45 +198,45 @@ function AppointmentsContent() {
           </h1>
         </div>
 
-        <div className="flex items-center gap-3">
-          {allLocations.length > 0 && (
-            <select
-              value={locationId || ''}
-              onChange={e => handleLocationChange(e.target.value)}
-              className="h-9 px-3 rounded-xl bg-on-surface/5 border-none text-[9px] font-black uppercase tracking-wider text-on-surface/60 focus:ring-2 focus:ring-primary/20 outline-none cursor-pointer"
-            >
-              <option value="">{T.all_locations || 'All Locations'}</option>
-              {allLocations.map(loc => (
-                <option key={loc.id} value={loc.id}>{loc.name}</option>
-              ))}
-            </select>
-          )}
-          <div className="flex p-1 bg-on-surface/5 rounded-xl">
+          <div className="flex items-center gap-3">
+            {allLocations.length > 0 && (
+              <select
+                value={locationId || ''}
+                onChange={e => handleLocationChange(e.target.value)}
+                className="h-9 px-3 rounded-xl bg-on-surface/5 border-none text-[9px] font-black uppercase tracking-wider text-on-surface/60 focus:ring-2 focus:ring-primary/20 outline-none cursor-pointer"
+              >
+                <option value="">{T.all_locations || 'All Locations'}</option>
+                {allLocations.map(loc => (
+                  <option key={loc.id} value={loc.id}>{loc.name}</option>
+                ))}
+              </select>
+            )}
+            <div className="hidden md:flex p-1 bg-on-surface/5 rounded-xl">
+              <button 
+                onClick={() => setViewMode('daily')}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all
+                  ${viewMode === 'daily' ? 'bg-white shadow-sm text-primary' : 'text-on-surface/40 hover:text-on-surface'}`}
+              >
+                <List className="h-3 w-3" />
+                {T.daily_view}
+              </button>
+              <button 
+                onClick={() => setViewMode('weekly')}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all
+                  ${viewMode === 'weekly' ? 'bg-white shadow-sm text-primary' : 'text-on-surface/40 hover:text-on-surface'}`}
+              >
+                <LayoutGrid className="h-3 w-3" />
+                {T.weekly_view}
+              </button>
+            </div>
+
             <button 
-              onClick={() => setViewMode('daily')}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all
-                ${viewMode === 'daily' ? 'bg-white shadow-sm text-primary' : 'text-on-surface/40 hover:text-on-surface'}`}
+              onClick={() => setShowNewModal(true)}
+              className="precision-button-primary h-10 w-10 rounded-xl shadow-lg shadow-primary/10 flex items-center justify-center p-0"
             >
-              <List className="h-3 w-3" />
-              {T.daily_view}
-            </button>
-            <button 
-              onClick={() => setViewMode('weekly')}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all
-                ${viewMode === 'weekly' ? 'bg-white shadow-sm text-primary' : 'text-on-surface/40 hover:text-on-surface'}`}
-            >
-              <LayoutGrid className="h-3 w-3" />
-              {T.weekly_view}
+              <Plus className="h-5 w-5" />
             </button>
           </div>
-
-          <button 
-            onClick={() => setShowNewModal(true)}
-            className="precision-button-primary h-10 w-10 rounded-xl shadow-lg shadow-primary/10 flex items-center justify-center p-0"
-          >
-            <Plus className="h-5 w-5" />
-          </button>
-        </div>
       </div>
 
       {locationId && (
@@ -364,9 +376,9 @@ function AppointmentsContent() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
-                className="h-full"
+                className="h-full hidden md:block"
               >
-                <WeeklyCalendar 
+                <WeeklyCalendar
                   selectedDate={selectedDate}
                   appointments={allMonthApps}
                   lang={lang}

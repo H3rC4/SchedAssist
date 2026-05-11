@@ -261,12 +261,12 @@ export default function DoctorSchedulePage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-7 gap-2 mb-4">
+              <div className="grid grid-cols-7 gap-1 md:gap-2 mb-2 md:mb-4">
                 {(language === 'es' ? ['Dom', 'Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab'] : ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']).map(d => (
-                  <div key={d} className="text-center text-[9px] font-black text-on-surface-muted uppercase py-2 tracking-widest">{d}</div>
+                  <div key={d} className="text-center text-[8px] md:text-[9px] font-black text-on-surface-muted uppercase py-1.5 md:py-2 tracking-widest">{d}</div>
                 ))}
               </div>
-              <div className="grid grid-cols-7 gap-2">
+              <div className="grid grid-cols-7 gap-1 md:gap-2">
                 {getCalendarDays(calendarMonth).map((day, i) => {
                   const dateStr = format(day, 'yyyy-MM-dd')
                   const isToday = isSameDay(day, new Date())
@@ -275,9 +275,9 @@ export default function DoctorSchedulePage() {
 
                   return (
                     <button key={i} onClick={() => inMonth && handleOpenOverrideModal(dateStr)} disabled={!inMonth}
-                      className={`aspect-square flex flex-col items-center justify-center rounded-2xl text-[11px] font-black transition-all relative border-2
+                      className={`min-h-[36px] md:min-h-0 md:aspect-square flex flex-col items-center justify-center rounded-xl md:rounded-2xl text-[10px] md:text-[11px] font-black transition-all relative border-2
                         ${!inMonth ? 'opacity-0 cursor-default pointer-events-none' : ''}
-                        ${hasOverride?.override_type === 'block' ? 'bg-red-50 text-red-600 border-red-500/20 shadow-sm' : 
+                        ${hasOverride?.override_type === 'block' ? 'bg-red-50 text-red-600 border-red-500/20 shadow-sm' :
                           hasOverride?.override_type === 'open' ? 'bg-amber-50 text-amber-600 border-amber-500/20 shadow-sm' :
                           isToday ? 'bg-primary/5 text-primary border-primary/20' : 'bg-surface-container-lowest text-on-surface border-transparent hover:bg-surface-container-low hover:border-on-surface/10'}
                       `}>
@@ -332,19 +332,19 @@ export default function DoctorSchedulePage() {
               <Clock className="h-4 w-4" /> {language === 'es' ? 'CONFIGURACIÓN SEMANAL' : 'WEEKLY CONFIGURATION'}
             </h3>
             
-            <div className="grid gap-4">
+            <div className="grid gap-3 md:gap-4">
               {rules.map(rule => (
                 <div key={rule.day_of_week}
                   className={`rounded-[1rem] border transition-all ${rule.active ? 'border-primary/20 bg-primary/[0.02]' : 'border-on-surface/5 bg-surface-container-lowest opacity-60'}`}>
-                  <div className="flex items-center gap-4 p-5">
+                  <div className="flex flex-col md:flex-row md:items-center gap-3 md:gap-4 p-4 md:p-5">
                     <label className="flex items-center gap-3 cursor-pointer min-w-[140px]">
                       <input type="checkbox" checked={rule.active} onChange={e => updateRule(rule.day_of_week, 'active', e.target.checked)}
                         className="w-5 h-5 rounded-md border-on-surface/20 text-primary focus:ring-primary" />
                       <span className={`text-sm font-black uppercase tracking-tight ${rule.active ? 'text-on-surface' : 'text-on-surface-muted'}`}>{weekDays[rule.day_of_week]}</span>
                     </label>
-                    
+
                     {rule.active && (
-                      <div className="flex items-center gap-3 ml-auto animate-in fade-in slide-in-from-right-2 duration-300">
+                      <div className="flex items-center gap-3 md:ml-auto animate-in fade-in slide-in-from-right-2 duration-300">
                         <input type="time" value={rule.start_time.slice(0, 5)} onChange={e => updateRule(rule.day_of_week, 'start_time', e.target.value + ':00')}
                           className="rounded-lg border border-on-surface/10 px-3 py-2 text-xs font-black focus:ring-2 focus:ring-primary outline-none bg-white text-on-surface" />
                         <span className="text-on-surface-muted font-bold">→</span>
@@ -355,16 +355,16 @@ export default function DoctorSchedulePage() {
                   </div>
 
                   {rule.active && (
-                    <div className="px-5 pb-5 animate-in fade-in duration-300">
-                      <div className="flex items-center gap-4 bg-amber-500/5 border border-amber-500/20 rounded-xl px-4 py-3">
+                    <div className="px-4 md:px-5 pb-4 md:pb-5 animate-in fade-in duration-300">
+                      <div className="flex flex-col md:flex-row md:items-center gap-3 md:gap-4 bg-amber-500/5 border border-amber-500/20 rounded-xl px-4 py-3">
                         <label className="flex items-center gap-2 cursor-pointer text-[9px] text-amber-700 font-black uppercase tracking-widest whitespace-nowrap">
                           <input type="checkbox" checked={!!rule.lunch_break_start} onChange={e => toggleLunchBreak(rule.day_of_week, e.target.checked)}
                             className="w-4 h-4 rounded border-amber-500/30 text-amber-500 focus:ring-amber-500" />
                           <Coffee className="h-4 w-4" /> {language === 'es' ? 'Pausa' : 'Break'}
                         </label>
-                        
+
                         {rule.lunch_break_start && (
-                          <div className="flex items-center gap-2 ml-auto animate-in fade-in slide-in-from-right-2 duration-300">
+                          <div className="flex items-center gap-2 md:ml-auto animate-in fade-in slide-in-from-right-2 duration-300">
                             <span className="text-[9px] text-amber-600 font-black uppercase tracking-widest">{language === 'es' ? 'DE' : 'FROM'}</span>
                             <input type="time" value={rule.lunch_break_start.slice(0, 5)} onChange={e => updateRule(rule.day_of_week, 'lunch_break_start', e.target.value + ':00')}
                               className="rounded-lg border border-amber-500/20 px-2 py-1.5 text-[10px] font-black focus:ring-2 focus:ring-amber-500 outline-none bg-white text-amber-900 w-20" />

@@ -142,10 +142,10 @@ export default function GeneralSettingsPage() {
   };
 
   return (
-    <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-1000">
+    <div className="space-y-8 md:space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-1000">
       <header className="relative">
         <div className="absolute -top-12 -left-12 w-64 h-64 bg-primary/5 blur-[100px] rounded-full -z-10" />
-        <h1 className="text-4xl font-black text-on-surface tracking-tighter uppercase mb-3">
+        <h1 className="text-2xl md:text-4xl font-black text-on-surface tracking-tighter uppercase mb-3">
           {t.general_settings?.split(' ')[0]} <span className="text-primary italic font-serif lowercase">{t.general_settings?.split(' ').slice(1).join(' ')}</span>
         </h1>
         <p className="text-[10px] font-black text-on-surface/40 uppercase tracking-[0.4em] ml-1">
@@ -153,38 +153,38 @@ export default function GeneralSettingsPage() {
         </p>
       </header>
 
-      <form onSubmit={handleSave} className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+      <form onSubmit={handleSave} className="grid grid-cols-1 lg:grid-cols-12 gap-8 md:gap-12">
         {/* Left: Clinic Info */}
-        <div className="lg:col-span-7 space-y-8">
-          <section className="bg-white rounded-[3rem] border border-primary/10 p-10 shadow-spatial relative overflow-hidden group">
+        <div className="lg:col-span-7 space-y-6 md:space-y-8">
+          <section className="bg-white rounded-[1.5rem] md:rounded-[3rem] border border-primary/10 p-6 md:p-10 shadow-spatial relative overflow-hidden group">
             <div className="absolute top-0 right-0 p-8 opacity-[0.02] pointer-events-none select-none group-hover:opacity-[0.05] transition-opacity">
               <Building2 className="h-24 w-24 text-primary" />
             </div>
-            
-            <div className="flex items-center gap-4 mb-10">
-              <div className="h-12 w-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
-                <Building2 className="h-6 w-6" />
+
+            <div className="flex items-center gap-4 mb-6 md:mb-10">
+              <div className="h-10 w-10 md:h-12 md:w-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
+                <Building2 className="h-5 w-5 md:h-6 md:w-6" />
               </div>
-              <h2 className="text-xl font-black text-on-surface uppercase tracking-tight">{t.clinic_identity}</h2>
+              <h2 className="text-lg md:text-xl font-black text-on-surface uppercase tracking-tight">{t.clinic_identity}</h2>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-              <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-10">
+              <div className="space-y-3 md:space-y-4">
                 <label className="text-[10px] font-black text-primary/60 uppercase tracking-[0.3em] ml-2">{t.contact_phone}</label>
                 <div className="relative group/input">
                   <input
                     type="text"
                     value={contactPhone}
                     onChange={(e) => setContactPhone(e.target.value)}
-                    className="w-full h-16 bg-primary/[0.06] rounded-2xl border border-primary/20 px-6 font-bold text-on-surface focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all outline-none"
+                    className="w-full h-12 md:h-16 bg-primary/[0.06] rounded-2xl border border-primary/20 px-4 md:px-6 font-bold text-on-surface focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all outline-none"
                     placeholder="+1 234 567 890"
                   />
                 </div>
               </div>
-              <div className="space-y-4">
+              <div className="space-y-3 md:space-y-4">
                 <label className="text-[10px] font-black text-primary/60 uppercase tracking-[0.3em] ml-2">{t.primary_color}</label>
-                <div className="flex flex-wrap md:flex-nowrap gap-3">
-                  <div className="relative h-16 w-16 flex-shrink-0 rounded-2xl border-2 border-primary/20 p-1 bg-white overflow-hidden group/color">
+                <div className="flex flex-nowrap gap-3">
+                  <div className="relative h-12 w-12 md:h-16 md:w-16 flex-shrink-0 rounded-2xl border-2 border-primary/20 p-1 bg-white overflow-hidden group/color">
                     <input
                       type="color"
                       value={primaryColor}
@@ -196,29 +196,29 @@ export default function GeneralSettingsPage() {
                     type="text"
                     value={primaryColor}
                     onChange={(e) => setPrimaryColor(e.target.value)}
-                    className="flex-1 min-w-[120px] h-16 bg-primary/[0.06] rounded-2xl border border-primary/20 px-6 font-bold text-on-surface focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all outline-none uppercase font-mono"
+                    className="flex-1 min-w-0 h-12 md:h-16 bg-primary/[0.06] rounded-2xl border border-primary/20 px-4 md:px-6 font-bold text-on-surface focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all outline-none uppercase font-mono"
                   />
                 </div>
               </div>
             </div>
 
-            <div className="space-y-4 mt-10">
+            <div className="space-y-3 md:space-y-4 mt-6 md:mt-10">
               <label className="text-[10px] font-black text-primary/60 uppercase tracking-[0.3em] ml-2">{t.system_language_label}</label>
               <div className="relative">
                 <select
                   value={selectedLang}
                   onChange={(e) => setSelectedLang(e.target.value as Language)}
-                  className="w-full h-16 bg-primary/[0.06] rounded-2xl border border-primary/20 px-6 font-bold text-on-surface focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all outline-none appearance-none cursor-pointer"
+                  className="w-full h-12 md:h-16 bg-primary/[0.06] rounded-2xl border border-primary/20 px-4 md:px-6 font-bold text-on-surface focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all outline-none appearance-none cursor-pointer"
                 >
                   <option value="en">{t.language_en}</option>
                   <option value="es">{t.language_es}</option>
                   <option value="it">{t.language_it}</option>
                 </select>
-                <Globe className="absolute right-6 top-1/2 -translate-y-1/2 h-5 w-5 text-primary/30 pointer-events-none" />
+                <Globe className="absolute right-4 md:right-6 top-1/2 -translate-y-1/2 h-5 w-5 text-primary/30 pointer-events-none" />
               </div>
             </div>
 
-            <div className="space-y-4 mt-10">
+            <div className="space-y-3 md:space-y-4 mt-6 md:mt-10">
               <label className="text-[10px] font-black text-primary/60 uppercase tracking-[0.3em] ml-2">
                 {lang === 'es' ? 'País' : lang === 'it' ? 'Paese' : 'Country'}
               </label>
@@ -226,7 +226,7 @@ export default function GeneralSettingsPage() {
                 <select
                   value={countryCode}
                   onChange={(e) => setCountryCode(e.target.value)}
-                  className="w-full h-16 bg-primary/[0.06] rounded-2xl border border-primary/20 px-6 font-bold text-on-surface focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all outline-none appearance-none cursor-pointer"
+                  className="w-full h-12 md:h-16 bg-primary/[0.06] rounded-2xl border border-primary/20 px-4 md:px-6 font-bold text-on-surface focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all outline-none appearance-none cursor-pointer"
                 >
                   <option value="54">Argentina (+54)</option>
                   <option value="34">España (+34)</option>
@@ -237,7 +237,7 @@ export default function GeneralSettingsPage() {
                   <option value="56">Chile (+56)</option>
                   <option value="44">Reino Unido (+44)</option>
                 </select>
-                <Globe className="absolute right-6 top-1/2 -translate-y-1/2 h-5 w-5 text-primary/30 pointer-events-none" />
+                <Globe className="absolute right-4 md:right-6 top-1/2 -translate-y-1/2 h-5 w-5 text-primary/30 pointer-events-none" />
               </div>
               <p className="text-[9px] font-bold text-on-surface-muted ml-2">
                 {lang === 'es' ? 'Determina el prefijo telefónico para números de pacientes' : lang === 'it' ? "Determina il prefisso telefonico per i numeri dei pazienti" : 'Determines the phone prefix for patient numbers'}
@@ -247,40 +247,40 @@ export default function GeneralSettingsPage() {
 
           {/* Password Security */}
           {!isGoogleUser && (
-            <section className="bg-white rounded-[3rem] border border-primary/10 p-10 shadow-spatial relative overflow-hidden group">
+            <section className="bg-white rounded-[1.5rem] md:rounded-[3rem] border border-primary/10 p-6 md:p-10 shadow-spatial relative overflow-hidden group">
               <div className="absolute top-0 right-0 p-8 opacity-[0.02] pointer-events-none select-none group-hover:opacity-[0.05] transition-opacity">
                 <KeyRound className="h-24 w-24 text-primary" />
               </div>
 
-              <div className="flex items-center gap-4 mb-10">
-                <div className="h-12 w-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
-                  <KeyRound className="h-6 w-6" />
+              <div className="flex items-center gap-4 mb-6 md:mb-10">
+                <div className="h-10 w-10 md:h-12 md:w-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
+                  <KeyRound className="h-5 w-5 md:h-6 md:w-6" />
                 </div>
-                <h2 className="text-xl font-black text-on-surface uppercase tracking-tight">{t.change_password}</h2>
+                <h2 className="text-lg md:text-xl font-black text-on-surface uppercase tracking-tight">{t.change_password}</h2>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-                <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-10">
+                <div className="space-y-3 md:space-y-4">
                   <label className="text-[10px] font-black text-primary/60 uppercase tracking-[0.3em] ml-2">{t.new_password_label}</label>
                   <div className="relative">
                     <input
                       type={showPassword ? "text" : "password"}
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="w-full h-16 bg-primary/[0.06] rounded-2xl border border-primary/20 px-6 font-bold text-on-surface focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all outline-none"
+                      className="w-full h-12 md:h-16 bg-primary/[0.06] rounded-2xl border border-primary/20 px-4 md:px-6 font-bold text-on-surface focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all outline-none"
                     />
-                    <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-6 top-1/2 -translate-y-1/2 text-primary/30 hover:text-primary transition-colors">
+                    <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 md:right-6 top-1/2 -translate-y-1/2 text-primary/30 hover:text-primary transition-colors">
                       {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                     </button>
                   </div>
                 </div>
-                <div className="space-y-4">
+                <div className="space-y-3 md:space-y-4">
                   <label className="text-[10px] font-black text-primary/60 uppercase tracking-[0.3em] ml-2">{t.confirm_password_label}</label>
                   <input
                     type={showPassword ? "text" : "password"}
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="w-full h-16 bg-primary/[0.06] rounded-2xl border border-primary/20 px-6 font-bold text-on-surface focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all outline-none"
+                    className="w-full h-12 md:h-16 bg-primary/[0.06] rounded-2xl border border-primary/20 px-4 md:px-6 font-bold text-on-surface focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all outline-none"
                   />
                 </div>
               </div>
@@ -289,19 +289,19 @@ export default function GeneralSettingsPage() {
         </div>
 
         {/* Right: Logo & Save */}
-        <div className="lg:col-span-5 space-y-8">
-          <section className="bg-white rounded-[3rem] border border-primary/10 p-10 shadow-spatial relative overflow-hidden group">
-            <div className="space-y-8 flex flex-col items-center">
-              <div className="h-48 w-48 md:h-64 md:w-64 rounded-[2.5rem] bg-primary/[0.02] border-2 border-dashed border-primary/20 flex flex-col items-center justify-center relative overflow-hidden group hover:border-primary transition-all shadow-inner group/logo">
+        <div className="lg:col-span-5 space-y-6 md:space-y-8">
+          <section className="bg-white rounded-[1.5rem] md:rounded-[3rem] border border-primary/10 p-6 md:p-10 shadow-spatial relative overflow-hidden group">
+            <div className="space-y-6 md:space-y-8 flex flex-col items-center">
+              <div className="h-36 w-36 md:h-64 md:w-64 rounded-[2rem] md:rounded-[2.5rem] bg-primary/[0.02] border-2 border-dashed border-primary/20 flex flex-col items-center justify-center relative overflow-hidden group hover:border-primary transition-all shadow-inner group/logo">
                 {logoUrl ? (
-                  <img src={logoUrl} alt="Logo" className="h-32 w-32 md:h-48 md:w-48 object-contain p-4 group-hover/logo:scale-105 transition-transform" />
+                  <img src={logoUrl} alt="Logo" className="h-24 w-24 md:h-48 md:w-48 object-contain p-4 group-hover/logo:scale-105 transition-transform" />
                 ) : (
                   <div className="flex flex-col items-center gap-4 text-primary/20 group-hover/logo:text-primary/40 transition-colors">
-                    <ImageIcon className="h-16 w-16 md:h-20 md:w-20" />
+                    <ImageIcon className="h-12 w-12 md:h-20 md:w-20" />
                     <span className="text-[10px] font-black uppercase tracking-widest">{t.upload_logo}</span>
                   </div>
                 )}
-                
+
                 <div className="absolute inset-0 bg-primary/60 opacity-0 group-hover/logo:opacity-100 transition-opacity flex flex-col items-center justify-center gap-3 text-white backdrop-blur-sm">
                   <Upload className="h-8 w-8" />
                   <span className="text-[10px] font-black uppercase tracking-[0.2em]">{t.upload_logo}</span>
@@ -339,12 +339,12 @@ export default function GeneralSettingsPage() {
 
           <div className="pt-4 space-y-6">
              {message && (
-               <motion.div 
+               <motion.div
                  initial={{ opacity: 0, y: 10 }}
                  animate={{ opacity: 1, y: 0 }}
-                 className={`p-6 rounded-[2rem] text-[10px] font-black uppercase tracking-[0.2em] border flex items-center gap-4 ${
-                   message.type === 'success' 
-                    ? 'bg-emerald-50 text-emerald-600 border-emerald-200' 
+                 className={`p-4 md:p-6 rounded-[1.5rem] md:rounded-[2rem] text-[10px] font-black uppercase tracking-[0.2em] border flex items-center gap-4 ${
+                   message.type === 'success'
+                    ? 'bg-emerald-50 text-emerald-600 border-emerald-200'
                     : 'bg-red-50 text-red-600 border-red-200'
                  }`}
                >
@@ -359,45 +359,45 @@ export default function GeneralSettingsPage() {
              <button
                 type="submit"
                 disabled={isSaving}
-                className="w-full h-24 bg-primary text-white rounded-[3rem] text-xs font-black uppercase tracking-[0.5em] shadow-2xl shadow-primary/30 hover:-translate-y-2 hover:shadow-primary/40 transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-6 group relative overflow-hidden"
+                className="w-full h-16 md:h-24 bg-primary text-white rounded-[2rem] md:rounded-[3rem] text-xs font-black uppercase tracking-[0.5em] shadow-2xl shadow-primary/30 hover:-translate-y-2 hover:shadow-primary/40 transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-6 group relative overflow-hidden"
              >
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:animate-shimmer" />
-                {isSaving ? <Loader2 className="h-8 w-8 animate-spin" /> : (
-                  <>
-                    <span>{t.save_changes}</span>
-                    <ArrowRight className="h-6 w-6 group-hover:translate-x-3 transition-transform" />
-                  </>
-                )}
+               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:animate-shimmer" />
+               {isSaving ? <Loader2 className="h-8 w-8 animate-spin" /> : (
+                 <>
+                   <span>{t.save_changes}</span>
+                   <ArrowRight className="h-6 w-6 group-hover:translate-x-3 transition-transform" />
+                 </>
+               )}
              </button>
           </div>
         </div>
       </form>
 
       {/* Restart Tutorial Section */}
-      <section className="bg-white rounded-[4rem] border border-primary/10 p-12 md:p-16 shadow-spatial relative overflow-hidden group">
+      <section className="bg-white rounded-[2rem] md:rounded-[4rem] border border-primary/10 p-6 md:p-16 shadow-spatial relative overflow-hidden group">
         <div className="absolute top-0 right-0 p-12 opacity-[0.02] pointer-events-none select-none group-hover:opacity-[0.05] transition-opacity">
           <Sparkles className="h-48 w-48 text-primary" />
         </div>
-        
-        <div className="flex flex-col md:flex-row items-center md:items-start gap-12 relative z-10">
-          <div className="h-24 w-24 rounded-[2rem] bg-primary/10 flex items-center justify-center flex-shrink-0 shadow-2xl shadow-primary/10 group-hover:scale-110 transition-transform duration-500">
-            <Sparkles className="h-12 w-12 text-primary" />
+
+        <div className="flex flex-col md:flex-row items-center md:items-start gap-6 md:gap-12 relative z-10">
+          <div className="h-16 w-16 md:h-24 md:w-24 rounded-[1.5rem] md:rounded-[2rem] bg-primary/10 flex items-center justify-center flex-shrink-0 shadow-2xl shadow-primary/10 group-hover:scale-110 transition-transform duration-500">
+            <Sparkles className="h-8 w-8 md:h-12 md:w-12 text-primary" />
           </div>
           <div className="flex-1 text-center md:text-left">
-            <h2 className="text-3xl font-black text-on-surface uppercase tracking-tight mb-4">
+            <h2 className="text-xl md:text-3xl font-black text-on-surface uppercase tracking-tight mb-4">
               {t.tutorial_title}
             </h2>
-            <p className="text-base text-on-surface/50 font-medium mb-10 leading-relaxed max-w-2xl">
+            <p className="text-sm md:text-base text-on-surface/50 font-medium mb-6 md:mb-10 leading-relaxed max-w-2xl">
               {t.tutorial_desc}
             </p>
-            
+
             {tutorialResetMessage && (
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className={`mb-10 p-6 rounded-[2rem] text-[10px] font-black uppercase tracking-widest border inline-flex items-center gap-4 ${
-                  tutorialResetMessage.type === 'success' 
-                    ? 'bg-emerald-50 text-emerald-600 border-emerald-200' 
+                className={`mb-6 md:mb-10 p-4 md:p-6 rounded-[1.5rem] md:rounded-[2rem] text-[10px] font-black uppercase tracking-widest border inline-flex items-center gap-4 ${
+                  tutorialResetMessage.type === 'success'
+                    ? 'bg-emerald-50 text-emerald-600 border-emerald-200'
                     : 'bg-red-50 text-red-600 border-red-200'
                 }`}
               >
@@ -409,12 +409,12 @@ export default function GeneralSettingsPage() {
                 {tutorialResetMessage.text}
               </motion.div>
             )}
-            
+
             <div className="flex justify-center md:justify-start">
               <button
                 onClick={handleRestartTutorial}
                 disabled={isRestartingTutorial}
-                className="h-20 px-12 bg-primary/5 text-primary rounded-full text-xs font-black uppercase tracking-[0.4em] hover:bg-primary hover:text-white hover:shadow-2xl hover:shadow-primary/20 transition-all active:scale-95 disabled:opacity-50 flex items-center gap-6 group"
+                className="h-14 md:h-20 px-8 md:px-12 bg-primary/5 text-primary rounded-full text-xs font-black uppercase tracking-[0.4em] hover:bg-primary hover:text-white hover:shadow-2xl hover:shadow-primary/20 transition-all active:scale-95 disabled:opacity-50 flex items-center gap-4 md:gap-6 group"
               >
                 {isRestartingTutorial ? (
                   <Loader2 className="h-6 w-6 animate-spin" />

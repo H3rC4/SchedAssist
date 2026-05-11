@@ -232,45 +232,45 @@ export default function DoctorPatientsPage() {
       {selectedClient && (
         <div className="fixed inset-0 z-[100] flex flex-col bg-slate-50 animate-in slide-in-from-right duration-300">
           {/* Header */}
-          <div className="bg-slate-900 px-6 py-4 text-white shadow-lg sticky top-0 z-10">
+          <div className="bg-slate-900 px-4 md:px-6 py-3 md:py-4 text-white shadow-lg sticky top-0 z-10">
             <div className="max-w-7xl mx-auto flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <button onClick={() => setSelectedClient(null)} className="p-2 rounded-xl bg-white/10 hover:bg-white/20 transition-all flex items-center gap-2 text-sm font-bold">
-                  <ChevronLeft className="h-5 w-5" /> {t.back}
+              <div className="flex items-center gap-2 md:gap-4 min-w-0">
+                <button onClick={() => setSelectedClient(null)} className="p-2 rounded-xl bg-white/10 hover:bg-white/20 transition-all flex items-center gap-2 text-sm font-bold shrink-0">
+                  <ChevronLeft className="h-5 w-5" /> <span className="hidden sm:inline">{t.back}</span>
                 </button>
-                <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-full bg-amber-500/20 text-amber-500 flex items-center justify-center font-black">{selectedClient.first_name[0]}{selectedClient.last_name?.[0]}</div>
-                  <div>
-                    <h3 className="text-lg font-black leading-none">{selectedClient.first_name} {selectedClient.last_name}</h3>
-                    <p className="text-slate-400 text-xs mt-1 font-bold">{selectedClient.phone}</p>
+                <div className="flex items-center gap-2 md:gap-3 min-w-0">
+                  <div className="h-8 w-8 md:h-10 md:w-10 rounded-full bg-amber-500/20 text-amber-500 flex items-center justify-center font-black text-sm md:text-base shrink-0">{selectedClient.first_name[0]}{selectedClient.last_name?.[0]}</div>
+                  <div className="min-w-0">
+                    <h3 className="text-sm md:text-lg font-black leading-none truncate">{selectedClient.first_name} {selectedClient.last_name}</h3>
+                    <p className="text-slate-400 text-[10px] md:text-xs mt-0.5 font-bold truncate">{selectedClient.phone}</p>
                   </div>
                 </div>
               </div>
-              <button onClick={() => setSelectedClient(null)} className="p-2 rounded-full hover:bg-white/10 transition-colors"><X className="h-6 w-6 opacity-60" /></button>
+              <button onClick={() => setSelectedClient(null)} className="p-2 rounded-full hover:bg-white/10 transition-colors shrink-0"><X className="h-5 w-5 md:h-6 md:w-6 opacity-60" /></button>
             </div>
           </div>
 
           {/* Tabs */}
-          <div className="bg-white border-b border-slate-100 sticky top-[72px] z-10">
-            <div className="max-w-7xl mx-auto px-6 flex gap-1 pt-2">
+          <div className="bg-white border-b border-slate-100 sticky top-[52px] md:top-[72px] z-10">
+            <div className="max-w-7xl mx-auto px-4 md:px-6 flex gap-1 pt-2">
               {(['perfil', 'historia'] as const).map(tab => (
-                <button key={tab} onClick={() => setActiveTab(tab)} className={`px-5 py-3 text-sm font-black rounded-t-xl transition-all ${activeTab === tab ? 'bg-slate-900 text-white' : 'text-slate-400 hover:text-slate-600'}`}>
-                  {tab === 'perfil' ? <><Calendar className="h-4 w-4 inline mr-2" />{t.profile}</> : <><Stethoscope className="h-4 w-4 inline mr-2" />{t.history}</>}
+                <button key={tab} onClick={() => setActiveTab(tab)} className={`px-3 md:px-5 py-2 md:py-3 text-xs md:text-sm font-black rounded-t-xl transition-all ${activeTab === tab ? 'bg-slate-900 text-white' : 'text-slate-400 hover:text-slate-600'}`}>
+                  {tab === 'perfil' ? <><Calendar className="h-4 w-4 inline mr-1 md:mr-2" />{t.profile}</> : <><Stethoscope className="h-4 w-4 inline mr-1 md:mr-2" />{t.history}</>}
                 </button>
               ))}
             </div>
           </div>
 
-          <div className="flex-1 overflow-y-auto p-6">
+          <div className="flex-1 overflow-y-auto p-4 md:p-6">
             <div className="max-w-7xl mx-auto">
 
               {/* PERFIL TAB */}
               {activeTab === 'perfil' && (
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-8">
                   {/* Observaciones */}
-                  <div className="lg:col-span-4 space-y-6">
-                    <div className="bg-white rounded-[2rem] p-8 shadow-sm border border-slate-100">
-                      <div className="flex items-center justify-between mb-6">
+                  <div className="lg:col-span-4 space-y-4 md:space-y-6">
+                    <div className="bg-white rounded-[1.5rem] md:rounded-[2rem] p-5 md:p-8 shadow-sm border border-slate-100">
+                      <div className="flex items-center justify-between mb-4 md:mb-6">
                         <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-2"><Users className="h-4 w-4" />{t.observations}</h4>
                         <button onClick={() => setIsEditing(!isEditing)} className="p-2 hover:bg-slate-50 rounded-xl text-amber-500 transition-all">
                           {isEditing ? <X className="h-4 w-4" /> : <Edit2 className="h-4 w-4" />}
@@ -278,11 +278,11 @@ export default function DoctorPatientsPage() {
                       </div>
                       {isEditing ? (
                         <div className="space-y-4 animate-in fade-in zoom-in-95 duration-200">
-                          <textarea value={editData.notes} onChange={e => setEditData({ notes: e.target.value })} className="w-full bg-slate-50 rounded-2xl p-5 text-sm font-medium text-slate-600 min-h-[150px] leading-relaxed border-none focus:ring-2 focus:ring-amber-500 outline-none" placeholder={t.writeObs} />
+                          <textarea value={editData.notes} onChange={e => setEditData({ notes: e.target.value })} className="w-full bg-slate-50 rounded-2xl p-4 md:p-5 text-sm font-medium text-slate-600 min-h-[120px] md:min-h-[150px] leading-relaxed border-none focus:ring-2 focus:ring-amber-500 outline-none" placeholder={t.writeObs} />
                           <button onClick={handleSaveObs} className="w-full bg-slate-900 text-white py-3 rounded-xl text-xs font-black uppercase tracking-widest shadow-lg active:scale-95 transition-all">{t.saveObs}</button>
                         </div>
                       ) : (
-                        <div className="bg-slate-50 rounded-2xl p-5 text-sm font-medium text-slate-600 min-h-[120px] leading-relaxed">
+                        <div className="bg-slate-50 rounded-2xl p-4 md:p-5 text-sm font-medium text-slate-600 min-h-[100px] md:min-h-[120px] leading-relaxed">
                           {parseMedicalNotes(selectedClient.notes).summary || t.noObs}
                         </div>
                       )}
@@ -290,27 +290,27 @@ export default function DoctorPatientsPage() {
                   </div>
 
                   {/* Historial de citas */}
-                  <div className="lg:col-span-8 space-y-6">
-                    <div className="bg-white rounded-[2rem] p-8 shadow-sm border border-slate-100 min-h-[50vh]">
-                      <h4 className="text-lg font-black text-slate-900 mb-8 flex items-center gap-2">
+                  <div className="lg:col-span-8 space-y-4 md:space-y-6">
+                    <div className="bg-white rounded-[1.5rem] md:rounded-[2rem] p-5 md:p-8 shadow-sm border border-slate-100 min-h-[40vh] md:min-h-[50vh]">
+                      <h4 className="text-base md:text-lg font-black text-slate-900 mb-4 md:mb-8 flex items-center gap-2">
                         <Calendar className="h-5 w-5 text-amber-500" />{t.consultations} ({clientApps.length})
                       </h4>
                       {clientApps.length === 0 ? (
-                        <div className="text-center py-20 bg-slate-50 rounded-[2rem] border-2 border-dashed border-slate-100 text-slate-300 font-bold">{t.noConsults}</div>
+                        <div className="text-center py-16 md:py-20 bg-slate-50 rounded-[1.5rem] md:rounded-[2rem] border-2 border-dashed border-slate-100 text-slate-300 font-bold">{t.noConsults}</div>
                       ) : (
-                        <div className="space-y-6">
+                        <div className="space-y-4 md:space-y-6">
                           {clientApps.map(app => (
-                            <div key={app.id} className="bg-slate-50 rounded-[2rem] p-6 border border-slate-100 hover:bg-white hover:shadow-xl hover:shadow-slate-200/50 transition-all">
-                              <div className="flex items-start justify-between mb-4">
-                                <div>
-                                  <p className="text-md font-black text-slate-900">{app.services?.name || 'Consulta General'}</p>
+                            <div key={app.id} className="bg-slate-50 rounded-[1.5rem] md:rounded-[2rem] p-4 md:p-6 border border-slate-100 hover:bg-white hover:shadow-xl hover:shadow-slate-200/50 transition-all">
+                              <div className="flex items-start justify-between mb-3 md:mb-4">
+                                <div className="min-w-0">
+                                  <p className="text-sm md:text-md font-black text-slate-900">{app.services?.name || 'Consulta General'}</p>
                                   <p className="text-xs font-bold text-slate-400 mt-1">{format(parseISO(app.start_at), "d MMMM yyyy · HH:mm'h'", { locale: dateLocale })}</p>
                                 </div>
-                                <span className={`px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest ${statusColor(app.status)}`}>{statusLabel(app.status)}</span>
+                                <span className={`shrink-0 px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest ${statusColor(app.status)}`}>{statusLabel(app.status)}</span>
                               </div>
                               <div className="space-y-3">
                                 {parseAppEntries(app.notes).map(entry => (
-                                  <div key={entry.id} className="bg-white border border-slate-100 rounded-2xl p-4 shadow-sm">
+                                  <div key={entry.id} className="bg-white border border-slate-100 rounded-xl md:rounded-2xl p-3 md:p-4 shadow-sm">
                                     <div className="flex items-center gap-2 mb-2">
                                       <span className="text-[10px] font-black text-amber-600 uppercase tracking-widest">{t.medRecord}</span>
                                       <span className="text-[10px] text-slate-300 font-bold">{format(parseISO(entry.date), "HH:mm'h'", { locale: dateLocale })}</span>
@@ -318,7 +318,7 @@ export default function DoctorPatientsPage() {
                                     <p className="text-sm font-medium text-slate-600 leading-relaxed">{entry.content}</p>
                                   </div>
                                 ))}
-                                <div className="bg-white/50 rounded-2xl p-4 border border-dashed border-slate-200">
+                                <div className="bg-white/50 rounded-xl md:rounded-2xl p-3 md:p-4 border border-dashed border-slate-200">
                                   <textarea value={editingAppId === app.id ? appNoteEdit : ''} onFocus={() => setEditingAppId(app.id)} onChange={e => setAppNoteEdit(e.target.value)} placeholder={t.writeNote} className="w-full bg-transparent text-sm font-medium border-none focus:ring-0 resize-none placeholder-slate-300 min-h-[40px]" rows={editingAppId === app.id ? 3 : 1} />
                                   {editingAppId === app.id && (
                                     <div className="flex justify-end mt-2 gap-2">
@@ -339,12 +339,12 @@ export default function DoctorPatientsPage() {
 
               {/* HISTORIA CLÍNICA TAB */}
               {activeTab === 'historia' && (
-                <div className="space-y-6">
+                <div className="space-y-4 md:space-y-6">
                   {/* Nuevo registro */}
-                  <div className="bg-white rounded-[2rem] p-8 shadow-sm border border-slate-100">
-                    <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2"><Plus className="h-4 w-4" />{lang === 'es' ? 'Nuevo Registro' : 'New Record'}</h4>
-                    <textarea value={newRecordText} onChange={e => setNewRecordText(e.target.value)} placeholder={t.writeRecord} className="w-full bg-slate-50 rounded-2xl p-5 text-sm font-medium text-slate-600 min-h-[120px] border-none focus:ring-2 focus:ring-amber-500 outline-none" />
-                    <div className="flex items-center gap-3 mt-4">
+                  <div className="bg-white rounded-[1.5rem] md:rounded-[2rem] p-5 md:p-8 shadow-sm border border-slate-100">
+                    <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-3 md:mb-4 flex items-center gap-2"><Plus className="h-4 w-4" />{lang === 'es' ? 'Nuevo Registro' : 'New Record'}</h4>
+                    <textarea value={newRecordText} onChange={e => setNewRecordText(e.target.value)} placeholder={t.writeRecord} className="w-full bg-slate-50 rounded-2xl p-4 md:p-5 text-sm font-medium text-slate-600 min-h-[100px] md:min-h-[120px] border-none focus:ring-2 focus:ring-amber-500 outline-none" />
+                    <div className="flex flex-wrap items-center gap-3 mt-4">
                       <button onClick={handleSaveClinicalRecord} disabled={isSavingRecord || !newRecordText.trim()} className="bg-slate-900 text-white px-6 py-3 rounded-xl text-xs font-black uppercase tracking-widest disabled:opacity-50 active:scale-95 transition-all flex items-center gap-2">
                         {isSavingRecord ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileText className="h-4 w-4" />}{t.save}
                       </button>
@@ -357,11 +357,11 @@ export default function DoctorPatientsPage() {
 
                   {/* Registros existentes */}
                   {clinicalRecords.length === 0 ? (
-                    <div className="text-center py-20 bg-white rounded-[2rem] border-2 border-dashed border-slate-100 text-slate-300 font-bold">{t.noRecords}</div>
+                    <div className="text-center py-16 md:py-20 bg-white rounded-[1.5rem] md:rounded-[2rem] border-2 border-dashed border-slate-100 text-slate-300 font-bold">{t.noRecords}</div>
                   ) : (
                     <div className="space-y-4">
                       {clinicalRecords.map((record: any) => (
-                        <div key={record.id} className="bg-white rounded-[2rem] p-6 shadow-sm border border-slate-100 hover:shadow-lg transition-all">
+                        <div key={record.id} className="bg-white rounded-[1.5rem] md:rounded-[2rem] p-4 md:p-6 shadow-sm border border-slate-100 hover:shadow-lg transition-all">
                           <div className="flex items-center gap-2 mb-3">
                             <Stethoscope className="h-4 w-4 text-indigo-500" />
                             <span className="text-[10px] font-black text-indigo-600 uppercase tracking-widest">{t.clinicalRecord}</span>

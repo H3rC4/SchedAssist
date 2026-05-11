@@ -365,13 +365,13 @@ export default function DoctorDashboard() {
               </button>
             </div>
 
-            <div className="grid grid-cols-7 gap-2 mb-2">
+            <div className="grid grid-cols-7 gap-1 md:gap-2 mb-1 md:mb-2">
               {['D', 'L', 'M', 'X', 'J', 'V', 'S'].map(d => (
-                <div key={d} className="text-center text-[9px] font-black text-on-surface-muted uppercase tracking-widest">{d}</div>
+                <div key={d} className="text-center text-[8px] md:text-[9px] font-black text-on-surface-muted uppercase tracking-widest py-1 md:py-0">{d}</div>
               ))}
             </div>
 
-            <div className="grid grid-cols-7 gap-2">
+            <div className="grid grid-cols-7 gap-1 md:gap-2">
               {Array.from({ length: startDayOfWeek }).map((_, i) => <div key={`e-${i}`} />)}
               {calendarDays.map(day => {
                 const selected = isSameDay(day, selectedDate)
@@ -379,12 +379,12 @@ export default function DoctorDashboard() {
                 const hasApp = allMonthApps.some(a => isSameDay(parseISO(a.start_at), day))
                 return (
                   <button key={day.toISOString()} onClick={() => setSelectedDate(day)}
-                    className={`relative aspect-square flex flex-col items-center justify-center rounded-2xl text-xs font-black transition-all duration-200
-                      ${selected ? 'bg-primary text-white shadow-md scale-105 z-10' : 
-                        today ? 'bg-surface-container-low text-primary ring-1 ring-primary/20' : 
+                    className={`relative min-h-[36px] md:min-h-0 md:aspect-square flex flex-col items-center justify-center rounded-xl md:rounded-2xl text-[10px] md:text-xs font-black transition-all duration-200
+                      ${selected ? 'bg-primary text-white shadow-md scale-105 z-10' :
+                        today ? 'bg-surface-container-low text-primary ring-1 ring-primary/20' :
                         'text-on-surface hover:bg-surface-container-low'}`}>
                     {format(day, 'd')}
-                    {hasApp && !selected && <span className="absolute bottom-1.5 h-1 w-1 rounded-full bg-primary" />}
+                    {hasApp && !selected && <span className="absolute bottom-1 md:bottom-1.5 h-1 w-1 rounded-full bg-primary" />}
                   </button>
                 )
               })}
@@ -396,25 +396,25 @@ export default function DoctorDashboard() {
       
       {/* Detail Modal */}
       {selectedApp && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 md:p-4 sm:p-6">
           <div className="absolute inset-0 bg-on-surface/20 backdrop-blur-sm transition-opacity" onClick={() => setSelectedApp(null)} />
-          <div className="relative bg-white rounded-[2rem] w-full max-w-lg shadow-2xl overflow-hidden flex flex-col max-h-[90vh] animate-in fade-in zoom-in-95 duration-200">
-             <div className="p-6 md:p-8 flex-1 overflow-y-auto">
-                <div className="flex items-start justify-between mb-8">
-                  <div className="flex items-center gap-4">
-                    <div className="h-16 w-16 rounded-[1.5rem] bg-surface-container-low flex items-center justify-center text-xl font-black text-primary tracking-tighter">
+          <div className="relative bg-white rounded-[1.5rem] md:rounded-[2rem] w-full max-w-lg shadow-2xl overflow-hidden flex flex-col max-h-[90vh] animate-in fade-in zoom-in-95 duration-200">
+             <div className="p-4 md:p-8 flex-1 overflow-y-auto">
+                <div className="flex items-start justify-between mb-6 md:mb-8">
+                  <div className="flex items-center gap-3 md:gap-4">
+                    <div className="h-12 w-12 md:h-16 md:w-16 rounded-[1rem] md:rounded-[1.5rem] bg-surface-container-low flex items-center justify-center text-lg md:text-xl font-black text-primary tracking-tighter">
                       {selectedApp.clients?.first_name[0]}{selectedApp.clients?.last_name[0]}
                     </div>
-                    <div>
-                      <h2 className="text-xl font-black text-on-surface uppercase tracking-tight leading-none mb-1">
+                    <div className="min-w-0">
+                      <h2 className="text-base md:text-xl font-black text-on-surface uppercase tracking-tight leading-none mb-1">
                         {selectedApp.clients?.first_name} {selectedApp.clients?.last_name}
                       </h2>
-                      <span className="text-[10px] font-bold text-on-surface-muted uppercase tracking-widest">
+                      <span className="text-[9px] md:text-[10px] font-bold text-on-surface-muted uppercase tracking-widest">
                         ID: #{selectedApp.id.slice(0,8)}
                       </span>
                     </div>
                   </div>
-                  <div className={`px-3 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest
+                  <div className={`shrink-0 px-3 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest
                     ${selectedApp.status === 'confirmed' || selectedApp.status === 'completed' ? 'bg-emerald-500/10 text-emerald-600' :
                       selectedApp.status === 'cancelled' ? 'bg-red-500/10 text-red-600' : 'bg-amber-500/10 text-amber-600'}`}>
                     {selectedApp.status === 'confirmed' ? fullT.confirmed : selectedApp.status === 'completed' ? fullT.done :
@@ -422,10 +422,10 @@ export default function DoctorDashboard() {
                   </div>
                 </div>
 
-                <div className="space-y-6">
+                <div className="space-y-4 md:space-y-6">
                    <div>
                       <h4 className="text-[10px] font-black text-on-surface-muted uppercase tracking-widest mb-3">Detalles de la Cita</h4>
-                      <div className="bg-surface-container-lowest border border-on-surface/5 rounded-[1.5rem] p-5 space-y-4">
+                      <div className="bg-surface-container-lowest border border-on-surface/5 rounded-[1.25rem] md:rounded-[1.5rem] p-4 md:p-5 space-y-3 md:space-y-4">
                          <div className="flex items-center gap-3">
                            <Clock className="h-4 w-4 text-primary" />
                            <div>
@@ -457,18 +457,18 @@ export default function DoctorDashboard() {
                    {selectedApp.notes && (
                      <div>
                         <h4 className="text-[10px] font-black text-on-surface-muted uppercase tracking-widest mb-3">Notas</h4>
-                        <div className="bg-amber-500/5 border border-amber-500/20 rounded-[1.5rem] p-5 text-sm font-bold text-amber-900 leading-relaxed">
+                        <div className="bg-amber-500/5 border border-amber-500/20 rounded-[1.25rem] md:rounded-[1.5rem] p-4 md:p-5 text-sm font-bold text-amber-900 leading-relaxed">
                           {selectedApp.notes}
                         </div>
                      </div>
                    )}
                 </div>
              </div>
-             <div className="p-6 bg-surface-container-lowest border-t border-on-surface/5 flex gap-3">
-                <button onClick={() => setSelectedApp(null)} className="flex-1 py-4 bg-surface-container hover:bg-surface-container-high rounded-[1.5rem] text-xs font-black text-on-surface uppercase tracking-widest transition-colors">
+             <div className="p-4 md:p-6 bg-surface-container-lowest border-t border-on-surface/5 flex gap-3">
+                <button onClick={() => setSelectedApp(null)} className="flex-1 py-3 md:py-4 bg-surface-container hover:bg-surface-container-high rounded-[1.25rem] md:rounded-[1.5rem] text-xs font-black text-on-surface uppercase tracking-widest transition-colors">
                   Cerrar
                 </button>
-                <a href={`https://wa.me/${selectedApp.clients?.phone?.replace(/\D/g,'')}`} target="_blank" rel="noreferrer" className="flex-1 py-4 bg-emerald-500 hover:bg-emerald-600 rounded-[1.5rem] text-xs font-black text-white uppercase tracking-widest transition-colors flex items-center justify-center gap-2">
+                <a href={`https://wa.me/${selectedApp.clients?.phone?.replace(/\D/g,'')}`} target="_blank" rel="noreferrer" className="flex-1 py-3 md:py-4 bg-emerald-500 hover:bg-emerald-600 rounded-[1.25rem] md:rounded-[1.5rem] text-xs font-black text-white uppercase tracking-widest transition-colors flex items-center justify-center gap-2">
                   <MessageSquare className="h-4 w-4" /> WhatsApp
                 </a>
              </div>

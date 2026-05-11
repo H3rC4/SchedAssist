@@ -159,11 +159,11 @@ export default function ClientsPage() {
 
 
   return (
-    <div className="min-h-screen bg-surface p-6 md:p-8 max-w-[1600px] mx-auto">
+    <div className="min-h-screen bg-surface p-4 md:p-8 max-w-[1600px] mx-auto">
       {/* Editorial Header */}
-      <header className="mb-12 flex items-start justify-between">
+      <header className="mb-6 md:mb-12 flex flex-col md:flex-row md:items-start justify-between gap-4">
         <div>
-          <h1 className="text-4xl font-black text-secondary-900 tracking-tight mb-2">
+          <h1 className="text-2xl md:text-4xl font-black text-secondary-900 tracking-tight mb-2">
             {t.patient_management}
           </h1>
           <p className="text-secondary-600 font-bold uppercase tracking-widest text-[10px] bg-secondary-50 px-3 py-1 rounded-full inline-block">
@@ -172,7 +172,7 @@ export default function ClientsPage() {
         </div>
         <button 
           onClick={() => setIsNewPatientOpen(true)}
-          className="flex items-center gap-2 bg-primary text-white px-6 py-3 rounded-xl font-black uppercase tracking-widest text-[10px] hover:bg-primary-light transition-all shadow-lg shadow-primary/20 active:scale-95"
+          className="flex items-center justify-center gap-2 bg-primary text-white px-6 py-3 rounded-xl font-black uppercase tracking-widest text-[10px] hover:bg-primary-light transition-all shadow-lg shadow-primary/20 active:scale-95 shrink-0"
         >
           <Plus className="h-4 w-4" />
           {t.new_patient}
@@ -180,7 +180,7 @@ export default function ClientsPage() {
       </header>
 
       {/* Action Bar */}
-      <div className="flex items-center gap-4 mb-8">
+      <div className="flex items-center gap-3 mb-6 md:mb-8">
         <div className="relative flex-1 group">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-secondary-500 group-focus-within:text-primary-600 transition-colors" />
           <input
@@ -188,12 +188,12 @@ export default function ClientsPage() {
             value={searchTerm}
             onChange={e => setSearchTerm(e.target.value)}
             placeholder={t.search_placeholder}
-            className="w-full bg-white border border-surface-container-low rounded-xl py-4 pl-12 pr-4 text-sm font-bold text-secondary-900 focus:ring-4 focus:ring-primary-600/5 focus:border-primary-600 transition-all outline-none"
+            className="w-full bg-white border border-surface-container-low rounded-xl py-3 md:py-4 pl-12 pr-4 text-sm font-bold text-secondary-900 focus:ring-4 focus:ring-primary-600/5 focus:border-primary-600 transition-all outline-none"
           />
         </div>
         <button 
           onClick={() => setFilterActive(!filterActive)}
-          className={`p-4 border rounded-xl transition-all shadow-sm ${
+          className={`p-3 md:p-4 border rounded-xl transition-all shadow-sm ${
             filterActive 
               ? 'bg-primary-600 border-primary-600 text-white' 
               : 'bg-white border-surface-container-low text-secondary-600 hover:text-primary-600 hover:border-primary-600'
@@ -203,8 +203,8 @@ export default function ClientsPage() {
         </button>
       </div>
 
-      {/* Patient Table */}
-      <div className="bg-white rounded-2xl border border-surface-container-low overflow-hidden shadow-sm">
+      {/* Patient Table - Desktop */}
+      <div className="hidden md:block bg-white rounded-2xl border border-surface-container-low overflow-hidden shadow-sm">
         <table className="w-full text-left">
           <thead>
             <tr className="border-b border-surface-container-low bg-precision-surface-lowest">
@@ -268,6 +268,58 @@ export default function ClientsPage() {
             )}
           </tbody>
         </table>
+      </div>
+
+      {/* Patient Cards - Mobile */}
+      <div className="md:hidden space-y-3">
+        {loading ? (
+          <div className="py-12 text-center">
+            <Loader2 className="h-8 w-8 animate-spin text-primary-600 mx-auto" />
+          </div>
+        ) : filteredClients.length === 0 ? (
+          <div className="py-12 text-center opacity-40 bg-white rounded-2xl border border-surface-container-low">
+            <p className="text-xs font-black uppercase tracking-widest">{t.no_patients_found}</p>
+          </div>
+        ) : (
+          filteredClients.map(client => {
+            const status = getStatus(client)
+            return (
+              <button
+                key={client.id}
+                onClick={() => openClientDetail(client)}
+                className="w-full text-left bg-white rounded-2xl border border-surface-container-low p-4 shadow-sm active:scale-[0.98] transition-all"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-black tracking-tight text-secondary-900 truncate">
+                      {client.first_name} {client.last_name}
+                    </p>
+                    <p className="text-xs font-bold text-secondary-600 uppercase tracking-widest mt-0.5 truncate">
+                      {getLastDoctor(client)}
+                    </p>
+                  </div>
+                  <span className={`shrink-0 px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${
+                    status === 'active' 
+                      ? 'bg-emerald-100 text-emerald-700' 
+                      : 'bg-surface-container-mid text-secondary-600'
+                   }`}>
+                    {status === 'active' ? t.active_status : t.inactive_status}
+                  </span>
+                </div>
+                <div className="mt-3 pt-3 border-t border-surface-container-low grid grid-cols-2 gap-2">
+                  <div>
+                    <p className="text-[9px] font-black text-secondary-400 uppercase tracking-widest">{t.phone}</p>
+                    <p className="text-xs font-bold text-secondary-700 truncate">{client.phone}</p>
+                  </div>
+                  <div>
+                    <p className="text-[9px] font-black text-secondary-400 uppercase tracking-widest">{t.last_visit}</p>
+                    <p className="text-xs font-bold text-secondary-700 truncate">{getLastVisit(client)}</p>
+                  </div>
+                </div>
+              </button>
+            )
+          })
+        )}
       </div>
 
       {/* Patient Drawers */}

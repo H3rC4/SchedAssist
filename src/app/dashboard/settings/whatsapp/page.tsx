@@ -118,21 +118,21 @@ export default function WhatsAppSettingsPage() {
   const isConnected = accounts.length > 0;
 
   return (
-    <div className="space-y-16 animate-in fade-in slide-in-from-bottom-4 duration-1000">
+    <div className="space-y-10 md:space-y-16 animate-in fade-in slide-in-from-bottom-4 duration-1000">
       {/* Header */}
-      <header className="flex flex-col md:flex-row md:items-end justify-between gap-8 relative">
+      <header className="flex flex-col md:flex-row md:items-end justify-between gap-4 md:gap-8 relative">
         <div className="absolute -top-12 -left-12 w-64 h-64 bg-primary/5 blur-[100px] rounded-full -z-10" />
         <div>
-          <h1 className="text-4xl md:text-5xl font-black text-on-surface tracking-tighter uppercase mb-2">
+          <h1 className="text-2xl md:text-4xl lg:text-5xl font-black text-on-surface tracking-tighter uppercase mb-2">
             {t.whatsapp_integration?.split(' ')[0]} <span className="text-primary italic font-serif lowercase">{t.whatsapp_integration?.split(' ').slice(1).join(' ')}</span>
           </h1>
           <p className="text-[10px] font-black text-on-surface/30 uppercase tracking-[0.4em]">
             {t.whatsapp_integration_desc}
           </p>
         </div>
-        <button 
+        <button
           onClick={() => setShowAddForm(!showAddForm)}
-          className="px-8 py-4 bg-slate-900 text-white text-[10px] font-black uppercase tracking-[0.4em] shadow-xl shadow-slate-900/20 hover:bg-slate-800 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3 group"
+          className="px-6 md:px-8 py-3 md:py-4 bg-slate-900 text-white text-[10px] font-black uppercase tracking-[0.4em] shadow-xl shadow-slate-900/20 hover:bg-slate-800 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3 group shrink-0"
         >
           {showAddForm ? (
             <>
@@ -151,64 +151,64 @@ export default function WhatsAppSettingsPage() {
       {/* Add Form */}
       <AnimatePresence>
         {showAddForm && (
-          <motion.section 
+          <motion.section
             initial={{ height: 0, opacity: 0, y: -20 }}
             animate={{ height: 'auto', opacity: 1, y: 0 }}
             exit={{ height: 0, opacity: 0, y: -20 }}
             className="overflow-hidden"
           >
-            <div className="bg-white rounded-[3rem] border border-primary/20 p-10 shadow-spatial space-y-10 relative overflow-hidden">
+            <div className="bg-white rounded-[1.5rem] md:rounded-[3rem] border border-primary/20 p-6 md:p-10 shadow-spatial space-y-6 md:space-y-10 relative overflow-hidden">
               <div className="absolute top-0 right-0 p-8 opacity-[0.02] pointer-events-none select-none">
                 <Plus className="h-24 w-24 text-primary" />
               </div>
-              
+
               <div className="flex items-center gap-4">
                 <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
                   <Smartphone className="h-5 w-5" />
                 </div>
-                <h3 className="text-xl font-black text-on-surface uppercase tracking-tight">{t.connect_business}</h3>
+                <h3 className="text-lg md:text-xl font-black text-on-surface uppercase tracking-tight">{t.connect_business}</h3>
               </div>
 
-              <form onSubmit={handleAddAccount} className="grid grid-cols-1 md:grid-cols-2 gap-10">
-                <div className="space-y-4">
+              <form onSubmit={handleAddAccount} className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-10">
+                <div className="space-y-3 md:space-y-4">
                    <label className="text-[10px] font-black text-primary/60 uppercase tracking-[0.3em] ml-2">{t.account_label}</label>
                    <div className="relative group/input">
-                     <input 
-                       type="text" 
+                     <input
+                       type="text"
                        value={newAccount.label}
                        onChange={e => setNewAccount({...newAccount, label: e.target.value})}
-                       className="w-full h-16 bg-primary/[0.06] rounded-2xl border border-primary/20 px-6 font-bold text-on-surface focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all outline-none"
+                       className="w-full h-12 md:h-16 bg-primary/[0.06] rounded-2xl border border-primary/20 px-4 md:px-6 font-bold text-on-surface focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all outline-none"
                        placeholder="e.g. Main Clinic WhatsApp"
                      />
                    </div>
                 </div>
-                <div className="space-y-4">
+                <div className="space-y-3 md:space-y-4">
                    <label className="text-[10px] font-black text-primary/60 uppercase tracking-[0.3em] ml-2">{t.phone_id_label}</label>
                    <div className="relative group/input">
-                     <input 
-                       type="text" 
+                     <input
+                       type="text"
                        value={newAccount.phone_number_id}
                        onChange={e => setNewAccount({...newAccount, phone_number_id: e.target.value})}
-                       className="w-full h-16 bg-primary/[0.06] rounded-2xl border border-primary/20 px-6 font-bold text-on-surface focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all outline-none"
+                       className="w-full h-12 md:h-16 bg-primary/[0.06] rounded-2xl border border-primary/20 px-4 md:px-6 font-bold text-on-surface focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all outline-none"
                      />
                    </div>
                 </div>
-                <div className="md:col-span-2 space-y-4">
+                <div className="md:col-span-2 space-y-3 md:space-y-4">
                    <label className="text-[10px] font-black text-primary/60 uppercase tracking-[0.3em] ml-2">{t.token_label}</label>
                    <div className="relative group/input">
-                     <input 
-                       type="password" 
+                     <input
+                       type="password"
                        value={newAccount.access_token}
                        onChange={e => setNewAccount({...newAccount, access_token: e.target.value})}
-                       className="w-full h-16 bg-primary/[0.06] rounded-2xl border border-primary/20 px-6 font-bold text-on-surface focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all outline-none"
+                       className="w-full h-12 md:h-16 bg-primary/[0.06] rounded-2xl border border-primary/20 px-4 md:px-6 font-bold text-on-surface focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all outline-none"
                      />
                    </div>
                 </div>
                 {formError && (
-                  <motion.div 
+                  <motion.div
                     initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: 0 }}
-                    className="md:col-span-2 p-6 bg-red-50 border border-red-200 text-red-600 rounded-2xl text-[10px] font-black uppercase tracking-widest flex items-center gap-4"
+                    className="md:col-span-2 p-4 md:p-6 bg-red-50 border border-red-200 text-red-600 rounded-2xl text-[10px] font-black uppercase tracking-widest flex items-center gap-4"
                   >
                     <div className="h-10 w-10 bg-red-100 rounded-xl flex items-center justify-center shrink-0">
                       <AlertCircle className="h-5 w-5" />
@@ -216,10 +216,10 @@ export default function WhatsAppSettingsPage() {
                     {formError}
                   </motion.div>
                 )}
-                <button 
-                  type="submit" 
+                <button
+                  type="submit"
                   disabled={isProcessing}
-                  className="md:col-span-2 h-20 bg-primary text-white rounded-[2rem] text-[10px] font-black uppercase tracking-[0.4em] shadow-xl shadow-primary/20 hover:bg-primary-light hover:scale-[1.01] active:scale-95 transition-all flex items-center justify-center gap-4"
+                  className="md:col-span-2 h-14 md:h-20 bg-primary text-white rounded-[1.5rem] md:rounded-[2rem] text-[10px] font-black uppercase tracking-[0.4em] shadow-xl shadow-primary/20 hover:bg-primary-light hover:scale-[1.01] active:scale-95 transition-all flex items-center justify-center gap-4"
                 >
                   {isProcessing ? <Loader2 className="h-6 w-6 animate-spin" /> : (
                     <>
@@ -235,31 +235,31 @@ export default function WhatsAppSettingsPage() {
       </AnimatePresence>
 
       {/* Current Plan - THE GREEN BOX */}
-      <section className="bg-primary rounded-[4rem] p-12 text-white shadow-2xl shadow-primary/30 relative overflow-hidden group">
+      <section className="bg-primary rounded-[2rem] md:rounded-[4rem] p-6 md:p-12 text-white shadow-2xl shadow-primary/30 relative overflow-hidden group">
         <div className="absolute top-[-4rem] right-[-4rem] h-96 w-96 bg-white/5 rounded-full blur-[80px] group-hover:scale-110 transition-transform duration-1000" />
         <Zap className="absolute top-[-2rem] right-[-2rem] h-64 w-64 text-white/5 rotate-12 group-hover:rotate-[30deg] transition-transform duration-1000" />
-        
-        <div className="relative z-10 space-y-12">
-          <div className="flex flex-col md:flex-row md:items-start justify-between gap-8">
+
+        <div className="relative z-10 space-y-8 md:space-y-12">
+          <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 md:gap-8">
             <div className="space-y-3">
               <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-white/10 backdrop-blur-md rounded-full border border-white/20 text-[9px] font-black uppercase tracking-[0.2em]">
                 <Sparkles className="h-3 w-3" /> {t.active_status}
               </div>
               <h2 className="text-sm font-black uppercase tracking-[0.4em] text-white/40">{t.current_plan}</h2>
-              <p className="text-5xl md:text-6xl font-black tracking-tighter uppercase leading-none">
+              <p className="text-3xl md:text-5xl lg:text-6xl font-black tracking-tighter uppercase leading-none">
                 {t.professional_plus?.split(' ')[0]} <span className="text-white/30 italic font-serif lowercase">{t.professional_plus?.split(' ').slice(1).join(' ')}</span>
               </p>
             </div>
-            <div className="px-8 py-4 bg-white/10 backdrop-blur-xl rounded-[2rem] border border-white/20 text-[10px] font-black uppercase tracking-[0.3em] flex flex-col items-center gap-1 shadow-lg">
+            <div className="px-6 md:px-8 py-3 md:py-4 bg-white/10 backdrop-blur-xl rounded-[1.5rem] md:rounded-[2rem] border border-white/20 text-[10px] font-black uppercase tracking-[0.3em] flex flex-col items-center gap-1 shadow-lg">
               <span className="text-white/40 text-[8px] tracking-[0.4em]">{t.renews_on ? t.renews_on('MAY 24, 2026').split(' ')[0] : 'Renews'}</span>
-              <span className="text-lg tracking-tighter">MAY 24, 2026</span>
+              <span className="text-base md:text-lg tracking-tighter">MAY 24, 2026</span>
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-16">
+          <div className="flex flex-wrap items-center gap-8 md:gap-16">
              <div className="space-y-2">
                <p className="text-[10px] font-black text-white/40 uppercase tracking-[0.3em]">{t.monthly_cost}</p>
-               <p className="text-4xl font-black tracking-tight">$89.00 <span className="text-sm text-white/30 font-bold italic lowercase">/ mo</span></p>
+               <p className="text-3xl md:text-4xl font-black tracking-tight">$89.00 <span className="text-sm text-white/30 font-bold italic lowercase">/ mo</span></p>
              </div>
              <div className="h-16 w-[1px] bg-white/10 hidden md:block" />
              <div className="space-y-2">
@@ -268,16 +268,16 @@ export default function WhatsAppSettingsPage() {
                  <div className="h-10 w-14 bg-white/10 rounded-xl flex items-center justify-center border border-white/10">
                    <CreditCard className="h-6 w-6" />
                  </div>
-                 <p className="text-xl font-black uppercase tracking-tight">Visa •••• 4242</p>
+                 <p className="text-lg md:text-xl font-black uppercase tracking-tight">Visa •••• 4242</p>
                </div>
              </div>
           </div>
 
-          <div className="flex flex-wrap gap-6 pt-4">
-            <button 
+          <div className="flex flex-wrap gap-4 md:gap-6 pt-4">
+            <button
               onClick={handleManageSubscription}
               disabled={isRedirecting}
-              className="flex items-center gap-3 text-[10px] font-black uppercase tracking-[0.4em] bg-white text-primary px-10 py-5 rounded-[2rem] hover:bg-slate-50 hover:-translate-y-1 transition-all active:scale-95 disabled:opacity-50 shadow-xl shadow-white/10 group/btn"
+              className="flex items-center gap-3 text-[10px] font-black uppercase tracking-[0.4em] bg-white text-primary px-6 md:px-10 py-4 md:py-5 rounded-[1.5rem] md:rounded-[2rem] hover:bg-slate-50 hover:-translate-y-1 transition-all active:scale-95 disabled:opacity-50 shadow-xl shadow-white/10 group/btn"
             >
               {isRedirecting ? <Loader2 className="h-5 w-5 animate-spin" /> : (
                 <>
@@ -287,10 +287,10 @@ export default function WhatsAppSettingsPage() {
               )}
             </button>
 
-            <button 
+            <button
               onClick={handleManageSubscription}
               disabled={isRedirecting}
-              className="flex items-center gap-3 text-[10px] font-black uppercase tracking-[0.4em] bg-white/10 text-white border border-white/20 px-10 py-5 rounded-[2rem] hover:bg-white/20 transition-all active:scale-95 disabled:opacity-50"
+              className="flex items-center gap-3 text-[10px] font-black uppercase tracking-[0.4em] bg-white/10 text-white border border-white/20 px-6 md:px-10 py-4 md:py-5 rounded-[1.5rem] md:rounded-[2rem] hover:bg-white/20 transition-all active:scale-95 disabled:opacity-50"
             >
               {t.cancel_subscription}
             </button>
@@ -299,19 +299,19 @@ export default function WhatsAppSettingsPage() {
       </section>
 
       {/* Integration Status Card */}
-      <section className="bg-white rounded-[3rem] border border-primary/10 p-10 md:p-16 shadow-spatial relative overflow-hidden group">
+      <section className="bg-white rounded-[1.5rem] md:rounded-[3rem] border border-primary/10 p-6 md:p-16 shadow-spatial relative overflow-hidden group">
         <div className="absolute top-0 right-0 p-12 opacity-[0.02] pointer-events-none select-none group-hover:opacity-[0.05] transition-opacity">
           <Smartphone className="h-48 w-48 text-primary" />
         </div>
-        
-        <div className="flex flex-col lg:flex-row items-start justify-between gap-16 relative z-10">
-          <div className="space-y-10 flex-1">
-            <div className="space-y-4">
-              <h3 className="text-2xl font-black text-on-surface uppercase tracking-tight">
+
+        <div className="flex flex-col lg:flex-row items-start justify-between gap-8 md:gap-16 relative z-10">
+          <div className="space-y-6 md:space-y-10 flex-1">
+            <div className="space-y-3 md:space-y-4">
+              <h3 className="text-xl md:text-2xl font-black text-on-surface uppercase tracking-tight">
                 {t.integration_status}
               </h3>
               <div className="flex items-center gap-3">
-                <div className={`flex items-center gap-3 px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-[0.2em] border shadow-sm ${
+                <div className={`flex items-center gap-3 px-4 md:px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-[0.2em] border shadow-sm ${
                   isConnected ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-amber-50 text-amber-600 border-amber-100'
                 }`}>
                   <div className={`h-2 w-2 rounded-full ${isConnected ? 'bg-emerald-500' : 'bg-amber-500 animate-pulse'}`} />
@@ -319,21 +319,21 @@ export default function WhatsAppSettingsPage() {
                 </div>
               </div>
             </div>
-            
+
             <p className="text-sm font-medium text-on-surface/50 leading-relaxed max-w-lg">
-              {isConnected 
-                ? t.whatsapp_active_desc 
+              {isConnected
+                ? t.whatsapp_active_desc
                 : t.whatsapp_inactive_desc}
             </p>
 
-            <div className="flex flex-wrap gap-4">
+            <div className="flex flex-wrap gap-3 md:gap-4">
               {accounts.map(acc => (
-                <div key={acc.id} className="flex items-center gap-4 bg-primary/[0.03] px-8 py-4 rounded-[1.5rem] border border-primary/10 group/acc hover:border-primary/30 transition-all">
+                <div key={acc.id} className="flex items-center gap-3 md:gap-4 bg-primary/[0.03] px-5 md:px-8 py-3 md:py-4 rounded-[1.5rem] border border-primary/10 group/acc hover:border-primary/30 transition-all">
                   <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-primary">
                     <Smartphone className="h-4 w-4" />
                   </div>
                   <span className="text-[10px] font-black uppercase tracking-[0.2em] text-on-surface">{acc.label}</span>
-                  <button onClick={() => handleDeleteAccount(acc.id)} className="ml-4 text-on-surface/20 hover:text-red-500 transition-colors">
+                  <button onClick={() => handleDeleteAccount(acc.id)} className="ml-2 md:ml-4 text-on-surface/20 hover:text-red-500 transition-colors">
                     <Trash2 className="h-4 w-4" />
                   </button>
                 </div>
@@ -341,12 +341,12 @@ export default function WhatsAppSettingsPage() {
             </div>
           </div>
 
-          <div className="flex items-center gap-10 p-10 bg-primary/[0.02] rounded-[3rem] border border-primary/10 shadow-inner group/qr hover:bg-primary/[0.04] transition-all">
-            <div className="p-6 bg-white rounded-[2rem] shadow-xl shadow-primary/5 border border-primary/5">
-              <QrCode className="h-32 w-32 text-on-surface/10 group-hover/qr:text-primary/20 transition-colors" />
+          <div className="flex items-center gap-6 md:gap-10 p-6 md:p-10 bg-primary/[0.02] rounded-[2rem] md:rounded-[3rem] border border-primary/10 shadow-inner group/qr hover:bg-primary/[0.04] transition-all">
+            <div className="p-4 md:p-6 bg-white rounded-[1.5rem] md:rounded-[2rem] shadow-xl shadow-primary/5 border border-primary/5">
+              <QrCode className="h-20 w-20 md:h-32 md:w-32 text-on-surface/10 group-hover/qr:text-primary/20 transition-colors" />
             </div>
-            <div className="space-y-6 max-w-[200px]">
-              <p className="text-[11px] font-bold text-on-surface/50 leading-relaxed uppercase tracking-tight">
+            <div className="space-y-4 md:space-y-6 max-w-[200px]">
+              <p className="text-[10px] md:text-[11px] font-bold text-on-surface/50 leading-relaxed uppercase tracking-tight">
                 {t.qr_notice}
               </p>
               <button className="flex items-center gap-3 text-[10px] font-black text-primary uppercase tracking-[0.2em] group/link">
@@ -359,22 +359,22 @@ export default function WhatsAppSettingsPage() {
       </section>
 
       {/* Automated Reminders Switch */}
-      <section 
-        className="bg-white rounded-[3rem] border border-primary/10 p-10 md:p-12 flex items-center justify-between group cursor-pointer hover:shadow-xl hover:border-primary/30 transition-all relative overflow-hidden" 
+      <section
+        className="bg-white rounded-[1.5rem] md:rounded-[3rem] border border-primary/10 p-6 md:p-12 flex flex-col sm:flex-row sm:items-center justify-between gap-4 group cursor-pointer hover:shadow-xl hover:border-primary/30 transition-all relative overflow-hidden"
         onClick={() => setRemindersEnabled(!remindersEnabled)}
       >
         <div className="absolute inset-0 bg-gradient-to-r from-primary/[0.02] to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-        <div className="space-y-3 relative z-10">
-          <h3 className="text-xl font-black text-on-surface uppercase tracking-tight">{t.auto_reminders}</h3>
+        <div className="space-y-2 md:space-y-3 relative z-10">
+          <h3 className="text-lg md:text-xl font-black text-on-surface uppercase tracking-tight">{t.auto_reminders}</h3>
           <p className="text-xs font-medium text-on-surface/40 max-w-md">{t.reminders_desc}</p>
         </div>
-        <div className="flex items-center gap-8 relative z-10">
+        <div className="flex items-center gap-4 md:gap-8 relative z-10">
           <span className="text-[10px] font-black text-on-surface/40 uppercase tracking-[0.4em]">{remindersEnabled ? t.on : t.off}</span>
-          <div className={`h-10 w-18 rounded-full flex items-center px-1.5 transition-all duration-500 ${remindersEnabled ? 'bg-primary' : 'bg-on-surface/10'}`}>
-            <motion.div 
-              animate={{ x: remindersEnabled ? 32 : 0 }}
+          <div className={`h-8 md:h-10 w-14 md:w-18 rounded-full flex items-center px-1 transition-all duration-500 ${remindersEnabled ? 'bg-primary' : 'bg-on-surface/10'}`}>
+            <motion.div
+              animate={{ x: remindersEnabled ? 28 : 0 }}
               transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-              className="h-7 w-7 rounded-full bg-white shadow-lg flex items-center justify-center"
+              className="h-6 md:h-7 w-6 md:w-7 rounded-full bg-white shadow-lg flex items-center justify-center"
             >
               <div className={`h-1.5 w-1.5 rounded-full ${remindersEnabled ? 'bg-primary' : 'bg-on-surface/20'}`} />
             </motion.div>
@@ -383,10 +383,10 @@ export default function WhatsAppSettingsPage() {
       </section>
 
       {/* Message Templates */}
-      <section className="space-y-10">
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 px-4">
+      <section className="space-y-6 md:space-y-10">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 md:gap-6 px-2 md:px-4">
           <div className="space-y-2">
-            <h3 className="text-3xl font-black text-on-surface tracking-tighter uppercase">{t.clinical_templates?.split(' ')[0]} <span className="text-primary italic font-serif lowercase">{t.clinical_templates?.split(' ').slice(1).join(' ')}</span></h3>
+            <h3 className="text-2xl md:text-3xl font-black text-on-surface tracking-tighter uppercase">{t.clinical_templates?.split(' ')[0]} <span className="text-primary italic font-serif lowercase">{t.clinical_templates?.split(' ').slice(1).join(' ')}</span></h3>
             <p className="text-[10px] font-black text-on-surface/30 uppercase tracking-[0.4em]">Proprietary Clinical Logic Modules</p>
           </div>
           <button className="text-[10px] font-black text-primary uppercase tracking-[0.3em] hover:tracking-[0.4em] transition-all flex items-center gap-2 group">
@@ -394,15 +394,15 @@ export default function WhatsAppSettingsPage() {
           </button>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-8">
           {[
             { id: 1, name: 'CONFIRMATION_REMINDER', text: t.template_conf_text },
             { id: 2, name: 'WAITLIST_OFFER', text: t.template_wait_text },
             { id: 3, name: 'POST_VISIT_FEEDBACK', text: t.template_feedback_text },
           ].map((item) => (
-            <div key={item.id} className="bg-white rounded-[3rem] border border-primary/10 p-10 flex flex-col gap-10 group hover:shadow-2xl hover:border-primary/20 transition-all relative overflow-hidden">
+            <div key={item.id} className="bg-white rounded-[1.5rem] md:rounded-[3rem] border border-primary/10 p-6 md:p-10 flex flex-col gap-6 md:gap-10 group hover:shadow-2xl hover:border-primary/20 transition-all relative overflow-hidden">
               <div className="absolute -bottom-10 -right-10 h-32 w-32 bg-primary/[0.02] rounded-full blur-[40px] group-hover:bg-primary/[0.05] transition-colors" />
-              <div className="space-y-6 flex-1 relative z-10">
+              <div className="space-y-4 md:space-y-6 flex-1 relative z-10">
                 <div className="flex items-center gap-3">
                    <div className="h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]" />
                    <h4 className="text-[10px] font-black text-on-surface/60 uppercase tracking-[0.3em]">{item.name}</h4>
@@ -411,7 +411,7 @@ export default function WhatsAppSettingsPage() {
                   "{item.text}"
                 </p>
               </div>
-              <button className="w-full py-4 rounded-2xl bg-primary/[0.03] border border-primary/10 text-[9px] font-black uppercase tracking-[0.3em] hover:bg-primary hover:text-white hover:border-primary hover:scale-[1.05] transition-all active:scale-95 shadow-lg shadow-transparent hover:shadow-primary/20">
+              <button className="w-full py-3 md:py-4 rounded-2xl bg-primary/[0.03] border border-primary/10 text-[9px] font-black uppercase tracking-[0.3em] hover:bg-primary hover:text-white hover:border-primary hover:scale-[1.05] transition-all active:scale-95 shadow-lg shadow-transparent hover:shadow-primary/20">
                 {t.preview_logic}
               </button>
             </div>

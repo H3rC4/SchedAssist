@@ -99,9 +99,9 @@ export default function NotificationsSettingsPage() {
   ];
 
   return (
-    <div className="space-y-16 animate-in fade-in duration-700">
+    <div className="space-y-10 md:space-y-16 animate-in fade-in duration-700">
       <header>
-        <h1 className="text-4xl font-black text-on-surface tracking-tighter uppercase mb-2">
+        <h1 className="text-2xl md:text-4xl font-black text-on-surface tracking-tighter uppercase mb-2">
           {t.comm_channels?.split(' ')[0]} <span className="text-primary italic font-serif lowercase">{t.comm_channels?.split(' ').slice(1).join(' ')}</span>
         </h1>
         <p className="text-[10px] font-black text-on-surface/30 uppercase tracking-[0.4em]">
@@ -109,26 +109,26 @@ export default function NotificationsSettingsPage() {
         </p>
       </header>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8">
         {notificationItems.map((item) => (
-          <div 
-            key={item.id} 
-            className={`bg-white rounded-[2.5rem] border border-on-surface/5 p-10 shadow-spatial flex flex-col gap-8 group transition-all relative overflow-hidden
+          <div
+            key={item.id}
+            className={`bg-white rounded-[1.5rem] md:rounded-[2.5rem] border border-on-surface/5 p-6 md:p-10 shadow-spatial flex flex-col gap-6 md:gap-8 group transition-all relative overflow-hidden
               ${settings[item.id] ? 'hover:bg-primary/[0.02]' : 'hover:bg-on-surface/[0.01]'}
             `}
           >
-            <div className="h-14 w-14 rounded-2xl bg-on-surface/[0.03] flex items-center justify-center text-on-surface/20 group-hover:bg-primary/10 group-hover:text-primary transition-all">
-              <item.icon className="h-6 w-6" />
+            <div className="h-12 w-12 md:h-14 md:w-14 rounded-2xl bg-on-surface/[0.03] flex items-center justify-center text-on-surface/20 group-hover:bg-primary/10 group-hover:text-primary transition-all">
+              <item.icon className="h-5 w-5 md:h-6 md:w-6" />
             </div>
-            
+
             <div className="space-y-2">
-              <h3 className="text-lg font-black text-on-surface uppercase tracking-tight">{item.title}</h3>
+              <h3 className="text-base md:text-lg font-black text-on-surface uppercase tracking-tight">{item.title}</h3>
               <p className="text-xs font-medium text-on-surface/40 leading-relaxed">{item.desc}</p>
             </div>
 
             <div className="flex items-center justify-between mt-auto pt-4">
                <div className="flex items-center gap-4">
-                  <button 
+                  <button
                     onClick={() => toggleSetting(item.id)}
                     disabled={isUpdating === item.id}
                     className={`h-7 w-12 rounded-full flex items-center px-1 transition-all relative
@@ -136,7 +136,7 @@ export default function NotificationsSettingsPage() {
                       ${isUpdating === item.id ? 'opacity-50 cursor-wait' : 'cursor-pointer hover:scale-105 active:scale-95'}
                     `}
                   >
-                    <motion.div 
+                    <motion.div
                       layout
                       className="h-5 w-5 rounded-full bg-white shadow-sm"
                       animate={{ x: settings[item.id] ? 20 : 0 }}
@@ -150,7 +150,7 @@ export default function NotificationsSettingsPage() {
 
                <AnimatePresence>
                  {isUpdating === item.id && (
-                   <motion.div 
+                   <motion.div
                      initial={{ opacity: 0, scale: 0.8 }}
                      animate={{ opacity: 1, scale: 1 }}
                      exit={{ opacity: 0, scale: 0.8 }}
