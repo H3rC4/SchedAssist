@@ -37,6 +37,23 @@ export default function WhatsAppSettingsPage() {
     }
   };
 
+  const handleSubscribe = async () => {
+    setIsRedirecting(true);
+    try {
+      const res = await fetch('/api/checkout', { method: 'POST' });
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        alert(data.error || 'Error starting checkout');
+      }
+    } catch (err) {
+      alert('Error connecting to payment gateway');
+    } finally {
+      setIsRedirecting(false);
+    }
+  };
+
   const t = (translations[lang] || translations['es']) as any;
 
   const fetchData = async () => {
@@ -274,26 +291,43 @@ export default function WhatsAppSettingsPage() {
           </div>
 
           <div className="flex flex-wrap gap-4 md:gap-6 pt-4">
-            <button
-              onClick={handleManageSubscription}
-              disabled={isRedirecting}
-              className="flex items-center gap-3 text-[10px] font-black uppercase tracking-[0.4em] bg-white text-primary px-6 md:px-10 py-4 md:py-5 rounded-[1.5rem] md:rounded-[2rem] hover:bg-slate-50 hover:-translate-y-1 transition-all active:scale-95 disabled:opacity-50 shadow-xl shadow-white/10 group/btn"
-            >
-              {isRedirecting ? <Loader2 className="h-5 w-5 animate-spin" /> : (
-                <>
-                  <span>{t.manage_subscription}</span>
-                  <ArrowUpRight className="h-5 w-5 group-hover/btn:translate-x-1 group-hover/btn:-translate-y-1 transition-transform" />
-                </>
-              )}
-            </button>
+            {tenant?.stripe_customer_id ? (
+              <>
+                <button
+                  onClick={handleManageSubscription}
+                  disabled={isRedirecting}
+                  className="flex items-center gap-3 text-[10px] font-black uppercase tracking-[0.4em] bg-white text-primary px-6 md:px-10 py-4 md:py-5 rounded-[1.5rem] md:rounded-[2rem] hover:bg-slate-50 hover:-translate-y-1 transition-all active:scale-95 disabled:opacity-50 shadow-xl shadow-white/10 group/btn"
+                >
+                  {isRedirecting ? <Loader2 className="h-5 w-5 animate-spin" /> : (
+                    <>
+                      <span>{t.manage_subscription}</span>
+                      <ArrowUpRight className="h-5 w-5 group-hover/btn:translate-x-1 group-hover/btn:-translate-y-1 transition-transform" />
+                    </>
+                  )}
+                </button>
 
-            <button
-              onClick={handleManageSubscription}
-              disabled={isRedirecting}
-              className="flex items-center gap-3 text-[10px] font-black uppercase tracking-[0.4em] bg-white/10 text-white border border-white/20 px-6 md:px-10 py-4 md:py-5 rounded-[1.5rem] md:rounded-[2rem] hover:bg-white/20 transition-all active:scale-95 disabled:opacity-50"
-            >
-              {t.cancel_subscription}
-            </button>
+                <button
+                  onClick={handleManageSubscription}
+                  disabled={isRedirecting}
+                  className="flex items-center gap-3 text-[10px] font-black uppercase tracking-[0.4em] bg-white/10 text-white border border-white/20 px-6 md:px-10 py-4 md:py-5 rounded-[1.5rem] md:rounded-[2rem] hover:bg-white/20 transition-all active:scale-95 disabled:opacity-50"
+                >
+                  {t.cancel_subscription}
+                </button>
+              </>
+            ) : (
+              <button
+                onClick={handleSubscribe}
+                disabled={isRedirecting}
+                className="flex items-center gap-3 text-[10px] font-black uppercase tracking-[0.4em] bg-white text-primary px-6 md:px-10 py-4 md:py-5 rounded-[1.5rem] md:rounded-[2rem] hover:bg-slate-50 hover:-translate-y-1 transition-all active:scale-95 disabled:opacity-50 shadow-xl shadow-white/10 group/btn"
+              >
+                {isRedirecting ? <Loader2 className="h-5 w-5 animate-spin" /> : (
+                  <>
+                    <span>{t.subscribe_now || 'Suscribirse por $70/mes'}</span>
+                    <ArrowUpRight className="h-5 w-5 group-hover/btn:translate-x-1 group-hover/btn:-translate-y-1 transition-transform" />
+                  </>
+                )}
+              </button>
+            )}
           </div>
         </div>
       </section>

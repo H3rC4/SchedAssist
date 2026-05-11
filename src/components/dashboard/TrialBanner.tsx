@@ -29,8 +29,8 @@ export function TrialBanner({ status, trialEndsAt, lang = 'es' }: TrialBannerPro
         </div>
         <span className="text-[10px] font-black uppercase tracking-[0.4em] text-red-100">{t.trial_expired || 'Tu periodo de prueba ha expirado'}</span>
       </div>
-      <Link 
-        href="/dashboard/whatsapp" 
+      <Link
+        href="/dashboard/pay"
         className="px-8 py-3 bg-red-600 text-white text-[10px] font-black uppercase tracking-[0.4em] hover:bg-red-500 transition-all shadow-xl shadow-red-900/50 rounded-none border border-transparent hover:border-red-400"
       >
         {t.whatsapp_banner?.cta || 'Actualizar'} por $70/mes
@@ -58,8 +58,8 @@ export function TrialBanner({ status, trialEndsAt, lang = 'es' }: TrialBannerPro
         <p className="hidden md:block text-[9px] font-black uppercase tracking-[0.3em] opacity-40 italic">
           {t.whatsapp_blocked || 'WhatsApp blocked until payment'}
         </p>
-        <Link 
-          href="/dashboard/whatsapp" 
+        <Link
+          href="/dashboard/pay"
           className="precision-button-primary flex items-center gap-3"
         >
           <span>{t.unlock_whatsapp || 'Unlock WhatsApp'}</span>
