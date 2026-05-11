@@ -14,7 +14,8 @@ export default function WhatsAppSettingsPage() {
   const [remindersEnabled, setRemindersEnabled] = useState(true);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isRedirecting, setIsRedirecting] = useState(false);
-  
+  const [checkoutError, setCheckoutError] = useState<string | null>(null);
+
   // Form state
   const [showAddForm, setShowAddForm] = useState(false);
   const [newAccount, setNewAccount] = useState({ label: '', phone_number_id: '', access_token: '' });
@@ -39,16 +40,17 @@ export default function WhatsAppSettingsPage() {
 
   const handleSubscribe = async () => {
     setIsRedirecting(true);
+    setCheckoutError(null);
     try {
       const res = await fetch('/api/checkout', { method: 'POST' });
       const data = await res.json();
       if (data.url) {
         window.location.href = data.url;
       } else {
-        alert(data.error || 'Error starting checkout');
+        setCheckoutError(data.error || 'Error starting checkout');
       }
     } catch (err) {
-      alert('Error connecting to payment gateway');
+      setCheckoutError('Error connecting to payment gateway');
     } finally {
       setIsRedirecting(false);
     }
@@ -251,8 +253,8 @@ export default function WhatsAppSettingsPage() {
         )}
       </AnimatePresence>
 
-      {/* Current Plan - THE GREEN BOX */}
-      <section className="bg-primary rounded-[2rem] md:rounded-[4rem] p-6 md:p-12 text-white shadow-2xl shadow-primary/30 relative overflow-hidden group">
+      {/* Current Plan / Subscription Status */}
+      <section className={`rounded-[2rem] md:rounded-[4rem] p-6 md:p-12 text-white shadow-2xl shadow-primary/30 relative overflow-hidden group ${tenant?.stripe_customer_id ? 'bg-primary' : 'bg-amber-600'}`}>
         <div className="absolute top-[-4rem] right-[-4rem] h-96 w-96 bg-white/5 rounded-full blur-[80px] group-hover:scale-110 transition-transform duration-1000" />
         <Zap className="absolute top-[-2rem] right-[-2rem] h-64 w-64 text-white/5 rotate-12 group-hover:rotate-[30deg] transition-transform duration-1000" />
 
@@ -260,35 +262,64 @@ export default function WhatsAppSettingsPage() {
           <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 md:gap-8">
             <div className="space-y-3">
               <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-white/10 backdrop-blur-md rounded-full border border-white/20 text-[9px] font-black uppercase tracking-[0.2em]">
-                <Sparkles className="h-3 w-3" /> {t.active_status}
+                <Sparkles className="h-3 w-3" />
+                {tenant?.stripe_customer_id ? t.active_status : (t.trial_mode || 'Trial')}
               </div>
               <h2 className="text-sm font-black uppercase tracking-[0.4em] text-white/40">{t.current_plan}</h2>
               <p className="text-3xl md:text-5xl lg:text-6xl font-black tracking-tighter uppercase leading-none">
                 {t.professional_plus?.split(' ')[0]} <span className="text-white/30 italic font-serif lowercase">{t.professional_plus?.split(' ').slice(1).join(' ')}</span>
               </p>
             </div>
-            <div className="px-6 md:px-8 py-3 md:py-4 bg-white/10 backdrop-blur-xl rounded-[1.5rem] md:rounded-[2rem] border border-white/20 text-[10px] font-black uppercase tracking-[0.3em] flex flex-col items-center gap-1 shadow-lg">
-              <span className="text-white/40 text-[8px] tracking-[0.4em]">{t.renews_on ? t.renews_on('MAY 24, 2026').split(' ')[0] : 'Renews'}</span>
-              <span className="text-base md:text-lg tracking-tighter">MAY 24, 2026</span>
-            </div>
+            {tenant?.stripe_customer_id && (
+              <div className="px-6 md:px-8 py-3 md:py-4 bg-white/10 backdrop-blur-xl rounded-[1.5rem] md:rounded-[2rem] border border-white/20 text-[10px] font-black uppercase tracking-[0.3em] flex flex-col items-center gap-1 shadow-lg">
+                <span className="text-white/40 text-[8px] tracking-[0.4em]">{t.renews_on ? t.renews_on('MAY 24, 2026').split(' ')[0] : 'Renews'}</span>
+                <span className="text-base md:text-lg tracking-tighter">MAY 24, 2026</span>
+              </div>
+            )}
           </div>
 
-          <div className="flex flex-wrap items-center gap-8 md:gap-16">
-             <div className="space-y-2">
-               <p className="text-[10px] font-black text-white/40 uppercase tracking-[0.3em]">{t.monthly_cost}</p>
-               <p className="text-3xl md:text-4xl font-black tracking-tight">$89.00 <span className="text-sm text-white/30 font-bold italic lowercase">/ mo</span></p>
-             </div>
-             <div className="h-16 w-[1px] bg-white/10 hidden md:block" />
-             <div className="space-y-2">
-               <p className="text-[10px] font-black text-white/40 uppercase tracking-[0.3em]">{t.payment_method}</p>
-               <div className="flex items-center gap-4">
-                 <div className="h-10 w-14 bg-white/10 rounded-xl flex items-center justify-center border border-white/10">
-                   <CreditCard className="h-6 w-6" />
-                 </div>
-                 <p className="text-lg md:text-xl font-black uppercase tracking-tight">Visa •••• 4242</p>
+          {tenant?.stripe_customer_id ? (
+            <div className="flex flex-wrap items-center gap-8 md:gap-16">
+               <div className="space-y-2">
+                 <p className="text-[10px] font-black text-white/40 uppercase tracking-[0.3em]">{t.monthly_cost}</p>
+                 <p className="text-3xl md:text-4xl font-black tracking-tight">$89.00 <span className="text-sm text-white/30 font-bold italic lowercase">/ mo</span></p>
                </div>
-             </div>
-          </div>
+               <div className="h-16 w-[1px] bg-white/10 hidden md:block" />
+               <div className="space-y-2">
+                 <p className="text-[10px] font-black text-white/40 uppercase tracking-[0.3em]">{t.payment_method}</p>
+                 <div className="flex items-center gap-4">
+                   <div className="h-10 w-14 bg-white/10 rounded-xl flex items-center justify-center border border-white/10">
+                     <CreditCard className="h-6 w-6" />
+                   </div>
+                   <p className="text-lg md:text-xl font-black uppercase tracking-tight">Visa •••• 4242</p>
+                 </div>
+               </div>
+            </div>
+          ) : (
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-5 border border-white/20">
+              <p className="text-sm font-bold text-white/80 leading-relaxed">
+                {lang === 'es'
+                  ? 'Estás en modo de prueba. Suscríbete para activar WhatsApp y desbloquear todas las funciones.'
+                  : lang === 'it'
+                  ? 'Sei in modalità prova. Abbonati per attivare WhatsApp e sbloccare tutte le funzioni.'
+                  : 'You are in trial mode. Subscribe to activate WhatsApp and unlock all features.'}
+              </p>
+            </div>
+          )}
+
+          {/* Error message */}
+          <AnimatePresence>
+            {checkoutError && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                className="p-4 bg-red-500/20 border border-red-400/30 rounded-2xl text-white text-xs font-bold"
+              >
+                {checkoutError}
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           <div className="flex flex-wrap gap-4 md:gap-6 pt-4">
             {tenant?.stripe_customer_id ? (
@@ -318,12 +349,12 @@ export default function WhatsAppSettingsPage() {
               <button
                 onClick={handleSubscribe}
                 disabled={isRedirecting}
-                className="flex items-center gap-3 text-[10px] font-black uppercase tracking-[0.4em] bg-white text-primary px-6 md:px-10 py-4 md:py-5 rounded-[1.5rem] md:rounded-[2rem] hover:bg-slate-50 hover:-translate-y-1 transition-all active:scale-95 disabled:opacity-50 shadow-xl shadow-white/10 group/btn"
+                className="flex items-center gap-3 text-sm md:text-base font-black uppercase tracking-[0.3em] bg-white text-amber-700 px-8 md:px-12 py-5 md:py-6 rounded-[1.5rem] md:rounded-[2rem] hover:bg-slate-50 hover:-translate-y-1 transition-all active:scale-95 disabled:opacity-50 shadow-2xl shadow-white/20 group/btn animate-pulse"
               >
-                {isRedirecting ? <Loader2 className="h-5 w-5 animate-spin" /> : (
+                {isRedirecting ? <Loader2 className="h-6 w-6 animate-spin" /> : (
                   <>
                     <span>{t.subscribe_now || 'Suscribirse por $70/mes'}</span>
-                    <ArrowUpRight className="h-5 w-5 group-hover/btn:translate-x-1 group-hover/btn:-translate-y-1 transition-transform" />
+                    <ArrowUpRight className="h-6 w-6 group-hover/btn:translate-x-1 group-hover/btn:-translate-y-1 transition-transform" />
                   </>
                 )}
               </button>

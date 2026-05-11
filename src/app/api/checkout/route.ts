@@ -24,11 +24,26 @@ export async function POST(req: NextRequest) {
 
     const tenantId = tenantUser.tenant_id;
 
-    const origin = req.headers.get('origin') || process.env.NEXT_PUBLIC_SITE_URL || '';
-    
+    // Build origin robustly for Vercel previews and custom domains
+    let origin = req.headers.get('origin') || '';
+    if (!origin) {
+      const host = req.headers.get('host') || '';
+      const protocol = host.includes('localhost') ? 'http' : 'https';
+      origin = host ? `${protocol}://${host}` : '';
+    }
+    if (!origin && process.env.NEXT_PUBLIC_SITE_URL) {
+      origin = process.env.NEXT_PUBLIC_SITE_URL;
+    }
+
     if (!origin || !origin.startsWith('http')) {
-      console.error('Invalid origin for Stripe checkout:', origin);
-      return NextResponse.json({ error: 'Configuración de URL del sitio inválida' }, { status: 500 });
+      console.error('Invalid origin for Stripe checkout:', { origin, host: req.headers.get('host'), env: process.env.NEXT_PUBLIC_SITE_URL });
+      return NextResponse.json({ error: 'Configuración de URL del sitio inválida. Contacta soporte.' }, { status: 500 });
+    }
+
+    const priceId = process.env.STRIPE_PRICE_ID;
+    if (!priceId || priceId === 'price_placeholder') {
+      console.error('Missing STRIPE_PRICE_ID env variable');
+      return NextResponse.json({ error: 'Precio de suscripción no configurado. Contacta soporte.' }, { status: 500 });
     }
 
     // Crear la sesión de checkout de Stripe
@@ -36,7 +51,7 @@ export async function POST(req: NextRequest) {
       payment_method_types: ['card'],
       line_items: [
         {
-          price: process.env.STRIPE_PRICE_ID || 'price_placeholder', 
+          price: priceId,
           quantity: 1,
         },
       ],
