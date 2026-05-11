@@ -157,6 +157,31 @@ export default function RegisterClinicPage() {
                   </div>
                 </div>
 
+                <div>
+                  <label className="text-[9px] font-black text-primary/60 uppercase tracking-[0.3em] ml-2 mb-2 block">
+                    {selectedLang === 'es' ? 'País' : selectedLang === 'it' ? 'Paese' : 'Country'}
+                  </label>
+                  <div className="relative group">
+                    <Globe className="absolute left-5 top-1/2 -translate-y-1/2 h-4 w-4 text-primary/30 group-focus-within:text-primary transition-colors pointer-events-none" />
+                    <select
+                      name="countryCode"
+                      defaultValue=""
+                      required
+                      className="w-full bg-primary/[0.03] border border-primary/20 py-4 pl-14 pr-5 text-sm font-bold text-[#191c1e] focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all outline-none appearance-none cursor-pointer"
+                    >
+                      <option value="" disabled>{selectedLang === 'es' ? 'Seleccionar país...' : selectedLang === 'it' ? 'Seleziona il paese...' : 'Select country...'}</option>
+                      <option value="54">Argentina (+54)</option>
+                      <option value="34">España (+34)</option>
+                      <option value="39">Italia (+39)</option>
+                      <option value="1">Estados Unidos (+1)</option>
+                      <option value="52">México (+52)</option>
+                      <option value="57">Colombia (+57)</option>
+                      <option value="56">Chile (+56)</option>
+                      <option value="44">Reino Unido (+44)</option>
+                    </select>
+                  </div>
+                </div>
+
                 <div className="pt-6 space-y-4">
                   <button
                     type="submit"

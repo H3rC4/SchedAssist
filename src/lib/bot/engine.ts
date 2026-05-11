@@ -4,6 +4,7 @@ import { AppointmentService } from '@/services/appointment.service';
 import { BotContext } from './types';
 import { updateClientState, showMainMenu, showBookingSummary } from './utils';
 import { t, Language, translations } from './translations';
+import { normalizePhone, inferCountryCode } from '@/lib/phone-utils';
 
 function resolveOption(text: string, options: string[]): string {
   if (!text) return '';
@@ -57,8 +58,10 @@ export const StateHandlers: Record<string, (ctx: BotContext) => Promise<boolean>
 
   WAIT_PHONE: async ({ supabase, tenant, client, chatId, text, message, channel, sender_phone_id }) => {
     const lang = (tenant.settings?.language || 'es') as Language;
-    const finalPhone = message?.contact ? message.contact.phone_number : text.replace(/[^0-9\+]/g, '');
-    if (finalPhone.length < 8) {
+    const rawPhone = message?.contact ? message.contact.phone_number : text;
+    const countryCode = inferCountryCode(tenant.settings);
+    const finalPhone = normalizePhone(rawPhone, countryCode);
+    if (finalPhone.length < 10) {
       await MessageService.sendMessage({
         channel,
         tenant_id: tenant.id,
@@ -252,12 +255,13 @@ export const StateHandlers: Record<string, (ctx: BotContext) => Promise<boolean>
       return true;
     }
 
+    const countryCode = inferCountryCode(tenant.settings);
     let patientPhone = '';
     if (message?.contact) {
-      patientPhone = message.contact.phone_number;
+      patientPhone = normalizePhone(message.contact.phone_number, countryCode);
     } else {
-      patientPhone = text.replace(/[^0-9\+]/g, '');
-      if (patientPhone.length < 8) {
+      patientPhone = normalizePhone(text, countryCode);
+      if (patientPhone.length < 10) {
         await MessageService.sendMessage({
           channel,
           tenant_id: tenant.id,
@@ -742,7 +746,8 @@ export const StateHandlers: Record<string, (ctx: BotContext) => Promise<boolean>
         const capitalize = (s: string) => s.trim().split(' ').map((w: string) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
         const cleanName = capitalize(botState.patientName);
         const cleanLastName = capitalize(botState.patientLastName);
-        const cleanPhone = botState.patientPhone.replace(/[^0-9\+]/g, '');
+        const countryCode = inferCountryCode(tenant.settings);
+        const cleanPhone = normalizePhone(botState.patientPhone, countryCode);
 
         let { data: targetClient } = await supabase.from('clients').select('id, notes').eq('tenant_id', tenant.id).eq('phone', cleanPhone).limit(1).maybeSingle();
 

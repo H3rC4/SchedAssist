@@ -3,19 +3,20 @@ import { t, Language } from './translations';
 
 export async function updateClientState(supabase: any, clientId: string, state: any) {
   const { data: c } = await supabase.from('clients').select('notes').eq('id', clientId).single();
+  let existing: any = {};
   if (c && c.notes) {
-    try {
-      const parsed = JSON.parse(c.notes);
-      if (parsed.telegram_chat_id && !state.telegram_chat_id) {
-        state.telegram_chat_id = parsed.telegram_chat_id;
-      }
-      if (parsed.whatsapp_chat_id && !state.whatsapp_chat_id) {
-        state.whatsapp_chat_id = parsed.whatsapp_chat_id;
-      }
-    } catch(e) {}
+    try { existing = JSON.parse(c.notes); } catch(e) {}
   }
-  state.last_interaction = new Date().getTime();
-  await supabase.from('clients').update({ notes: JSON.stringify(state) }).eq('id', clientId);
+
+  // Merge new state over existing to preserve fields like manual_takeover
+  const merged = { ...existing, ...state };
+
+  // Ensure chat IDs are preserved if not explicitly overridden
+  if (existing.telegram_chat_id && !state.telegram_chat_id) merged.telegram_chat_id = existing.telegram_chat_id;
+  if (existing.whatsapp_chat_id && !state.whatsapp_chat_id) merged.whatsapp_chat_id = existing.whatsapp_chat_id;
+
+  merged.last_interaction = new Date().getTime();
+  await supabase.from('clients').update({ notes: JSON.stringify(merged) }).eq('id', clientId);
 }
 
 export async function showBookingSummary(

@@ -19,6 +19,7 @@ export default function GeneralSettingsPage() {
   const [logoUrl, setLogoUrl] = useState('');
   const [primaryColor, setPrimaryColor] = useState('#005c55');
   const [selectedLang, setSelectedLang] = useState<Language>('es');
+  const [countryCode, setCountryCode] = useState<string>('54');
   const [isSaving, setIsSaving] = useState(false);
   const [isUploadingLogo, setIsUploadingLogo] = useState(false);
   const [message, setMessage] = useState<{ text: string, type: 'success' | 'error' } | null>(null);
@@ -59,6 +60,7 @@ export default function GeneralSettingsPage() {
         setTenantSettings(s);
         setLang(s.language || 'es');
         setSelectedLang(s.language || 'es');
+        setCountryCode(s.default_country_code || '54');
         setContactPhone(s.contact_phone || '');
         setLogoUrl(s.logo_url || '');
         setPrimaryColor(s.primary_color || '#005c55');
@@ -78,7 +80,8 @@ export default function GeneralSettingsPage() {
       contact_phone: contactPhone,
       logo_url: logoUrl,
       primary_color: primaryColor,
-      language: selectedLang
+      language: selectedLang,
+      default_country_code: countryCode
     };
 
     const { error } = await supabase
@@ -213,6 +216,32 @@ export default function GeneralSettingsPage() {
                 </select>
                 <Globe className="absolute right-6 top-1/2 -translate-y-1/2 h-5 w-5 text-primary/30 pointer-events-none" />
               </div>
+            </div>
+
+            <div className="space-y-4 mt-10">
+              <label className="text-[10px] font-black text-primary/60 uppercase tracking-[0.3em] ml-2">
+                {lang === 'es' ? 'País' : lang === 'it' ? 'Paese' : 'Country'}
+              </label>
+              <div className="relative">
+                <select
+                  value={countryCode}
+                  onChange={(e) => setCountryCode(e.target.value)}
+                  className="w-full h-16 bg-primary/[0.06] rounded-2xl border border-primary/20 px-6 font-bold text-on-surface focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all outline-none appearance-none cursor-pointer"
+                >
+                  <option value="54">Argentina (+54)</option>
+                  <option value="34">España (+34)</option>
+                  <option value="39">Italia (+39)</option>
+                  <option value="1">Estados Unidos (+1)</option>
+                  <option value="52">México (+52)</option>
+                  <option value="57">Colombia (+57)</option>
+                  <option value="56">Chile (+56)</option>
+                  <option value="44">Reino Unido (+44)</option>
+                </select>
+                <Globe className="absolute right-6 top-1/2 -translate-y-1/2 h-5 w-5 text-primary/30 pointer-events-none" />
+              </div>
+              <p className="text-[9px] font-bold text-on-surface-muted ml-2">
+                {lang === 'es' ? 'Determina el prefijo telefónico para números de pacientes' : lang === 'it' ? "Determina il prefisso telefonico per i numeri dei pazienti" : 'Determines the phone prefix for patient numbers'}
+              </p>
             </div>
           </section>
 

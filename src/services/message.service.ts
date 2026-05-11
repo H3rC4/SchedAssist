@@ -51,6 +51,12 @@ export class MessageService {
       contactButtonLabel: params.contactButtonLabel,
     };
 
+    // Persist outbound message to chat history (fire-and-forget)
+    if (params.channel === 'whatsapp' && params.tenant_id) {
+      const phoneNumber = String(params.chat_id).replace(/\D/g, '');
+      MessageService._saveMessage(params.tenant_id, phoneNumber, params.text, 'outbound', 'bot').catch(() => {});
+    }
+
     if (params.channel === 'whatsapp') {
       await MessageService._sendWhatsApp(params.tenant_id!, message, params.sender_phone_id);
     } else {
@@ -65,11 +71,36 @@ export class MessageService {
 
   // ── Internal helpers ────────────────────────────────────────────────────────
 
+  private static async _saveMessage(
+    tenantId: string,
+    phoneNumber: string,
+    content: string,
+    direction: 'inbound' | 'outbound',
+    senderType: 'bot' | 'manual' | null
+  ): Promise<void> {
+    if (!phoneNumber || !content) return;
+    try {
+      const { data: client } = await supabaseAdmin
+        .from('clients')
+        .select('id')
+        .eq('tenant_id', tenantId)
+        .eq('phone', phoneNumber)
+        .maybeSingle();
+
+      await supabaseAdmin.from('whatsapp_messages').insert({
+        tenant_id: tenantId,
+        client_id: client?.id || null,
+        phone_number: phoneNumber,
+        content,
+        direction,
+        sender_type: senderType,
+      });
+    } catch (err) {
+      console.error('[MessageService] Failed to save message history:', err);
+    }
+  }
+
   private static async _sendWhatsApp(tenantId: string, message: OutboundMessage, phoneId?: string): Promise<void> {
-    // Fetch per-tenant Whapi token from DB
-    // If phoneId is provided, use it to pick the exact account. 
-    // Otherwise fallback to the first one available for the tenant.
-    
     let query = supabaseAdmin
       .from('whatsapp_accounts')
       .select('access_token')
@@ -100,5 +131,25 @@ export class MessageService {
 
   static contactButton(label: string): Pick<Parameters<typeof MessageService.sendMessage>[0], 'requestContact' | 'contactButtonLabel'> {
     return { requestContact: true, contactButtonLabel: label };
+  }
+
+  /**
+   * Send a manual message from the dashboard (secretary/admin).
+   * Persists with sender_type='manual' and sends via WhatsApp.
+   */
+  static async sendManualMessage(params: {
+    tenant_id: string;
+    sender_phone_id?: string;
+    chat_id: string;
+    text: string;
+  }): Promise<void> {
+    const message: OutboundMessage = {
+      to: String(params.chat_id),
+      text: params.text,
+    };
+    const phoneNumber = String(params.chat_id).replace(/\D/g, '');
+
+    await MessageService._saveMessage(params.tenant_id, phoneNumber, params.text, 'outbound', 'manual');
+    await MessageService._sendWhatsApp(params.tenant_id, message, params.sender_phone_id);
   }
 }

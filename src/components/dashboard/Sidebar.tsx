@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react'
 import {
   Calendar, Users, Briefcase, Settings, LayoutDashboard,
   Clock, Layers, LifeBuoy, Mail, TrendingUp, MapPin, Zap, X, ChevronRight, LogOut,
-  ShieldCheck
+  ShieldCheck, MessageSquare
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { Language, translations } from '@/lib/i18n'
@@ -16,6 +16,7 @@ const navItemsBase = [
   { id: 'dashboard',     es: 'Vista General',  it: 'Panoramica',   en: 'Overview',   href: '/dashboard',              icon: LayoutDashboard, group: 'manage' },
   { id: 'appointments',  es: 'Agenda',         it: 'Agenda',       en: 'Schedule',   href: '/dashboard/appointments', icon: Calendar,        group: 'manage' },
   { id: 'clients',       es: 'Pacientes',      it: 'Pazienti',     en: 'Patients',   href: '/dashboard/clients',      icon: Users,           group: 'manage' },
+  { id: 'whatsapp-chat', es: 'Mensajes',       it: 'Messaggi',     en: 'Messages',   href: '/dashboard/whatsapp-chat',icon: MessageSquare,   group: 'manage' },
   { id: 'professionals', es: 'Especialistas',  it: 'Specialisti',  en: 'Staff',      href: '/dashboard/professionals',icon: Briefcase,       group: 'manage' },
   { id: 'services',      es: 'Servicios',      it: 'Servizi',      en: 'Services',   href: '/dashboard/services',     icon: Layers,          group: 'configure' },
   { id: 'locations',     es: 'Sedes',          it: 'Sedi',         en: 'Locations',  href: '/dashboard/locations',    icon: MapPin,          group: 'configure' },
