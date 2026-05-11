@@ -19,6 +19,7 @@ interface Conversation {
   last_direction: string
   last_sender_type: string | null
   unread_count: number
+  bot_paused: boolean
 }
 
 interface ChatMessage {
@@ -32,7 +33,7 @@ interface ChatMessage {
 }
 
 export default function WhatsAppChatPage() {
-  const { language: lang } = useLandingTranslation()
+  const { language: lang, fullT: t } = useLandingTranslation()
   const supabase = createClient()
 
   const [conversations, setConversations] = useState<Conversation[]>([])
@@ -47,6 +48,9 @@ export default function WhatsAppChatPage() {
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const [showChatMobile, setShowChatMobile] = useState(false)
+  const [botPaused, setBotPaused] = useState(false)
+  const [showReactivateModal, setShowReactivateModal] = useState(false)
+  const [reactivating, setReactivating] = useState(false)
 
   // Fetch tenant name
   useEffect(() => {
@@ -85,6 +89,7 @@ export default function WhatsAppChatPage() {
       if (!res.ok) return
       const data = await res.json()
       setMessages(data.messages || [])
+      setBotPaused(data.bot_paused || false)
     } catch (err) {
       console.error('Error fetching messages:', err)
     } finally {
@@ -164,11 +169,41 @@ export default function WhatsAppChatPage() {
   function handleSelectConversation(phone: string) {
     setSelectedPhone(phone)
     setShowChatMobile(true)
+    const conv = conversations.find(c => c.phone_number === phone)
+    setBotPaused(conv?.bot_paused || false)
   }
 
   function handleBackToList() {
     setShowChatMobile(false)
     setSelectedPhone(null)
+    setBotPaused(false)
+  }
+
+  async function handleReactivate() {
+    if (!selectedPhone) return
+    setReactivating(true)
+    try {
+      const res = await fetch('/api/whatsapp/reactivate-bot', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone: selectedPhone }),
+      })
+      const data = await res.json()
+      if (res.ok) {
+        setBotPaused(false)
+        setShowReactivateModal(false)
+        // Update conversation list to reflect the change
+        setConversations(prev => prev.map(c =>
+          c.phone_number === selectedPhone ? { ...c, bot_paused: false } : c
+        ))
+      } else {
+        console.error('Reactivate error:', data.error)
+      }
+    } catch (err) {
+      console.error('Error reactivating bot:', err)
+    } finally {
+      setReactivating(false)
+    }
   }
 
   return (
@@ -185,7 +220,7 @@ export default function WhatsAppChatPage() {
           <div className="flex items-center gap-2">
             <MessageSquare className="h-4 w-4 text-primary" />
             <h2 className="text-sm font-black text-on-surface tracking-tight uppercase">
-              {lang === 'es' ? 'Mensajes' : lang === 'it' ? 'Messaggi' : 'Messages'}
+              {t.nav_messages || (lang === 'es' ? 'Mensajes' : lang === 'it' ? 'Messaggi' : 'Messages')}
             </h2>
           </div>
         </div>
@@ -311,6 +346,20 @@ export default function WhatsAppChatPage() {
                   </p>
                 </div>
               </div>
+              {botPaused && (
+                <div className="flex items-center gap-2">
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 border border-amber-100 text-amber-600 text-[9px] font-black uppercase tracking-widest">
+                    <Bot className="h-3 w-3" />
+                    {t.bot_paused || (lang === 'es' ? 'Bot Pausado' : lang === 'it' ? 'Bot in Pausa' : 'Bot Paused')}
+                  </span>
+                  <button
+                    onClick={() => setShowReactivateModal(true)}
+                    className="text-[9px] font-black text-primary uppercase tracking-widest hover:text-primary-light transition-colors px-3 py-1 rounded-full hover:bg-primary/5"
+                  >
+                    {t.reactivate_bot || (lang === 'es' ? 'Reactivar' : lang === 'it' ? 'Riattiva' : 'Reactivate')}
+                  </button>
+                </div>
+              )}
             </div>
 
             {/* Messages Area */}
@@ -448,6 +497,61 @@ export default function WhatsAppChatPage() {
           </div>
         )}
       </div>
+
+      {/* Reactivate Bot Confirmation Modal */}
+      <AnimatePresence>
+        {showReactivateModal && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowReactivateModal(false)}
+              className="absolute inset-0 bg-on-surface/60 backdrop-blur-md"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="relative w-full max-w-sm bg-surface-container-lowest rounded-2xl shadow-2xl p-8"
+              onClick={e => e.stopPropagation()}
+            >
+              <div className="h-12 w-12 rounded-2xl bg-primary/5 flex items-center justify-center text-primary mb-6">
+                <Bot className="h-6 w-6" />
+              </div>
+              <h3 className="text-lg font-black text-on-surface tracking-tighter uppercase mb-3">
+                {t.reactivate_bot || (lang === 'es' ? 'Reactivar Bot' : lang === 'it' ? 'Riattiva Bot' : 'Reactivate Bot')}
+              </h3>
+              <p className="text-sm text-on-surface-muted leading-relaxed mb-8">
+                {t.reactivate_bot_confirm || (lang === 'es'
+                  ? 'El asistente automático volverá a responder a este paciente. ¿Continuar?'
+                  : lang === 'it'
+                    ? "L'assistente automatico risponderà di nuovo a questo paziente. Continuare?"
+                    : 'The automatic assistant will respond to this patient again. Continue?')}
+              </p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowReactivateModal(false)}
+                  className="flex-1 py-3 bg-surface-container-low text-on-surface font-black text-[10px] uppercase tracking-widest rounded-xl hover:bg-surface-container-low/80 transition-colors"
+                >
+                  {t.cancel || (lang === 'es' ? 'Cancelar' : lang === 'it' ? 'Annulla' : 'Cancel')}
+                </button>
+                <button
+                  onClick={handleReactivate}
+                  disabled={reactivating}
+                  className="flex-1 py-3 bg-primary text-white font-black text-[10px] uppercase tracking-widest rounded-xl hover:bg-primary-light transition-colors disabled:opacity-50"
+                >
+                  {reactivating ? (
+                    <Loader2 className="h-4 w-4 animate-spin mx-auto" />
+                  ) : (
+                    t.confirm || (lang === 'es' ? 'Confirmar' : lang === 'it' ? 'Conferma' : 'Confirm')
+                  )}
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }

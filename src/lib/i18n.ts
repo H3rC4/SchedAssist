@@ -736,6 +736,13 @@ tech_shadcn_desc: 'UX Elegance',
       `${patient} confirmed appointment with ${professional} for ${date} at ${time}`,
     notify_body_attended: (patient: string, professional: string, date: string) =>
       `${patient} attended appointment with ${professional} on ${date}`,
+
+    // WhatsApp Chat
+    bot_paused: 'Bot Paused',
+    reactivate_bot: 'Reactivate Bot',
+    reactivate_bot_confirm: 'The automatic assistant will respond to this patient again. Continue?',
+    bot_reactivated: 'Bot reactivated successfully',
+    bot_reactivate_error: 'Error reactivating bot',
   },
   es: {
     // General
@@ -1460,6 +1467,13 @@ tech_shadcn_desc: 'UX Elegance',
       `${patient} confirmó cita con ${professional} para el ${date} a las ${time}`,
     notify_body_attended: (patient: string, professional: string, date: string) =>
       `${patient} asistió a cita con ${professional} el ${date}`,
+
+    // WhatsApp Chat
+    bot_paused: 'Bot Pausado',
+    reactivate_bot: 'Reactivar Bot',
+    reactivate_bot_confirm: 'El asistente automático volverá a responder a este paciente. ¿Continuar?',
+    bot_reactivated: 'Bot reactivado correctamente',
+    bot_reactivate_error: 'Error al reactivar el bot',
   },
   it: {
     // General
@@ -2149,6 +2163,13 @@ tech_shadcn_desc: 'UX Elegance',
       `${patient} ha confermato appuntamento con ${professional} per il ${date} alle ${time}`,
     notify_body_attended: (patient: string, professional: string, date: string) =>
       `${patient} ha completato appuntamento con ${professional} il ${date}`,
+
+    // WhatsApp Chat
+    bot_paused: 'Bot in Pausa',
+    reactivate_bot: 'Riattiva Bot',
+    reactivate_bot_confirm: "L'assistente automatico risponderà di nuovo a questo paziente. Continuare?",
+    bot_reactivated: 'Bot riattivato correttamente',
+    bot_reactivate_error: "Errore nella riattivazione del bot",
   }
 };
 

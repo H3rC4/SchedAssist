@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { MessageService } from '@/services/message.service';
 import { normalizePhone, inferCountryCode } from '@/lib/phone-utils';
+import { isBotPaused } from '@/lib/whatsapp-bot-state';
 
 export async function GET(req: NextRequest) {
   const supabase = createClient();
@@ -64,7 +65,10 @@ export async function GET(req: NextRequest) {
     .eq('direction', 'inbound')
     .neq('status', 'read');
 
-  return NextResponse.json({ messages });
+  // Check bot paused state for this conversation
+  const botPaused = await isBotPaused(supabase as any, tenantId, phone);
+
+  return NextResponse.json({ messages, bot_paused: botPaused });
 }
 
 export async function POST(req: NextRequest) {

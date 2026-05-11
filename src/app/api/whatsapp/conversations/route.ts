@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { isBotPaused } from '@/lib/whatsapp-bot-state';
 
 export async function GET(req: NextRequest) {
   const supabase = createClient();
@@ -56,6 +57,7 @@ export async function GET(req: NextRequest) {
         last_direction: msg.direction,
         last_sender_type: msg.sender_type,
         unread_count: 0,
+        bot_paused: false, // will be filled after
       });
     }
     if (msg.direction === 'inbound' && msg.status !== 'read') {
@@ -63,6 +65,16 @@ export async function GET(req: NextRequest) {
       conv.unread_count++;
     }
   }
+
+  // Check bot paused state for each unique phone (in parallel)
+  const phones = Array.from(conversationsMap.keys());
+  const pausedStates = await Promise.all(
+    phones.map(phone => isBotPaused(supabase as any, tenantId, phone))
+  );
+  phones.forEach((phone, idx) => {
+    const conv = conversationsMap.get(phone);
+    if (conv) conv.bot_paused = pausedStates[idx];
+  });
 
   const conversations = Array.from(conversationsMap.values()).sort(
     (a, b) => new Date(b.last_message_at).getTime() - new Date(a.last_message_at).getTime()
