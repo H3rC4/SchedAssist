@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Bell, Shield, Mail, Smartphone, Loader2 } from 'lucide-react';
+import { Bell, Shield, Mail, Smartphone, Loader2, CheckCircle } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { translations, Language } from '@/lib/i18n';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -17,6 +17,7 @@ export default function NotificationsSettingsPage() {
   });
   const [isLoading, setIsLoading] = useState(true);
   const [isUpdating, setIsUpdating] = useState<string | null>(null);
+  const [saveMessage, setSaveMessage] = useState<{ text: string, type: 'success' | 'error' } | null>(null);
 
   const t = (translations[lang] || translations['es']) as any;
 
@@ -54,6 +55,7 @@ export default function NotificationsSettingsPage() {
 
   const toggleSetting = async (key: string) => {
     setIsUpdating(key);
+    setSaveMessage(null);
     const newValue = !settings[key];
     const newNotifications = { ...settings, [key]: newValue };
     
@@ -79,6 +81,17 @@ export default function NotificationsSettingsPage() {
 
     if (!error) {
       setSettings(newNotifications);
+      setSaveMessage({ 
+        text: t.saved || 'Saved', 
+        type: 'success' 
+      });
+      // Clear message after 2 seconds
+      setTimeout(() => setSaveMessage(null), 2000);
+    } else {
+      setSaveMessage({ 
+        text: t.save_error || 'Error saving', 
+        type: 'error' 
+      });
     }
     setIsUpdating(null);
   };
@@ -100,13 +113,38 @@ export default function NotificationsSettingsPage() {
 
   return (
     <div className="space-y-10 md:space-y-16 animate-in fade-in duration-700">
-      <header>
-        <h1 className="text-2xl md:text-4xl font-black text-on-surface tracking-tighter uppercase mb-2">
-          {t.comm_channels?.split(' ')[0]} <span className="text-primary italic font-serif lowercase">{t.comm_channels?.split(' ').slice(1).join(' ')}</span>
-        </h1>
-        <p className="text-[10px] font-black text-on-surface/30 uppercase tracking-[0.4em]">
-          {t.comm_channels_desc}
-        </p>
+      <header className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div>
+          <h1 className="text-2xl md:text-4xl font-black text-on-surface tracking-tighter uppercase mb-2">
+            {t.comm_channels?.split(' ')[0]} <span className="text-primary italic font-serif lowercase">{t.comm_channels?.split(' ').slice(1).join(' ')}</span>
+          </h1>
+          <p className="text-[10px] font-black text-on-surface/30 uppercase tracking-[0.4em]">
+            {t.comm_channels_desc}
+          </p>
+        </div>
+
+        {/* Save feedback toast */}
+        <AnimatePresence>
+          {saveMessage && (
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 20 }}
+              className={`flex items-center gap-3 px-5 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest border ${
+                saveMessage.type === 'success' 
+                  ? 'bg-emerald-50 text-emerald-600 border-emerald-200' 
+                  : 'bg-red-50 text-red-600 border-red-200'
+              }`}
+            >
+              <div className={`h-8 w-8 rounded-lg flex items-center justify-center ${
+                saveMessage.type === 'success' ? 'bg-emerald-100' : 'bg-red-100'
+              }`}>
+                <CheckCircle className="h-4 w-4" />
+              </div>
+              {saveMessage.text}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </header>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8">
@@ -136,6 +174,11 @@ export default function NotificationsSettingsPage() {
                       ${isUpdating === item.id ? 'opacity-50 cursor-wait' : 'cursor-pointer hover:scale-105 active:scale-95'}
                     `}
                   >
+                    {isUpdating === item.id && (
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <Loader2 className="h-3 w-3 animate-spin text-white" />
+                      </div>
+                    )}
                     <motion.div
                       layout
                       className="h-5 w-5 rounded-full bg-white shadow-sm"
@@ -147,19 +190,6 @@ export default function NotificationsSettingsPage() {
                     {settings[item.id] ? (t.active_status || 'Active') : (t.inactive_status || 'Inactive')}
                   </span>
                </div>
-
-               <AnimatePresence>
-                 {isUpdating === item.id && (
-                   <motion.div
-                     initial={{ opacity: 0, scale: 0.8 }}
-                     animate={{ opacity: 1, scale: 1 }}
-                     exit={{ opacity: 0, scale: 0.8 }}
-                     className="text-primary"
-                   >
-                     <Loader2 className="h-4 w-4 animate-spin" />
-                   </motion.div>
-                 )}
-               </AnimatePresence>
             </div>
           </div>
         ))}
