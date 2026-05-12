@@ -11,7 +11,7 @@ interface TrialBannerProps {
 }
 
 export function TrialBanner({ status, trialEndsAt, lang = 'es' }: TrialBannerProps) {
-  if (status !== 'trial' || !trialEndsAt) return null;
+  if (!['trial', 'trialing'].includes(status) || !trialEndsAt) return null;
 
   const t = translations[lang] || translations['es'];
 
@@ -33,7 +33,7 @@ export function TrialBanner({ status, trialEndsAt, lang = 'es' }: TrialBannerPro
         href="/dashboard/settings/whatsapp"
         className="px-8 py-3 bg-red-600 text-white text-[10px] font-black uppercase tracking-[0.4em] hover:bg-red-500 transition-all shadow-xl shadow-red-900/50 rounded-none border border-transparent hover:border-red-400"
       >
-        {t.whatsapp_banner?.cta || 'Actualizar'} por $70/mes
+        {t.whatsapp_banner?.cta || 'Actualizar'} por $79/mes
       </Link>
     </div>
   );

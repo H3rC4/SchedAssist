@@ -254,7 +254,7 @@ export default function WhatsAppSettingsPage() {
       </AnimatePresence>
 
       {/* Current Plan / Subscription Status */}
-      <section className={`rounded-[2rem] md:rounded-[4rem] p-6 md:p-12 text-white shadow-2xl shadow-primary/30 relative overflow-hidden group ${tenant?.stripe_customer_id ? 'bg-primary' : 'bg-amber-600'}`}>
+      <section className={`rounded-[2rem] md:rounded-[4rem] p-6 md:p-12 text-white shadow-2xl shadow-primary/30 relative overflow-hidden group ${tenant?.subscription_status === 'active' ? 'bg-primary' : 'bg-amber-600'}`}>
         <div className="absolute top-[-4rem] right-[-4rem] h-96 w-96 bg-white/5 rounded-full blur-[80px] group-hover:scale-110 transition-transform duration-1000" />
         <Zap className="absolute top-[-2rem] right-[-2rem] h-64 w-64 text-white/5 rotate-12 group-hover:rotate-[30deg] transition-transform duration-1000" />
 
@@ -263,14 +263,14 @@ export default function WhatsAppSettingsPage() {
             <div className="space-y-3">
               <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-white/10 backdrop-blur-md rounded-full border border-white/20 text-[9px] font-black uppercase tracking-[0.2em]">
                 <Sparkles className="h-3 w-3" />
-                {tenant?.stripe_customer_id ? t.active_status : (t.trial_mode || 'Trial')}
+                {tenant?.subscription_status === 'active' ? t.active_status : (t.trial_mode || 'Trial')}
               </div>
               <h2 className="text-sm font-black uppercase tracking-[0.4em] text-white/40">{t.current_plan}</h2>
               <p className="text-3xl md:text-5xl lg:text-6xl font-black tracking-tighter uppercase leading-none">
                 {t.professional_plus?.split(' ')[0]} <span className="text-white/30 italic font-serif lowercase">{t.professional_plus?.split(' ').slice(1).join(' ')}</span>
               </p>
             </div>
-            {tenant?.stripe_customer_id && (
+            {tenant?.subscription_status === 'active' && (
               <div className="px-6 md:px-8 py-3 md:py-4 bg-white/10 backdrop-blur-xl rounded-[1.5rem] md:rounded-[2rem] border border-white/20 text-[10px] font-black uppercase tracking-[0.3em] flex flex-col items-center gap-1 shadow-lg">
                 <span className="text-white/40 text-[8px] tracking-[0.4em]">{t.renews_on ? t.renews_on('MAY 24, 2026').split(' ')[0] : 'Renews'}</span>
                 <span className="text-base md:text-lg tracking-tighter">MAY 24, 2026</span>
@@ -278,11 +278,11 @@ export default function WhatsAppSettingsPage() {
             )}
           </div>
 
-          {tenant?.stripe_customer_id ? (
+          {tenant?.subscription_status === 'active' ? (
             <div className="flex flex-wrap items-center gap-8 md:gap-16">
                <div className="space-y-2">
                  <p className="text-[10px] font-black text-white/40 uppercase tracking-[0.3em]">{t.monthly_cost}</p>
-                 <p className="text-3xl md:text-4xl font-black tracking-tight">$89.00 <span className="text-sm text-white/30 font-bold italic lowercase">/ mo</span></p>
+                 <p className="text-3xl md:text-4xl font-black tracking-tight">$79.00 <span className="text-sm text-white/30 font-bold italic lowercase">/ mo</span></p>
                </div>
                <div className="h-16 w-[1px] bg-white/10 hidden md:block" />
                <div className="space-y-2">
@@ -322,7 +322,7 @@ export default function WhatsAppSettingsPage() {
           </AnimatePresence>
 
           <div className="flex flex-wrap gap-4 md:gap-6 pt-4">
-            {tenant?.stripe_customer_id ? (
+{tenant?.subscription_status === 'active' ? (
               <>
                 <button
                   onClick={handleManageSubscription}
@@ -353,7 +353,7 @@ export default function WhatsAppSettingsPage() {
               >
                 {isRedirecting ? <Loader2 className="h-6 w-6 animate-spin" /> : (
                   <>
-                    <span>{t.subscribe_now || 'Suscribirse por $70/mes'}</span>
+                    <span>{t.subscribe_now || 'Suscribirse por $79/mes'}</span>
                     <ArrowUpRight className="h-6 w-6 group-hover/btn:translate-x-1 group-hover/btn:-translate-y-1 transition-transform" />
                   </>
                 )}
