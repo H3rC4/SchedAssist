@@ -94,7 +94,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const pathname = usePathname()
   const { setLanguage } = useLandingTranslation()
   const [tenantInfo, setTenantInfo] = useState<{
-    id: string; status: string; trial_ends_at: string | null; settings: any; lang: Language; role: string
+    id: string; name: string; status: string; trial_ends_at: string | null; settings: any; lang: Language; role: string
   } | null>(null)
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const [forcePasswordChange, setForcePasswordChange] = useState(false)
@@ -108,7 +108,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
       const { data } = await supabase
         .from('tenant_users')
-        .select('tenant_id, role, tenants(id, subscription_status, trial_ends_at, settings)')
+        .select('tenant_id, role, tenants(id, name, subscription_status, trial_ends_at, settings)')
         .eq('user_id', user.id)
         .limit(1).single()
 
@@ -117,6 +117,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         const detectedLang = (t.settings?.language as Language) || 'es'
         setTenantInfo({
           id: t.id,
+          name: t.name || '',
           status: t.subscription_status,
           trial_ends_at: t.trial_ends_at,
           settings: t.settings || {},
