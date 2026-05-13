@@ -525,7 +525,7 @@ tech_shadcn_desc: 'UX Elegance',
       final_cta_title: 'Ready to Transform Your Practice?',
       final_cta_desc: 'Join over 500 clinics that improved operational efficiency by 30% in the first month.',
       no_card_required: 'No credit card required. 14 days of full access.',
-      footer_copyright: '© 2025 SchedAssist. Built for modern clinics.',
+      footer_copyright: '© 2025 SchedAssist. Built for modern clinics.',\n      whatsapp_chat_last_seen: 'online',\n      whatsapp_chat_today: 'TODAY',\n      whatsapp_chat_bot_msg: 'Hello! I am SchedAssist. Would you like to book an appointment?',\n      whatsapp_chat_user_msg: 'Yes, I need a consultation for tomorrow.',\n      whatsapp_chat_status_msg: 'Searching availability...',\n      whatsapp_chat_bot_done: 'Perfect! Your appointment is confirmed for tomorrow at 10:00 AM.',\n      whatsapp_chat_synced: 'Dashboard Synced',\n      whatsapp_chat_realtime: 'Real-time update active',\n      whatsapp_chat_placeholder: 'Type a message',
     },
 
     // Guided Tour
@@ -1234,7 +1234,7 @@ tech_shadcn_desc: 'UX Elegance',
       custom_feature_2_desc: 'Establece duraciones específicas para cada servicio y optimiza perfectamente tu agenda clínica.',
       custom_feature_3: 'Roles y Accesos',
       custom_feature_3_desc: 'Control total sobre lo que pueden ver y hacer los administradores, médicos y personal de apoyo.',
-      tech_title: 'Construido con Bases Modernas',
+      tech_title: 'Construido con Bases Modernas',\n      whatsapp_chat_last_seen: 'en línea',\n      whatsapp_chat_today: 'HOY',\n      whatsapp_chat_bot_msg: '¡Hola! Soy SchedAssist. ¿Te gustaría agendar un turno?',\n      whatsapp_chat_user_msg: 'Sí, necesito una consulta para mañana.',\n      whatsapp_chat_status_msg: 'Buscando disponibilidad...',\n      whatsapp_chat_bot_done: '¡Perfecto! Tu turno está confirmado para mañana a las 10:00 AM.',\n      whatsapp_chat_synced: 'Dashboard Sincronizado',\n      whatsapp_chat_realtime: 'Actualización en tiempo real',\n      whatsapp_chat_placeholder: 'Escribe un mensaje',
     },
 
     login: {
@@ -1911,7 +1911,7 @@ tech_shadcn_desc: 'UX Elegance',
       custom_feature_2_desc: 'Imposta durate specifiche per ogni servizio e ottimizza perfettamente la tua agenda clinica.',
       custom_feature_3: 'Ruoli e Accessi',
       custom_feature_3_desc: 'Controllo totale su ciò che amministratori, medici e personale possono vedere e fare.',
-      tech_title: 'Costruito con Fondamenta Moderne',
+      tech_title: 'Costruito con Fondamenta Moderne',\n      whatsapp_chat_last_seen: 'online',\n      whatsapp_chat_today: 'OGGI',\n      whatsapp_chat_bot_msg: 'Ciao! Sono SchedAssist. Ti piacerebbe prenotare un appuntamento?',\n      whatsapp_chat_user_msg: 'Sì, ho bisogno di un consulto per domani.',\n      whatsapp_chat_status_msg: 'Ricerca disponibilità...',\n      whatsapp_chat_bot_done: 'Perfetto! Il tuo appuntamento è confermato per domani alle 10:00.',\n      whatsapp_chat_synced: 'Dashboard Sincronizzato',\n      whatsapp_chat_realtime: 'Aggiornamento in tempo reale',\n      whatsapp_chat_placeholder: 'Scrivi un messaggio',
     },
 
     login: {
