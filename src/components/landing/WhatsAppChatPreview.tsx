@@ -1,7 +1,7 @@
 "use client"
 
 import { motion, AnimatePresence } from 'framer-motion'
-import { Send, CheckCheck, MoreVertical, Phone, Video, Mic, Smile, Paperclip } from 'lucide-react'
+import { Send, CheckCheck, MoreVertical, Phone, Video, Mic, Smile, Paperclip, CalendarCheck } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useLandingTranslation } from '@/components/LanguageContext'
 
