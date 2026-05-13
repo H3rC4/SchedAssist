@@ -18,6 +18,7 @@ export default function GeneralSettingsPage() {
   const [contactPhone, setContactPhone] = useState('');
   const [logoUrl, setLogoUrl] = useState('');
   const [primaryColor, setPrimaryColor] = useState('#005c55');
+  const [secondaryColor, setSecondaryColor] = useState('#855300');
   const [selectedLang, setSelectedLang] = useState<Language>('es');
   const [countryCode, setCountryCode] = useState<string>('54');
   const [isSaving, setIsSaving] = useState(false);
@@ -64,6 +65,7 @@ export default function GeneralSettingsPage() {
         setContactPhone(s.contact_phone || '');
         setLogoUrl(s.logo_url || '');
         setPrimaryColor(s.primary_color || '#005c55');
+        setSecondaryColor(s.secondary_color || '#855300');
       }
     };
     fetch();
@@ -80,6 +82,7 @@ export default function GeneralSettingsPage() {
       contact_phone: contactPhone,
       logo_url: logoUrl,
       primary_color: primaryColor,
+      secondary_color: secondaryColor,
       language: selectedLang,
       default_country_code: countryCode
     };
@@ -196,6 +199,25 @@ export default function GeneralSettingsPage() {
                     type="text"
                     value={primaryColor}
                     onChange={(e) => setPrimaryColor(e.target.value)}
+                    className="flex-1 min-w-0 h-12 md:h-16 bg-primary/[0.06] rounded-2xl border border-primary/20 px-4 md:px-6 font-bold text-on-surface focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all outline-none uppercase font-mono"
+                  />
+                </div>
+              </div>
+              <div className="space-y-3 md:space-y-4">
+                <label className="text-[10px] font-black text-primary/60 uppercase tracking-[0.3em] ml-2">{t.secondary_color || 'Color Secundario'}</label>
+                <div className="flex flex-nowrap gap-3">
+                  <div className="relative h-12 w-12 md:h-16 md:w-16 flex-shrink-0 rounded-2xl border-2 border-primary/20 p-1 bg-white overflow-hidden group/color">
+                    <input
+                      type="color"
+                      value={secondaryColor}
+                      onChange={(e) => setSecondaryColor(e.target.value)}
+                      className="absolute inset-[-10px] w-[calc(100%+20px)] h-[calc(100%+20px)] cursor-pointer"
+                    />
+                  </div>
+                  <input
+                    type="text"
+                    value={secondaryColor}
+                    onChange={(e) => setSecondaryColor(e.target.value)}
                     className="flex-1 min-w-0 h-12 md:h-16 bg-primary/[0.06] rounded-2xl border border-primary/20 px-4 md:px-6 font-bold text-on-surface focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all outline-none uppercase font-mono"
                   />
                 </div>

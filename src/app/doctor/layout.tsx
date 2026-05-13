@@ -98,6 +98,9 @@ export default function DoctorLayout({ children }: { children: React.ReactNode }
         if (t.settings?.primary_color) {
           document.documentElement.style.setProperty('--primary', t.settings.primary_color)
         }
+        if (t.settings?.secondary_color) {
+          document.documentElement.style.setProperty('--secondary', t.settings.secondary_color)
+        }
       }
 
       const { data: prof } = await supabase

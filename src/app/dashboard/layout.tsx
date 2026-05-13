@@ -15,9 +15,9 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { ForcePasswordChangeGate } from '@/components/dashboard/ForcePasswordChangeGate'
 import { useLandingTranslation } from '@/components/LanguageContext'
 
-function DashboardHeader({ lang = 'es', tenantId, onMenuClick, onBellClick }: { lang?: Language; tenantId?: string; onMenuClick: () => void; onBellClick: () => void }) {
+function DashboardHeader({ lang = 'es', tenantId, logoUrl, tenantName: headerTenantName, onMenuClick, onBellClick }: { lang?: Language; tenantId?: string; logoUrl?: string; tenantName?: string; onMenuClick: () => void; onBellClick: () => void }) {
   const supabase = createClient()
-  const [tenantName, setTenantName] = useState('')
+  const [tenantName, setTenantName] = useState(headerTenantName || '')
   const [tenantEmail, setTenantEmail] = useState('')
   const t = translations[lang] || translations['es']
 
@@ -53,11 +53,15 @@ function DashboardHeader({ lang = 'es', tenantId, onMenuClick, onBellClick }: { 
         </button>
 
         <div className="flex items-center gap-2">
-          <div className="h-7 w-7 rounded-md bg-primary-light flex items-center justify-center flex-shrink-0">
-            <span className="text-primary font-bold text-[10px]">
-              {tenantName ? tenantName.slice(0, 2).toUpperCase() : '··'}
-            </span>
-          </div>
+          {logoUrl ? (
+            <img src={logoUrl} alt={tenantName} className="h-7 w-7 rounded-md object-contain bg-white shadow-sm" />
+          ) : (
+            <div className="h-7 w-7 rounded-md bg-primary-light flex items-center justify-center flex-shrink-0">
+              <span className="text-primary font-bold text-[10px]">
+                {tenantName ? tenantName.slice(0, 2).toUpperCase() : '··'}
+              </span>
+            </div>
+          )}
           <div className="hidden lg:block min-w-0">
             <p className="text-[14px] font-black text-on-surface leading-none truncate max-w-[120px]">
               {tenantName || '—'}
@@ -136,6 +140,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     if (tenantInfo?.settings?.primary_color) {
       document.documentElement.style.setProperty('--primary', tenantInfo.settings.primary_color)
     }
+    if (tenantInfo?.settings?.secondary_color) {
+      document.documentElement.style.setProperty('--secondary', tenantInfo.settings.secondary_color)
+    }
   }, [tenantInfo])
 
   function handleOnboardingComplete() {
@@ -200,7 +207,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         {tenantInfo && pathname !== '/dashboard/settings/billing' && (
           <TrialBanner status={tenantInfo.status} trialEndsAt={tenantInfo.trial_ends_at} lang={tenantInfo.lang} />
         )}
-        <DashboardHeader lang={tenantInfo?.lang} tenantId={tenantInfo?.id} onMenuClick={() => setIsSidebarOpen(true)} onBellClick={() => setIsNotificationDrawerOpen(true)} />
+        <DashboardHeader lang={tenantInfo?.lang} tenantId={tenantInfo?.id} logoUrl={tenantInfo?.settings?.logo_url} tenantName={tenantInfo?.settings?.name || tenantInfo?.name} onMenuClick={() => setIsSidebarOpen(true)} onBellClick={() => setIsNotificationDrawerOpen(true)} />
 
         {/* Page scroll container */}
         <main className="flex-1 overflow-y-auto custom-scrollbar">

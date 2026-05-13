@@ -80,6 +80,8 @@ export function Sidebar({ lang = 'es', userRoleProp }: SidebarProps) {
   const groups = ['manage', 'configure'] as const
 
   const isExpanded = isHovered
+  const tenantPrimary = activeTenant?.settings?.primary_color
+  const tenantSecondary = activeTenant?.settings?.secondary_color
 
   return (
     <div 
@@ -92,9 +94,17 @@ export function Sidebar({ lang = 'es', userRoleProp }: SidebarProps) {
       {/* Brand Section */}
       <div className={`h-14 flex items-center border-b border-on-surface/5 transition-all duration-500 ${isExpanded ? 'px-8' : 'justify-center'}`}>
         <Link href={userRole === 'secretary' ? '/dashboard/appointments' : '/dashboard'} className="flex items-center gap-3 group">
-          <div className="h-8 w-8 rounded-xl bg-primary flex items-center justify-center transition-transform duration-500 group-hover:rotate-12 shadow-spatial flex-shrink-0">
-            <Zap className="h-4 w-4 text-white fill-white" />
-          </div>
+          {activeTenant?.settings?.logo_url ? (
+            <img 
+              src={activeTenant.settings.logo_url} 
+              alt={activeTenant.name} 
+              className="h-8 w-8 rounded-xl object-contain bg-white shadow-spatial flex-shrink-0" 
+            />
+          ) : (
+            <div className="h-8 w-8 rounded-xl bg-primary flex items-center justify-center transition-transform duration-500 group-hover:rotate-12 shadow-spatial flex-shrink-0">
+              <Zap className="h-4 w-4 text-white fill-white" />
+            </div>
+          )}
           <AnimatePresence>
             {isExpanded && (
               <motion.div
@@ -103,8 +113,12 @@ export function Sidebar({ lang = 'es', userRoleProp }: SidebarProps) {
                 exit={{ opacity: 0, x: -10 }}
                 className="overflow-hidden whitespace-nowrap"
               >
-                <span className="text-lg font-black text-on-surface tracking-tighter leading-none block font-display">SchedAssist</span>
-                <span className="text-[9px] font-black text-primary/40 uppercase tracking-[0.2em] block">Precision OS</span>
+                <span className="text-lg font-black text-on-surface tracking-tighter leading-none block font-display">
+                  {activeTenant?.name || 'SchedAssist'}
+                </span>
+                <span className="text-[9px] font-black text-primary/40 uppercase tracking-[0.2em] block">
+                  {activeTenant?.name ? 'Clinic Portal' : 'Precision OS'}
+                </span>
               </motion.div>
             )}
           </AnimatePresence>
@@ -141,6 +155,8 @@ export function Sidebar({ lang = 'es', userRoleProp }: SidebarProps) {
               <div className="space-y-1">
                 {items.map(item => {
                   const active = pathname === item.href
+                  const activeStyle = active && tenantPrimary ? { color: tenantPrimary } : undefined
+                  const pillStyle = active && tenantPrimary ? { backgroundColor: tenantPrimary } : undefined
                   return (
                     <Link
                       key={item.id}
@@ -148,12 +164,13 @@ export function Sidebar({ lang = 'es', userRoleProp }: SidebarProps) {
                       data-tour={`sidebar-${item.id}`}
                       className={`group flex items-center justify-between rounded-2xl px-4 py-3.5 transition-all duration-300 ${
                         active
-                          ? 'bg-primary/5 text-primary shadow-sm ring-1 ring-primary/10'
+                          ? 'bg-primary/5 shadow-sm ring-1 ring-primary/10'
                           : 'text-on-surface/50 hover:bg-surface-container-low hover:text-on-surface'
                       }`}
+                      style={active ? { color: tenantPrimary || undefined, '--tw-ring-color': tenantPrimary ? `${tenantPrimary}1A` : undefined } as React.CSSProperties : undefined}
                     >
                       <div className="flex items-center gap-4">
-                        <div className={`transition-colors duration-300 flex-shrink-0 ${active ? 'text-primary' : 'text-on-surface/30 group-hover:text-on-surface/60'}`}>
+                        <div className={`transition-colors duration-300 flex-shrink-0 ${active ? '' : 'text-on-surface/30 group-hover:text-on-surface/60'}`} style={activeStyle}>
                           <item.icon className="h-5 w-5" strokeWidth={active ? 2.5 : 2} />
                         </div>
                         {isExpanded && (
@@ -161,13 +178,14 @@ export function Sidebar({ lang = 'es', userRoleProp }: SidebarProps) {
                             initial={{ opacity: 0, x: -10 }}
                             animate={{ opacity: 1, x: 0 }}
                             className={`text-[15px] font-bold tracking-tight whitespace-nowrap ${active ? 'font-black' : 'font-semibold'}`}
+                            style={activeStyle}
                           >
                             {item[lang as keyof typeof item] as string}
                           </motion.span>
                         )}
                       </div>
                       {active && (
-                        <motion.div layoutId="active-pill" className="h-1.5 w-1.5 rounded-full bg-primary" />
+                        <motion.div layoutId="active-pill" className="h-1.5 w-1.5 rounded-full" style={pillStyle} />
                       )}
                     </Link>
                   )
