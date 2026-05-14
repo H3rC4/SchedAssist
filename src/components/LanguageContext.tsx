@@ -63,7 +63,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   };
 
   const fullT = translations[language];
-  const t = fullT.landing;
+  const t = fullT;
 
   return (
     <LanguageContext.Provider value={{ language, setLanguage: handleSetLanguage, t, fullT } as any}>

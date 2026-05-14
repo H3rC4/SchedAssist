@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Calendar, ChevronLeft, ChevronRight, Clock, User, Phone, Stethoscope, Plus, MessageSquare, CheckCircle, AlertCircle } from 'lucide-react'
 import { format, parseISO, isSameDay, isToday, startOfMonth, endOfMonth, eachDayOfInterval, addMonths, subMonths } from 'date-fns'
-import { translations, dateLocales, getTranslations } from '@/lib/i18n'
+import { translations, dateLocales } from '@/lib/i18n'
 import { useLandingTranslation } from '@/components/LanguageContext'
 import { QuickAppointmentDrawer } from '@/components/appointments/QuickAppointmentDrawer'
 
@@ -489,7 +489,7 @@ export default function DoctorDashboard() {
             setShowNewModal(false)
           }}
           selectedDate={selectedDate}
-          translations={getTranslations(language)}
+          translations={translations[language]}
           availableSlots={availableSlots}
           slotLoading={slotLoading}
           isBlocked={isBlocked}

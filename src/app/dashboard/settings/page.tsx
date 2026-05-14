@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Building2, KeyRound, Globe, Upload, Image as ImageIcon, Loader2, CheckCircle, Eye, EyeOff, ArrowRight, Sparkles, RotateCcw, AlertCircle, Save } from 'lucide-react';
+import { Building2, KeyRound, Globe, Upload, Image as ImageIcon, Loader2, CheckCircle, Eye, EyeOff, ArrowRight, Sparkles, RotateCcw, AlertCircle, Save, QrCode, ExternalLink, Copy, Download } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { translations, Language } from '@/lib/i18n';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -12,6 +12,7 @@ export default function GeneralSettingsPage() {
   const [lang, setLang] = useState<Language>('es');
   const [tenantId, setTenantId] = useState('');
   const [tenantSettings, setTenantSettings] = useState<any>({});
+  const [tenantSlug, setTenantSlug] = useState('');
   const [isGoogleUser, setIsGoogleUser] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   
@@ -25,6 +26,8 @@ export default function GeneralSettingsPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [isUploadingLogo, setIsUploadingLogo] = useState(false);
   const [message, setMessage] = useState<{ text: string, type: 'success' | 'error' } | null>(null);
+  const [welcomeMessage, setWelcomeMessage] = useState('');
+  const [bookingInstructions, setBookingInstructions] = useState('');
 
   // Password state
   const [password, setPassword] = useState('');
@@ -62,6 +65,7 @@ export default function GeneralSettingsPage() {
       if (tuData?.tenants) {
         const tenant = tuData.tenants as any;
         setTenantId(tenant.id);
+        setTenantSlug(tenant.slug || '');
         const s = tenant.settings || {};
         setTenantSettings(s);
         setLang(s.language || 'es');
@@ -71,6 +75,8 @@ export default function GeneralSettingsPage() {
         setLogoUrl(s.logo_url || '');
         setPrimaryColor(s.primary_color || '#005c55');
         setSecondaryColor(s.secondary_color || '#855300');
+        setWelcomeMessage(s.welcome_message || '');
+        setBookingInstructions(s.booking_instructions || '');
       }
       setIsLoading(false);
     };
@@ -90,7 +96,9 @@ export default function GeneralSettingsPage() {
       primary_color: primaryColor,
       secondary_color: secondaryColor,
       language: selectedLang,
-      default_country_code: countryCode
+      default_country_code: countryCode,
+      welcome_message: welcomeMessage,
+      booking_instructions: bookingInstructions
     };
 
     const { error } = await supabase
@@ -176,6 +184,33 @@ export default function GeneralSettingsPage() {
       setTutorialResetMessage({ text: t.tutorial_reset_error, type: 'error' });
     } finally {
       setIsRestartingTutorial(false);
+    }
+  };
+
+  const publicBookingUrl = typeof window !== 'undefined' 
+    ? `${window.location.origin}/book/${tenantSlug}`
+    : '';
+
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    setMessage({ text: t.link_copied || '¡Enlace copiado!', type: 'success' });
+    setTimeout(() => setMessage(null), 2000);
+  };
+
+  const downloadQR = async () => {
+    const qrUrl = `https://chart.googleapis.com/chart?cht=qr&chs=500x500&chl=${encodeURIComponent(publicBookingUrl)}`;
+    try {
+      const response = await fetch(qrUrl);
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `QR-Booking-${tenantSlug}.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (err) {
+      console.error('Error downloading QR:', err);
     }
   };
 
@@ -267,6 +302,33 @@ export default function GeneralSettingsPage() {
           </select>
           <Globe className="absolute right-5 top-1/2 -translate-y-1/2 h-5 w-5 text-primary/30 pointer-events-none" />
         </div>
+      )
+    },
+    {
+      id: 'welcome_message',
+      label: t.welcome_message_label,
+      description: t.welcome_message_desc,
+      content: (
+        <input
+          type="text"
+          value={welcomeMessage}
+          onChange={(e) => setWelcomeMessage(e.target.value)}
+          className="w-full h-14 bg-primary/[0.04] rounded-xl border border-primary/10 px-5 font-bold text-on-surface text-sm placeholder:text-primary/20 focus:bg-white focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all outline-none"
+          placeholder="¡Bienvenido a nuestra clínica!"
+        />
+      )
+    },
+    {
+      id: 'booking_instructions',
+      label: t.booking_instructions_label,
+      description: t.booking_instructions_desc,
+      content: (
+        <textarea
+          value={bookingInstructions}
+          onChange={(e) => setBookingInstructions(e.target.value)}
+          className="w-full h-32 bg-primary/[0.04] rounded-xl border border-primary/10 p-5 font-bold text-on-surface text-sm placeholder:text-primary/20 focus:bg-white focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all outline-none resize-none"
+          placeholder="Selecciona el servicio y profesional de tu preferencia..."
+        />
       )
     }
   ];
@@ -420,6 +482,103 @@ export default function GeneralSettingsPage() {
                   </>
                 )}
               </button>
+            </div>
+          </div>
+        </section>
+
+        {/* Public Booking Portal Section */}
+        <section className="bg-white rounded-[1.5rem] md:rounded-[2rem] border border-primary/10 shadow-spatial overflow-hidden">
+          <div className="px-6 md:px-10 py-6 md:py-8 border-b border-primary/5 bg-primary/[0.02]">
+            <div className="flex items-center gap-4">
+              <div className="h-10 w-10 md:h-12 md:w-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+                <Globe className="h-5 w-5 md:h-6 md:w-6" />
+              </div>
+              <div>
+                <h2 className="text-lg md:text-xl font-black text-on-surface uppercase tracking-tight">{t.public_portal_section}</h2>
+                <p className="text-[10px] font-black text-on-surface/30 uppercase tracking-[0.3em] mt-1">{t.public_portal_section_desc}</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="px-6 md:px-10 py-6 md:py-8">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+              {/* Link Column */}
+              <div className="space-y-6">
+                <div className="space-y-3">
+                  <label className="text-[10px] font-black text-primary/60 uppercase tracking-[0.3em] ml-1">
+                    {t.booking_url_label}
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <div className="flex-1 h-14 bg-primary/[0.04] rounded-xl border border-primary/10 px-5 flex items-center overflow-hidden">
+                      <code className="text-xs font-bold text-primary truncate mr-2">
+                        {publicBookingUrl}
+                      </code>
+                    </div>
+                    <button 
+                      type="button"
+                      onClick={() => copyToClipboard(publicBookingUrl)}
+                      className="h-14 w-14 rounded-xl bg-primary/10 flex items-center justify-center text-primary hover:bg-primary hover:text-white transition-all active:scale-95"
+                      title={t.booking_url_copy}
+                    >
+                      <Copy className="h-5 w-5" />
+                    </button>
+                    <a 
+                      href={publicBookingUrl} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="h-14 w-14 rounded-xl border border-primary/20 flex items-center justify-center text-primary/60 hover:text-primary hover:border-primary transition-all active:scale-95"
+                    >
+                      <ExternalLink className="h-5 w-5" />
+                    </a>
+                  </div>
+                </div>
+
+                <div className="p-6 bg-primary/[0.02] border border-primary/5 rounded-2xl">
+                  <div className="flex gap-4">
+                    <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0">
+                      <Sparkles className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <h4 className="text-[10px] font-black text-on-surface uppercase tracking-widest mb-1">Tip de Profesional</h4>
+                      <p className="text-[11px] font-medium text-on-surface/50 leading-relaxed">
+                        Coloca tu código QR en la recepción y en tus tarjetas de presentación para que tus pacientes puedan agendar sin llamar por teléfono.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* QR Column */}
+              <div className="flex flex-col items-center justify-center p-8 bg-primary/[0.03] border border-primary/10 rounded-[2rem] relative group">
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/[0.02] to-transparent pointer-events-none" />
+                
+                <div className="relative bg-white p-6 rounded-2xl shadow-xl shadow-primary/5 mb-6 group-hover:scale-105 transition-transform duration-500">
+                  <img 
+                    src={`https://chart.googleapis.com/chart?cht=qr&chs=300x300&chl=${encodeURIComponent(publicBookingUrl)}`} 
+                    alt="Clinic QR"
+                    className="h-40 w-40 md:h-48 md:w-48"
+                  />
+                  <div className="absolute -top-3 -right-3 h-10 w-10 rounded-full bg-primary text-white flex items-center justify-center shadow-lg border-4 border-white">
+                    <QrCode className="h-4 w-4" />
+                  </div>
+                </div>
+
+                <div className="text-center space-y-4 relative z-10">
+                  <div>
+                    <h3 className="text-xs font-black text-on-surface uppercase tracking-[0.2em]">{t.booking_qr_label}</h3>
+                    <p className="text-[10px] font-bold text-on-surface/30 uppercase tracking-widest mt-1">{t.booking_qr_desc}</p>
+                  </div>
+                  
+                  <button 
+                    type="button"
+                    onClick={downloadQR}
+                    className="inline-flex items-center gap-3 px-6 py-3 bg-white border border-primary/20 text-primary rounded-xl text-[10px] font-black uppercase tracking-widest hover:border-primary hover:bg-primary hover:text-white transition-all shadow-sm active:scale-95 group/dl"
+                  >
+                    <Download className="h-3.5 w-3.5 group-hover/dl:-translate-y-1 transition-transform" />
+                    <span>{t.download_qr_btn}</span>
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </section>

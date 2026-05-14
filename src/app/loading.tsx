@@ -2,28 +2,34 @@ import { Logo } from '@/components/Logo';
 
 export default function GlobalLoading() {
   return (
-    <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-slate-50 dark:bg-slate-950 p-6 animate-in fade-in duration-700">
+    <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-white p-6 overflow-hidden relative">
+      {/* Decorative background blur to match Login/Auth pages */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-96 bg-primary/[0.03] blur-[120px] rounded-full -z-10 pointer-events-none" />
+      
       <div className="relative group">
-        {/* Subtle Outer Glow */}
-        <div className="absolute inset-0 bg-amber-500/10 blur-[60px] rounded-full scale-150 animate-pulse" />
+        {/* Premium Ring Loader */}
+        <div className="h-32 w-32 border-[6px] border-primary/10 border-t-primary rounded-full animate-spin transition-all duration-700" />
         
-        {/* Loader Icon Container */}
-        <div className="relative h-24 w-24 flex items-center justify-center overflow-hidden">
-          <Logo iconOnly className="h-20 w-20 animate-bounce duration-1000" />
+        {/* Pulsing Logo Isotype */}
+        <div className="absolute inset-0 flex items-center justify-center">
+          <Logo iconOnly className="h-12 w-12 animate-pulse" />
         </div>
       </div>
 
-      <div className="mt-10 flex flex-col items-center">
-        <Logo iconOnly={false} className="h-0 w-0 invisible" /> {/* This is just to use the text part if needed, but I'll actually just call Logo */}
-        <div className="scale-125">
-          <Logo iconOnly={false} className="h-6 w-6" />
-        </div>
-        <div className="flex items-center gap-1">
-          <div className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-bounce [animation-delay:-0.32s]" />
-          <div className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-bounce [animation-delay:-0.16s]" />
-          <div className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-bounce" />
-        </div>
+      <div className="mt-12 flex flex-col items-center text-center">
+        <header className="relative z-10">
+          <p className="text-[10px] font-black text-primary uppercase tracking-[0.5em] animate-pulse">
+            Establishing Protocol
+          </p>
+          <div className="mt-4 flex flex-col items-center gap-2">
+            <Logo iconOnly={false} textColor="text-primary/40" className="h-4 w-4 opacity-50" />
+            <p className="text-[8px] font-bold text-[#191c1e]/20 uppercase tracking-widest">
+              Securing identity nodes...
+            </p>
+          </div>
+        </header>
       </div>
     </div>
   );
 }
+

@@ -1,28 +1,33 @@
 const fs = require('fs');
-const content = fs.readFileSync('d:\\proyectos\\SaaS\\src\\lib\\i18n.ts', 'utf8');
 
-const blocks = [
-    { name: 'en', start: content.indexOf('en: {'), end: content.indexOf('  es: {') },
-    { name: 'es', start: content.indexOf('es: {'), end: content.indexOf('  it: {') },
-    { name: 'it', start: content.indexOf('it: {'), end: content.lastIndexOf('};') }
-];
+const content = fs.readFileSync('d:/proyectos/SaaS/scratch/i18n_modular.ts', 'utf8');
 
-for (const blockInfo of blocks) {
-    console.log(`--- Duplicates in ${blockInfo.name} ---`);
-    const blockContent = content.substring(blockInfo.start, blockInfo.end);
-    const lines = blockContent.split('\n');
-    const seen = {};
-    for (let i = 0; i < lines.length; i++) {
-        const match = lines[i].match(/^\s+([a-zA-Z0-9_]+):/);
-        if (match) {
-            const key = match[1];
-            if (!seen[key]) seen[key] = [];
-            seen[key].push(i + 1 + (content.substring(0, blockInfo.start).split('\n').length - 1));
-        }
+function findDupesWithLines(content, lang) {
+  const lines = content.split('\n');
+  const counts = {};
+  const lineNumbers = {};
+  
+  // We need to know where the lang sections are
+  // But since we are looking at the whole file for duplicates of keys in general, 
+  // let's just find all keys and their lines.
+  
+  const regex = /^\s*([a-z0-9_]+):/gm;
+  let match;
+  while ((match = regex.exec(content)) !== null) {
+    const key = match[1];
+    const offset = match.index;
+    const lineNumber = content.substring(0, offset).split('\n').length;
+    
+    counts[key] = (counts[key] || 0) + 1;
+    if (!lineNumbers[key]) lineNumbers[key] = [];
+    lineNumbers[key].push(lineNumber);
+  }
+  
+  Object.keys(counts).forEach(key => {
+    if (counts[key] > 1) {
+      console.log(`${key}: found ${counts[key]} times at lines ${lineNumbers[key].join(', ')}`);
     }
-    for (const [key, lines] of Object.entries(seen)) {
-        if (lines.length > 1) {
-            console.log(`  ${key}: lines ${lines.join(', ')}`);
-        }
-    }
+  });
 }
+
+findDupesWithLines(content);

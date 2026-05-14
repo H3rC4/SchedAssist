@@ -1,7 +1,12 @@
 import { Navbar } from '@/components/Navbar';
 import { LandingHero } from '@/components/landing/LandingHero';
+import { LandingSocialProof } from '@/components/landing/LandingSocialProof';
+import { LandingHowItWorks } from '@/components/landing/LandingHowItWorks';
 import { LandingFeatures } from '@/components/landing/LandingFeatures';
-import { LandingCustomization } from '@/components/landing/LandingCustomization';
+import { LandingSecurity } from '@/components/landing/LandingSecurity';
+import { LandingPricing } from '@/components/landing/LandingPricing';
+import { LandingFAQ } from '@/components/landing/LandingFAQ';
+import { LandingCTA } from '@/components/landing/LandingCTA';
 import { LandingFooter } from '@/components/landing/LandingFooter';
 
 export default function LandingPage() {
@@ -13,10 +18,10 @@ export default function LandingPage() {
     applicationCategory: 'BusinessApplication',
     offers: {
       '@type': 'Offer',
-      price: '0.00',
+      price: '49.00',
       priceCurrency: 'USD',
     },
-    description: 'Automatiza tus citas con IA y WhatsApp. La plataforma SaaS ideal para clínicas.',
+    description: 'Automatiza tus citas con IA y WhatsApp. La plataforma SaaS líder para la gestión de clínicas y consultorios médicos.',
   };
 
   return (
@@ -28,11 +33,16 @@ export default function LandingPage() {
 
       <Navbar />
 
-      <LandingHero />
-
-      <LandingFeatures />
-
-      <LandingCustomization />
+      <main>
+        <LandingHero />
+        <LandingSocialProof />
+        <LandingHowItWorks />
+        <LandingFeatures />
+        <LandingSecurity />
+        <LandingPricing />
+        <LandingFAQ />
+        <LandingCTA />
+      </main>
 
       <LandingFooter />
     </div>

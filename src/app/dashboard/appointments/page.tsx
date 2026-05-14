@@ -13,7 +13,7 @@ import { DayActivityFeed } from '@/components/appointments/DayActivityFeed'
 import { WeeklyCalendar } from '@/components/appointments/WeeklyCalendar'
 import { QuickAppointmentDrawer } from '@/components/appointments/QuickAppointmentDrawer'
 import { AppointmentDetailDrawer } from '@/components/appointments/AppointmentDetailDrawer'
-import { getTranslations, dateLocales } from '@/lib/i18n'
+import { dateLocales } from '@/lib/i18n'
 import { useLandingTranslation } from '@/components/LanguageContext'
 import { useSearchParams } from 'next/navigation'
 
