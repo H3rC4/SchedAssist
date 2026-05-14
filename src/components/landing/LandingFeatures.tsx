@@ -87,7 +87,7 @@ export function LandingFeatures() {
           </p>
         </motion.div>
         
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-12 md:grid-flow-dense gap-6">
           {features.map((feature, idx) => (
             <motion.div
               key={feature.title}
