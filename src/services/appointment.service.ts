@@ -28,7 +28,7 @@ export class AppointmentService {
     if (timeZone === 'UTC') return new Date(cleanDateStr + 'Z');
 
     try {
-      return fromZonedTime(cleanDateStr, timeZone);
+      return fromZonedTime(cleanDateStr, timeZone ?? 'UTC');
     } catch (e) {
       console.error('[AppointmentService.toUTC] Error converting timezone:', e);
       return new Date(cleanDateStr + 'Z');
