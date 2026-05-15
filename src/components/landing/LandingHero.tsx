@@ -83,24 +83,20 @@ export function LandingHero() {
               transition={{ duration: 0.8, delay: 0.3 }}
               className="flex flex-col sm:flex-row items-center gap-4 mb-12"
             >
-              <MagneticWrapper>
-                <Link
-                  href="/register"
-                  className="w-full sm:w-auto px-10 py-5 bg-[#005c55] text-white text-xs font-black uppercase tracking-[0.4em] transition-all shadow-2xl shadow-[#005c55]/20 hover:bg-[#0d9488] hover:scale-[1.05] active:scale-95 flex items-center justify-center gap-3 group"
-                >
-                  <span>{t.hero_cta_primary}</span>
-                  <ChevronRight className="h-4 w-4 group-hover:translate-x-2 transition-transform" />
-                </Link>
-              </MagneticWrapper>
+              <Link
+                href="/register"
+                className="w-full sm:w-auto px-10 py-5 bg-[#005c55] text-white text-xs font-black uppercase tracking-[0.4em] transition-all shadow-2xl shadow-[#005c55]/20 hover:bg-[#0d9488] hover:scale-[1.05] active:scale-95 flex items-center justify-center gap-3 group"
+              >
+                <span>{t.hero_cta_primary}</span>
+                <ChevronRight className="h-4 w-4 group-hover:translate-x-2 transition-transform" />
+              </Link>
 
-              <MagneticWrapper>
-                <Link
-                  href="#demo"
-                  className="w-full sm:w-auto px-10 py-5 bg-[#005c55]/5 border border-[#005c55]/20 text-[#005c55] text-xs font-black uppercase tracking-[0.4em] transition-all hover:bg-[#005c55]/10 hover:scale-[1.05] active:scale-95 flex items-center justify-center gap-3"
-                >
-                  <span>{t.hero_cta_secondary}</span>
-                </Link>
-              </MagneticWrapper>
+              <Link
+                href="#demo"
+                className="w-full sm:w-auto px-10 py-5 bg-[#005c55]/5 border border-[#005c55]/20 text-[#005c55] text-xs font-black uppercase tracking-[0.4em] transition-all hover:bg-[#005c55]/10 hover:scale-[1.05] active:scale-95 flex items-center justify-center gap-3"
+              >
+                <span>{t.hero_cta_secondary}</span>
+              </Link>
             </motion.div>
 
             {/* Stats row */}

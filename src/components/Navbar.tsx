@@ -39,14 +39,12 @@ export function Navbar() {
                 {t.nav_login || 'Log In'}
               </Link>
 
-              <MagneticWrapper>
                 <Link 
                   href="/register" 
                   className="px-8 py-3.5 rounded-2xl bg-[#005c55] hover:bg-[#0d9488] text-white text-[10px] font-black uppercase tracking-widest transition-all shadow-xl shadow-[#005c55]/20 active:scale-95"
                 >
                   {t.nav_register || 'Register'}
                 </Link>
-              </MagneticWrapper>
             </div>
 
            <div className="flex md:hidden items-center gap-2 relative z-10">
