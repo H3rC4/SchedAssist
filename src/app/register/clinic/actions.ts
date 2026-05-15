@@ -2,6 +2,7 @@
 
 import { createClient as createServerClient } from '@/lib/supabase/server';
 import { createClient as createAdminClient } from '@supabase/supabase-js';
+import { getCountryConfig } from '@/lib/country-config';
 
 export async function createClinicAction(formData: FormData) {
   const supabase = createServerClient();
@@ -12,28 +13,36 @@ export async function createClinicAction(formData: FormData) {
   }
 
   const clinicName = formData.get('clinicName') as string;
+  const country = formData.get('country') as string || 'ES';
   const language = formData.get('language') as string || 'es';
   const contactPhone = formData.get('contactPhone') as string || '';
-  const countryCode = formData.get('countryCode') as string || '54';
 
   if (!clinicName) {
     return { error: 'El nombre de la clínica es obligatorio.' };
   }
+
+  // Get country configuration
+  const countryConfig = getCountryConfig(country);
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
   const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
   const supabaseAdmin = createAdminClient(supabaseUrl, supabaseServiceKey);
 
   try {
-    // 1. Create the tenant
+    // 1. Create the tenant with country and timezone
     const { data: tenant, error: tenantError } = await supabaseAdmin
       .from('tenants')
       .insert({
         name: clinicName,
         slug: `${clinicName.toLowerCase().replace(/[^a-z0-9]/g, '-')}-${Math.random().toString(36).substring(2, 6)}`,
+        timezone: countryConfig.timezone,
         subscription_status: 'trialing',
-        trial_ends_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-        settings: { language, contact_phone: contactPhone, default_country_code: countryCode }
+        trial_ends_at: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
+        settings: { 
+          language, 
+          contact_phone: contactPhone, 
+          default_country_code: countryConfig.countryCode 
+        }
       })
       .select('id')
       .single();

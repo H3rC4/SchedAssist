@@ -4,6 +4,7 @@ import { AppointmentService } from '@/services/appointment.service'
 import { MessageService } from '@/services/message.service'
 import { verifyTenantAccess } from '@/lib/auth-utils'
 import { format, parseISO } from 'date-fns'
+import { fromZonedTime } from 'date-fns-tz'
 import { translations, dateLocales } from '@/lib/i18n'
 
 // GET: Fetch appointments for a specific date & tenant (Keep direct for listing)
@@ -51,9 +52,14 @@ export async function GET(req: NextRequest) {
   }
 
   if (date) {
+    // Convert local date boundaries to UTC using tenant timezone
+    const { data: tenant } = await supabase.from('tenants').select('timezone').eq('id', tenantId).single();
+    const tz = tenant?.timezone || 'UTC';
+    const startUtc = fromZonedTime(`${date}T00:00:00`, tz);
+    const endUtc = fromZonedTime(`${date}T23:59:59`, tz);
     query = query
-      .gte('start_at', `${date}T00:00:00Z`)
-      .lte('start_at', `${date}T23:59:59Z`)
+      .gte('start_at', startUtc.toISOString())
+      .lte('start_at', endUtc.toISOString())
   }
 
   if (upcoming) {

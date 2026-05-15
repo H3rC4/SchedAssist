@@ -6,6 +6,7 @@ import { Building2, KeyRound, Globe, Upload, Image as ImageIcon, Loader2, CheckC
 import { createClient } from '@/lib/supabase/client';
 import { translations, Language } from '@/lib/i18n';
 import { motion, AnimatePresence } from 'framer-motion';
+import { QRCodeSVG } from 'qrcode.react';
 
 export default function GeneralSettingsPage() {
   const router = useRouter();
@@ -197,21 +198,30 @@ export default function GeneralSettingsPage() {
     setTimeout(() => setMessage(null), 2000);
   };
 
-  const downloadQR = async () => {
-    const qrUrl = `https://chart.googleapis.com/chart?cht=qr&chs=500x500&chl=${encodeURIComponent(publicBookingUrl)}`;
-    try {
-      const response = await fetch(qrUrl);
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
+  const downloadQR = () => {
+    if (!publicBookingUrl) return;
+    // Create a canvas from the SVG QR code
+    const svgElement = document.getElementById('booking-qr-svg');
+    if (!svgElement) return;
+    
+    const svgData = new XMLSerializer().serializeToString(svgElement);
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    const img = new Image();
+    
+    img.onload = () => {
+      canvas.width = 512;
+      canvas.height = 512;
+      ctx?.drawImage(img, 0, 0, 512, 512);
       const link = document.createElement('a');
-      link.href = url;
       link.download = `QR-Booking-${tenantSlug}.png`;
+      link.href = canvas.toDataURL('image/png');
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-    } catch (err) {
-      console.error('Error downloading QR:', err);
-    }
+    };
+    
+    img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgData)));
   };
 
   if (isLoading) {
@@ -553,11 +563,19 @@ export default function GeneralSettingsPage() {
                 <div className="absolute inset-0 bg-gradient-to-br from-primary/[0.02] to-transparent pointer-events-none" />
                 
                 <div className="relative bg-white p-6 rounded-2xl shadow-xl shadow-primary/5 mb-6 group-hover:scale-105 transition-transform duration-500">
-                  <img 
-                    src={`https://chart.googleapis.com/chart?cht=qr&chs=300x300&chl=${encodeURIComponent(publicBookingUrl)}`} 
-                    alt="Clinic QR"
-                    className="h-40 w-40 md:h-48 md:w-48"
-                  />
+                  {publicBookingUrl ? (
+                    <QRCodeSVG
+                      id="booking-qr-svg"
+                      value={publicBookingUrl}
+                      size={192}
+                      level="H"
+                      includeMargin={false}
+                    />
+                  ) : (
+                    <div className="h-48 w-48 flex items-center justify-center bg-primary/5 rounded-lg">
+                      <QrCode className="h-12 w-12 text-primary/20" />
+                    </div>
+                  )}
                   <div className="absolute -top-3 -right-3 h-10 w-10 rounded-full bg-primary text-white flex items-center justify-center shadow-lg border-4 border-white">
                     <QrCode className="h-4 w-4" />
                   </div>

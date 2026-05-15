@@ -3,9 +3,38 @@ import { AuditService } from './audit.service'
 import { MessageService } from './message.service'
 import { NotificationService } from './notification.service'
 import { differenceInHours, parseISO, format } from 'date-fns'
+import { fromZonedTime, toZonedTime } from 'date-fns-tz'
 import { translations, Language } from '@/lib/i18n'
 
 export class AppointmentService {
+  /**
+   * Helper to convert a local time string (YYYY-MM-DDTHH:mm:ss) 
+   * to a UTC Date object based on the tenant's timezone.
+   */
+  static async toUTC(supabase: any, tenant_id: string, localDateStr: string, preFetchedTimeZone?: string): Promise<Date> {
+    let timeZone = preFetchedTimeZone;
+    
+    if (!timeZone) {
+      const { data: tenant } = await supabase
+        .from('tenants')
+        .select('timezone')
+        .eq('id', tenant_id)
+        .single();
+      timeZone = tenant?.timezone || 'UTC';
+    }
+    
+    const cleanDateStr = localDateStr.replace('Z', '');
+    
+    if (timeZone === 'UTC') return new Date(cleanDateStr + 'Z');
+
+    try {
+      return fromZonedTime(cleanDateStr, timeZone);
+    } catch (e) {
+      console.error('[AppointmentService.toUTC] Error converting timezone:', e);
+      return new Date(cleanDateStr + 'Z');
+    }
+  }
+
   /**
    * Check if a professional is available in a given time range,
    * respecting weekly rules, lunch breaks, and date-specific overrides.
@@ -16,6 +45,8 @@ export class AppointmentService {
     start_at: string;
     end_at: string;
   }) {
+    // Important: availability rules are ALWAYS in clinic's local time.
+    // The incoming strings are already treated as local by isProfessionalAvailable.
     const startLocalStr = params.start_at.replace('Z', '');
     const endLocalStr = params.end_at.replace('Z', '');
     
@@ -110,7 +141,23 @@ export class AppointmentService {
     rescheduled_from_appointment_id?: string | null;
     location_id?: string | null;
   }) {
+    // 0. Normalize to UTC based on tenant timezone
+    const { data: tenant } = await supabase
+      .from('tenants')
+      .select('timezone')
+      .eq('id', params.tenant_id)
+      .single();
+    const timeZone = tenant?.timezone || 'UTC';
+
+    const startUtc = await this.toUTC(supabase, params.tenant_id, params.start_at, timeZone);
+    const endUtc = await this.toUTC(supabase, params.tenant_id, params.end_at, timeZone);
+    
+    const startUtcStr = startUtc.toISOString();
+    const endUtcStr = endUtc.toISOString();
+
     // 1. Availability Check (Rules + Overrides + Lunch Breaks)
+    // We use the original "local" strings for the availability check 
+    // because rules are stored as local time (HH:mm).
     const isAvailable = await this.isProfessionalAvailable(supabase, {
       tenant_id: params.tenant_id,
       professional_id: params.professional_id,
@@ -123,13 +170,16 @@ export class AppointmentService {
     }
 
     // 2. Prevent double-booking (Overlap check)
+    // Formula: existing.start < new.end AND existing.end > new.start
+    // This covers ALL overlap cases including exact same time
     const { data: overlapping } = await supabase
       .from('appointments')
       .select('id')
       .eq('tenant_id', params.tenant_id)
       .eq('professional_id', params.professional_id)
       .neq('status', 'cancelled')
-      .or(`and(start_at.lte."${params.start_at}",end_at.gt."${params.start_at}"),and(start_at.lt."${params.end_at}",end_at.gte."${params.end_at}")`)
+      .lt('start_at', endUtcStr)
+      .gt('end_at', startUtcStr)
       .limit(1);
 
     if (overlapping && overlapping.length > 0) {
@@ -145,8 +195,8 @@ export class AppointmentService {
         professional_id: params.professional_id,
         service_id: params.service_id,
         location_id: params.location_id || null,
-        start_at: params.start_at,
-        end_at: params.end_at,
+        start_at: startUtcStr,
+        end_at: endUtcStr,
         source: params.source,
         notes: params.notes,
         created_by_user_id: params.created_by_user_id,
@@ -207,18 +257,19 @@ export class AppointmentService {
     user_id?: string;
     is_admin_override?: boolean;
   }) {
-    // 1. Fetch current appointment
-    const { data: appointment, error: fetchError } = await supabase
-      .from('appointments')
-      .select('*')
-      .eq('id', params.appointment_id)
-      .eq('tenant_id', params.tenant_id)
-      .single()
+    // 1. Fetch current appointment + tenant timezone
+    const [{ data: appointment }, { data: tenantCfg }] = await Promise.all([
+      supabase.from('appointments').select('*').eq('id', params.appointment_id).eq('tenant_id', params.tenant_id).single(),
+      supabase.from('tenants').select('timezone').eq('id', params.tenant_id).single(),
+    ])
 
     if (fetchError || !appointment) throw new Error('Cita no encontrada.')
 
-    // 2. 24-hour rule check
-    const hoursToStart = differenceInHours(parseISO(appointment.start_at), new Date())
+    // 2. 24-hour rule check — compare in tenant's timezone, not server timezone
+    const tz = tenantCfg?.timezone || 'UTC'
+    const nowInTenantTZ = toZonedTime(new Date(), tz)
+    const startInTenantTZ = toZonedTime(parseISO(appointment.start_at), tz)
+    const hoursToStart = differenceInHours(startInTenantTZ, nowInTenantTZ)
     if (hoursToStart < 24 && !params.is_admin_override) {
       throw new Error('Las cancelaciones deben realizarse con al menos 24 horas de antelación.')
     }
@@ -320,17 +371,20 @@ export class AppointmentService {
     const dateStr = format(cancelledDate, 'yyyy-MM-dd')
     const timeStr = format(cancelledDate, 'HH:mm')
 
-    // Fetch tenant language, offer timeout config, and professional name
+    // Fetch tenant language, offer timeout config, professional name, AND timezone
     const [{ data: tenantData }, { data: profData }] = await Promise.all([
-      supabase.from('tenants').select('settings').eq('id', params.tenant_id).single(),
+      supabase.from('tenants').select('settings, timezone').eq('id', params.tenant_id).single(),
       supabase.from('professionals').select('full_name').eq('id', params.professional_id).single(),
     ])
 
     const lang = (tenantData?.settings?.language as 'en' | 'es' | 'it') || 'es'
+    const tz = tenantData?.timezone || 'UTC'
     const profName = profData?.full_name || ''
 
-    // RULE: Only offer if slot is at least 24 hours in the future
-    const hoursUntilSlot = (new Date(params.freed_start_at).getTime() - new Date().getTime()) / 3600000
+    // RULE: Only offer if slot is at least 24 hours in the future — compare in tenant timezone
+    const nowInTenantTZ = toZonedTime(new Date(), tz)
+    const slotInTenantTZ = toZonedTime(parseISO(params.freed_start_at), tz)
+    const hoursUntilSlot = differenceInHours(slotInTenantTZ, nowInTenantTZ)
     if (hoursUntilSlot < 24) {
       console.log(`[Waitlist] Slot ${params.freed_start_at} is too soon (<24h), skipping notification.`)
       return
@@ -404,17 +458,19 @@ export class AppointmentService {
     user_id?: string;
     is_admin_override?: boolean;
   }) {
-    // 1. Fetch old appointment
-    const { data: oldAppointment } = await supabase
-      .from('appointments')
-      .select('*')
-      .eq('id', params.appointment_id)
-      .single()
+    // 1. Fetch old appointment + tenant timezone
+    const [{ data: oldAppointment }, { data: tenantCfg }] = await Promise.all([
+      supabase.from('appointments').select('*').eq('id', params.appointment_id).single(),
+      supabase.from('tenants').select('timezone').eq('id', params.tenant_id).single(),
+    ])
 
     if (!oldAppointment) throw new Error('Cita original no encontrada.')
 
-    // 2. Cancellation rule for the old slot
-    const hoursToStart = differenceInHours(parseISO(oldAppointment.start_at), new Date())
+    // 2. Cancellation rule for the old slot — compare in tenant timezone
+    const tz = tenantCfg?.timezone || 'UTC'
+    const nowInTenantTZ = toZonedTime(new Date(), tz)
+    const startInTenantTZ = toZonedTime(parseISO(oldAppointment.start_at), tz)
+    const hoursToStart = differenceInHours(startInTenantTZ, nowInTenantTZ)
     if (hoursToStart < 24 && !params.is_admin_override) {
       throw new Error('La reprogramación debe iniciarse al menos 24 horas antes de la cita.')
     }
@@ -540,10 +596,18 @@ export class AppointmentService {
     professional_id: string;
     date: string; // YYYY-MM-DD
     service_id?: string;
-  }): Promise<{ slots: string[]; isBlocked: boolean; blockReason: string | null }> {
+  }) {
+    // 0. Get tenant timezone once
+    const { data: tenant } = await supabase
+      .from('tenants')
+      .select('timezone')
+      .eq('id', params.tenant_id)
+      .single();
+    const timeZone = tenant?.timezone || 'UTC';
+
     const dayOfWeek = parseISO(params.date).getDay()
 
-    // 0. Check for date-specific overrides
+    // 0.5. Check for date-specific overrides
     const { data: allOverrides } = await supabase
       .from('professional_availability_overrides')
       .select('*')
@@ -562,7 +626,6 @@ export class AppointmentService {
     const openOverride = allOverrides?.find((ov: any) => ov.override_type === 'open');
 
     if (openOverride) {
-      // Use the override's custom hours for this specific date
       effectiveRules = [{ 
         start_time: openOverride.start_time, 
         end_time: openOverride.end_time,
@@ -570,7 +633,6 @@ export class AppointmentService {
         lunch_break_end: null
       }]
     } else {
-      // Fall back to normal weekly availability rules
       const { data: rules } = await supabase
         .from('availability_rules')
         .select('*')
@@ -584,7 +646,7 @@ export class AppointmentService {
     }
 
     // 1. Get service duration
-    let durationMinutes = 30; // Default fallback
+    let durationMinutes = 30;
     if (params.service_id) {
       const { data: service } = await supabase
         .from('services')
@@ -594,9 +656,11 @@ export class AppointmentService {
       if (service) durationMinutes = service.duration_minutes;
     }
 
-    // 2. Get existing (non-cancelled) appointments for this day
-    const startOfDay = `${params.date}T00:00:00Z`
-    const endOfDay = `${params.date}T23:59:59Z`
+    // 2. Get existing appointments for this local day.
+    // To be safe, we query a wider range (36h) or specifically the local day boundaries in UTC.
+    // For simplicity and correctness, let's query the local day converted to UTC boundaries.
+    const startOfDayUTC = await this.toUTC(supabase, params.tenant_id, `${params.date}T00:00:00`, timeZone);
+    const endOfDayUTC = await this.toUTC(supabase, params.tenant_id, `${params.date}T23:59:59`, timeZone);
 
     const { data: appointments } = await supabase
       .from('appointments')
@@ -604,72 +668,72 @@ export class AppointmentService {
       .eq('tenant_id', params.tenant_id)
       .eq('professional_id', params.professional_id)
       .neq('status', 'cancelled')
-      .gte('start_at', startOfDay)
-      .lte('start_at', endOfDay)
+      .gte('start_at', startOfDayUTC.toISOString())
+      .lte('start_at', endOfDayUTC.toISOString());
 
     // 3. Generate slots from effective rules
     const slotSet = new Set<string>()
     const now = new Date()
 
     for (const rule of effectiveRules) {
-      let current = parseISO(`${params.date}T${rule.start_time}`)
-      const endRule = parseISO(`${params.date}T${rule.end_time}`)
-      const lunchStart = rule.lunch_break_start ? parseISO(`${params.date}T${rule.lunch_break_start}`) : null
-      const lunchEnd = rule.lunch_break_end ? parseISO(`${params.date}T${rule.lunch_break_end}`) : null
+      // rule.start_time is "HH:mm:ss" local.
+      // We iterate using floating time, but convert to UTC for "past check" and "occupancy check".
+      let currentLocal = parseISO(`${params.date}T${rule.start_time}`);
+      const endRuleLocal = parseISO(`${params.date}T${rule.end_time}`);
       
-      // Hourly block overrides for this date
       const hourlyBlocks = allOverrides?.filter((ov: any) => ov.override_type === 'block' && ov.start_time && ov.end_time) || [];
 
-      while (current < endRule) {
-        const slotStart = current;
-        const slotEnd = new Date(current.getTime() + durationMinutes * 60000);
+      while (currentLocal < endRuleLocal) {
+        const slotStartLocal = currentLocal;
+        const slotEndLocal = new Date(currentLocal.getTime() + durationMinutes * 60000);
         
-        const startTimeStr = format(slotStart, 'HH:mm:ss');
-        const endTimeStr = format(slotEnd, 'HH:mm:ss');
+        const startTimeStr = format(slotStartLocal, 'HH:mm:ss');
+        const endTimeStr = format(slotEndLocal, 'HH:mm:ss');
         
-        // Check 1: Fits within working hours
-        if (slotEnd > endRule) break;
+        if (slotEndLocal > endRuleLocal) break;
 
-        // Check 2: Not in the past
-        if (slotStart < now) {
-            current = new Date(current.getTime() + 30 * 60000);
+        // Convert current slot to UTC for comparison with "now" and DB appointments
+        const slotStartUTC = await this.toUTC(supabase, params.tenant_id, format(slotStartLocal, "yyyy-MM-dd'T'HH:mm:ss"), timeZone);
+        const slotEndUTC = new Date(slotStartUTC.getTime() + durationMinutes * 60000);
+
+        // Check 1: Not in the past
+        if (slotStartUTC < now) {
+            currentLocal = new Date(currentLocal.getTime() + 30 * 60000);
             continue;
         }
 
-        // Check 3: Not during lunch break
+        // Check 2: Not during lunch break
         if (rule.lunch_break_start && rule.lunch_break_end) {
-          const lStart = rule.lunch_break_start;
-          const lEnd = rule.lunch_break_end;
-          const overlapLunch = startTimeStr < lEnd && endTimeStr > lStart;
+          const overlapLunch = startTimeStr < rule.lunch_break_end && endTimeStr > rule.lunch_break_start;
           if (overlapLunch) {
-            current = new Date(current.getTime() + 30 * 60000);
+            currentLocal = new Date(currentLocal.getTime() + 30 * 60000);
             continue;
           }
         }
 
-        // Check 3.5: Not during any specific block override
+        // Check 3: Not during any specific block override
         const isBlockedByOverride = hourlyBlocks.some((block: any) => {
           return startTimeStr < block.end_time && endTimeStr > block.start_time;
         });
 
         if (isBlockedByOverride) {
-          current = new Date(current.getTime() + 30 * 60000);
+          currentLocal = new Date(currentLocal.getTime() + 30 * 60000);
           continue;
         }
 
-        // Check 4: Does not overlap with existing appointments
+        // Check 4: Does not overlap with existing appointments (stored in UTC)
         const isOccupied = appointments?.some((app: any) => {
             const appStart = parseISO(app.start_at);
             const appEnd = parseISO(app.end_at);
-            return (appStart < slotEnd && appEnd > slotStart);
+            return (appStart < slotEndUTC && appEnd > slotStartUTC);
         });
 
         if (!isOccupied) {
-          const timeLabel = format(slotStart, 'HH:mm')
+          const timeLabel = format(slotStartLocal, 'HH:mm')
           slotSet.add(timeLabel)
         }
 
-        current = new Date(current.getTime() + 30 * 60000);
+        currentLocal = new Date(currentLocal.getTime() + 30 * 60000);
       }
     }
 

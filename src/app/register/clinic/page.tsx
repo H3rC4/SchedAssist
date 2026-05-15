@@ -2,11 +2,13 @@
 
 import { useState, useRef } from 'react';
 import { createClinicAction } from './actions';
-import { Building, ShieldCheck, Loader2, ArrowRight, Phone, Globe } from 'lucide-react';
+import { Building, ShieldCheck, Loader2, ArrowRight, Phone, Globe, MapPin } from 'lucide-react';
 import { Language, translations } from '@/lib/i18n';
+import { SUPPORTED_COUNTRIES } from '@/lib/country-config';
 
 export default function RegisterClinicPage() {
   const [step, setStep] = useState(0);
+  const [selectedCountry, setSelectedCountry] = useState<string>('');
   const [selectedLang, setSelectedLang] = useState<Language>('es');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -14,8 +16,12 @@ export default function RegisterClinicPage() {
 
   const t = translations[selectedLang] || translations['es'];
 
-  async function handleLanguageSelect(lang: Language) {
-    setSelectedLang(lang);
+  async function handleCountrySelect(countryCode: string) {
+    setSelectedCountry(countryCode);
+    const country = SUPPORTED_COUNTRIES.find(c => c.code === countryCode);
+    if (country) {
+      setSelectedLang(country.language);
+    }
     setStep(1);
   }
 
@@ -27,7 +33,8 @@ export default function RegisterClinicPage() {
     try {
       const formData = formRef.current ? new FormData(formRef.current) : new FormData();
       
-      // Ensure language is set in formData
+      // Set country and language in formData
+      formData.set('country', selectedCountry);
       formData.set('language', selectedLang);
 
       // If no clinic name (skipped), use a default
@@ -60,7 +67,7 @@ export default function RegisterClinicPage() {
           {/* Texto decorativo de fondo */}
           <div className="absolute top-0 right-0 p-8 opacity-[0.02] pointer-events-none select-none">
             <span className="text-6xl font-black uppercase tracking-tighter text-primary">
-              {step === 0 ? 'Lang' : 'Clinic'}
+              {step === 0 ? 'Country' : 'Clinic'}
             </span>
           </div>
 
@@ -68,38 +75,43 @@ export default function RegisterClinicPage() {
             <div className="animate-in fade-in duration-700 relative z-10">
               <div className="mb-10">
                 <div className="inline-flex items-center gap-2 px-4 py-1.5 border border-primary/10 bg-primary/[0.03] text-primary text-[9px] font-black uppercase tracking-[0.2em] mb-6">
-                  <Globe className="h-3 w-3" /> Next-Generation Onboarding
+                  <MapPin className="h-3 w-3" /> Location Setup
                 </div>
                 <h1 className="text-3xl font-black text-[#191c1e] tracking-tighter uppercase mb-3">
                   Select <br />
-                  <span className="text-primary italic">Language</span>
+                  <span className="text-primary italic">Country</span>
                 </h1>
                 <p className="text-[10px] font-black text-[#191c1e]/40 uppercase tracking-[0.4em]">
-                  Universal Identity Access
+                  Where is your clinic located?
                 </p>
               </div>
 
               <div className="grid gap-3">
-                {[
-                  { id: 'es', name: 'Español', code: 'ES' },
-                  { id: 'en', name: 'English', code: 'US' },
-                  { id: 'it', name: 'Italiano', code: 'IT' },
-                ].map((l) => (
+                {SUPPORTED_COUNTRIES.map((country) => (
                   <button
-                    key={l.id}
-                    onClick={() => handleLanguageSelect(l.id as Language)}
+                    key={country.code}
+                    onClick={() => handleCountrySelect(country.code)}
                     className="flex items-center justify-between p-5 bg-primary/[0.03] border border-primary/10 hover:border-primary hover:bg-primary/[0.08] transition-all group relative overflow-hidden"
                   >
                     <div className="flex items-center gap-4">
-                      <span className="text-[10px] font-black text-primary/30 group-hover:text-primary transition-colors">{l.code}</span>
-                      <span className="font-black text-[#191c1e] uppercase tracking-[0.2em] text-xs">
-                        {l.name}
-                      </span>
+                      <span className="text-xl">{country.flag}</span>
+                      <div className="text-left">
+                        <span className="font-black text-[#191c1e] uppercase tracking-[0.2em] text-xs block">
+                          {country.name}
+                        </span>
+                        <span className="text-[10px] font-bold text-primary/40">
+                          {country.language === 'es' ? 'Español' : country.language === 'it' ? 'Italiano' : 'English'} • {country.currency}
+                        </span>
+                      </div>
                     </div>
                     <ArrowRight className="h-4 w-4 text-primary/30 group-hover:text-primary group-hover:translate-x-2 transition-all" />
                   </button>
                 ))}
               </div>
+
+              <p className="mt-6 text-[10px] font-bold text-[#191c1e]/30 text-center uppercase tracking-widest">
+                Language and timezone will be configured automatically
+              </p>
             </div>
           )}
 
@@ -114,7 +126,7 @@ export default function RegisterClinicPage() {
                   <span className="text-primary italic">Ready</span>
                 </h1>
                 <p className="text-[10px] font-black text-[#191c1e]/40 uppercase tracking-[0.4em]">
-                  Establish Clinical Identity
+                  Configure your clinic details
                 </p>
               </div>
 
@@ -127,6 +139,30 @@ export default function RegisterClinicPage() {
               )}
 
               <form ref={formRef} onSubmit={handleSubmit} className="space-y-6">
+                {/* Country info (read-only) */}
+                <div className="p-4 bg-primary/[0.03] border border-primary/10">
+                  <div className="flex items-center gap-3">
+                    <span className="text-2xl">
+                      {SUPPORTED_COUNTRIES.find(c => c.code === selectedCountry)?.flag}
+                    </span>
+                    <div>
+                      <p className="text-xs font-black text-[#191c1e]">
+                        {SUPPORTED_COUNTRIES.find(c => c.code === selectedCountry)?.name}
+                      </p>
+                      <p className="text-[10px] font-bold text-primary/40">
+                        {SUPPORTED_COUNTRIES.find(c => c.code === selectedCountry)?.timezone}
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setStep(0)}
+                      className="ml-auto text-[10px] font-black text-primary uppercase tracking-widest hover:text-primary-light transition-colors"
+                    >
+                      Change
+                    </button>
+                  </div>
+                </div>
+
                 <div>
                   <label className="text-[9px] font-black text-primary/60 uppercase tracking-[0.3em] ml-2 mb-2 block">
                     {t.registration.name_label}
@@ -154,31 +190,6 @@ export default function RegisterClinicPage() {
                       className="w-full bg-primary/[0.03] border border-primary/20 py-4 pl-14 pr-5 text-sm font-bold text-[#191c1e] placeholder:text-primary/30 focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all outline-none"
                       placeholder={t.registration.phone_ph}
                     />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="text-[9px] font-black text-primary/60 uppercase tracking-[0.3em] ml-2 mb-2 block">
-                    {selectedLang === 'es' ? 'País' : selectedLang === 'it' ? 'Paese' : 'Country'}
-                  </label>
-                  <div className="relative group">
-                    <Globe className="absolute left-5 top-1/2 -translate-y-1/2 h-4 w-4 text-primary/30 group-focus-within:text-primary transition-colors pointer-events-none" />
-                    <select
-                      name="countryCode"
-                      defaultValue=""
-                      required
-                      className="w-full bg-primary/[0.03] border border-primary/20 py-4 pl-14 pr-5 text-sm font-bold text-[#191c1e] focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all outline-none appearance-none cursor-pointer"
-                    >
-                      <option value="" disabled>{selectedLang === 'es' ? 'Seleccionar país...' : selectedLang === 'it' ? 'Seleziona il paese...' : 'Select country...'}</option>
-                      <option value="54">Argentina (+54)</option>
-                      <option value="34">España (+34)</option>
-                      <option value="39">Italia (+39)</option>
-                      <option value="1">Estados Unidos (+1)</option>
-                      <option value="52">México (+52)</option>
-                      <option value="57">Colombia (+57)</option>
-                      <option value="56">Chile (+56)</option>
-                      <option value="44">Reino Unido (+44)</option>
-                    </select>
                   </div>
                 </div>
 
