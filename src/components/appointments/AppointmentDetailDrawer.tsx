@@ -87,20 +87,25 @@ export function AppointmentDetailDrawer({
   const isCancelled = appointment.status === 'cancelled' || appointment.status === 'canceled'
 
   return (
-    <div className="fixed inset-0 z-[100] flex justify-end" onClick={onClose}>
+    <div className="fixed inset-0 z-50 overflow-hidden" onClick={onClose}>
       <motion.div 
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="absolute inset-0 bg-on-surface/40 backdrop-blur-[2px]"
+        transition={{ duration: 0.3 }}
+        className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" 
       />
-      
+
       <motion.div 
         initial={{ x: '100%' }}
         animate={{ x: 0 }}
         exit={{ x: '100%' }}
-        transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-        className="relative w-full max-w-md bg-surface h-full shadow-2xl overflow-hidden flex flex-col"
+        transition={{ 
+          type: 'tween', 
+          ease: [0.16, 1, 0.3, 1],
+          duration: 0.6 
+        }}
+        className="absolute top-0 right-0 h-full w-full max-w-xl bg-surface shadow-spatial flex flex-col"
         onClick={e => e.stopPropagation()}
       >
         {cancelSuccess ? (
@@ -109,9 +114,9 @@ export function AppointmentDetailDrawer({
               initial={{ scale: 0.5, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ type: "spring", stiffness: 300, damping: 20 }}
-              className="h-20 w-20 bg-emerald-50 rounded-full flex items-center justify-center mb-6"
+              className="h-24 w-24 bg-emerald-50 rounded-2xl flex items-center justify-center mb-8 shadow-spatial"
             >
-              <CheckCircle className="h-10 w-10 text-emerald-500" />
+              <CheckCircle className="h-12 w-12 text-emerald-500" />
             </motion.div>
             <motion.h2 
               initial={{ opacity: 0, y: 10 }}
@@ -124,160 +129,174 @@ export function AppointmentDetailDrawer({
           </div>
         ) : (
           <>
-            {/* Header - Compact */}
-            <div className="p-6 pb-4 flex items-start justify-between bg-on-surface/[0.02] border-b border-on-surface/5">
-          <div>
-            <div className="flex items-center gap-2 mb-2">
-              <div className={`h-1.5 w-1.5 rounded-full ${
-                appointment.status === 'attended' ? 'bg-emerald-500' : isCancelled ? 'bg-error' : 'bg-primary animate-pulse'
-              }`} />
-              <span className={`text-[8px] font-black tracking-[0.3em] uppercase ${isCancelled ? 'text-error' : 'text-on-surface/40'}`}>
-                {getStatusLabel(appointment.status)}
-              </span>
-            </div>
-            <h2 className="text-xl font-black text-on-surface tracking-tighter uppercase leading-none">
-              {appointment.clients?.first_name} <span className="text-primary italic font-serif lowercase ml-1">{appointment.clients?.last_name}</span>
-            </h2>
-          </div>
-          <button 
-            onClick={onClose}
-            className="p-2 hover:bg-on-surface/5 rounded-full transition-all"
-          >
-            <X className="h-4 w-4 text-on-surface/40" />
-          </button>
-        </div>
-
-        <div className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar">
-          {/* Quick Stats Grid */}
-          <div className="grid grid-cols-2 gap-3">
-            <div className="bg-on-surface/5 p-4 rounded-2xl border border-on-surface/5">
-              <div className="flex items-center gap-2 mb-2 text-on-surface/30">
-                <Calendar className="h-3 w-3" />
-                <span className="text-[8px] font-black uppercase tracking-widest">{T.date}</span>
-              </div>
-              <p className="text-sm font-black text-on-surface">
-                {format(parseISO(appointment.start_at), 'MMM dd, yyyy')}
-              </p>
-            </div>
-            <div className="bg-on-surface/5 p-4 rounded-2xl border border-on-surface/5">
-              <div className="flex items-center gap-2 mb-2 text-on-surface/30">
-                <Clock className="h-3 w-3" />
-                <span className="text-[8px] font-black uppercase tracking-widest">{T.time}</span>
-              </div>
-              <p className="text-sm font-black text-on-surface">
-                {format(parseISO(appointment.start_at), 'HH:mm')}
-              </p>
-            </div>
-          </div>
-
-          {/* Details - Compact Grid */}
-          <div className="space-y-3">
-            <h4 className="text-[8px] font-black text-on-surface/20 uppercase tracking-[0.3em] ml-1">{T.appointment_info}</h4>
-            
-            <div className="grid grid-cols-1 gap-2">
-              <div className="flex items-center gap-3 p-3 rounded-xl bg-on-surface/[0.02] border border-on-surface/5">
-                <div className="h-8 w-8 rounded-lg bg-white flex items-center justify-center shadow-sm flex-shrink-0">
-                  <Briefcase className="h-3.5 w-3.5 text-primary" />
+            {/* HEADER SECTION */}
+            <div className="bg-precision-surface-lowest p-4 md:p-6 border-b border-on-surface/5 flex-shrink-0">
+              <div className="flex items-start justify-between">
+                <div className="flex items-center gap-4">
+                  <div className="h-14 w-14 rounded-xl bg-primary flex items-center justify-center text-white text-xl font-black shadow-spatial">
+                    {(appointment.clients?.first_name?.[0] || '') + (appointment.clients?.last_name?.[0] || '')}
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2 mb-1">
+                      <div className={`h-1.5 w-1.5 rounded-full ${
+                        appointment.status === 'attended' ? 'bg-emerald-500' : isCancelled ? 'bg-error' : 'bg-primary animate-pulse'
+                      }`} />
+                      <span className={`text-[8px] font-black tracking-[0.3em] uppercase ${isCancelled ? 'text-error' : 'text-on-surface/40'}`}>
+                        {getStatusLabel(appointment.status)}
+                      </span>
+                    </div>
+                    <h2 className="text-xl md:text-2xl font-black text-on-surface tracking-tighter leading-none uppercase">
+                      {appointment.clients?.first_name} <span className="text-primary italic font-serif lowercase ml-1">{appointment.clients?.last_name}</span>
+                    </h2>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-[7px] font-black text-on-surface/30 uppercase tracking-widest leading-none mb-1">{T.service}</p>
-                  <p className="text-[11px] font-black text-on-surface leading-none">{appointment.services?.name}</p>
+                <button 
+                  onClick={onClose}
+                  className="h-9 w-9 flex items-center justify-center rounded-lg bg-surface-container-low hover:bg-surface-container-high text-on-surface-muted hover:text-on-surface transition-all active:scale-95"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+            </div>
+
+            {/* BODY SECTION */}
+            <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6 custom-scrollbar bg-surface">
+              {/* Quick Stats Grid */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-precision-surface-lowest p-5 rounded-2xl border border-on-surface/5 shadow-sm">
+                  <div className="flex items-center gap-2 mb-2 text-on-surface/30">
+                    <Calendar className="h-3.5 w-3.5" />
+                    <span className="text-[8px] font-black uppercase tracking-widest">{T.date}</span>
+                  </div>
+                  <p className="text-base font-black text-on-surface tracking-tight">
+                    {format(parseISO(appointment.start_at), 'MMMM dd, yyyy')}
+                  </p>
+                </div>
+                <div className="bg-precision-surface-lowest p-5 rounded-2xl border border-on-surface/5 shadow-sm">
+                  <div className="flex items-center gap-2 mb-2 text-on-surface/30">
+                    <Clock className="h-3.5 w-3.5" />
+                    <span className="text-[8px] font-black uppercase tracking-widest">{T.time}</span>
+                  </div>
+                  <p className="text-base font-black text-on-surface tracking-tight">
+                    {format(parseISO(appointment.start_at), 'HH:mm')}
+                  </p>
                 </div>
               </div>
 
-              <div className="flex items-center gap-3 p-3 rounded-xl bg-on-surface/[0.02] border border-on-surface/5">
-                <div className="h-8 w-8 rounded-lg bg-white flex items-center justify-center shadow-sm flex-shrink-0">
-                  <User className="h-3.5 w-3.5 text-primary" />
+              {/* Appointment Info Section */}
+              <section className="bg-precision-surface-lowest rounded-2xl p-5 border border-on-surface/5 space-y-4 shadow-sm">
+                <h4 className="text-[8px] font-black text-on-surface/20 uppercase tracking-[0.3em] mb-2">{T.appointment_info}</h4>
+                
+                <div className="space-y-3">
+                  <div className="flex items-center gap-4 p-3 rounded-xl bg-surface border border-on-surface/5">
+                    <div className="h-10 w-10 rounded-lg bg-white flex items-center justify-center shadow-sm flex-shrink-0">
+                      <Briefcase className="h-5 w-5 text-primary" />
+                    </div>
+                    <div>
+                      <p className="text-[7px] font-black text-on-surface-muted uppercase tracking-widest leading-none mb-1.5">{T.service}</p>
+                      <p className="text-xs font-black text-on-surface leading-none uppercase">{appointment.services?.name}</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-4 p-3 rounded-xl bg-surface border border-on-surface/5">
+                    <div className="h-10 w-10 rounded-lg bg-white flex items-center justify-center shadow-sm flex-shrink-0">
+                      <User className="h-5 w-5 text-primary" />
+                    </div>
+                    <div>
+                      <p className="text-[7px] font-black text-on-surface-muted uppercase tracking-widest leading-none mb-1.5">{T.professional}</p>
+                      <p className="text-xs font-black text-on-surface leading-none uppercase">{appointment.professionals?.full_name || T.unassigned || 'Unassigned'}</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-4 p-3 rounded-xl bg-surface border border-on-surface/5">
+                    <div className="h-10 w-10 rounded-lg bg-white flex items-center justify-center shadow-sm flex-shrink-0">
+                      <Phone className="h-5 w-5 text-primary" />
+                    </div>
+                    <div>
+                      <p className="text-[7px] font-black text-on-surface-muted uppercase tracking-widest leading-none mb-1.5">{T.contact}</p>
+                      {appointment.clients?.phone ? (
+                        <a href={`tel:${appointment.clients.phone}`} className="text-xs font-black text-on-surface leading-none hover:text-primary transition-colors tracking-tight">
+                          {appointment.clients.phone}
+                        </a>
+                      ) : (
+                        <p className="text-xs font-black text-on-surface/30 leading-none">{T.no_phone || 'No phone'}</p>
+                      )}
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-[7px] font-black text-on-surface/30 uppercase tracking-widest leading-none mb-1">{T.professional}</p>
-                  <p className="text-[11px] font-black text-on-surface leading-none">{appointment.professionals?.full_name || T.unassigned || 'Unassigned'}</p>
-                </div>
+              </section>
+
+              {/* Notes Section */}
+              {appointment.notes && (
+                <section className="space-y-2">
+                  <h4 className="text-[8px] font-black text-on-surface/20 uppercase tracking-[0.3em] ml-1">{T.clinical_notes}</h4>
+                  <div className="p-5 rounded-2xl bg-primary/5 border border-primary/10 relative overflow-hidden group">
+                    <MessageSquare className="absolute -right-2 -bottom-2 h-16 w-16 text-primary/[0.03] rotate-12" />
+                    <p className="text-xs font-medium text-on-surface/70 leading-relaxed italic relative z-10">
+                      "{appointment.notes}"
+                    </p>
+                  </div>
+                </section>
+              )}
+
+              {appointment.cancellation_reason && (
+                <section className="space-y-2">
+                  <h4 className="text-[8px] font-black text-error/40 uppercase tracking-[0.3em] ml-1">{T.cancellation_reason_title}</h4>
+                  <div className="p-5 rounded-2xl bg-error/5 border border-error/10">
+                    <p className="text-xs font-bold text-error/70 leading-relaxed uppercase tracking-tight">
+                      {appointment.cancellation_reason}
+                    </p>
+                  </div>
+                </section>
+              )}
+            </div>
+
+            {/* FOOTER SECTION */}
+            <div className="p-4 md:p-6 border-t border-on-surface/5 bg-precision-surface-lowest flex flex-col md:flex-row items-center justify-between gap-4">
+              <div className="flex items-center gap-3 w-full md:w-auto">
+                {!isCancelled && (
+                  <button 
+                    onClick={cancelAppointment}
+                    className="flex items-center gap-2.5 px-5 py-2.5 rounded-xl text-[10px] font-black text-red-600 bg-red-50 hover:bg-red-100 border border-red-200 transition-all uppercase tracking-widest shadow-sm active:scale-95"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                    {T.cancel_btn}
+                  </button>
+                )}
+                {isCancelled && (
+                   <button 
+                    onClick={handleMarkNotified}
+                    disabled={updating}
+                    className="flex items-center gap-2.5 px-5 py-2.5 rounded-xl text-[10px] font-black text-primary bg-primary/5 hover:bg-primary/10 border border-primary/20 transition-all uppercase tracking-widest shadow-sm active:scale-95"
+                  >
+                    <CheckCircle className="h-4 w-4" />
+                    {T.mark_rescheduled_btn}
+                  </button>
+                )}
               </div>
 
-              <div className="flex items-center gap-3 p-3 rounded-xl bg-on-surface/[0.02] border border-on-surface/5">
-                <div className="h-8 w-8 rounded-lg bg-white flex items-center justify-center shadow-sm flex-shrink-0">
-                  <Phone className="h-3.5 w-3.5 text-primary" />
-                </div>
-                <div>
-                  <p className="text-[7px] font-black text-on-surface/30 uppercase tracking-widest leading-none mb-1">{T.contact}</p>
-                  {appointment.clients?.phone ? (
-                    <a href={`tel:${appointment.clients.phone}`} className="text-[11px] font-black text-on-surface leading-none hover:text-primary transition-colors">
-                      {appointment.clients.phone}
-                    </a>
-                  ) : (
-                    <p className="text-[11px] font-black text-on-surface/30 leading-none">{T.no_phone || 'No phone'}</p>
-                  )}
-                </div>
+              <div className="flex items-center gap-3 w-full md:w-auto">
+                <button 
+                  onClick={() => onReschedule(appointment)}
+                  className="flex-1 md:flex-none px-6 py-2.5 rounded-lg text-[9px] font-black uppercase tracking-widest text-on-surface-muted hover:text-on-surface hover:bg-on-surface/5 transition-all"
+                >
+                  {T.reschedule}
+                </button>
+                
+                {!isCancelled && (
+                  <button 
+                    onClick={handleToggleAttended}
+                    disabled={updating}
+                    className="flex-1 md:flex-none flex items-center justify-center gap-2 px-8 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all active:scale-95 disabled:opacity-50 shadow-spatial bg-on-surface text-surface hover:bg-primary hover:text-white"
+                  >
+                    {updating ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle className="h-4 w-4" />}
+                    <span>
+                      {appointment.status === 'attended' ? (T.mark_confirmed_btn || 'Confirmar') : (T.mark_attended_btn || 'Atendido')}
+                    </span>
+                  </button>
+                )}
               </div>
             </div>
-          </div>
-
-          {/* Notes - Compact */}
-          {appointment.notes && (
-            <div className="space-y-2">
-              <h4 className="text-[8px] font-black text-on-surface/20 uppercase tracking-[0.3em] ml-1">{T.clinical_notes}</h4>
-              <div className="p-4 rounded-2xl bg-primary/5 border border-primary/10">
-                <p className="text-[10px] font-medium text-on-surface/70 leading-relaxed italic">
-                  "{appointment.notes}"
-                </p>
-              </div>
-            </div>
-          )}
-
-          {appointment.cancellation_reason && (
-            <div className="space-y-2">
-              <h4 className="text-[8px] font-black text-error/40 uppercase tracking-[0.3em] ml-1">{T.cancellation_reason_title}</h4>
-              <div className="p-4 rounded-2xl bg-error/5 border border-error/10">
-                <p className="text-[10px] font-bold text-error/70 leading-relaxed">
-                  {appointment.cancellation_reason}
-                </p>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Footer Actions */}
-        <div className="p-6 bg-on-surface/[0.02] border-t border-on-surface/5 space-y-3">
-          <div className="flex flex-col gap-3">
-            {isCancelled && (
-              <button 
-                onClick={handleMarkNotified}
-                disabled={updating}
-                className="w-full py-4 rounded-xl bg-primary text-white font-black text-[9px] uppercase tracking-[0.2em] hover:opacity-90 transition-all flex items-center justify-center gap-2 shadow-lg shadow-primary/20"
-              >
-                <CheckCircle className="h-3.5 w-3.5" /> {T.mark_rescheduled_btn}
-              </button>
-            )}
-
-            {!isCancelled && (
-              <button 
-                onClick={handleToggleAttended}
-                disabled={updating}
-                className="w-full py-4 rounded-xl bg-emerald-500 text-white font-black text-[9px] uppercase tracking-[0.2em] hover:opacity-90 transition-all flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20"
-              >
-                <CheckCircle className="h-3.5 w-3.5" /> 
-                {appointment.status === 'attended' ? (T.mark_confirmed_btn || 'Mark as Confirmed') : (T.mark_attended_btn || 'Mark as Attended')}
-              </button>
-            )}
-
-            <button 
-              onClick={() => onReschedule(appointment)}
-              className="w-full py-4 rounded-xl bg-primary text-white font-black text-[9px] uppercase tracking-[0.2em] hover:opacity-90 transition-all flex items-center justify-center gap-2"
-            >
-              <RotateCcw className="h-3.5 w-3.5" /> {T.reschedule}
-            </button>
-          </div>
-
-          {!isCancelled && (
-            <button 
-              onClick={cancelAppointment}
-              className="w-full py-4 rounded-xl bg-error/5 text-error font-black text-[9px] uppercase tracking-[0.2em] hover:bg-error hover:text-white transition-all flex items-center justify-center gap-2"
-            >
-              <Trash2 className="h-3.5 w-3.5" /> {T.cancel_btn}
-            </button>
-          )}
-        </div>
           </>
         )}
       </motion.div>
