@@ -1,6 +1,6 @@
 "use client"
 
-import { X, User, Phone, Briefcase, MessageSquare, Trash2, Calendar, Clock, ChevronRight, CheckCircle, RotateCcw } from 'lucide-react'
+import { X, User, Phone, Briefcase, MessageSquare, Trash2, Calendar, Clock, ChevronRight, CheckCircle, RotateCcw, Loader2 } from 'lucide-react'
 import { Appointment } from '@/hooks/useAppointments'
 import { motion, AnimatePresence } from 'framer-motion'
 import { format, parseISO } from 'date-fns'
