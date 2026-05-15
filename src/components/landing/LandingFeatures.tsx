@@ -28,20 +28,13 @@ export function LandingFeatures() {
       desc: 'Vista semanal con todos los turnos organizados por profesional. Colores por estado y arrastre para reprogramar.',
       icon: BarChart3,
       preview: <CalendarPreview />,
-      className: 'md:col-span-8 md:row-span-2',
+      className: 'md:col-span-8',
     },
     {
       title: 'WhatsApp AI',
       desc: 'Confirmaciones automáticas, recordatorios y cancelaciones vía WhatsApp sin intervención humana.',
       icon: MessageCircle,
       preview: <WhatsAppPreview />,
-      className: 'md:col-span-4',
-    },
-    {
-      title: 'Historias Clínicas',
-      desc: 'Registro completo de cada paciente con diagnósticos, prescripciones y notas médicas.',
-      icon: BrainCircuit,
-      preview: <ClinicalRecordPreview />,
       className: 'md:col-span-4',
     },
     {
@@ -59,10 +52,10 @@ export function LandingFeatures() {
       className: 'md:col-span-4',
     },
     {
-      title: 'Multi-ubicación',
-      desc: 'Gestioná múltiples sucursales desde un solo panel con sincronización en tiempo real.',
-      icon: ShieldCheck,
-      preview: null,
+      title: 'Historias Clínicas',
+      desc: 'Registro completo de cada paciente con diagnósticos, prescripciones y notas médicas.',
+      icon: BrainCircuit,
+      preview: <ClinicalRecordPreview />,
       className: 'md:col-span-4',
     },
   ];
