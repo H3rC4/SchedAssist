@@ -263,7 +263,7 @@ export class AppointmentService {
       supabase.from('tenants').select('timezone').eq('id', params.tenant_id).single(),
     ])
 
-    if (fetchError || !appointment) throw new Error('Cita no encontrada.')
+    if (!appointment) throw new Error('Cita no encontrada.')
 
     // 2. 24-hour rule check — compare in tenant's timezone, not server timezone
     const tz = tenantCfg?.timezone || 'UTC'
