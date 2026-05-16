@@ -1,51 +1,126 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Check, Sparkles, ChevronRight, HelpCircle } from 'lucide-react';
+import { Check, Sparkles, ChevronRight, HelpCircle, Globe } from 'lucide-react';
 import Link from 'next/link';
 import { useLandingTranslation } from '../LanguageContext';
 import { MagneticWrapper, TiltCard } from './Animations';
+import { PlanTier } from '@/types';
+
+// Pricing config for both markets
+const PRICING = {
+  AR: {
+    currency: 'ARS',
+    plans: [
+      { tier: 'basic' as PlanTier, monthly: 60000, yearly: 600000, cta: 'Comenzar' },
+      { tier: 'pro' as PlanTier, monthly: 90000, yearly: 900000, cta: 'Elegir Pro' },
+      { tier: 'premium' as PlanTier, monthly: 195000, yearly: 1950000, cta: 'Elegir Premium' },
+    ],
+  },
+  default: {
+    currency: 'USD',
+    plans: [
+      { tier: 'basic' as PlanTier, monthly: 39, yearly: 390, cta: 'Get Started' },
+      { tier: 'pro' as PlanTier, monthly: 59, yearly: 590, cta: 'Choose Pro' },
+      { tier: 'premium' as PlanTier, monthly: 129, yearly: 1161, cta: 'Choose Premium' },
+    ],
+  },
+};
+
+const PLAN_FEATURES: Record<PlanTier, string[]> = {
+  basic: [
+    '1 profesional',
+    'Servicios ilimitados',
+    '1 ubicación',
+    '150 turnos/mes',
+    '200 pacientes',
+    'WhatsApp básico',
+    'Soporte por email',
+  ],
+  pro: [
+    '5 profesionales',
+    'Servicios ilimitados',
+    '2 ubicaciones',
+    'Turnos ilimitados',
+    'Pacientes ilimitados',
+    'WhatsApp automatizado',
+    'Soporte email + WhatsApp',
+    'API access',
+  ],
+  premium: [
+    'Profesionales ilimitados',
+    'Servicios ilimitados',
+    'Ubicaciones ilimitadas',
+    'Turnos ilimitados',
+    'Pacientes ilimitados',
+    'WhatsApp multi-agente',
+    'Soporte dedicado',
+    'API + Webhooks',
+    'Dominio personalizado',
+    'White-label',
+  ],
+};
 
 export function LandingPricing() {
   const { t } = useLandingTranslation();
+  const [country, setCountry] = useState<string>('default');
+  const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
+  const [detectedCountry, setDetectedCountry] = useState<string>('');
+
+  useEffect(() => {
+    // Detect country by IP
+    async function detectCountry() {
+      try {
+        const res = await fetch('https://ipapi.co/json/');
+        const data = await res.json();
+        if (data.country_code === 'AR') {
+          setCountry('AR');
+          setDetectedCountry('Argentina');
+        }
+      } catch {
+        // Fallback: default (USD)
+      }
+    }
+    detectCountry();
+  }, []);
+
+  const isAR = country === 'AR';
+  const pricing = isAR ? PRICING.AR : PRICING.default;
+
+  const formatPrice = (amount: number) => {
+    if (isAR) {
+      return amount.toLocaleString('es-AR');
+    }
+    return amount.toString();
+  };
+
+  const formatYearlySavings = (monthly: number, yearly: number) => {
+    const yearlyEquivalent = monthly * 12;
+    const savings = yearlyEquivalent - yearly;
+    if (isAR) {
+      return `Ahorrá $${savings.toLocaleString('es-AR')} ARS/año`;
+    }
+    return `Save $${savings}/year`;
+  };
 
   const plans = [
     {
+      ...pricing.plans[0],
       name: t.plan_starter || 'Starter',
-      price: t.price_starter || '29',
-      cta: t.pricing_cta_starter || 'Comenzar',
-      features: [
-        t.feat_appointments_limit || 'Hasta 100 turnos/mes',
-        t.feat_whatsapp_basic || 'WhatsApp básico',
-        t.feat_clinical_records || 'Historias clínicas',
-        t.feat_email_support || 'Soporte por email',
-      ],
+      features: PLAN_FEATURES.basic,
       popular: false,
     },
     {
+      ...pricing.plans[1],
       name: t.plan_pro || 'Pro',
-      price: t.price_pro || '49',
-      cta: t.pricing_cta_pro || 'Elegir Pro',
-      features: [
-        t.feat_appointments_unlimited || 'Turnos ilimitados',
-        t.feat_whatsapp_ai || 'WhatsApp con IA',
-        t.feat_multi_professional || 'Hasta 5 profesionales',
-        t.feat_clinical_records || 'Historias clínicas',
-        t.feat_priority_support || 'Soporte prioritario',
-      ],
+      features: PLAN_FEATURES.pro,
       popular: true,
     },
     {
+      ...pricing.plans[2],
       name: t.plan_premium || 'Premium',
-      price: t.price_premium || '99',
-      cta: t.pricing_cta_premium || 'Elegir Premium',
-      features: [
-        t.feat_appointments_unlimited || 'Turnos ilimitados',
-        t.feat_whatsapp_ai || 'WhatsApp con IA',
-        t.feat_unlimited_professionals || 'Profesionales ilimitados',
-        t.feat_custom_domain || 'Dominio personalizado',
-        t.feat_priority_support || 'Soporte prioritario',
-      ],
+      features: PLAN_FEATURES.premium,
       popular: false,
     },
   ];
@@ -96,10 +171,60 @@ export function LandingPricing() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.2 }}
-            className="text-lg text-[#191c1e]/60 max-w-2xl mx-auto"
+            className="text-lg text-[#191c1e]/60 max-w-2xl mx-auto mb-8"
           >
             {t.pricing_subtitle || 'Empieza gratis. Crece con tu clínica.'}
           </motion.p>
+
+          {/* Country Selector */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            className="flex flex-col sm:flex-row items-center justify-center gap-4"
+          >
+            {/* Billing Cycle Toggle */}
+            <div className="inline-flex items-center gap-1 p-1 bg-[#f7f9fb] rounded-full border border-[#005c55]/10">
+              <button
+                onClick={() => setBillingCycle('monthly')}
+                className={`px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-widest transition-all ${
+                  billingCycle === 'monthly' 
+                    ? 'bg-[#005c55] text-white' 
+                    : 'text-[#191c1e]/40 hover:text-[#191c1e]'
+                }`}
+              >
+                Mensual
+              </button>
+              <button
+                onClick={() => setBillingCycle('yearly')}
+                className={`px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-widest transition-all ${
+                  billingCycle === 'yearly' 
+                    ? 'bg-[#005c55] text-white' 
+                    : 'text-[#191c1e]/40 hover:text-[#191c1e]'
+                }`}
+              >
+                Anual
+              </button>
+            </div>
+
+            {/* Country Selector */}
+            <div className="inline-flex items-center gap-2">
+              <Globe className="h-4 w-4 text-[#005c55]" />
+              <select
+                value={country}
+                onChange={(e) => setCountry(e.target.value)}
+                className="bg-transparent text-[10px] font-black uppercase tracking-widest text-[#005c55] border-none outline-none cursor-pointer"
+              >
+                <option value="default">🌍 International (USD)</option>
+                <option value="AR">🇦🇷 Argentina (ARS)</option>
+              </select>
+              {detectedCountry && (
+                <span className="text-[9px] text-[#005c55]/60">
+                  (Detectado: {detectedCountry})
+                </span>
+              )}
+            </div>
+          </motion.div>
         </div>
 
         {/* Pricing Cards */}
@@ -137,14 +262,22 @@ export function LandingPricing() {
                       <span className={`text-5xl font-black tracking-tighter ${
                         plan.popular ? 'text-white' : 'text-[#191c1e]'
                       }`}>
-                        ${plan.price}
+                        {pricing.currency === 'ARS' ? '$' : '$'}
+                        {formatPrice(billingCycle === 'monthly' ? plan.monthly : plan.yearly)}
                       </span>
                       <span className={`text-xs font-bold ${
                         plan.popular ? 'text-white/40' : 'text-[#191c1e]/40'
                       }`}>
-                        {t.pricing_period || '/mes'}
+                        {billingCycle === 'monthly' ? '/mes' : '/año'}
                       </span>
                     </div>
+                    {billingCycle === 'yearly' && (
+                      <p className={`text-[10px] font-bold mt-2 ${
+                        plan.popular ? 'text-emerald-400' : 'text-emerald-600'
+                      }`}>
+                        {formatYearlySavings(plan.monthly, plan.yearly)}
+                      </p>
+                    )}
                   </div>
 
                   <ul className="flex flex-col gap-4 mb-12 flex-1">
@@ -166,7 +299,7 @@ export function LandingPricing() {
 
                   <MagneticWrapper>
                     <Link
-                      href="/register"
+                      href={`/register?plan=${plan.tier}&cycle=${billingCycle}&country=${country}`}
                       className={`w-full py-5 rounded-2xl text-[10px] font-black uppercase tracking-[0.3em] transition-all flex items-center justify-center gap-2 group ${
                         plan.popular
                           ? 'bg-[#005c55] text-white shadow-xl shadow-[#005c55]/20 hover:bg-[#0d9488] hover:scale-[1.02]'
@@ -215,7 +348,10 @@ export function LandingPricing() {
           className="mt-20 text-center"
         >
           <p className="text-[10px] font-black text-[#005c55]/40 uppercase tracking-[0.4em]">
-            {t.pricing_save || 'Ahorrá 20% con pago anual'}
+            {isAR 
+              ? 'Precios en pesos argentinos. IVA incluido.' 
+              : 'Prices in USD. Taxes may apply depending on your country.'
+            }
           </p>
         </motion.div>
       </div>

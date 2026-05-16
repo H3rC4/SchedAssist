@@ -11,14 +11,23 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
 
-    // Obtener el stripe_customer_id del tenant
+    // Obtener el tenant del usuario
     const { data: tenantUser } = await supabase
       .from('tenant_users')
-      .select('tenants(stripe_customer_id)')
+      .select('tenants(stripe_customer_id, payment_gateway)')
       .eq('user_id', user.id)
       .single();
 
-    const customerId = (tenantUser?.tenants as any)?.stripe_customer_id;
+    const tenant = tenantUser?.tenants as any;
+    const customerId = tenant?.stripe_customer_id;
+    const paymentGateway = tenant?.payment_gateway;
+
+    // Si usa Mercado Pago, el portal de Stripe no aplica
+    if (paymentGateway === 'mercadopago') {
+      return NextResponse.json({ 
+        error: 'El portal de administración de Stripe no está disponible para pagos de Mercado Pago. Contacta soporte para gestionar tu suscripción.'
+      }, { status: 400 });
+    }
 
     if (!customerId) {
       return NextResponse.json({ error: 'No se encontró suscripción activa para este cliente.' }, { status: 404 });

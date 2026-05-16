@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { stripe } from '@/lib/stripe';
 import { createClient } from '@/lib/supabase/server';
 
 export async function GET(req: NextRequest) {
@@ -11,36 +10,55 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
 
-    // Obtener el stripe_customer_id del tenant
+    // Obtener el tenant del usuario
     const { data: tenantUser } = await supabase
       .from('tenant_users')
-      .select('tenants(stripe_customer_id, stripe_subscription_id)')
+      .select('tenant_id')
       .eq('user_id', user.id)
       .single();
 
-    const customerId = (tenantUser?.tenants as any)?.stripe_customer_id;
-
-    if (!customerId) {
+    if (!tenantUser) {
       return NextResponse.json({ invoices: [] });
     }
 
-    // Listar facturas de Stripe
-    const invoices = await stripe.invoices.list({
-      customer: customerId,
-      limit: 50,
-    });
+    const tenantId = tenantUser.tenant_id;
+
+    // Obtener pagos de la tabla payments (universal, ambos gateways)
+    const { data: payments, error: paymentsError } = await supabase
+      .from('payments')
+      .select('*')
+      .eq('tenant_id', tenantId)
+      .order('created_at', { ascending: false })
+      .limit(50);
+
+    if (paymentsError) {
+      console.error('Error fetching payments:', paymentsError);
+      return NextResponse.json({ error: paymentsError.message }, { status: 500 });
+    }
 
     // Formatear las facturas para el frontend
-    const formattedInvoices = invoices.data.map((invoice) => ({
-      id: invoice.number || invoice.id,
-      date: new Date(invoice.created * 1000).toLocaleDateString('it-IT', {
+    const formattedInvoices = (payments || []).map((payment: any) => ({
+      id: payment.id.substring(0, 8),
+      gateway: payment.gateway,
+      date: new Date(payment.created_at).toLocaleDateString('it-IT', {
         day: 'numeric',
         month: 'short',
         year: 'numeric',
       }),
-      amount: `$${(invoice.total / 100).toFixed(2)}`,
-      status: invoice.status,
-      pdfUrl: invoice.invoice_pdf,
+      amount: payment.currency === 'ARS' 
+        ? `$${payment.amount.toLocaleString('es-AR')}`
+        : `$${payment.amount.toFixed(2)}`,
+      currency: payment.currency,
+      status: payment.status,
+      plan: payment.plan_tier,
+      cycle: payment.billing_cycle,
+      receiptUrl: payment.receipt_url,
+      periodStart: payment.billing_period_start 
+        ? new Date(payment.billing_period_start).toLocaleDateString('it-IT') 
+        : null,
+      periodEnd: payment.billing_period_end 
+        ? new Date(payment.billing_period_end).toLocaleDateString('it-IT') 
+        : null,
     }));
 
     return NextResponse.json({ invoices: formattedInvoices });

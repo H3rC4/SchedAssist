@@ -4,18 +4,99 @@ export type UserRole = "tenant_admin" | "secretary" | "professional";
 export type AppointmentStatus = "pending" | "confirmed" | "awaiting_confirmation" | "cancelled" | "completed" | "no_show" | "rescheduled";
 export type AppointmentSource = "dashboard" | "whatsapp" | "telegram" | (string & {});
 
+// Plan & Gateway Types
+export type PlanTier = 'basic' | 'pro' | 'premium';
+export type PaymentGateway = 'stripe' | 'mercadopago';
+export type BillingCycle = 'monthly' | 'yearly';
+
 export interface Tenant {
   id: string;
   name: string;
   slug: string;
   timezone: string;
   settings: Record<string, any>;
+  
+  // Plan & Gateway
+  plan_tier?: PlanTier;
+  payment_gateway?: PaymentGateway;
+  billing_cycle?: BillingCycle;
+  
+  // Stripe
   stripe_customer_id?: string;
   stripe_subscription_id?: string;
   subscription_status?: string;
   subscription_price_id?: string;
+  
+  // Mercado Pago
+  mp_customer_id?: string;
+  mp_subscription_id?: string;
+  mp_plan_id?: string;
+  
+  // Limits
+  max_professionals?: number;
+  max_services?: number;
+  max_locations?: number;
+  max_appointments_per_month?: number;
+  max_patients?: number;
+  
+  // Features
+  custom_domain_enabled?: boolean;
+  white_label_enabled?: boolean;
+  api_access_enabled?: boolean;
+  analytics_tier?: 'basic' | 'advanced' | 'custom';
+  
+  // WhatsApp
+  whatsapp_numbers_count?: number;
+  whatsapp_numbers_limit?: number;
+  
   created_at: string;
   updated_at: string;
+}
+
+export interface PlanConfig {
+  tier: PlanTier;
+  name: string;
+  stripe_price_monthly?: string;
+  stripe_price_yearly?: string;
+  mp_plan_monthly?: string;
+  mp_plan_yearly?: string;
+  max_professionals: number;
+  max_services: number;
+  max_locations: number;
+  max_appointments_per_month: number;
+  max_patients: number;
+  custom_domain_enabled: boolean;
+  white_label_enabled: boolean;
+  api_access_enabled: boolean;
+  analytics_tier: 'basic' | 'advanced' | 'custom';
+  whatsapp_numbers_limit: number;
+}
+
+export interface Payment {
+  id: string;
+  tenant_id: string;
+  gateway: PaymentGateway;
+  gateway_payment_id: string;
+  amount: number;
+  currency: string;
+  status: string;
+  billing_period_start?: string;
+  billing_period_end?: string;
+  plan_tier: PlanTier;
+  billing_cycle: BillingCycle;
+  receipt_url?: string;
+  metadata: Record<string, any>;
+  created_at: string;
+}
+
+export interface WhatsappNumber {
+  id: string;
+  tenant_id: string;
+  phone_number: string;
+  whapi_instance_id?: string;
+  is_primary: boolean;
+  is_active: boolean;
+  created_at: string;
 }
 
 export interface TenantUser {

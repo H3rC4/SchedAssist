@@ -16,6 +16,11 @@ node_modules
 .env.production.local
 *.env*
 
+# NEVER commit credentials or secrets
+*.key
+*.pem
+secrets/
+
 # AGENTS / SKILLS
 .agent
 .agents
@@ -41,3 +46,4 @@ Thumbs.db
 # SCRATCH / BUILD INFO
 scratch/
 *.tsbuildinfo
+Marketing SaaS
