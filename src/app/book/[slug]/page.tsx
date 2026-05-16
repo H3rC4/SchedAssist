@@ -153,55 +153,36 @@ export default function BookingPage() {
   const handleBooking = async () => {
     setBookingStatus('loading')
     try {
-      // 1. Create or Find Client
-      let clientId: string
-      const { data: existingClient } = await supabase
-        .from('clients')
-        .select('id')
-        .eq('tenant_id', tenant.id)
-        .eq('phone', clientInfo.phone)
-        .single()
-
-      if (existingClient) {
-        clientId = existingClient.id
-      } else {
-        const { data: newClient, error: cErr } = await supabase
-          .from('clients')
-          .insert([{
-            tenant_id: tenant.id,
-            first_name: clientInfo.firstName,
-            last_name: clientInfo.lastName,
-            email: clientInfo.email,
-            phone: clientInfo.phone
-          }])
-          .select()
-          .single()
-        
-        if (cErr) throw cErr
-        clientId = newClient.id
-      }
-
-      // 2. Create Appointment
-      const startAt = `${format(selectedDate, 'yyyy-MM-dd')}T${selectedSlot}:00Z`
+      // 1. Prepare floating time strings
+      const startAt = `${format(selectedDate, 'yyyy-MM-dd')}T${selectedSlot}:00`
       const duration = selectedService.duration_minutes || 30
-      const endAt = new Date(parseISO(startAt).getTime() + duration * 60000).toISOString()
+      const endAtDate = new Date(parseISO(startAt).getTime() + duration * 60000)
+      const endAt = format(endAtDate, "yyyy-MM-dd'T'HH:mm:ss")
 
-      const { error: appErr } = await supabase
-        .from('appointments')
-        .insert([{
+      // 2. Call the public API route (which handles TZ conversion and client creation)
+      const response = await fetch('/api/appointments/public', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
           tenant_id: tenant.id,
-          client_id: clientId,
           professional_id: selectedProfessional.id,
           service_id: selectedService.id,
           location_id: selectedLocation?.id || null,
           start_at: startAt,
           end_at: endAt,
-          status: 'pending',
-          source: 'public_portal',
-          notes: clientInfo.notes
-        }])
+          notes: clientInfo.notes,
+          first_name: clientInfo.firstName,
+          last_name: clientInfo.lastName,
+          email: clientInfo.email,
+          phone: clientInfo.phone
+        })
+      })
 
-      if (appErr) throw appErr
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to book appointment')
+      }
+
       setBookingStatus('success')
     } catch (err) {
       console.error(err)

@@ -78,8 +78,9 @@ export function QuickAppointmentDrawer({
     const service = services.find(s => s.id === formData.service_id)
     const duration = service?.duration || 30
     
-    const start_at = `${date}T${time}:00Z`
-    const end_at = addMinutes(new Date(start_at), duration).toISOString()
+    const start_at = `${date}T${time}:00`
+    const end_at_date = addMinutes(new Date(start_at + 'Z'), duration)
+    const end_at = format(end_at_date, "yyyy-MM-dd'T'HH:mm:ss")
 
     try {
       const res = await fetch('/api/appointments', {
