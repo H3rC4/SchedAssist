@@ -124,7 +124,7 @@ export function LandingHero() {
             initial={{ opacity: 0, scale: 0.9, rotateY: 15 }}
             animate={{ opacity: 1, scale: 1, rotateY: 0 }}
             transition={{ duration: 1, ease: "easeOut", delay: 0.4 }}
-            className="hidden lg:block perspective-[2000px]"
+            className="hidden lg:block perspective-[2000px] lg:-mt-16"
           >
             <div className="relative group">
               {/* Glow */}
