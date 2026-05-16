@@ -28,48 +28,48 @@ const PRICING = {
   },
 };
 
-const PLAN_FEATURES: Record<PlanTier, string[]> = {
+const getPlanFeatures = (t: any): Record<PlanTier, string[]> => ({
   basic: [
-    '1 profesional',
-    'Servicios ilimitados',
-    '1 ubicación',
-    '150 turnos/mes',
-    '200 pacientes',
-    'WhatsApp incluido',
-    'Recordatorios automáticos',
-    'Historias clínicas básicas',
-    'Soporte por email',
+    t.feat_1_professional || '1 professional',
+    t.feat_unlimited_services || 'Unlimited services',
+    t.feat_1_location || '1 location',
+    t.feat_150_appointments || '150 appointments/month',
+    t.feat_200_patients || '200 patients',
+    t.feat_whatsapp_included || 'WhatsApp included',
+    t.feat_automated_reminders || 'Automated reminders',
+    t.feat_basic_clinical_records || 'Basic clinical records',
+    t.feat_email_support || 'Email support',
   ],
   pro: [
-    '5 profesionales',
-    'Servicios ilimitados',
-    '2 ubicaciones',
-    'Turnos ilimitados',
-    'Pacientes ilimitados',
-    'WhatsApp incluido',
-    'Recordatorios automáticos',
-    'Historias clínicas completas',
-    'Lista de espera',
-    'API access',
-    'Soporte por email',
+    t.feat_5_professionals || 'Up to 5 professionals',
+    t.feat_unlimited_services || 'Unlimited services',
+    t.feat_2_locations || 'Up to 2 locations',
+    t.feat_unlimited_appointments || 'Unlimited appointments',
+    t.feat_unlimited_patients || 'Unlimited patients',
+    t.feat_whatsapp_included || 'WhatsApp included',
+    t.feat_automated_reminders || 'Automated reminders',
+    t.feat_complete_clinical_records || 'Complete clinical records',
+    t.feat_waitlist || 'Waitlist',
+    t.feat_api_access || 'API access',
+    t.feat_email_support || 'Email support',
   ],
   premium: [
-    'Profesionales ilimitados',
-    'Servicios ilimitados',
-    'Ubicaciones ilimitadas',
-    'Turnos ilimitados',
-    'Pacientes ilimitados',
-    'WhatsApp incluido',
-    'Recordatorios automáticos',
-    'Historias clínicas avanzadas',
-    'Lista de espera',
-    'API + Webhooks',
-    'Analytics custom',
-    'Dominio personalizado',
-    'White-label',
-    'Soporte por email',
+    t.feat_unlimited_professionals || 'Unlimited professionals',
+    t.feat_unlimited_services || 'Unlimited services',
+    t.feat_unlimited_locations || 'Unlimited locations',
+    t.feat_unlimited_appointments || 'Unlimited appointments',
+    t.feat_unlimited_patients || 'Unlimited patients',
+    t.feat_whatsapp_included || 'WhatsApp included',
+    t.feat_automated_reminders || 'Automated reminders',
+    t.feat_advanced_clinical_records || 'Advanced clinical records',
+    t.feat_waitlist || 'Waitlist',
+    t.feat_api_webhooks || 'API + Webhooks',
+    t.feat_custom_analytics || 'Custom analytics',
+    t.feat_custom_domain || 'Custom domain',
+    t.feat_white_label || 'White-label',
+    t.feat_email_support || 'Email support',
   ],
-};
+});
 
 export function LandingPricing() {
   const { t } = useLandingTranslation();
@@ -113,6 +113,8 @@ export function LandingPricing() {
     return `Save $${savings}/year`;
   };
 
+  const PLAN_FEATURES = getPlanFeatures(t);
+  
   const plans = [
     {
       ...pricing.plans[0],

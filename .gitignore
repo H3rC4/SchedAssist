@@ -47,3 +47,6 @@ Thumbs.db
 scratch/
 *.tsbuildinfo
 Marketing SaaS
+
+# NEXT STEPS / TODOS
+.next-steps/

@@ -9,13 +9,19 @@ interface PlanLimitReachedProps {
   current: number;
   limit: number;
   upgradePlan?: string;
+  translations?: {
+    limit_reached?: string;
+    limit_message?: string;
+    upgrade_plan?: string;
+  };
 }
 
 export function PlanLimitReached({ 
   feature, 
   current, 
   limit, 
-  upgradePlan = 'pro' 
+  upgradePlan = 'pro',
+  translations: t
 }: PlanLimitReachedProps) {
   const router = useRouter();
 
@@ -31,18 +37,20 @@ export function PlanLimitReached({
         </div>
         <div className="flex-1">
           <h3 className="text-sm font-black text-amber-800 uppercase tracking-wider">
-            Límite alcanzado
+            {t?.limit_reached || 'Límite alcanzado'}
           </h3>
           <p className="mt-2 text-sm text-amber-700 leading-relaxed">
-            Has alcanzado el límite de <strong>{limit}</strong> {feature}. 
-            Actualmente tienes <strong>{current}</strong> {feature}.
+            {t?.limit_message 
+              ? t.limit_message.replace('{limit}', String(limit)).replace('{feature}', feature).replace('{current}', String(current))
+              : <>Has alcanzado el límite de <strong>{limit}</strong> {feature}. Actualmente tienes <strong>{current}</strong> {feature}.</>
+            }
           </p>
           <div className="mt-4">
             <button
               onClick={() => router.push(`/dashboard/settings/billing?upgrade=${upgradePlan}`)}
               className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-white text-xs font-black uppercase tracking-widest transition-all hover:bg-primary-light hover:scale-[1.02] active:scale-95"
             >
-              <span>Actualizar Plan</span>
+              <span>{t?.upgrade_plan || 'Actualizar Plan'}</span>
               <ArrowUpRight className="h-3.5 w-3.5" />
             </button>
           </div>
