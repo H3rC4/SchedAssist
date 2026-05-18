@@ -50,8 +50,8 @@ export const TiltCard = ({ children, className = "" }: Props) => {
   const mouseXSpring = useSpring(x);
   const mouseYSpring = useSpring(y);
 
-  const rotateX = useTransform(mouseYSpring, [-0.5, 0.5], ["10deg", "-10deg"]);
-  const rotateY = useTransform(mouseXSpring, [-0.5, 0.5], ["-10deg", "10deg"]);
+  const rotateX = useTransform(mouseYSpring, [-0.5, 0.5], ["3deg", "-3deg"]);
+  const rotateY = useTransform(mouseXSpring, [-0.5, 0.5], ["-3deg", "3deg"]);
 
   const handleMouseMove = (e: React.MouseEvent) => {
     if (!e.currentTarget) return;
@@ -82,7 +82,7 @@ export const TiltCard = ({ children, className = "" }: Props) => {
       }}
       className={className}
     >
-      <div className="h-full" style={{ transform: "translateZ(50px)" }}>
+      <div className="h-full" style={{ transform: "translateZ(20px)" }}>
         {children}
       </div>
     </motion.div>

@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { Payment } from 'mercadopago';
+import { Payment, PreApproval } from 'mercadopago';
 import { mpClient } from '@/lib/mercadopago';
 import { createClient } from '@supabase/supabase-js';
+import { NotificationService } from '@/services/notification.service';
+import { translations, Language } from '@/lib/i18n';
 
 // Cliente con service role para saltar RLS
 const supabase = createClient(
@@ -84,6 +86,33 @@ export async function POST(req: NextRequest) {
           console.error('Error updating tenant:', updateError);
         } else {
           console.log(`Tenant ${tenantId} activated with plan ${tenant.plan_tier}`);
+
+          // Enviar notificación in-app de activación de plan
+          try {
+            const { data: tenantCfg } = await supabase
+              .from('tenants')
+              .select('settings')
+              .eq('id', tenantId)
+              .single();
+
+            const lang: Language = (tenantCfg?.settings?.language as Language) || 'es';
+            const t = translations[lang] || translations['es'];
+
+            await NotificationService.createNotification(supabase, {
+              tenant_id: tenantId,
+              type: 'plan_activated',
+              title: t.notification_plan_activated,
+              body: t.notify_body_plan_activated(tenant.plan_tier || 'pro', tenant.billing_cycle || 'monthly'),
+              metadata: {
+                plan_tier: tenant.plan_tier,
+                billing_cycle: tenant.billing_cycle,
+                mp_payment_id: paymentId,
+                mp_payer_id: payment.payer?.id,
+              },
+            });
+          } catch (notifErr: any) {
+            console.error('Error enviando notificación de plan activado (MP):', notifErr);
+          }
         }
 
         // Registrar pago
@@ -94,7 +123,7 @@ export async function POST(req: NextRequest) {
             gateway: 'mercadopago',
             gateway_payment_id: String(paymentId),
             amount: payment.transaction_amount || 0,
-            currency: 'ARS',
+            currency: (payment.currency_id || 'ARS').toUpperCase(),
             status: 'approved',
             plan_tier: tenant.plan_tier || 'pro',
             billing_cycle: tenant.billing_cycle || 'monthly',
@@ -110,6 +139,49 @@ export async function POST(req: NextRequest) {
         } else {
           console.log(`Payment recorded: $${payment.transaction_amount} ARS`);
         }
+      }
+    }
+
+    // Manejar cancelaciones de suscripción (preapproval)
+    if (body.type === 'preapproval' || body.topic === 'preapproval') {
+      const preapprovalId = body.data?.id;
+
+      if (!preapprovalId) {
+        console.error('No preapproval ID in webhook');
+        return NextResponse.json({ received: true });
+      }
+
+      try {
+        const preApprovalClient = new PreApproval(mpClient);
+        const preapproval = await preApprovalClient.get({ id: preapprovalId });
+
+        console.log('PreApproval details:', {
+          id: preapproval.id,
+          status: preapproval.status,
+          external_reference: preapproval.external_reference,
+        });
+
+        if (preapproval.status === 'cancelled') {
+          const tenantId = preapproval.external_reference;
+
+          if (!tenantId) {
+            console.error('No external_reference (tenant_id) in preapproval');
+            return NextResponse.json({ received: true });
+          }
+
+          const { error: updateError } = await supabase
+            .from('tenants')
+            .update({ subscription_status: 'inactive' })
+            .eq('id', tenantId);
+
+          if (updateError) {
+            console.error('Error updating tenant on MP cancellation:', updateError);
+          } else {
+            console.log(`Tenant ${tenantId} subscription deactivated (MP cancellation)`);
+          }
+        }
+      } catch (preapprovalErr: any) {
+        console.error('Error fetching preapproval details:', preapprovalErr);
       }
     }
 

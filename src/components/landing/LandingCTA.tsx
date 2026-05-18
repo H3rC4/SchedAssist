@@ -40,7 +40,6 @@ export function LandingCTA() {
             {t.cta_subtitle}
           </p>
 
-          <MagneticWrapper>
             <Link 
               href="/register" 
               className="inline-flex items-center gap-4 px-12 py-6 rounded-2xl bg-white text-[#005c55] text-xs font-black uppercase tracking-[0.2em] transition-all shadow-2xl shadow-white/20 hover:scale-105 active:scale-95 group"
@@ -48,7 +47,6 @@ export function LandingCTA() {
               {t.final_cta_btn || 'Crear cuenta gratis'} 
               <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
             </Link>
-          </MagneticWrapper>
         </motion.div>
       </div>
     </section>

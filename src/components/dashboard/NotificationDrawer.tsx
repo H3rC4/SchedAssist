@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation"
 import { motion, AnimatePresence } from "framer-motion"
 import {
   X, Bell, CheckCircle2, CalendarCheck, XCircle, RefreshCw,
-  AlertTriangle, CheckCheck,
+  AlertTriangle, CheckCheck, Sparkles,
 } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 import { Notification } from "@/types"
@@ -27,6 +27,7 @@ const TYPE_ICONS: Record<string, React.ComponentType<any>> = {
   professional_blocked: AlertTriangle,
   appointment_confirmed: CheckCircle2,
   appointment_attended: CheckCheck,
+  plan_activated: Sparkles,
 }
 
 const TYPE_COLORS: Record<string, string> = {
@@ -36,6 +37,7 @@ const TYPE_COLORS: Record<string, string> = {
   professional_blocked: "text-red-600 bg-red-50",
   appointment_confirmed: "text-primary bg-primary/5",
   appointment_attended: "text-emerald-600 bg-emerald-50",
+  plan_activated: "text-primary bg-primary/5",
 }
 
 function relativeTime(dateStr: string, lang: string): string {

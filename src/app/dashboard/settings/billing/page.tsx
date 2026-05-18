@@ -73,6 +73,8 @@ export default function BillingSettingsPage() {
   const [planInfo, setPlanInfo] = useState<PlanInfo | null>(null);
   const [usage, setUsage] = useState<UsageData | null>(null);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [isMpAvailable, setIsMpAvailable] = useState(false);
+  const [cancellingMp, setCancellingMp] = useState(false);
 
   useEffect(() => {
     const loadData = async () => {
@@ -96,6 +98,11 @@ export default function BillingSettingsPage() {
             billing_cycle: tenant.billing_cycle || 'monthly',
             subscription_status: tenant.subscription_status || 'trialing',
           });
+
+          const tenantSettings = tenant.settings || {};
+          setIsMpAvailable(
+            tenantSettings.default_country_code === '+54' || tenantSettings.language === 'es'
+          );
 
           // Fetch usage counts
           const tenantId = tenant.id;
@@ -149,8 +156,30 @@ export default function BillingSettingsPage() {
     }
   };
 
+  const handleCancelMp = async () => {
+    if (!confirm('¿Estás seguro de que querés cancelar tu suscripción de Mercado Pago?')) return;
+    setCancellingMp(true);
+    try {
+      const res = await fetch('/api/billing/cancel-mp', { method: 'POST' });
+      const data = await res.json();
+      if (data.success) {
+        window.location.reload();
+      } else {
+        alert(data.error || 'Error al cancelar la suscripción');
+      }
+    } catch (err) {
+      alert('Error de red al cancelar la suscripción');
+    } finally {
+      setCancellingMp(false);
+    }
+  };
+
   const handleUpgrade = (planTier: string) => {
-    const gateway = planInfo?.payment_gateway || 'stripe';
+    let gateway = planInfo?.payment_gateway || 'stripe';
+    // Forzar Stripe si Mercado Pago no está disponible para este tenant
+    if (gateway === 'mercadopago' && !isMpAvailable) {
+      gateway = 'stripe';
+    }
     fetch(`/api/checkout/${gateway}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -288,13 +317,30 @@ export default function BillingSettingsPage() {
                 </div>
               </div>
 
-              <button
-                onClick={() => setShowUpgradeModal(true)}
-                className="px-6 py-3 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl text-[10px] font-black uppercase tracking-widest text-white hover:bg-white/20 transition-all flex items-center gap-2"
-              >
-                <Zap className="h-3.5 w-3.5" />
-                Cambiar Plan
-              </button>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <button
+                  onClick={() => setShowUpgradeModal(true)}
+                  className="px-6 py-3 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl text-[10px] font-black uppercase tracking-widest text-white hover:bg-white/20 transition-all flex items-center gap-2"
+                >
+                  <Zap className="h-3.5 w-3.5" />
+                  Cambiar Plan
+                </button>
+
+                {planInfo.payment_gateway === 'mercadopago' && (
+                  <button
+                    onClick={handleCancelMp}
+                    disabled={cancellingMp}
+                    className="px-6 py-3 bg-red-500/20 backdrop-blur-sm border border-red-400/30 rounded-xl text-[10px] font-black uppercase tracking-widest text-red-100 hover:bg-red-500/30 transition-all flex items-center gap-2 disabled:opacity-50"
+                  >
+                    {cancellingMp ? (
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    ) : (
+                      <AlertCircle className="h-3.5 w-3.5" />
+                    )}
+                    Cancelar Suscripción
+                  </button>
+                )}
+              </div>
             </div>
 
             {/* Usage Bars */}

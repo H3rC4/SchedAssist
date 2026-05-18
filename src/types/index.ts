@@ -48,7 +48,10 @@ export interface Tenant {
   // WhatsApp
   whatsapp_numbers_count?: number;
   whatsapp_numbers_limit?: number;
-  
+
+  // Trial
+  trial_ends_at?: string;
+
   created_at: string;
   updated_at: string;
 }
@@ -210,7 +213,8 @@ export type NotificationType =
   | "appointment_rescheduled"
   | "professional_blocked"
   | "appointment_confirmed"
-  | "appointment_attended";
+  | "appointment_attended"
+  | "plan_activated";
 
 export interface Notification {
   id: string;

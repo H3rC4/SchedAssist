@@ -894,6 +894,7 @@ const en_notifications = {
   notification_professional_blocked: 'Day Cancelled',
   notification_appointment_confirmed: 'Appointment Confirmed',
   notification_appointment_attended: 'Appointment Attended',
+  notification_plan_activated: 'Plan Activated',
   notification_status_changed: 'Status Changed',
   notify_body_created: (patient: string, professional: string, date: string, time: string) =>
   `${patient} booked with ${professional} for ${date} at ${time}`,
@@ -907,6 +908,8 @@ const en_notifications = {
   `${patient} confirmed appointment with ${professional} for ${date} at ${time}`,
   notify_body_attended: (patient: string, professional: string, date: string) =>
   `${patient} attended appointment with ${professional} on ${date}`,
+  notify_body_plan_activated: (plan: string, billingCycle: string) =>
+  `Your ${plan} plan (${billingCycle}) has been successfully activated.`,
 };
 
 const en_whatsapp_chat = {
@@ -1816,6 +1819,7 @@ const es_notifications = {
   notification_professional_blocked: 'Día Cancelado',
   notification_appointment_confirmed: 'Cita Confirmada',
   notification_appointment_attended: 'Cita Atendida',
+  notification_plan_activated: 'Plan Activado',
   notification_status_changed: 'Estado Cambiado',
   notify_body_created: (patient: string, professional: string, date: string, time: string) =>
   `${patient} agendó con ${professional} para el ${date} a las ${time}`,
@@ -1829,6 +1833,8 @@ const es_notifications = {
   `${patient} confirmó cita con ${professional} para el ${date} a las ${time}`,
   notify_body_attended: (patient: string, professional: string, date: string) =>
   `${patient} asistió a cita con ${professional} el ${date}`,
+  notify_body_plan_activated: (plan: string, billingCycle: string) =>
+  `Tu plan ${plan} (${billingCycle}) fue activado exitosamente.`,
 };
 
 const es_whatsapp_chat = {
@@ -2752,6 +2758,7 @@ const it_notifications = {
   notification_professional_blocked: 'Giorno Cancellato',
   notification_appointment_confirmed: 'Appuntamento Confermato',
   notification_appointment_attended: 'Appuntamento Completato',
+  notification_plan_activated: 'Piano Attivato',
   notification_status_changed: 'Stato Cambiato',
   notify_body_created: (patient: string, professional: string, date: string, time: string) =>
   `${patient} ha prenotato con ${professional} per il ${date} alle ${time}`,
@@ -2765,6 +2772,8 @@ const it_notifications = {
   `${patient} ha confermato appuntamento con ${professional} per il ${date} alle ${time}`,
   notify_body_attended: (patient: string, professional: string, date: string) =>
   `${patient} ha completato appuntamento con ${professional} il ${date}`,
+  notify_body_plan_activated: (plan: string, billingCycle: string) =>
+  `Il tuo piano ${plan} (${billingCycle}) è stato attivato con successo.`,
 };
 
 const it_whatsapp_chat = {

@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { stripe } from '@/lib/stripe';
 import { createClient } from '@supabase/supabase-js';
 import { PlanTier, BillingCycle } from '@/types';
+import { NotificationService } from '@/services/notification.service';
+import { translations, Language } from '@/lib/i18n';
 
 // Cliente con service role para saltar RLS
 const supabase = createClient(
@@ -95,6 +97,33 @@ export async function POST(req: NextRequest) {
         console.error(`Error actualizando tenant ${tenantId}:`, updateError);
       } else if (updatedTenant && updatedTenant.length > 0) {
         console.log(`Tenant ${updatedTenant[0].name} (ID: ${tenantId}) activado con plan ${planTier}.`);
+
+        // Enviar notificación in-app de activación de plan
+        try {
+          const { data: tenantCfg } = await supabase
+            .from('tenants')
+            .select('settings')
+            .eq('id', tenantId)
+            .single();
+
+          const lang: Language = (tenantCfg?.settings?.language as Language) || 'es';
+          const t = translations[lang] || translations['es'];
+
+          await NotificationService.createNotification(supabase, {
+            tenant_id: tenantId,
+            type: 'plan_activated',
+            title: t.notification_plan_activated,
+            body: t.notify_body_plan_activated(planTier, billingCycle),
+            metadata: {
+              plan_tier: planTier,
+              billing_cycle: billingCycle,
+              stripe_customer_id: customerId,
+              stripe_subscription_id: subscriptionId,
+            },
+          });
+        } catch (notifErr: any) {
+          console.error('Error enviando notificación de plan activado:', notifErr);
+        }
       } else {
         console.error(`No se encontró tenant con ID ${tenantId}.`);
       }

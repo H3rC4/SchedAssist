@@ -56,6 +56,24 @@ export async function POST(req: NextRequest) {
 
     const tenantId = tenantUser.tenant_id;
 
+    // Validar que el tenant sea de Argentina / español
+    const { data: tenant } = await supabase
+      .from('tenants')
+      .select('settings')
+      .eq('id', tenantId)
+      .single();
+
+    const tenantSettings = tenant?.settings || {};
+    const isArgentina = tenantSettings.default_country_code === '+54';
+    const isSpanish = tenantSettings.language === 'es';
+
+    if (!isArgentina && !isSpanish) {
+      return NextResponse.json(
+        { error: 'Mercado Pago solo está disponible para usuarios de Argentina.' },
+        { status: 400 }
+      );
+    }
+
     // Build origin
     let origin = req.headers.get('origin') || '';
     if (!origin) {

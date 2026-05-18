@@ -65,7 +65,6 @@ const getPlanFeatures = (t: any): Record<PlanTier, string[]> => ({
     t.feat_waitlist || 'Waitlist',
     t.feat_api_webhooks || 'API + Webhooks',
     t.feat_custom_analytics || 'Custom analytics',
-    t.feat_custom_domain || 'Custom domain',
     t.feat_white_label || 'White-label',
     t.feat_email_support || 'Email support',
   ],
