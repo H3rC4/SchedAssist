@@ -42,7 +42,11 @@ export default function WhatsAppSettingsPage() {
     setIsRedirecting(true);
     setCheckoutError(null);
     try {
-      const res = await fetch('/api/checkout', { method: 'POST' });
+      const res = await fetch('/api/checkout/stripe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ plan: 'pro', billing_cycle: 'monthly' }),
+      });
       const data = await res.json();
       if (data.url) {
         window.location.href = data.url;

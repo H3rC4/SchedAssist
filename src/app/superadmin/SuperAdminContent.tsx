@@ -9,12 +9,6 @@ interface SuperAdminContentProps {
 }
 
 export function SuperAdminContent({ tenants, error }: SuperAdminContentProps) {
-  const paymentColors: Record<string, string> = {
-    emerald: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
-    amber: 'bg-amber-500/10 text-amber-400 border-amber-500/20',
-    red: 'bg-red-500/10 text-red-400 border-red-500/20',
-  }
-
   return (
     <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
       <div className="space-y-8">
@@ -63,6 +57,22 @@ export function SuperAdminContent({ tenants, error }: SuperAdminContentProps) {
                         ? <span className="px-2 py-1 rounded-full bg-red-500/10 text-red-400 text-[10px] font-black uppercase tracking-wider">Suspendida</span>
                         : <span className="px-2 py-1 rounded-full bg-emerald-500/10 text-emerald-400 text-[10px] font-black uppercase tracking-wider">Activa</span>
                       }
+                    </div>
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-gray-500 font-medium">Plan</span>
+                      <span className="px-2 py-1 rounded-full bg-blue-500/10 text-blue-400 text-[10px] font-black uppercase tracking-wider">
+                        {tenant?.plan_tier || 'basic'}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-gray-500 font-medium">Suscripción</span>
+                      <span className={`px-2 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${
+                        tenant?.subscription_status === 'active' ? 'bg-emerald-500/10 text-emerald-400' :
+                        tenant?.subscription_status === 'trialing' || tenant?.subscription_status === 'trial' ? 'bg-amber-500/10 text-amber-400' :
+                        'bg-red-500/10 text-red-400'
+                      }`}>
+                        {tenant?.subscription_status || 'inactive'}
+                      </span>
                     </div>
                     <div className="flex items-center justify-between text-sm">
                       <span className="text-gray-500 font-medium">Creado</span>

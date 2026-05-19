@@ -7,7 +7,7 @@ interface StatsProps {
 export function SuperAdminStats({ tenants = [] }: StatsProps) {
   const safeTenants = Array.isArray(tenants) ? tenants : []
   const activeTenants = safeTenants.filter(t => t?.subscription_status === 'active').length
-  const trialingTenants = safeTenants.filter(t => t?.subscription_status === 'trialing').length
+  const trialingTenants = safeTenants.filter(t => t?.subscription_status === 'trialing' || t?.subscription_status === 'trial').length
   const monthlyRevenue = activeTenants * 70 // Based on $70 plan
 
   // Mocked Infrastructure Dates (In a real app, these would come from an admin_settings table or API)

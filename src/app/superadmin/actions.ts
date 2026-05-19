@@ -183,6 +183,88 @@ export async function updateTenantEmailAction(tenantId: string, newEmail: string
   }
 }
 
+/**
+ * Toggle el plan básico (Startup) para un tenant.
+ * Cuando activate=true: subscription_status='active', plan_tier='basic'
+ * Cuando activate=false: subscription_status='inactive', plan_tier='basic'
+ */
+export async function toggleBasicPlanAction(tenantId: string, activate: boolean) {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
+  const supabase = createClient(supabaseUrl, supabaseServiceKey)
+
+  try {
+    // 1. Obtener configuracion del plan basic
+    const { data: basicPlan, error: planErr } = await supabase
+      .from('plan_configs')
+      .select('*')
+      .eq('tier', 'basic')
+      .single()
+
+    if (planErr || !basicPlan) {
+      throw new Error('Plan basic no encontrado en plan_configs')
+    }
+
+    if (activate) {
+      // Activar plan básico
+      const { error: updateErr } = await supabase
+        .from('tenants')
+        .update({
+          subscription_status: 'active',
+          plan_tier: 'basic',
+          trial_ends_at: null,
+          payment_gateway: 'manual',
+          billing_cycle: 'monthly',
+          max_professionals: basicPlan.max_professionals,
+          max_services: basicPlan.max_services,
+          max_locations: basicPlan.max_locations,
+          max_appointments_per_month: basicPlan.max_appointments_per_month,
+          max_patients: basicPlan.max_patients,
+          custom_domain_enabled: basicPlan.custom_domain_enabled,
+          white_label_enabled: basicPlan.white_label_enabled,
+          api_access_enabled: basicPlan.api_access_enabled,
+          analytics_tier: basicPlan.analytics_tier,
+          whatsapp_numbers_limit: basicPlan.whatsapp_numbers_limit,
+        })
+        .eq('id', tenantId)
+
+      if (updateErr) throw updateErr
+
+      revalidatePath('/superadmin')
+      return { success: true, message: 'Plan Startup activado correctamente.' }
+    } else {
+      // Desactivar - volver a inactivo con límites básicos
+      const { error: updateErr } = await supabase
+        .from('tenants')
+        .update({
+          subscription_status: 'inactive',
+          plan_tier: 'basic',
+          payment_gateway: null,
+          billing_cycle: 'monthly',
+          max_professionals: basicPlan.max_professionals,
+          max_services: basicPlan.max_services,
+          max_locations: basicPlan.max_locations,
+          max_appointments_per_month: basicPlan.max_appointments_per_month,
+          max_patients: basicPlan.max_patients,
+          custom_domain_enabled: basicPlan.custom_domain_enabled,
+          white_label_enabled: basicPlan.white_label_enabled,
+          api_access_enabled: basicPlan.api_access_enabled,
+          analytics_tier: basicPlan.analytics_tier,
+          whatsapp_numbers_limit: basicPlan.whatsapp_numbers_limit,
+        })
+        .eq('id', tenantId)
+
+      if (updateErr) throw updateErr
+
+      revalidatePath('/superadmin')
+      return { success: true, message: 'Plan Startup desactivado correctamente.' }
+    }
+  } catch (err: any) {
+    console.error('Error toggling plan:', err)
+    return { error: err.message || 'Error al cambiar el plan' }
+  }
+}
+
 export async function getTenantStats(tenantId: string) {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
   const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!

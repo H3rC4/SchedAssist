@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { toggleSuspendTenantAction, getTenantStats, deleteTenantAction } from './actions'
+import { toggleSuspendTenantAction, getTenantStats, deleteTenantAction, toggleBasicPlanAction } from './actions'
 import {
   PowerOff, Power, ExternalLink, Loader2, X, Users, CalendarCheck,
   Stethoscope, Scissors, Trash2, Mail, KeyRound, CreditCard, Smartphone,
@@ -16,6 +16,9 @@ interface Tenant {
   id: string
   name: string
   slug: string
+  subscription_status?: string
+  plan_tier?: string
+  payment_gateway?: string
   settings?: { suspended?: boolean; specialty?: string; language?: string; admin_email?: string }
 }
 
@@ -45,8 +48,13 @@ export function TenantActions({ tenant }: { tenant: Tenant }) {
   // New account form state
   const [newAcc, setNewAcc] = useState({ phone_number_id: '', access_token: '', label: '' })
 
+  // Toggle plan state
+  const [togglingPlan, setTogglingPlan] = useState(false)
+
   const isSuspended = tenant.settings?.suspended === true
   const payment = getPaymentMock(tenant.id) as any
+  const isPlanActive = tenant.subscription_status === 'active'
+  const isManualPlan = tenant.payment_gateway === 'manual'
   const [webhookUrl, setWebhookUrl] = useState('')
   
   useEffect(() => {
@@ -57,6 +65,12 @@ export function TenantActions({ tenant }: { tenant: Tenant }) {
     setLoading(true)
     await toggleSuspendTenantAction(tenant.id, isSuspended)
     setLoading(false)
+  }
+
+  async function handleTogglePlan() {
+    setTogglingPlan(true)
+    await toggleBasicPlanAction(tenant.id, !isPlanActive)
+    setTogglingPlan(false)
   }
 
   async function handleDetails() {
@@ -157,7 +171,37 @@ export function TenantActions({ tenant }: { tenant: Tenant }) {
         </div>
       </div>
 
-      <div className="mt-4 pt-4 border-t border-[#222] relative z-10 flex gap-2">
+      {/* Toggle Plan Basico */}
+      <div className="mt-3 relative z-10">
+        <button
+          onClick={handleTogglePlan}
+          disabled={togglingPlan}
+          className={`w-full py-2.5 text-xs font-bold rounded-xl border transition-colors flex items-center justify-center gap-2 ${
+            isPlanActive 
+              ? 'bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border-emerald-500/20' 
+              : 'bg-gray-500/10 hover:bg-gray-500/20 text-gray-400 border-gray-500/20'
+          }`}
+        >
+          {togglingPlan ? (
+            <Loader2 className="h-3 w-3 animate-spin" />
+          ) : isPlanActive ? (
+            <>
+              <Power className="h-3 w-3" />
+              Plan Activo (Startup)
+            </>
+          ) : (
+            <>
+              <PowerOff className="h-3 w-3" />
+              Activar Plan Startup
+            </>
+          )}
+        </button>
+        {isManualPlan && (
+          <p className="text-[9px] text-gray-500 text-center mt-1 font-mono">Activado manualmente</p>
+        )}
+      </div>
+
+      <div className="mt-3 pt-3 border-t border-[#222] relative z-10 flex gap-2">
         <button onClick={handleSuspend} disabled={loading} className={`flex-1 py-2.5 text-xs font-bold rounded-xl border transition-colors flex items-center justify-center gap-1.5 ${isSuspended ? 'bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border-emerald-500/20' : 'bg-red-500/10 hover:bg-red-500/20 text-red-400 border-red-500/20'}`}>
           {loading ? <Loader2 className="h-3 w-3 animate-spin" /> : isSuspended ? <Power className="h-3 w-3" /> : <PowerOff className="h-3 w-3" />}
           {isSuspended ? 'Reactivar' : 'Suspender'}
@@ -214,6 +258,11 @@ export function TenantActions({ tenant }: { tenant: Tenant }) {
                               {stats.tenant?.trial_ends_at ? `Fin Trial: ${new Date(stats.tenant.trial_ends_at).toLocaleDateString()}` : 'Sin Trial'}
                             </span>
                           </div>
+                          {stats.tenant?.payment_gateway === 'manual' && (
+                            <div className="mt-2 text-[9px] text-blue-400 font-mono">
+                              Activado manualmente por admin
+                            </div>
+                          )}
                         </div>
                         <div className="p-5 rounded-3xl bg-[#1a1a1a] border border-[#222]">
                           <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-3 flex items-center gap-2">
