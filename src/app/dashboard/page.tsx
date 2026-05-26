@@ -11,9 +11,15 @@ import {
 import { createClient } from '@/lib/supabase/client'
 import { format, parseISO, subDays } from 'date-fns'
 import { translations, dateLocales, Language } from '@/lib/i18n'
-import { DashboardCharts } from '@/components/dashboard/DashboardCharts'
+import dynamic from 'next/dynamic'
+import { DashboardChartsSkeleton } from '@/components/dashboard/SkeletonStates'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useLandingTranslation } from '@/components/LanguageContext'
+
+const DashboardCharts = dynamic(
+  () => import('@/components/dashboard/DashboardCharts').then(m => m.DashboardCharts),
+  { loading: () => <DashboardChartsSkeleton /> }
+)
 
 type DateRange = 'today' | '7days' | '30days' | 'custom'
 

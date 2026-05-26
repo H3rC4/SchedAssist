@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { useLandingTranslation } from '../LanguageContext';
 import { MagneticWrapper, TiltCard } from './Animations';
 import { PlanTier } from '@/types';
+import { fetchGeoData } from '@/lib/geo';
 
 // Pricing config for both markets
 const PRICING = {
@@ -77,12 +78,11 @@ export function LandingPricing() {
   const [detectedCountry, setDetectedCountry] = useState<string>('');
 
   useEffect(() => {
-    // Detect country by IP
+    // Detect country by IP (cacheado en sessionStorage para evitar 429)
     async function detectCountry() {
       try {
-        const res = await fetch('https://ipapi.co/json/');
-        const data = await res.json();
-        if (data.country_code === 'AR') {
+        const geo = await fetchGeoData();
+        if (geo?.country_code === 'AR') {
           setCountry('AR');
           setDetectedCountry('Argentina');
         }

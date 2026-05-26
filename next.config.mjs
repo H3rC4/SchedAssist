@@ -16,6 +16,21 @@ const nextConfig = {
       },
     ];
   },
+  async redirects() {
+    return [
+      {
+        source: '/:path*',
+        has: [
+          {
+            type: 'host',
+            value: 'schedassist.com',
+          },
+        ],
+        destination: 'https://www.schedassist.com/:path*',
+        permanent: true,
+      },
+    ];
+  },
   // Add image domains if needed later (e.g. for user avatars)
   images: {
     remotePatterns: [

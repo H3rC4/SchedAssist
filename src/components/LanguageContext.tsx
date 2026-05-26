@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Language, translations } from '@/lib/i18n';
+import { fetchGeoData } from '@/lib/geo';
 
 type LanguageContextType = {
   language: Language;
@@ -16,7 +17,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   const [language, setLanguage] = useState<Language>('en');
   const [mounted, setMounted] = useState(false);
 
-  // Load from local storage or detect via IP
+  // Load from local storage or detect via IP (cacheado en sessionStorage)
   useEffect(() => {
     const detectLanguage = async () => {
       const saved = typeof window !== 'undefined' ? localStorage.getItem('landing_lang') as Language : null;
@@ -31,21 +32,19 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
         const browserLang = navigator.language.split('-')[0];
         if (['en', 'es', 'it'].includes(browserLang)) {
            setLanguage(browserLang as Language);
-           // Si detectamos por navegador, ya tenemos una buena base
         }
 
-        // 2. Refinar por IP (GeoIP) solo si es necesario o para ser más precisos
-        const res = await fetch('https://ipapi.co/json/');
-        if (res.ok) {
-          const data = await res.json();
+        // 2. Refinar por IP (GeoIP) con cacheo en sessionStorage para evitar 429
+        const geo = await fetchGeoData();
+        if (geo?.country_code) {
           const countryToLang: Record<string, Language> = {
             'AR': 'es', 'ES': 'es', 'MX': 'es', 'CL': 'es', 'CO': 'es', 'UY': 'es', 'PE': 'es', 'EC': 'es', 'VE': 'es',
             'IT': 'it',
             'US': 'en', 'GB': 'en', 'CA': 'en', 'AU': 'en'
           };
 
-          if (data.country_code && countryToLang[data.country_code]) {
-            setLanguage(countryToLang[data.country_code]);
+          if (countryToLang[geo.country_code]) {
+            setLanguage(countryToLang[geo.country_code]);
           }
         }
       } catch (e) {
