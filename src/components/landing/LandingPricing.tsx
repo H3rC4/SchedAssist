@@ -47,6 +47,7 @@ const getPlanFeatures = (t: any): Record<PlanTier, string[]> => ({
     t.feat_2_locations || 'Up to 2 locations',
     t.feat_unlimited_appointments || 'Unlimited appointments',
     t.feat_unlimited_patients || 'Unlimited patients',
+    t.feat_white_label || 'White-label',
     t.feat_whatsapp_included || 'WhatsApp included',
     t.feat_automated_reminders || 'Automated reminders',
     t.feat_complete_clinical_records || 'Complete clinical records',
