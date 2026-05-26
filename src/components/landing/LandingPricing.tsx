@@ -14,7 +14,7 @@ const PRICING = {
   AR: {
     currency: 'ARS',
     plans: [
-      { tier: 'basic' as PlanTier, monthly: 60000, yearly: 600000, cta: 'Comenzar' },
+      { tier: 'basic' as PlanTier, monthly: 45000, yearly: 450000, cta: 'Comenzar' },
       { tier: 'pro' as PlanTier, monthly: 90000, yearly: 900000, cta: 'Elegir Pro' },
       { tier: 'premium' as PlanTier, monthly: 195000, yearly: 1950000, cta: 'Elegir Premium' },
     ],
@@ -22,7 +22,7 @@ const PRICING = {
   default: {
     currency: 'USD',
     plans: [
-      { tier: 'basic' as PlanTier, monthly: 39, yearly: 390, cta: 'Get Started' },
+      { tier: 'basic' as PlanTier, monthly: 29, yearly: 290, cta: 'Get Started' },
       { tier: 'pro' as PlanTier, monthly: 59, yearly: 590, cta: 'Choose Pro' },
       { tier: 'premium' as PlanTier, monthly: 129, yearly: 1161, cta: 'Choose Premium' },
     ],
@@ -36,7 +36,7 @@ const getPlanFeatures = (t: any): Record<PlanTier, string[]> => ({
     t.feat_1_location || '1 location',
     t.feat_150_appointments || '150 appointments/month',
     t.feat_200_patients || '200 patients',
-    t.feat_whatsapp_included || 'WhatsApp included',
+    t.feat_white_label || 'White-label',
     t.feat_automated_reminders || 'Automated reminders',
     t.feat_basic_clinical_records || 'Basic clinical records',
     t.feat_email_support || 'Email support',

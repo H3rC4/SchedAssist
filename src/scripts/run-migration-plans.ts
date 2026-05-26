@@ -78,10 +78,10 @@ async function seedPlanConfigs() {
       max_appointments_per_month: 150,
       max_patients: 200,
       custom_domain_enabled: false,
-      white_label_enabled: false,
+      white_label_enabled: true,
       api_access_enabled: false,
       analytics_tier: 'basic',
-      whatsapp_numbers_limit: 1,
+      whatsapp_numbers_limit: 0,
     },
     {
       tier: 'pro',
