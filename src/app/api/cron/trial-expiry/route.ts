@@ -33,7 +33,7 @@ export async function GET(req: NextRequest) {
   
   const { data: graceTenants, error: graceError } = await supabase
     .from('tenants')
-    .select('id, name')
+    .select('id, name, trial_ends_at')
     .lt('trial_ends_at', nowISO)
     .eq('subscription_status', 'trial');
 
