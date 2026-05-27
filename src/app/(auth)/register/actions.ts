@@ -38,9 +38,9 @@ export async function registerAction(formData: FormData) {
     const userId = authData.user.id;
     const slug = clinicName.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, '');
     
-    // Calcular fin de prueba (7 días)
+    // Calcular fin de prueba (14 días)
     const trialEndsAt = new Date();
-    trialEndsAt.setDate(trialEndsAt.getDate() + 7);
+    trialEndsAt.setDate(trialEndsAt.getDate() + 14);
 
     // 2. Crear el Tenant (Clínica) con estado 'trial'
     const { data: tenant, error: tenantError } = await supabaseAdmin

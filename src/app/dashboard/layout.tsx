@@ -13,6 +13,7 @@ import { NotificationBell } from '@/components/dashboard/NotificationBell'
 import { NotificationDrawer } from '@/components/dashboard/NotificationDrawer'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ForcePasswordChangeGate } from '@/components/dashboard/ForcePasswordChangeGate'
+import { TrialExpiredGate } from '@/components/dashboard/TrialExpiredGate'
 import { useLandingTranslation } from '@/components/LanguageContext'
 
 function DashboardHeader({ lang = 'es', tenantId, logoUrl, tenantName: headerTenantName, onMenuClick, onBellClick }: { lang?: Language; tenantId?: string; logoUrl?: string; tenantName?: string; onMenuClick: () => void; onBellClick: () => void }) {
@@ -154,10 +155,20 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     setTenantInfo(prev => prev ? { ...prev, settings: { ...prev.settings, tutorial_completed: true } } : null)
   }
 
-  return (
-    <div className="flex h-screen bg-surface overflow-hidden text-on-surface">
+  // Allow access to billing/pay pages even when inactive
+  const isBillingPage = pathname === '/dashboard/pay' || pathname === '/dashboard/settings/billing'
 
-      {/* Mobile sidebar overlay */}
+  return (
+    <>
+      {/* Trial Expired - Full screen block (except billing pages) */}
+      {tenantInfo && tenantInfo.status === 'inactive' && !isBillingPage && (
+        <TrialExpiredGate lang={tenantInfo.lang} />
+      )}
+
+      {/* Main dashboard layout */}
+      <div className="flex h-screen bg-surface overflow-hidden text-on-surface">
+
+        {/* Mobile sidebar overlay */}
       <AnimatePresence>
         {isSidebarOpen && (
           <>
