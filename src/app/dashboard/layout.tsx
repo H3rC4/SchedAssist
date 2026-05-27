@@ -157,18 +157,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   // Allow access to billing/pay pages even when inactive
   const isBillingPage = pathname === '/dashboard/pay' || pathname === '/dashboard/settings/billing'
+  const showTrialExpiredGate = tenantInfo && tenantInfo.status === 'inactive' && !isBillingPage
+
+  if (showTrialExpiredGate) {
+    return <TrialExpiredGate lang={tenantInfo.lang} />
+  }
 
   return (
-    <>
-      {/* Trial Expired - Full screen block (except billing pages) */}
-      {tenantInfo && tenantInfo.status === 'inactive' && !isBillingPage && (
-        <TrialExpiredGate lang={tenantInfo.lang} />
-      )}
+    <div className="flex h-screen bg-surface overflow-hidden text-on-surface">
 
-      {/* Main dashboard layout */}
-      <div className="flex h-screen bg-surface overflow-hidden text-on-surface">
-
-        {/* Mobile sidebar overlay */}
+      {/* Mobile sidebar overlay */}
       <AnimatePresence>
         {isSidebarOpen && (
           <>
