@@ -817,6 +817,12 @@ const en_analytics___extras = {
   citas_count: (val: number) => `${val} appts`,
   no_data_analytics: 'No Data to Display',
   no_data_analytics_desc: 'Start scheduling appointments to see metrics here.',
+  plan_limit_reached: 'Limit reached',
+  plan_limit_professionals: 'Maximum professionals reached for your plan.',
+  plan_limit_locations: 'Maximum locations reached for your plan.',
+  plan_limit_appointments: 'Monthly appointment limit reached for your plan.',
+  plan_limit_patients: 'Maximum patients reached for your plan.',
+  upgrade_to_continue: 'Upgrade to continue',
 };
 
 const en_whatsapp_page = {
@@ -1729,6 +1735,12 @@ const es_analytics___extras = {
   citas_count: (val: number) => `${val} citas`,
   no_data_analytics: 'Sin Datos para Mostrar',
   no_data_analytics_desc: 'Comienza a agendar turnos para ver métricas aquí.',
+  plan_limit_reached: 'Límite alcanzado',
+  plan_limit_professionals: 'Máximo de profesionales alcanzado para tu plan.',
+  plan_limit_locations: 'Máximo de ubicaciones alcanzado para tu plan.',
+  plan_limit_appointments: 'Límite de turnos mensuales alcanzado para tu plan.',
+  plan_limit_patients: 'Máximo de pacientes alcanzado para tu plan.',
+  upgrade_to_continue: 'Mejorar plan para continuar',
 };
 
 const es_booking_portal_access = {
@@ -2666,6 +2678,12 @@ const it_analytics___extras = {
   citas_count: (val: number) => `${val} appt`,
   no_data_analytics: 'Nessun Dato da Mostrare',
   no_data_analytics_desc: 'Inizia a programmare appuntamenti per vedere le metriche qui.',
+  plan_limit_reached: 'Limite raggiunto',
+  plan_limit_professionals: 'Massimo professionisti raggiunto per il tuo piano.',
+  plan_limit_locations: 'Massimo sedi raggiunto per il tuo piano.',
+  plan_limit_appointments: 'Limite appuntamenti mensili raggiunto per il tuo piano.',
+  plan_limit_patients: 'Massimo pazienti raggiunto per il tuo piano.',
+  upgrade_to_continue: 'Migliora piano per continuare',
 };
 
 const it_booking_portal_access = {

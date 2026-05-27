@@ -5,10 +5,11 @@ import {
   Clock, X, Trash2, Coffee, CalendarX, CheckCircle, RefreshCcw, Loader2, 
   ChevronLeft, ChevronRight as ChevronRightIcon, AlertTriangle, Users, 
   ShieldCheck, Mail, ArrowRight, ShieldAlert, ChevronDown, Calendar, 
-  Copy, Check, UserPlus, Sparkles, Building, Layers
+  Copy, Check, UserPlus, Sparkles, Building, Layers, AlertCircle
 } from 'lucide-react'
 import { Professional, AvailabilityRule, Override } from '@/hooks/useProfessionals'
 import { createClient } from '@/lib/supabase/client'
+import { usePlanLimits } from '@/hooks/usePlanLimits'
 import { 
   format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, 
   eachDayOfInterval, isSameMonth, isSameDay, parseISO
@@ -37,6 +38,7 @@ interface ProfessionalDrawerProps {
   saving: boolean
   saved: boolean
   locations?: any[]
+  tenantId?: string
   onCreate: (data: { full_name: string, specialty: string, email: string, phone: string, location_id?: string }) => Promise<{ success: boolean, prof?: Professional }>
 }
 
@@ -57,11 +59,13 @@ export function ProfessionalDrawer({
   saving,
   saved,
   locations = [],
+  tenantId,
   onCreate
 }: ProfessionalDrawerProps) {
   const { fullT, language } = useLandingTranslation()
   const T = fullT 
   const currentLocale = dateLocales[language as keyof typeof dateLocales] || es
+  const { canAddProfessional, limits: planLimits } = usePlanLimits(tenantId || '')
   
   const days = [
     T.sunday || 'Sunday',
@@ -375,11 +379,24 @@ export function ProfessionalDrawer({
             </div>
 
             <div className="p-6 border-t border-on-surface/5">
+              {!canAddProfessional && planLimits.professionals && (
+                <div className="mb-4 p-4 bg-amber-50 border border-amber-200 rounded-xl flex items-start gap-3">
+                  <AlertCircle className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-xs font-black text-amber-800 uppercase tracking-tight">
+                      {T.plan_limit_reached || 'Limit reached'}
+                    </p>
+                    <p className="text-[10px] font-bold text-amber-600 mt-1">
+                      {T.plan_limit_professionals || 'Maximum professionals reached for your plan.'}
+                    </p>
+                  </div>
+                </div>
+              )}
               <button
                 type="submit"
                 form="create-prof-form"
-                disabled={createLoading}
-                className="w-full py-3 bg-primary text-white rounded-xl font-black text-[10px] uppercase tracking-[0.3em] shadow-lg shadow-primary/20 hover:bg-primary/90 hover:-translate-y-0.5 transition-all active:scale-95 flex items-center justify-center gap-3 disabled:opacity-50"
+                disabled={createLoading || !canAddProfessional}
+                className="w-full py-3 bg-primary text-white rounded-xl font-black text-[10px] uppercase tracking-[0.3em] shadow-lg shadow-primary/20 hover:bg-primary/90 hover:-translate-y-0.5 transition-all active:scale-95 flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {createLoading ? (
                   <Loader2 className="h-4 w-4 animate-spin" />

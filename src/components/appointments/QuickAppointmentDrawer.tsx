@@ -1,11 +1,12 @@
 "use client"
 
 import { useState, useEffect } from 'react'
-import { X, CheckCircle, Clock, ChevronRight, User, Stethoscope, Briefcase, Calendar as CalendarIcon, Hash, Phone, FileText } from 'lucide-react'
+import { X, CheckCircle, Clock, ChevronRight, User, Stethoscope, Briefcase, Calendar as CalendarIcon, Hash, Phone, FileText, AlertTriangle } from 'lucide-react'
 import { format, addMinutes } from 'date-fns'
 import { PatientSearch } from './PatientSearch'
 import { Client } from '@/hooks/useAppointments'
 import { motion, AnimatePresence } from 'framer-motion'
+import { usePlanLimits } from '@/hooks/usePlanLimits'
 
 interface QuickAppointmentDrawerProps {
   tenantId: string;
@@ -46,6 +47,7 @@ export function QuickAppointmentDrawer({
   variant = 'drawer',
   locationId,
 }: QuickAppointmentDrawerProps) {
+  const { canAddAppointment, limits: planLimits } = usePlanLimits(tenantId)
   const [formData, setFormData] = useState({
     first_name: initialPatient?.first_name || '', 
     last_name: initialPatient?.last_name || '', 
@@ -376,9 +378,22 @@ export function QuickAppointmentDrawer({
 
         {/* Action Button */}
         <div className="p-6 md:p-8 border-t border-on-surface/5 bg-surface/80 backdrop-blur-md">
+          {!canAddAppointment && planLimits.appointments && (
+            <div className="mb-4 p-4 bg-amber-50 border border-amber-200 rounded-2xl flex items-start gap-3">
+              <AlertTriangle className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
+              <div>
+                <p className="text-xs font-black text-amber-800 uppercase tracking-tight">
+                  {T.plan_limit_reached || 'Limit reached'}
+                </p>
+                <p className="text-[10px] font-bold text-amber-600 mt-1">
+                  {T.plan_limit_appointments || 'Monthly appointment limit reached for your plan.'}
+                </p>
+              </div>
+            </div>
+          )}
           <button 
             onClick={handleCreateAppointment}
-            disabled={loading || saveSuccess || isBlocked || !formData.first_name || !formData.professional_id || !formData.time || !formData.service_id}
+            disabled={loading || saveSuccess || isBlocked || !formData.first_name || !formData.professional_id || !formData.time || !formData.service_id || !canAddAppointment}
             className={`w-full py-5 rounded-full font-black text-[11px] uppercase tracking-[0.4em] shadow-xl shadow-primary/20 transition-all duration-500 flex items-center justify-center gap-3 active:scale-[0.98] disabled:opacity-30 disabled:cursor-not-allowed
               ${saveSuccess ? 'bg-emerald-500 text-white' : 'bg-primary text-white hover:bg-primary-light hover:-translate-y-0.5'}
               ${variant === 'modal' ? 'rounded-2xl border border-primary/10 shadow-spatial' : ''}

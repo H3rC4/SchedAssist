@@ -3,12 +3,14 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, UserPlus, Save, AlertCircle, Check } from 'lucide-react'
+import { usePlanLimits } from '@/hooks/usePlanLimits'
 
 interface NewPatientDrawerProps {
   isOpen: boolean;
   onClose: () => void;
   lang: 'en' | 'es' | 'it';
   translations: any;
+  tenantId?: string;
   onCreatePatient: (data: { first_name: string; last_name: string; phone: string; notes: string }) => Promise<void>;
 }
 
@@ -16,8 +18,10 @@ export function NewPatientDrawer({
   isOpen,
   onClose,
   translations: t,
+  tenantId,
   onCreatePatient
 }: NewPatientDrawerProps) {
+  const { canAddPatient, limits: planLimits } = usePlanLimits(tenantId || '')
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
   const [phone, setPhone] = useState('')
@@ -165,10 +169,23 @@ export function NewPatientDrawer({
 
           {/* Footer Actions */}
           <div className="p-8 border-t border-surface-container-low bg-white">
+            {!canAddPatient && planLimits.patients && (
+              <div className="mb-4 p-4 bg-amber-50 border border-amber-200 rounded-2xl flex items-start gap-3">
+                <AlertCircle className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-xs font-black text-amber-800 uppercase tracking-tight">
+                    {t.plan_limit_reached || 'Limit reached'}
+                  </p>
+                  <p className="text-[10px] font-bold text-amber-600 mt-1">
+                    {t.plan_limit_patients || 'Maximum patients reached for your plan.'}
+                  </p>
+                </div>
+              </div>
+            )}
             <button
               onClick={handleSubmit}
-              disabled={isSaving || isSuccess || !firstName || !lastName || !phone}
-              className={`w-full flex items-center justify-center py-4 rounded-2xl text-xs font-black uppercase tracking-widest transition-all shadow-lg disabled:opacity-50 active:scale-[0.98] ${
+              disabled={isSaving || isSuccess || !firstName || !lastName || !phone || !canAddPatient}
+              className={`w-full flex items-center justify-center py-4 rounded-2xl text-xs font-black uppercase tracking-widest transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98] ${
                 isSuccess 
                   ? 'bg-emerald-500 hover:bg-emerald-600 text-white shadow-emerald-500/20' 
                   : 'bg-primary hover:bg-primary-light text-white shadow-primary/20'

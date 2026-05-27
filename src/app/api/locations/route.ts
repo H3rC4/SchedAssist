@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server';
 import { verifyTenantAccess } from '@/lib/auth-utils';
+import { checkPlanLimit } from '@/lib/plan-limits';
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
@@ -36,10 +37,19 @@ export async function POST(req: NextRequest) {
 
   const supabase = createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  
+
   const access = await verifyTenantAccess(supabase, user, tenant_id, ['admin', 'owner', 'tenant_admin']);
   if (!access.authorized) {
     return NextResponse.json({ error: access.error }, { status: access.status });
+  }
+
+  // Check plan limit for locations
+  const limitCheck = await checkPlanLimit(tenant_id, 'locations');
+  if (!limitCheck.allowed) {
+    return NextResponse.json(
+      { error: limitCheck.error, code: 'PLAN_LIMIT_REACHED' },
+      { status: 403 }
+    );
   }
 
   const { data, error } = await supabase

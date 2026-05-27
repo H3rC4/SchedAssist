@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { verifyTenantAccess } from '@/lib/auth-utils';
 import { normalizePhone, inferCountryCode } from '@/lib/phone-utils';
+import { checkPlanLimit } from '@/lib/plan-limits';
 
 export async function PATCH(req: NextRequest) {
   try {
@@ -62,7 +63,7 @@ export async function PATCH(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    const { 
+    const {
       tenant_id, first_name, last_name, phone, email, notes, allergies,
       address, dni, birth_date, gender, occupation
     } = await req.json();
@@ -73,10 +74,19 @@ export async function POST(req: NextRequest) {
 
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
-    
+
     const access = await verifyTenantAccess(supabase, user, tenant_id);
     if (!access.authorized) {
       return NextResponse.json({ error: access.error }, { status: access.status });
+    }
+
+    // Check plan limit for patients
+    const limitCheck = await checkPlanLimit(tenant_id, 'patients');
+    if (!limitCheck.allowed) {
+      return NextResponse.json(
+        { error: limitCheck.error, code: 'PLAN_LIMIT_REACHED' },
+        { status: 403 }
+      );
     }
 
     // Fetch tenant settings to get country code for phone normalization

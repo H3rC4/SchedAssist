@@ -4,12 +4,13 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { 
   Plus, CheckCircle, X, 
-  Globe, Navigation, ArrowRight, Lightbulb
+  Globe, Navigation, ArrowRight, Lightbulb, AlertTriangle
 } from 'lucide-react'
 import { Language, translations } from '@/lib/i18n'
 import { createClient } from '@/lib/supabase/client'
 import { motion, AnimatePresence } from 'framer-motion'
 import { LocationPrecisionCard } from '@/components/dashboard/LocationPrecisionCard'
+import { usePlanLimits } from '@/hooks/usePlanLimits'
 
 interface Location {
   id: string;
@@ -32,6 +33,7 @@ export default function LocationsPage() {
   const [savedId, setSavedId] = useState<string | null>(null)
   const [incompleteLocation, setIncompleteLocation] = useState<Location | null>(null)
   const [userRole, setUserRole] = useState<string | null>(null)
+  const { canAddLocation, limits: planLimits, loading: limitsLoading } = usePlanLimits(tenantId)
 
   const [formData, setFormData] = useState({ name: '', address: '', city: '' })
 
@@ -145,15 +147,26 @@ export default function LocationsPage() {
                     {t.locations_subtitle || 'Strategically manage your physical reach and patient touchpoints.'}
                   </p>
                </div>
-               {userRole !== 'secretary' && (
-                 <button
-                   onClick={() => setShowAddForm(true)}
-                   className="bg-primary text-white px-8 py-4 rounded-full font-black text-[11px] uppercase tracking-[0.4em] shadow-xl shadow-primary/20 hover:-translate-y-0.5 transition-all active:scale-[0.98] flex items-center gap-3 shrink-0"
-                 >
-                   {t.add_location || 'Add Location'}
-                   <Plus className="h-4 w-4" />
-                 </button>
-               )}
+{userRole !== 'secretary' && (
+                  <div className="flex items-center gap-3">
+                    {planLimits.locations && !planLimits.locations.allowed && (
+                      <div className="flex items-center gap-2 px-4 py-2 bg-amber-50 border border-amber-200 rounded-full">
+                        <AlertTriangle className="h-4 w-4 text-amber-600" />
+                        <span className="text-[10px] font-black text-amber-700 uppercase tracking-widest">
+                          {t.plan_limit_reached || 'Limit reached'}
+                        </span>
+                      </div>
+                    )}
+                    <button
+                      onClick={() => setShowAddForm(true)}
+                      disabled={!canAddLocation}
+                      className="bg-primary text-white px-8 py-4 rounded-full font-black text-[11px] uppercase tracking-[0.4em] shadow-xl shadow-primary/20 hover:-translate-y-0.5 transition-all active:scale-[0.98] flex items-center gap-3 shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {t.add_location || 'Add Location'}
+                      <Plus className="h-4 w-4" />
+                    </button>
+                  </div>
+                )}
             </div>
           </motion.div>
         </header>

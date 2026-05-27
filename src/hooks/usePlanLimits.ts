@@ -1,178 +1,111 @@
-"use client";
+"use client"
 
-import { useState, useEffect } from 'react';
-import { Tenant, PlanConfig } from '@/types';
+import { useState, useEffect, useCallback } from 'react'
+import { createClient } from '@/lib/supabase/client'
 
-interface PlanLimits {
-  // Limits
-  maxProfessionals: number;
-  maxServices: number;
-  maxLocations: number;
-  maxAppointmentsPerMonth: number;
-  maxPatients: number;
-  
-  // Features
-  hasCustomDomain: boolean;
-  hasWhiteLabel: boolean;
-  hasApiAccess: boolean;
-  analyticsTier: 'basic' | 'advanced' | 'custom';
-  
-  // WhatsApp
-  whatsappNumbersCount: number;
-  whatsappNumbersLimit: number;
-  
-  // Helpers
-  canAddProfessional: (current: number) => boolean;
-  canAddService: (current: number) => boolean;
-  canAddLocation: (current: number) => boolean;
-  canAddAppointment: (current: number) => boolean;
-  canAddPatient: (current: number) => boolean;
-  isUnlimitedProfessionals: boolean;
-  isUnlimitedServices: boolean;
-  isUnlimitedLocations: boolean;
-  isUnlimitedAppointments: boolean;
-  isUnlimitedPatients: boolean;
-  
-  // Loading state
-  loading: boolean;
-  error: string | null;
+export interface LimitInfo {
+  resource: 'professionals' | 'locations' | 'appointments' | 'patients' | 'services'
+  current: number
+  max: number
+  allowed: boolean
+  loading: boolean
 }
 
-export function usePlanLimits(): PlanLimits {
-  const [limits, setLimits] = useState<{
-    max_professionals: number;
-    max_services: number;
-    max_locations: number;
-    max_appointments_per_month: number;
-    max_patients: number;
-    custom_domain_enabled: boolean;
-    white_label_enabled: boolean;
-    api_access_enabled: boolean;
-    analytics_tier: 'basic' | 'advanced' | 'custom';
-    whatsapp_numbers_count: number;
-    whatsapp_numbers_limit: number;
-  } | null>(null);
-  
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+export function usePlanLimits(tenantId: string) {
+  const [limits, setLimits] = useState<Record<string, LimitInfo>>({
+    professionals: { resource: 'professionals', current: 0, max: -1, allowed: true, loading: true },
+    locations: { resource: 'locations', current: 0, max: -1, allowed: true, loading: true },
+    appointments: { resource: 'appointments', current: 0, max: -1, allowed: true, loading: true },
+    patients: { resource: 'patients', current: 0, max: -1, allowed: true, loading: true },
+  })
+  const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    async function fetchPlan() {
-      try {
-        const res = await fetch('/api/tenant/plan');
-        if (!res.ok) throw new Error('Failed to fetch plan');
-        const data = await res.json();
-        
-        setLimits({
-          max_professionals: data.limits?.max_professionals ?? 5,
-          max_services: data.limits?.max_services ?? -1,
-          max_locations: data.limits?.max_locations ?? 2,
-          max_appointments_per_month: data.limits?.max_appointments_per_month ?? -1,
-          max_patients: data.limits?.max_patients ?? -1,
-          custom_domain_enabled: data.features?.custom_domain ?? false,
-          white_label_enabled: data.features?.white_label ?? false,
-          api_access_enabled: data.features?.api_access ?? true,
-          analytics_tier: data.features?.analytics_tier ?? 'advanced',
-          whatsapp_numbers_count: data.whatsapp?.count ?? 1,
-          whatsapp_numbers_limit: data.whatsapp?.limit ?? 1,
-        });
-      } catch (err: any) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
+  const fetchLimits = useCallback(async () => {
+    if (!tenantId) return
+
+    const supabase = createClient()
+
+    // Get tenant limits
+    const { data: tenant } = await supabase
+      .from('tenants')
+      .select('max_professionals, max_locations, max_appointments_per_month, max_patients')
+      .eq('id', tenantId)
+      .single()
+
+    if (!tenant) {
+      setLoading(false)
+      return
     }
 
-    fetchPlan();
-  }, []);
+    // Fetch counts in parallel
+    const [profCount, locCount, patientCount] = await Promise.all([
+      supabase.from('professionals').select('*', { count: 'exact', head: true }).eq('tenant_id', tenantId),
+      supabase.from('locations').select('*', { count: 'exact', head: true }).eq('tenant_id', tenantId),
+      supabase.from('clients').select('*', { count: 'exact', head: true }).eq('tenant_id', tenantId),
+    ])
 
-  if (loading) {
-    return {
-      maxProfessionals: 5,
-      maxServices: -1,
-      maxLocations: 2,
-      maxAppointmentsPerMonth: -1,
-      maxPatients: -1,
-      hasCustomDomain: false,
-      hasWhiteLabel: false,
-      hasApiAccess: true,
-      analyticsTier: 'advanced',
-      whatsappNumbersCount: 1,
-      whatsappNumbersLimit: 1,
-      canAddProfessional: () => true,
-      canAddService: () => true,
-      canAddLocation: () => true,
-      canAddAppointment: () => true,
-      canAddPatient: () => true,
-      isUnlimitedProfessionals: false,
-      isUnlimitedServices: true,
-      isUnlimitedLocations: false,
-      isUnlimitedAppointments: true,
-      isUnlimitedPatients: true,
-      loading: true,
-      error: null,
-    };
-  }
+    // Get current month appointments
+    const now = new Date()
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString()
+    const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59).toISOString()
+    const { count: apptCount } = await supabase
+      .from('appointments')
+      .select('*', { count: 'exact', head: true })
+      .eq('tenant_id', tenantId)
+      .gte('start_at', startOfMonth)
+      .lte('start_at', endOfMonth)
 
-  if (error || !limits) {
-    return {
-      maxProfessionals: 5,
-      maxServices: -1,
-      maxLocations: 2,
-      maxAppointmentsPerMonth: -1,
-      maxPatients: -1,
-      hasCustomDomain: false,
-      hasWhiteLabel: false,
-      hasApiAccess: true,
-      analyticsTier: 'advanced',
-      whatsappNumbersCount: 1,
-      whatsappNumbersLimit: 1,
-      canAddProfessional: () => true,
-      canAddService: () => true,
-      canAddLocation: () => true,
-      canAddAppointment: () => true,
-      canAddPatient: () => true,
-      isUnlimitedProfessionals: false,
-      isUnlimitedServices: true,
-      isUnlimitedLocations: false,
-      isUnlimitedAppointments: true,
-      isUnlimitedPatients: true,
-      loading: false,
-      error: error || 'Unknown error',
-    };
-  }
+    const newLimits = {
+      professionals: {
+        resource: 'professionals' as const,
+        current: profCount.count ?? 0,
+        max: tenant.max_professionals ?? -1,
+        allowed: (profCount.count ?? 0) < (tenant.max_professionals ?? -1) || tenant.max_professionals === -1,
+        loading: false
+      },
+      locations: {
+        resource: 'locations' as const,
+        current: locCount.count ?? 0,
+        max: tenant.max_locations ?? -1,
+        allowed: (locCount.count ?? 0) < (tenant.max_locations ?? -1) || tenant.max_locations === -1,
+        loading: false
+      },
+      appointments: {
+        resource: 'appointments' as const,
+        current: apptCount ?? 0,
+        max: tenant.max_appointments_per_month ?? -1,
+        allowed: (apptCount ?? 0) < (tenant.max_appointments_per_month ?? -1) || tenant.max_appointments_per_month === -1,
+        loading: false
+      },
+      patients: {
+        resource: 'patients' as const,
+        current: patientCount.count ?? 0,
+        max: tenant.max_patients ?? -1,
+        allowed: (patientCount.count ?? 0) < (tenant.max_patients ?? -1) || tenant.max_patients === -1,
+        loading: false
+      },
+    }
+
+    setLimits(newLimits)
+    setLoading(false)
+  }, [tenantId])
+
+  useEffect(() => {
+    fetchLimits()
+  }, [fetchLimits])
+
+  const canAddProfessional = limits.professionals.allowed
+  const canAddLocation = limits.locations.allowed
+  const canAddAppointment = limits.appointments.allowed
+  const canAddPatient = limits.patients.allowed
 
   return {
-    maxProfessionals: limits.max_professionals,
-    maxServices: limits.max_services,
-    maxLocations: limits.max_locations,
-    maxAppointmentsPerMonth: limits.max_appointments_per_month,
-    maxPatients: limits.max_patients,
-    hasCustomDomain: limits.custom_domain_enabled,
-    hasWhiteLabel: limits.white_label_enabled,
-    hasApiAccess: limits.api_access_enabled,
-    analyticsTier: limits.analytics_tier,
-    whatsappNumbersCount: limits.whatsapp_numbers_count,
-    whatsappNumbersLimit: limits.whatsapp_numbers_limit,
-    
-    canAddProfessional: (current: number) => 
-      limits.max_professionals === -1 || current < limits.max_professionals,
-    canAddService: (current: number) => 
-      limits.max_services === -1 || current < limits.max_services,
-    canAddLocation: (current: number) => 
-      limits.max_locations === -1 || current < limits.max_locations,
-    canAddAppointment: (current: number) => 
-      limits.max_appointments_per_month === -1 || current < limits.max_appointments_per_month,
-    canAddPatient: (current: number) => 
-      limits.max_patients === -1 || current < limits.max_patients,
-    
-    isUnlimitedProfessionals: limits.max_professionals === -1,
-    isUnlimitedServices: limits.max_services === -1,
-    isUnlimitedLocations: limits.max_locations === -1,
-    isUnlimitedAppointments: limits.max_appointments_per_month === -1,
-    isUnlimitedPatients: limits.max_patients === -1,
-    
-    loading: false,
-    error: null,
-  };
+    limits,
+    loading,
+    refetch: fetchLimits,
+    canAddProfessional,
+    canAddLocation,
+    canAddAppointment,
+    canAddPatient,
+  }
 }
