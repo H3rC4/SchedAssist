@@ -185,15 +185,19 @@ export function useProfessionals() {
         throw new Error(errData.error || 'API Error')
       }
       setSaved(true)
-      await fetchProfessionals()
       // Sincronizar profesional seleccionado para reflejar cambios
       if (profId) {
-        const { data: updatedProf } = await supabase
+        const { data: updatedProf, error: fetchError } = await supabase
           .from('professionals')
           .select('*, availability_rules(*)')
           .eq('id', profId)
           .single()
-        if (updatedProf) setSelectedProf(updatedProf)
+        if (fetchError) throw fetchError
+        if (updatedProf) {
+          setSelectedProf(updatedProf)
+          // Actualizar en lista sin refetch completo
+          setProfessionals(prev => prev.map(p => p.id === profId ? updatedProf : p))
+        }
       }
     } catch (err: any) {
       console.error('Save error:', err)

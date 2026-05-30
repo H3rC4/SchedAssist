@@ -234,7 +234,6 @@ export function ProfessionalDrawer({
 
   useEffect(() => {
     if (saved) {
-      setShowSaveToast(true)
       setTimeout(() => setShowSaveToast(false), 3000)
     }
   }, [saved])
@@ -880,7 +879,7 @@ export function ProfessionalDrawer({
                   `}
                 >
                   {saved ? (
-                    <><CheckCircle className="h-4 w-4" /> <span>{T.sync_complete || 'Sincronizado'}</span></>
+                    <><CheckCircle className="h-4 w-4" /> <span>{T.saved || .Saved.}</span></>
                   ) : saving ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
                   ) : (
