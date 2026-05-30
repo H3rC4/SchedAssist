@@ -223,7 +223,13 @@ export function ProfessionalDrawer({
   }
 
   const handleSaveAll = () => {
-    onSave(localInfo)
+    // Only include location_id if it's not empty to avoid sending empty string for UUID
+    const localInfoToSave = {
+      full_name,
+      specialty,
+      ...(location_id ? { location_id } : {})
+    }
+    onSave(localInfoToSave)
   }
 
   useEffect(() => {
