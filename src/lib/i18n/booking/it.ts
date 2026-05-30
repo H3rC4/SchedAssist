@@ -60,4 +60,6 @@ export const it_booking = {
   retry: 'Riprova',
   back_home: 'Torna alla home',
   chat_whatsapp_msg: 'Ciao, vorrei prenotare un appuntamento',
+  // Appointment cancellation success
+  appointment_cancelled_success: 'Appuntamento annullato con successo',
 }

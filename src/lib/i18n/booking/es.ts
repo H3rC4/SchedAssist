@@ -60,4 +60,6 @@ export const es_booking = {
   retry: 'Intentar de nuevo',
   back_home: 'Volver al inicio',
   chat_whatsapp_msg: 'Hola, quiero reservar un turno',
+  // Appointment cancellation success
+  appointment_cancelled_success: 'Turno cancelado exitosamente',
 }
