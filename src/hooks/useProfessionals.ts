@@ -185,6 +185,33 @@ export function useProfessionals() {
         throw new Error(errData.error || 'API Error')
       }
       setSaved(true)
+      // Sync selected professional to reflect changes
+      if (profId) {
+        const { data: updatedProf, error: fetchError } = await supabase
+          .from('professionals')
+          .select('*, availability_rules(*)')
+          .eq('id', profId)
+          .single()
+        
+        if (fetchError) throw fetchError
+        if (updatedProf) {
+          // Update selected professional state
+          setSelectedProf(updatedProf)
+          // Update professionals list to avoid full refetch
+          setProfessionals(prev => 
+            prev.map(p => p.id === profId ? updatedProf : p)
+          )
+        }
+      }
+    } catch (err: any) {
+      console.error('Save error:', err)
+      alert('Error guardando: ' + (err.message || 'Error desconocido'))
+    } finally {
+      setSaving(false)
+      setTimeout(() => setSaved(false), 3000)
+    }
+  }
+      setSaved(true)
       await fetchProfessionals()
       // Sincronizar profesional seleccionado para reflejar cambios
       if (profId) {
