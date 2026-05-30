@@ -92,7 +92,7 @@ export async function POST(req: NextRequest) {
     // 4. Send confirmation email (non-blocking - don't fail booking if email fails)
     try {
       const [{ data: tenantCfg }, { data: clientData }, { data: profData }] = await Promise.all([
-        supabaseAdmin.from('tenants').select('settings').eq('id', tenant_id).single(),
+        supabaseAdmin.from('tenants').select('name, settings').eq('id', tenant_id).single(),
         supabaseAdmin.from('clients').select('first_name, last_name, email').eq('id', finalClientId).single(),
         supabaseAdmin.from('professionals').select('full_name').eq('id', professional_id).single(),
       ]);
