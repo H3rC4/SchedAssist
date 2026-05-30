@@ -83,6 +83,7 @@ export function ProfessionalDrawer({
   const [creatingAccount, setCreatingAccount] = useState(false)
   const [copiedEmail, setCopiedEmail] = useState(false)
   const [copiedPass, setCopiedPass] = useState(false)
+  const [showSaveToast, setShowSaveToast] = useState(false)
   
   const [localInfo, setLocalInfo] = useState({
     full_name: professional?.full_name || '',
@@ -224,6 +225,13 @@ export function ProfessionalDrawer({
   const handleSaveAll = () => {
     onSave(localInfo)
   }
+
+  useEffect(() => {
+    if (saved) {
+      setShowSaveToast(true)
+      setTimeout(() => setShowSaveToast(false), 3000)
+    }
+  }, [saved])
 
   const handleCreateProfessional = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -979,6 +987,23 @@ export function ProfessionalDrawer({
                 </div>
               </motion.div>
             </div>
+          )}
+        </AnimatePresence>
+
+        {/* SUCCESS TOAST */}
+        <AnimatePresence>
+          {showSaveToast && (
+            <motion.div
+              initial={{ opacity: 0, y: 50, x: '-50%' }}
+              animate={{ opacity: 1, y: 0, x: '-50%' }}
+              exit={{ opacity: 0, y: 50, x: '-50%' }}
+              className="fixed bottom-6 left-1/2 z-[200] flex items-center gap-3 px-6 py-3 bg-emerald-600 text-white rounded-xl shadow-xl"
+            >
+              <CheckCircle className="h-5 w-5" />
+              <span className="text-sm font-black uppercase tracking-wider">
+                {T.changes_saved || 'Cambios guardados'}
+              </span>
+            </motion.div>
           )}
         </AnimatePresence>
       </motion.div>

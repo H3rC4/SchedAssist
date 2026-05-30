@@ -180,7 +180,10 @@ export function useProfessionals() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ professional_id: profId, tenant_id: tenantId, rules, ...generalInfo })
       })
-      if (!res.ok) throw new Error('API Error')
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}))
+        throw new Error(errData.error || 'API Error')
+      }
       setSaved(true)
       await fetchProfessionals()
       // Sincronizar profesional seleccionado para reflejar cambios
@@ -192,8 +195,9 @@ export function useProfessionals() {
           .single()
         if (updatedProf) setSelectedProf(updatedProf)
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Save error:', err)
+      alert('Error guardando: ' + (err.message || 'Error desconocido'))
     } finally {
       setSaving(false)
       setTimeout(() => setSaved(false), 3000)
