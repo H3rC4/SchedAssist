@@ -94,7 +94,7 @@ export async function GET(
       tenant_id: appointment.tenant_id,
       type: 'appointment_cancelled',
       title: t.notification_appointment_cancelled,
-      body: t.notify_body_cancelled(patientName, profName, dateStr, timeStr),
+      body: t.notify_body_cancelled(patientName, profName, dateStr),
       metadata: { 
         appointment_id: appointment.id, 
         client_id: appointment.client_id, 
