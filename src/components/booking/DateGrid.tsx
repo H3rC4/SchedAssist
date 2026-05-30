@@ -31,8 +31,10 @@ export function DateGrid({
   const startDayOfWeek = startOfMonth(currentMonth).getDay()
   const endLimit = maxDate || addMonths(today, 2)
 
-  const canGoPrev = !isBefore(startOfMonth(currentMonth), startOfMonth(today))
-  const canGoNext = !isBefore(endOfMonth(currentMonth), endLimit)
+  // Can go prev only if the previous month has at least one day that is today or in the future
+  const canGoPrev = !isBefore(endOfMonth(addMonths(currentMonth, -1)), today)
+  // Can go next only if the next month starts before or at the limit
+  const canGoNext = !isBefore(endLimit, startOfMonth(addMonths(currentMonth, 1)))
 
   return (
     <div className="space-y-4">
@@ -74,22 +76,22 @@ export function DateGrid({
           const selected = isSameDay(day, selectedDate)
           const todayFlag = isToday(day)
           const isPast = isBefore(day, today)
-          const isFuture = !isBefore(day, today) && !isBefore(endLimit, day)
+          const isBeyondLimit = isBefore(endLimit, day)
 
           return (
             <motion.button
               key={day.toISOString()}
-              whileHover={{ scale: isPast || isFuture ? 1 : 1.05 }}
-              whileTap={{ scale: isPast || isFuture ? 1 : 0.95 }}
-              onClick={() => !isPast && !isFuture && onSelectDate(day)}
-              disabled={isPast || isFuture}
+              whileHover={{ scale: isPast || isBeyondLimit ? 1 : 1.05 }}
+              whileTap={{ scale: isPast || isBeyondLimit ? 1 : 0.95 }}
+              onClick={() => !isPast && !isBeyondLimit && onSelectDate(day)}
+              disabled={isPast || isBeyondLimit}
               className={`
                 aspect-square flex items-center justify-center rounded-xl text-sm font-black transition-all
                 ${selected 
                   ? 'text-white shadow-lg' 
                   : todayFlag 
                     ? 'text-white' 
-                    : isPast || isFuture
+                    : isPast || isBeyondLimit
                       ? 'text-[#191c1e]/10 cursor-not-allowed'
                       : 'text-[#191c1e] hover:bg-white'
                 }
