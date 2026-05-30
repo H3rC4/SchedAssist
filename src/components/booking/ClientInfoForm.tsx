@@ -1,15 +1,9 @@
 "use client"
-import { UserCheck, Phone, Mail, Calendar as CalendarIcon, ChevronLeft, Loader2 } from 'lucide-react'
+import { UserCheck, Phone, Mail, Calendar as CalendarIcon, ChevronLeft, Loader2, AlertCircle } from 'lucide-react'
+import { hexToRgba } from '@/lib/utils'
 import { motion } from 'framer-motion'
 import { format } from 'date-fns'
-import { es } from 'date-fns/locale'
-
-function hexToRgba(hex: string, alpha: number): string {
-  const r = parseInt(hex.slice(1, 3), 16)
-  const g = parseInt(hex.slice(3, 5), 16)
-  const b = parseInt(hex.slice(5, 7), 16)
-  return `rgba(${r}, ${g}, ${b}, ${alpha})`
-}
+import { es, enUS, it } from 'date-fns/locale'
 
 interface ClientInfoFormProps {
   clientInfo: { firstName: string; lastName: string; email: string; phone: string; notes: string }
@@ -24,9 +18,12 @@ interface ClientInfoFormProps {
   onBack: () => void
   onConfirm: () => void
   t: any
+  lang?: string
 }
 
-export function ClientInfoForm({ clientInfo, selectedDate, selectedSlot, selectedProfessional, selectedService, primaryColor, secondaryColor, bookingStatus, onChange, onBack, onConfirm, t }: ClientInfoFormProps) {
+const dateLocales: Record<string, any> = { es, en: enUS, it }
+
+export function ClientInfoForm({ clientInfo, selectedDate, selectedSlot, selectedProfessional, selectedService, primaryColor, secondaryColor, bookingStatus, onChange, onBack, onConfirm, t, lang = 'es' }: ClientInfoFormProps) {
   return (
     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="relative z-10">
       <div className="flex items-center justify-between mb-8">
@@ -72,7 +69,7 @@ export function ClientInfoForm({ clientInfo, selectedDate, selectedSlot, selecte
             <CalendarIcon className="h-6 w-6" style={{ color: primaryColor }} />
           </div>
           <div>
-            <p className="text-sm font-black text-[#191c1e]">{format(selectedDate, "d 'de' MMMM", { locale: es })}</p>
+            <p className="text-sm font-black text-[#191c1e]">{format(selectedDate, "d 'de' MMMM", { locale: dateLocales[lang] || es })}</p>
             <p className="text-[10px] font-black uppercase tracking-widest" style={{ color: primaryColor }}>{selectedSlot} • {selectedProfessional?.full_name}</p>
           </div>
         </div>
@@ -85,6 +82,17 @@ export function ClientInfoForm({ clientInfo, selectedDate, selectedSlot, selecte
       <button onClick={onConfirm} disabled={bookingStatus === 'loading' || !clientInfo.firstName || !clientInfo.phone} className="w-full font-black uppercase tracking-[0.2em] text-xs py-4 rounded-xl transition-all active:scale-95 text-white shadow-lg disabled:opacity-30 disabled:pointer-events-none" style={{ backgroundColor: secondaryColor }}>
         {bookingStatus === 'loading' ? <><Loader2 className="h-4 w-4 animate-spin inline mr-2" /> {t.confirming || 'Confirmando...'}</> : t.confirm_booking || 'Confirmar Reserva'}
       </button>
+
+      {bookingStatus === 'error' && (
+        <motion.div 
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mt-4 p-4 bg-red-50 border border-red-200 rounded-xl flex items-center gap-3"
+        >
+          <AlertCircle className="h-5 w-5 text-red-500 shrink-0" />
+          <p className="text-sm font-bold text-red-800">{t.error_booking || 'No se pudo confirmar la reserva'}</p>
+        </motion.div>
+      )}
     </motion.div>
   )
 }

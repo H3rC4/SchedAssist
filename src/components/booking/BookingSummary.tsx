@@ -1,12 +1,6 @@
 "use client"
 import { User } from 'lucide-react'
-
-function hexToRgba(hex: string, alpha: number): string {
-  const r = parseInt(hex.slice(1, 3), 16)
-  const g = parseInt(hex.slice(3, 5), 16)
-  const b = parseInt(hex.slice(5, 7), 16)
-  return `rgba(${r}, ${g}, ${b}, ${alpha})`
-}
+import { hexToRgba } from '@/lib/utils'
 
 interface BookingSummaryProps {
   step: number
@@ -24,7 +18,7 @@ export function BookingSummary({ step, selectedService, selectedProfessional, pr
     2: t.next_professional || 'Profesional',
     3: t.next_schedule || 'Horario',
     4: t.next_data || 'Tus Datos',
-    5: t.next_finish || 'Finalizar'
+    5: t.finish || 'Finalizar'
   }
 
   return (
@@ -42,7 +36,7 @@ export function BookingSummary({ step, selectedService, selectedProfessional, pr
       </div>
       <div className="text-right">
          <p className="text-[10px] font-black text-[#191c1e]/30 uppercase tracking-widest">{t.step_of} {step} / 5</p>
-         <p className="text-xs font-black" style={{ color: secondaryColor }}>{step === 5 ? t.finish || 'Finalizar' : t.next_label || 'Siguiente: ' + (nextLabels[step] || '')}</p>
+         <p className="text-xs font-black" style={{ color: secondaryColor }}>{nextLabels[step] || ''}</p>
       </div>
     </div>
   )

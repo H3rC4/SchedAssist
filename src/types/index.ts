@@ -177,6 +177,7 @@ export interface Appointment {
   start_at: string;
   end_at: string;
   notes?: string;
+  cancellation_token?: string;
   cancellation_reason?: string;
   cancellation_notified?: boolean;
   cancellation_notified_notes?: string;

@@ -1,4 +1,7 @@
 import { es, it, enUS } from 'date-fns/locale';
+import { en_booking } from './i18n/booking/en';
+import { es_booking } from './i18n/booking/es';
+import { it_booking } from './i18n/booking/it';
 
 export type Language = 'en' | 'es' | 'it';
 
@@ -2835,6 +2838,7 @@ export const translations = {
     ...en_whatsapp_page,
     ...en_notifications,
     ...en_whatsapp_chat,
+    ...en_booking,
   },
   es: {
     ...es_general,
@@ -2866,6 +2870,7 @@ export const translations = {
     ...es_whatsapp_page,
     ...es_notifications,
     ...es_whatsapp_chat,
+    ...es_booking,
   },
   it: {
     ...it_general,
@@ -2897,5 +2902,6 @@ export const translations = {
     ...it_whatsapp_page,
     ...it_notifications,
     ...it_whatsapp_chat,
+    ...it_booking,
   },
 };
