@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { AppointmentService } from '@/services/appointment.service';
+import { EmailService } from '@/services/email.service';
+import { generateCancellationToken } from '@/lib/utils';
 
 /**
  * Public endpoint for creating appointments from the booking portal.
@@ -79,8 +81,51 @@ export async function POST(req: NextRequest) {
       notes,
       location_id
     });
-
-    return NextResponse.json(data);
+    
+    // 3. Generate and update cancellation token
+    const cancellationToken = generateCancellationToken();
+    await supabaseAdmin
+      .from('appointments')
+      .update({ cancellation_token: cancellationToken })
+      .eq('id', data.id);
+    
+    // 4. Send confirmation email (non-blocking - don't fail booking if email fails)
+    try {
+      const [{ data: tenantCfg }, { data: clientData }, { data: profData }] = await Promise.all([
+        supabaseAdmin.from('tenants').select('name, settings').eq('id', tenant_id).single(),
+        supabaseAdmin.from('clients').select('first_name, last_name, email').eq('id', finalClientId).single(),
+        supabaseAdmin.from('professionals').select('full_name').eq('id', professional_id).single(),
+      ]);
+      
+      if (clientData?.email) {
+        const tenantName = tenantCfg?.settings?.clinic_name || tenantCfg?.name || 'Clinic';
+        const professionalName = profData?.full_name || 'Professional';
+        const startDate = new Date(start_at);
+        const dateStr = `${startDate.getDate()}/${startDate.getMonth() + 1}/${startDate.getFullYear()}`;
+        const timeStr = `${startDate.getHours().toString().padStart(2, '0')}:${startDate.getMinutes().toString().padStart(2, '0')}`;
+        const cancellationLink = `${process.env.NEXT_PUBLIC_APP_URL}/api/appointments/cancel/${cancellationToken}`;
+        
+        // Send email in background (don't await for response to avoid delaying the booking)
+        EmailService.sendAppointmentConfirmation(
+          clientData.email,
+          data.id,
+          `${clientData.first_name} ${clientData.last_name}`,
+          professionalName,
+          dateStr,
+          timeStr,
+          cancellationLink,
+          tenantName,
+          tenantCfg?.settings || {}
+        ).catch(emailErr => {
+          console.warn('[EmailService] Failed to send confirmation email (non-critical):', emailErr);
+        });
+      }
+    } catch (emailSetupErr) {
+      console.warn('[EmailService] Failed to setup email sending (non-critical):', emailSetupErr);
+    }
+    
+    // Return the appointment data with the token included
+    return NextResponse.json({ ...data, cancellation_token: cancellationToken });
   } catch (error: any) {
     console.error('[public appointment create] Error:', error);
     return NextResponse.json({ error: error.message }, { status: 500 });

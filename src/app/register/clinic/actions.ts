@@ -36,7 +36,7 @@ export async function createClinicAction(formData: FormData) {
         name: clinicName,
         slug: `${clinicName.toLowerCase().replace(/[^a-z0-9]/g, '-')}-${Math.random().toString(36).substring(2, 6)}`,
         timezone: countryConfig.timezone,
-        subscription_status: 'trialing',
+        subscription_status: 'trial',
         trial_ends_at: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
         settings: { 
           language, 

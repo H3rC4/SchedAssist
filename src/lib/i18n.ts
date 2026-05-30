@@ -1,4 +1,7 @@
 import { es, it, enUS } from 'date-fns/locale';
+import { en_booking } from './i18n/booking/en';
+import { es_booking } from './i18n/booking/es';
+import { it_booking } from './i18n/booking/it';
 
 export type Language = 'en' | 'es' | 'it';
 
@@ -66,6 +69,7 @@ const en_general = {
   whatsapp_blocked: 'WhatsApp blocked until payment',
   unlock_whatsapp: 'Unlock WhatsApp',
   subscribe_now: 'Subscribe for $79/month',
+  trial_grace_period: 'Grace period',
   clear: 'Clear',
   sync_required: 'Synchronization Required',
   pending_cancellations_desc: (count: number) => `System detected ${count} pending cancellations.`,
@@ -569,7 +573,6 @@ const en_pricing = {
   feat_200_patients: '200 patients',
   feat_unlimited_patients: 'Unlimited patients',
   feat_whatsapp_included: 'WhatsApp included',
-  feat_whatsapp_unlimited: 'Unlimited WhatsApp numbers',
   feat_automated_reminders: 'Automated reminders',
   feat_basic_clinical_records: 'Basic clinical records',
   feat_complete_clinical_records: 'Complete clinical records',
@@ -818,6 +821,12 @@ const en_analytics___extras = {
   citas_count: (val: number) => `${val} appts`,
   no_data_analytics: 'No Data to Display',
   no_data_analytics_desc: 'Start scheduling appointments to see metrics here.',
+  plan_limit_reached: 'Limit reached',
+  plan_limit_professionals: 'Maximum professionals reached for your plan.',
+  plan_limit_locations: 'Maximum locations reached for your plan.',
+  plan_limit_appointments: 'Monthly appointment limit reached for your plan.',
+  plan_limit_patients: 'Maximum patients reached for your plan.',
+  upgrade_to_continue: 'Upgrade to continue',
 };
 
 const en_whatsapp_page = {
@@ -981,6 +990,7 @@ const es_general = {
   whatsapp_blocked: 'WhatsApp bloqueado hasta el pago',
   unlock_whatsapp: 'Desbloquear WhatsApp',
   subscribe_now: 'Suscribirse por $79/mes',
+  trial_grace_period: 'Periodo de gracia',
   clear: 'Limpiar',
   sync_required: 'Sincronización Requerida',
   pending_cancellations_desc: (count: number) => `Sistema detectó ${count} cancelaciones pendientes.`,
@@ -1470,7 +1480,6 @@ const es_pricing = {
   feat_200_patients: '200 pacientes',
   feat_unlimited_patients: 'Pacientes ilimitados',
   feat_whatsapp_included: 'WhatsApp incluido',
-  feat_whatsapp_unlimited: 'Números WhatsApp ilimitados',
   feat_automated_reminders: 'Recordatorios automáticos',
   feat_basic_clinical_records: 'Historias clínicas básicas',
   feat_complete_clinical_records: 'Historias clínicas completas',
@@ -1731,6 +1740,12 @@ const es_analytics___extras = {
   citas_count: (val: number) => `${val} citas`,
   no_data_analytics: 'Sin Datos para Mostrar',
   no_data_analytics_desc: 'Comienza a agendar turnos para ver métricas aquí.',
+  plan_limit_reached: 'Límite alcanzado',
+  plan_limit_professionals: 'Máximo de profesionales alcanzado para tu plan.',
+  plan_limit_locations: 'Máximo de ubicaciones alcanzado para tu plan.',
+  plan_limit_appointments: 'Límite de turnos mensuales alcanzado para tu plan.',
+  plan_limit_patients: 'Máximo de pacientes alcanzado para tu plan.',
+  upgrade_to_continue: 'Mejorar plan para continuar',
 };
 
 const es_booking_portal_access = {
@@ -1997,6 +2012,7 @@ const it_sidebar = {
   whatsapp_blocked: 'WhatsApp bloccato fino al pagamento',
   unlock_whatsapp: 'Sblocca WhatsApp',
   subscribe_now: 'Abbonati per $79/mese',
+  trial_grace_period: 'Periodo di grazia',
   clear: 'Pulisci',
   sync_required: 'Sincronizzazione Richiesta',
   pending_cancellations_desc: (count: number) => `Il sistema ha rilevato ${count} cancellazioni in attesa.`,
@@ -2408,7 +2424,6 @@ const it_pricing = {
   feat_200_patients: '200 pazienti',
   feat_unlimited_patients: 'Pazienti illimitati',
   feat_whatsapp_included: 'WhatsApp incluso',
-  feat_whatsapp_unlimited: 'Numeri WhatsApp illimitati',
   feat_automated_reminders: 'Promemoria automatici',
   feat_basic_clinical_records: 'Cartelle cliniche di base',
   feat_complete_clinical_records: 'Cartelle cliniche complete',
@@ -2669,6 +2684,12 @@ const it_analytics___extras = {
   citas_count: (val: number) => `${val} appt`,
   no_data_analytics: 'Nessun Dato da Mostrare',
   no_data_analytics_desc: 'Inizia a programmare appuntamenti per vedere le metriche qui.',
+  plan_limit_reached: 'Limite raggiunto',
+  plan_limit_professionals: 'Massimo professionisti raggiunto per il tuo piano.',
+  plan_limit_locations: 'Massimo sedi raggiunto per il tuo piano.',
+  plan_limit_appointments: 'Limite appuntamenti mensili raggiunto per il tuo piano.',
+  plan_limit_patients: 'Massimo pazienti raggiunto per il tuo piano.',
+  upgrade_to_continue: 'Migliora piano per continuare',
 };
 
 const it_booking_portal_access = {
@@ -2817,6 +2838,7 @@ export const translations = {
     ...en_whatsapp_page,
     ...en_notifications,
     ...en_whatsapp_chat,
+    ...en_booking,
   },
   es: {
     ...es_general,
@@ -2848,6 +2870,7 @@ export const translations = {
     ...es_whatsapp_page,
     ...es_notifications,
     ...es_whatsapp_chat,
+    ...es_booking,
   },
   it: {
     ...it_general,
@@ -2879,5 +2902,6 @@ export const translations = {
     ...it_whatsapp_page,
     ...it_notifications,
     ...it_whatsapp_chat,
+    ...it_booking,
   },
 };

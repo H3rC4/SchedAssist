@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { AppointmentService } from '@/services/appointment.service'
 import { MessageService } from '@/services/message.service'
 import { verifyTenantAccess } from '@/lib/auth-utils'
+import { checkPlanLimit } from '@/lib/plan-limits'
 import { format, parseISO } from 'date-fns'
 import { fromZonedTime } from 'date-fns-tz'
 import { translations, dateLocales } from '@/lib/i18n'
@@ -77,7 +78,7 @@ export async function POST(req: NextRequest) {
   const { tenant_id, first_name, last_name, phone, service_id, professional_id, start_at, end_at, notes, location_id } = body
   const supabase = createClient()
   const { data: { user } } = await supabase.auth.getUser();
-  
+
   const access = await verifyTenantAccess(supabase, user, tenant_id);
   if (!access.authorized) {
     return NextResponse.json({ error: access.error }, { status: access.status });
@@ -89,6 +90,15 @@ export async function POST(req: NextRequest) {
     if (!profData || profData.id !== professional_id) {
       return NextResponse.json({ error: 'Unauthorized: Can only create appointments for yourself' }, { status: 403 });
     }
+  }
+
+  // Check plan limit for appointments (counts current month)
+  const limitCheck = await checkPlanLimit(tenant_id, 'appointments');
+  if (!limitCheck.allowed) {
+    return NextResponse.json(
+      { error: limitCheck.error, code: 'PLAN_LIMIT_REACHED' },
+      { status: 403 }
+    );
   }
 
   // Create admin client to bypass RLS for now (ensuring we strictly checked tenant_id above)

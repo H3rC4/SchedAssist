@@ -216,6 +216,7 @@ export default function ProfessionalsPage() {
             saving={saving}
             saved={saved}
             locations={locations}
+            tenantId={tenantId}
             onCreate={handleCreateProfessional}
           />
         )}

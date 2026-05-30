@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server';
 import { verifyTenantAccess } from '@/lib/auth-utils';
+import { checkPlanLimit } from '@/lib/plan-limits';
 
 // Note: For POST/DELETE where auth admin access is needed, 
 // the admin client will be created inside the method after verification.
@@ -50,10 +51,19 @@ export async function POST(req: NextRequest) {
 
   const supabase = createClient();
   const { data: { user: currentUser } } = await supabase.auth.getUser();
-  
+
   const access = await verifyTenantAccess(supabase, currentUser, tenant_id, ['admin', 'owner', 'tenant_admin']);
   if (!access.authorized) {
     return NextResponse.json({ error: access.error }, { status: access.status });
+  }
+
+  // Check plan limit for professionals
+  const limitCheck = await checkPlanLimit(tenant_id, 'professionals');
+  if (!limitCheck.allowed) {
+    return NextResponse.json(
+      { error: limitCheck.error, code: 'PLAN_LIMIT_REACHED' },
+      { status: 403 }
+    );
   }
 
   // Use Service Role client for Auth manipulation
@@ -174,6 +184,10 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ error: access.error }, { status: access.status });
   }
 
+  // Use admin client for rules operations to bypass RLS
+  const { createClient: createAdminClient } = require('@supabase/supabase-js');
+  const supabaseAdmin = createAdminClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
+
   // If professional, can only edit own data
   if (access.role === 'professional') {
     const { data: profData } = await supabase.from('professionals').select('id').eq('user_id', user!.id).single();
@@ -184,7 +198,7 @@ export async function PATCH(req: NextRequest) {
 
   // 1. Update general info if present
   if (Object.keys(generalInfo).length > 0) {
-    const { error: genError } = await supabase
+    const { error: genError } = await supabaseAdmin
       .from('professionals')
       .update(generalInfo)
       .eq('id', targetId)
@@ -196,13 +210,13 @@ export async function PATCH(req: NextRequest) {
   // 2. Update rules if present
   if (rules) {
     // Delete old rules
-    await supabase
+    await supabaseAdmin
       .from('availability_rules')
       .delete()
       .eq('professional_id', targetId)
       .eq('tenant_id', tenant_id)
 
-    const { data: rulesData, error: rulesError } = await supabase
+    const { data: rulesData, error: rulesError } = await supabaseAdmin
       .from('availability_rules')
       .insert(rules.map((r: any) => ({
           tenant_id,

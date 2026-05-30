@@ -13,6 +13,7 @@ import { NotificationBell } from '@/components/dashboard/NotificationBell'
 import { NotificationDrawer } from '@/components/dashboard/NotificationDrawer'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ForcePasswordChangeGate } from '@/components/dashboard/ForcePasswordChangeGate'
+import { TrialExpiredGate } from '@/components/dashboard/TrialExpiredGate'
 import { useLandingTranslation } from '@/components/LanguageContext'
 
 function DashboardHeader({ lang = 'es', tenantId, logoUrl, tenantName: headerTenantName, onMenuClick, onBellClick }: { lang?: Language; tenantId?: string; logoUrl?: string; tenantName?: string; onMenuClick: () => void; onBellClick: () => void }) {
@@ -152,6 +153,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   function handleTutorialComplete() {
     setTenantInfo(prev => prev ? { ...prev, settings: { ...prev.settings, tutorial_completed: true } } : null)
+  }
+
+  // Allow access to billing/pay pages even when inactive
+  const isBillingPage = pathname === '/dashboard/pay' || pathname === '/dashboard/settings/billing'
+  const showTrialExpiredGate = tenantInfo && tenantInfo.status === 'inactive' && !isBillingPage
+
+  if (showTrialExpiredGate) {
+    return <TrialExpiredGate lang={tenantInfo.lang} />
   }
 
   return (

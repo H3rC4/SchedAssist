@@ -20,19 +20,41 @@ export async function generateMetadata({
     };
   }
 
-  const title = `Reserva en ${tenant.name} | SchedAssist`;
-  const description = tenant.description || `Agenda tu turno online en ${tenant.name} de forma rápida y sencilla.`;
+  const title = `Reservá en ${tenant.name}`;
+  const description = tenant.settings?.booking_instructions || tenant.description || `Agenda tu turno online en ${tenant.name} de forma rápida y sencilla.`;
+  const logoUrl = tenant.settings?.logo_url;
+  const primaryColor = tenant.settings?.primary_color || '#005c55';
 
   return {
     title,
     description,
+    keywords: [tenant.name, 'turnos', 'citas', 'clínica', 'reserva online'],
     openGraph: {
       title,
       description,
-      images: tenant.settings?.logo_url ? [tenant.settings.logo_url] : [],
+      type: 'website',
+      siteName: tenant.name,
+      images: logoUrl ? [
+        {
+          url: logoUrl,
+          width: 512,
+          height: 512,
+          alt: `Logo de ${tenant.name}`,
+        }
+      ] : [],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: logoUrl ? [logoUrl] : [],
     },
     alternates: {
       canonical: `/book/${params.slug}`,
+    },
+    icons: {
+      icon: logoUrl || undefined,
+      shortcut: logoUrl || undefined,
     },
   };
 }
@@ -62,6 +84,11 @@ export default async function BookingLayout({
       description: tenant.description || `Clínica médica ${tenant.name}`,
       url: `https://www.schedassist.com/book/${params.slug}`,
       ...(tenant.settings?.logo_url && { image: tenant.settings.logo_url }),
+      address: tenant.settings?.city ? {
+        '@type': 'PostalAddress',
+        addressLocality: tenant.settings.city,
+        addressCountry: tenant.settings?.country || 'AR',
+      } : undefined,
     };
   }
 

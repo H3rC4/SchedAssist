@@ -330,6 +330,7 @@ export default function ClientsPage() {
             onClose={() => setIsNewPatientOpen(false)}
             lang={lang}
             translations={t}
+            tenantId={tenantId}
             onCreatePatient={handleCreatePatient}
           />
         )}
