@@ -62,6 +62,13 @@ export default function BookingPage() {
     }
   }, [slug])
 
+  // Refetch slots when selectedDate changes in step 4
+  useEffect(() => {
+    if (step === 4 && tenant && selectedService && selectedProfessional && selectedDate) {
+      loadSlots()
+    }
+  }, [selectedDate])
+
   const {
     loading,
     tenant,
