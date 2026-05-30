@@ -231,8 +231,6 @@ export function ProfessionalDrawer({
     }
     onSave(localInfoToSave)
   }
-    onSave(localInfoToSave)
-  }
 
   useEffect(() => {
     if (saved) {
