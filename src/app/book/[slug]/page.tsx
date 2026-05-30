@@ -181,7 +181,7 @@ export default function BookingPage() {
     return <BookingNotFound primaryColor={primaryColor} t={t} />
   }
 
-  if (errorType && errorType !== 'not_found') {
+  if (errorType) {
     return <BookingError type={errorType} primaryColor={primaryColor} t={t} onRetry={retry} />
   }
 
