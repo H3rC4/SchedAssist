@@ -23,7 +23,16 @@ export async function registerAction(formData: FormData) {
   const supabaseLocal = createClient(supabaseUrl, supabaseAnonKey);
 
   try {
-    // 1. Create the user in Auth (email not confirmed initially)
+    // 1. Check if user already exists (from a previous failed attempt) and clean up
+    const { data: existingUsers } = await supabaseAdmin.auth.admin.listUsers();
+    const existingUser = existingUsers?.users?.find(u => u.email === email);
+    
+    if (existingUser) {
+      // Delete orphaned user from previous failed attempt
+      await supabaseAdmin.auth.admin.deleteUser(existingUser.id);
+    }
+
+    // 2. Create the user in Auth (email not confirmed initially)
     const { data: authData, error: authError } = await supabaseLocal.auth.signUp({
       email,
       password,
