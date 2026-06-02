@@ -1,6 +1,7 @@
 'use server';
 
 import { createClient } from '@supabase/supabase-js';
+import { EmailService } from '@/services/email.service';
 
 export async function registerAction(formData: FormData) {
   const email = formData.get('email') as string;
@@ -128,6 +129,21 @@ export async function registerAction(formData: FormData) {
       });
 
     if (tokenError) throw tokenError;
+
+    // ─── PHASE 7: SEND VERIFICATION EMAIL ──────────────────────────
+    const verificationLink = `${process.env.NEXT_PUBLIC_APP_URL}/verify-email/${verificationToken}`;
+    
+    const emailResult = await EmailService.sendVerificationEmail(
+      email,
+      clinicName,
+      verificationLink,
+      { language, specialty: 'Medicina General' }
+    );
+
+    if (!emailResult.success) {
+      console.error('Failed to send verification email:', emailResult.error);
+      // Don't fail registration if email fails - user can request resend later
+    }
 
     // ─── ALL DONE ─────────────────────────────────────────────────
     return { success: true };
