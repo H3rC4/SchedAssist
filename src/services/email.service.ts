@@ -85,8 +85,11 @@ export class EmailService {
                 This is an automated message, please do not reply.
             `;
 
+            const fromEmail = process.env.RESEND_FROM_EMAIL || 
+              `${tenantName} <no-reply@${process.env.NEXT_PUBLIC_APP_URL?.replace('https://', '').replace('http://', '')}>`;
+
             const data = await resend.emails.send({
-                from: `${tenantName} <no-reply@${process.env.NEXT_PUBLIC_APP_URL?.replace('https://', '').replace('http://', '')}>`,
+                from: fromEmail,
                 to: [to],
                 subject: `Verify your email for ${tenantName}`,
                 html: html,
@@ -176,8 +179,11 @@ export class EmailService {
                 This is an automated message, please do not reply.
             `;
 
+            const fromEmail = process.env.RESEND_FROM_EMAIL || 
+              `${tenantName} <no-reply@${process.env.NEXT_PUBLIC_APP_URL?.replace('https://', '').replace('http://', '')}>`;
+
             const data = await resend.emails.send({
-                from: `${tenantName} <no-reply@${process.env.NEXT_PUBLIC_APP_URL?.replace('https://', '').replace('http://', '')}>`,
+                from: fromEmail,
                 to: [to],
                 subject: `Password reset for ${tenantName}`,
                 html: html,
@@ -299,8 +305,11 @@ export class EmailService {
                 This is an automated message, please do not reply.
             `;
 
+            const fromEmail = process.env.RESEND_FROM_EMAIL || 
+              `${tenantName} <appointments@${process.env.NEXT_PUBLIC_APP_URL?.replace('https://', '').replace('http://', '')}>`;
+
             const data = await resend.emails.send({
-                from: `${tenantName} <appointments@${process.env.NEXT_PUBLIC_APP_URL?.replace('https://', '').replace('http://', '')}>`,
+                from: fromEmail,
                 to: [to],
                 subject: `Appointment Confirmed - ${tenantName}`,
                 html: html,
