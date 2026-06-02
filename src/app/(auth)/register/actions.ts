@@ -1,6 +1,5 @@
 'use server';
 
-import { createClient } from '@supabase/supabase-js';
 import { redirect } from 'next/navigation';
 
 export async function registerAction(formData: FormData) {
@@ -10,87 +9,20 @@ export async function registerAction(formData: FormData) {
   const language = formData.get('language') as string || 'es';
 
   if (!email || !password || !clinicName) {
-    return { error: 'Por favor completa todos los campos.' };
+    return { error: 'Please complete all fields.' };
   }
 
-  // Clientes Supabase
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-  
-  // Usamos el cliente con Service Role para crear el tenant sin restricciones de RLS iniciales
-  const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
-  const supabaseLocal = createClient(supabaseUrl, supabaseAnonKey);
+  // Call our custom registration endpoint
+  const response = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/auth/register`, {
+    method: 'POST',
+    body: formData
+  });
 
-  try {
-    // 1. Crear el usuario en Auth
-    const { data: authData, error: authError } = await supabaseLocal.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback?next=/login?confirmed=true`
-      }
-    });
-
-    if (authError) throw authError;
-    if (!authData.user) throw new Error('No se pudo crear el usuario.');
-
-    const userId = authData.user.id;
-    const slug = clinicName.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, '');
-    
-    // Calcular fin de prueba (14 días)
-    const trialEndsAt = new Date();
-    trialEndsAt.setDate(trialEndsAt.getDate() + 14);
-
-    // 2. Crear el Tenant (Clínica) con estado 'trial'
-    const { data: tenant, error: tenantError } = await supabaseAdmin
-      .from('tenants')
-      .insert([
-        {
-          name: clinicName,
-          slug,
-          subscription_status: 'trial', 
-          trial_ends_at: trialEndsAt.toISOString(),
-          settings: {
-            language: language,
-            specialty: 'Medicina General'
-          }
-        }
-      ])
-      .select()
-      .single();
-
-    if (tenantError) throw tenantError;
-
-    // 3. Vincular usuario con el Tenant como Admin
-    const { error: linkError } = await supabaseAdmin
-      .from('tenant_users')
-      .insert([
-        {
-          tenant_id: tenant.id,
-          user_id: userId,
-          role: 'tenant_admin'
-        }
-      ]);
-
-    if (linkError) throw linkError;
-
-    // 4. Crear sede por defecto con el nombre de la clínica
-    await supabaseAdmin
-      .from('locations')
-      .insert([
-        {
-          tenant_id: tenant.id,
-          name: clinicName,
-          active: true
-        }
-      ]);
-
-    // 5. Todo bien. Devolver éxito para que el frontend inicie el checkout
-    return { success: true };
-    
-  } catch (err: any) {
-    console.error('Registration error:', err);
-    return { error: err.message || 'Error al crear la cuenta.' };
+  if (!response.ok) {
+    const errorData = await response.json();
+    return { error: errorData.error || 'Error creating account.' };
   }
+
+  const data = await response.json();
+  return { success: true, message: data.message };
 }

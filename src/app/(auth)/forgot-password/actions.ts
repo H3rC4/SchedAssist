@@ -1,21 +1,25 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 
 export async function requestPasswordReset(formData: FormData) {
   const email = formData.get('email') as string
-  const supabase = await createClient()
 
-  const origin = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
-  
-  const { error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: `${origin}/auth/callback?next=/reset-password`,
-  })
-
-  if (error) {
-    return redirect(`/forgot-password?error=${encodeURIComponent(error.message)}`)
+  if (!email) {
+    return redirect(`/forgot-password?error=${encodeURIComponent('Please enter your email address.')}`)
   }
 
+  // Call our custom password reset request endpoint
+  const response = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/auth/request-reset`, {
+    method: 'POST',
+    body: formData
+  })
+
+  if (!response.ok) {
+    const errorData = await response.json()
+    return redirect(`/forgot-password?error=${encodeURIComponent(errorData.error || 'Failed to process request')}`)
+  }
+
+  // Our endpoint always returns success (for security - doesn't reveal if email exists)
   return redirect(`/forgot-password?success=true`)
 }

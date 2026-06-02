@@ -10,15 +10,21 @@ export async function signIn(formData: FormData) {
   const password = formData.get('password') as string
   const supabase = createClient()
 
-  const { error } = await supabase.auth.signInWithPassword({
+  const { data: authData, error: signInError } = await supabase.auth.signInWithPassword({
     email,
     password,
   })
 
-  if (error) {
-    console.error('Login error:', error.message)
-    return redirect(`/login?error=${encodeURIComponent(error.message)}`)
+  if (signInError) {
+    console.error('Login error:', signInError.message)
+    return redirect(`/login?error=${encodeURIComponent(signInError.message)}`)
   }
+
+   // Check if email is confirmed
+    if (!authData.user?.email_confirmed_at) {
+      await supabase.auth.signOut()
+      return redirect(`/login?error=${encodeURIComponent('Please verify your email before logging in. Check your inbox for the verification link.')}`)
+    }
 
   // Bouncer Logic - SuperAdmins
   if (SUPERADMIN_EMAILS.includes(email)) {
