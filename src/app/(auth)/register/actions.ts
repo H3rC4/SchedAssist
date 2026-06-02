@@ -1,7 +1,6 @@
 'use server';
 
 import { createClient } from '@supabase/supabase-js';
-import { redirect } from 'next/navigation';
 
 export async function registerAction(formData: FormData) {
   const email = formData.get('email') as string;
@@ -13,95 +12,147 @@ export async function registerAction(formData: FormData) {
     return { error: 'Please complete all fields.' };
   }
 
-  // Supabase clients
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
   const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-   
-  // Use service role client to create tenant without initial RLS restrictions
   const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
-  const supabaseLocal = createClient(supabaseUrl, supabaseAnonKey);
+
+  // Track created resources for rollback on failure
+  let createdUserId: string | null = null;
+  let createdTenantId: string | null = null;
 
   try {
-    // 1. Check if user already exists (from a previous failed attempt) and clean up
+    // ─── PHASE 1: CLEANUP ORPHANED DATA ───────────────────────────
+    // Check if user already exists from a previous failed attempt
     const { data: existingUsers } = await supabaseAdmin.auth.admin.listUsers();
     const existingUser = existingUsers?.users?.find(u => u.email === email);
-    
+
     if (existingUser) {
-      // Delete orphaned user from previous failed attempt
+      createdUserId = existingUser.id;
+
+      // Find and delete any tenant linked to this orphaned user
+      const { data: orphanedLinks } = await supabaseAdmin
+        .from('tenant_users')
+        .select('tenant_id')
+        .eq('user_id', existingUser.id);
+
+      if (orphanedLinks && orphanedLinks.length > 0) {
+        for (const link of orphanedLinks) {
+          // Delete locations, services, professionals, appointments for this tenant
+          await supabaseAdmin.from('locations').delete().eq('tenant_id', link.tenant_id);
+          await supabaseAdmin.from('services').delete().eq('tenant_id', link.tenant_id);
+          await supabaseAdmin.from('professionals').delete().eq('tenant_id', link.tenant_id);
+          await supabaseAdmin.from('tenant_users').delete().eq('tenant_id', link.tenant_id);
+          await supabaseAdmin.from('tenants').delete().eq('id', link.tenant_id);
+        }
+      }
+
+      // Delete the orphaned auth user
       await supabaseAdmin.auth.admin.deleteUser(existingUser.id);
+      createdUserId = null;
     }
 
-    // 2. Create the user in Auth (email not confirmed initially)
-    const { data: authData, error: authError } = await supabaseLocal.auth.signUp({
+    // ─── PHASE 2: CREATE USER IN AUTH ─────────────────────────────
+    // Use admin client to create user with email_confirm: false
+    const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
       email,
       password,
-      options: {
-        data: {
-          full_name: clinicName
-        }
+      email_confirm: false,
+      user_metadata: {
+        full_name: clinicName
       }
     });
 
     if (authError) throw authError;
     if (!authData.user) throw new Error('Failed to create user.');
 
+    createdUserId = authData.user.id;
     const userId = authData.user.id;
+
+    // ─── PHASE 3: CREATE TENANT ──────────────────────────────────
     const slug = clinicName.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, '');
-     
-    // Calculate trial end (14 days)
     const trialEndsAt = new Date();
     trialEndsAt.setDate(trialEndsAt.getDate() + 14);
 
-    // 2. Create the Tenant (Clinic) with 'trial' status
     const { data: tenant, error: tenantError } = await supabaseAdmin
       .from('tenants')
-      .insert([
-        {
-          name: clinicName,
-          slug,
-          subscription_status: 'trial', 
-          trial_ends_at: trialEndsAt.toISOString(),
-          settings: {
-            language: language,
-            specialty: 'Medicina General'
-          }
+      .insert({
+        name: clinicName,
+        slug,
+        subscription_status: 'trial',
+        trial_ends_at: trialEndsAt.toISOString(),
+        settings: {
+          language: language,
+          specialty: 'Medicina General'
         }
-      ])
+      })
       .select()
       .single();
 
     if (tenantError) throw tenantError;
+    createdTenantId = tenant.id;
 
-    // 3. Link user with the Tenant as Admin
+    // ─── PHASE 4: LINK USER TO TENANT ────────────────────────────
     const { error: linkError } = await supabaseAdmin
       .from('tenant_users')
-      .insert([
-        {
-          tenant_id: tenant.id,
-          user_id: userId,
-          role: 'tenant_admin'
-        }
-      ]);
+      .insert({
+        tenant_id: tenant.id,
+        user_id: userId,
+        role: 'tenant_admin'
+      });
 
     if (linkError) throw linkError;
 
-    // 4. Create default location with clinic name
-    await supabaseAdmin
+    // ─── PHASE 5: CREATE DEFAULT LOCATION ─────────────────────────
+    const { error: locationError } = await supabaseAdmin
       .from('locations')
-      .insert([
-        {
-          tenant_id: tenant.id,
-          name: clinicName,
-          active: true
-        }
-      ]);
+      .insert({
+        tenant_id: tenant.id,
+        name: clinicName,
+        active: true
+      });
 
-    // 5. Return success - email verification will be handled by our custom endpoints
+    if (locationError) throw locationError;
+
+    // ─── PHASE 6: GENERATE VERIFICATION TOKEN ─────────────────────
+    const verificationToken = Math.random().toString(36).substring(2, 15) +
+                              Math.random().toString(36).substring(2, 15);
+    const tokenExpires = new Date();
+    tokenExpires.setHours(tokenExpires.getHours() + 24);
+
+    const { error: tokenError } = await supabaseAdmin
+      .from('email_verification_tokens')
+      .insert({
+        user_id: userId,
+        token: verificationToken,
+        expires_at: tokenExpires.toISOString()
+      });
+
+    if (tokenError) throw tokenError;
+
+    // ─── ALL DONE ─────────────────────────────────────────────────
     return { success: true };
-    
+
   } catch (err: any) {
     console.error('Registration error:', err);
+
+    // ─── ROLLBACK: Clean up any created resources ─────────────────
+    if (createdUserId) {
+      try {
+        // Delete tenant links and tenant if exists
+        if (createdTenantId) {
+          await supabaseAdmin.from('locations').delete().eq('tenant_id', createdTenantId);
+          await supabaseAdmin.from('services').delete().eq('tenant_id', createdTenantId);
+          await supabaseAdmin.from('professionals').delete().eq('tenant_id', createdTenantId);
+          await supabaseAdmin.from('tenant_users').delete().eq('tenant_id', createdTenantId);
+          await supabaseAdmin.from('tenants').delete().eq('id', createdTenantId);
+        }
+        // Delete the auth user
+        await supabaseAdmin.auth.admin.deleteUser(createdUserId);
+      } catch (rollbackErr) {
+        console.error('Rollback failed:', rollbackErr);
+      }
+    }
+
     return { error: err.message || 'Error creating account.' };
   }
 }
