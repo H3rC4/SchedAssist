@@ -46,7 +46,7 @@ export async function requestPasswordReset(formData: FormData) {
     
     if (tokenError) throw tokenError
     
-    const resetLink = `${process.env.NEXT_PUBLIC_APP_URL}/reset-password?token=${resetToken}`
+    const resetLink = `${process.env.NEXT_PUBLIC_APP_URL}api/auth/reset-password/${resetToken}`
 
     // Send password reset email
     await EmailService.sendPasswordResetEmail(
