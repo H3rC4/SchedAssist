@@ -131,7 +131,7 @@ export async function registerAction(formData: FormData) {
     if (tokenError) throw tokenError;
 
     // ─── PHASE 7: SEND VERIFICATION EMAIL ──────────────────────────
-    const verificationLink = `${process.env.NEXT_PUBLIC_APP_URL}/verify-email/${verificationToken}`;
+    const verificationLink = `${process.env.NEXT_PUBLIC_APP_URL}api/auth/verify-email/${verificationToken}`;
     
     const emailResult = await EmailService.sendVerificationEmail(
       email,
