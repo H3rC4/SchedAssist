@@ -13,11 +13,13 @@ import { motion, AnimatePresence } from 'framer-motion';
 export default function LoginPage({
   searchParams,
 }: {
-  searchParams: { error?: string; confirmed?: string };
+  searchParams: { error?: string; confirmed?: string; verified?: string; reset?: string };
 }) {
   const { t, language } = useLandingTranslation();
   const error = searchParams?.error;
   const confirmed = searchParams?.confirmed === 'true';
+  const verified = searchParams?.verified === 'true';
+  const reset = searchParams?.reset === 'true';
   const [mounted, setMounted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -96,20 +98,48 @@ export default function LoginPage({
             </p>
           </header>
 
-          {confirmed && (
-            <motion.div 
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="mb-8 p-6 bg-emerald-50 border border-emerald-200 flex items-center gap-4"
-            >
-              <div className="h-10 w-10 bg-emerald-100 flex items-center justify-center text-emerald-600 shrink-0">
-                <ShieldCheck className="h-5 w-5" />
-              </div>
-              <p className="text-sm font-bold text-emerald-800 tracking-tight">
-                Account verified. Access granted.
-              </p>
-            </motion.div>
-          )}
+           {confirmed && (
+             <motion.div 
+               initial={{ opacity: 0, y: -10 }}
+               animate={{ opacity: 1, y: 0 }}
+               className="mb-8 p-6 bg-emerald-50 border border-emerald-200 flex items-center gap-4"
+             >
+               <div className="h-10 w-10 bg-emerald-100 flex items-center justify-center text-emerald-600 shrink-0">
+                 <ShieldCheck className="h-5 w-5" />
+               </div>
+               <p className="text-sm font-bold text-emerald-800 tracking-tight">
+                 Account verified. Access granted.
+               </p>
+             </motion.div>
+           )}
+           {verified && (
+             <motion.div 
+               initial={{ opacity: 0, y: -10 }}
+               animate={{ opacity: 1, y: 0 }}
+               className="mb-8 p-6 bg-emerald-50 border border-emerald-200 flex items-center gap-4"
+             >
+               <div className="h-10 w-10 bg-emerald-100 flex items-center justify-center text-emerald-600 shrink-0">
+                 <Mail className="h-5 w-5" />
+               </div>
+               <p className="text-sm font-bold text-emerald-800 tracking-tight">
+                 Email verified successfully. You can now log in.
+               </p>
+             </motion.div>
+           )}
+           {reset && (
+             <motion.div 
+               initial={{ opacity: 0, y: -10 }}
+               animate={{ opacity: 1, y: 0 }}
+               className="mb-8 p-6 bg-emerald-50 border border-emerald-200 flex items-center gap-4"
+             >
+               <div className="h-10 w-10 bg-emerald-100 flex items-center justify-center text-emerald-600 shrink-0">
+                 <Loader2 className="h-5 w-5" />
+               </div>
+               <p className="text-sm font-bold text-emerald-800 tracking-tight">
+                 Password has been reset. You can now log in with your new password.
+               </p>
+             </motion.div>
+           )}
 
           {error && (
             <motion.div 

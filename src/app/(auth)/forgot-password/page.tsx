@@ -1,87 +1,135 @@
+'use client'
+
 import Link from 'next/link'
 import { requestPasswordReset } from './actions'
+import { Logo } from '@/components/Logo'
+import { motion, AnimatePresence } from 'framer-motion'
+import { AlertCircle, ShieldCheck, Mail, ChevronRight, ArrowLeft, Loader2 } from 'lucide-react'
+import { useLandingTranslation } from '@/components/LanguageContext'
 
 export default function ForgotPasswordPage({ 
   searchParams 
 }: { 
   searchParams: { error?: string; success?: string } 
 }) {
+  const { t } = useLandingTranslation()
   const error = searchParams.error
   const success = searchParams.success
 
   return (
-    <div className="flex min-h-screen flex-col justify-center bg-gray-50 py-12 sm:px-6 lg:px-8">
-      <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">
-          Recupera tu contraseña
-        </h2>
-        <p className="mt-2 text-center text-sm text-gray-600">
-          Ingresa tu correo y te enviaremos un enlace de recuperación.
-        </p>
-      </div>
+    <div className="min-h-screen w-full flex items-center justify-center bg-white p-6 overflow-hidden relative">
+      {/* Blur decorativo de fondo */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-96 bg-primary/[0.03] blur-[120px] rounded-full -z-10 pointer-events-none" />
+      
+      <AnimatePresence>
+        {/* Loading overlay would go here if needed */}
+      </AnimatePresence>
 
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white px-4 py-8 shadow sm:rounded-lg sm:px-10 border border-gray-100">
-          {error && (
-            <div className="mb-4 rounded-md bg-red-50 p-4">
-              <div className="flex">
-                <div className="ml-3">
-                  <h3 className="text-sm font-medium text-red-800">Error</h3>
-                  <p className="mt-2 text-sm text-red-700">{error}</p>
-                </div>
-              </div>
+      <motion.div 
+        initial={{ opacity: 0, y: 40 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8, ease: "easeOut" }}
+        className="max-w-xl w-full relative z-10"
+      >
+        <div className="flex justify-center mb-12">
+          <Link href="/" className="hover:scale-105 transition-transform active:scale-95">
+            <Logo />
+          </Link>
+        </div>
+
+        <div className="border border-primary/10 p-12 md:p-16 relative overflow-hidden">
+          <div className="absolute top-0 right-0 p-8 opacity-[0.02] pointer-events-none select-none">
+            <span className="text-6xl font-black uppercase tracking-tighter text-primary">Recover</span>
+          </div>
+
+          <header className="mb-12 relative z-10 text-center">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 border border-primary/10 bg-primary/[0.03] text-primary text-[9px] font-black uppercase tracking-[0.2em] mb-6">
+              <AlertCircle className="h-3 w-3" /> {t('forgot_password.security_check')}
             </div>
+            <h1 className="text-4xl font-black text-[#191c1e] tracking-tighter uppercase mb-3">
+              {t('forgot_password.recover_title')}
+              <br />
+              <span className="text-primary italic">{t('forgot_password.access')}</span>
+            </h1>
+            <p className="text-[10px] font-black text-[#191c1e]/40 uppercase tracking-[0.4em]">
+              {t('forgot_password.precision_recovery')}
+            </p>
+          </header>
+
+          {error && (
+            <motion.div 
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mb-8 p-6 bg-red-50 border border-red-200 flex items-center gap-4"
+            >
+              <div className="h-10 w-10 bg-red-100 flex items-center justify-center text-red-600 shrink-0">
+                <AlertCircle className="h-5 w-5" />
+              </div>
+              <p className="text-sm font-bold text-red-800 tracking-tight uppercase">
+                {error}
+              </p>
+            </motion.div>
           )}
 
           {success && (
-            <div className="mb-4 rounded-md bg-green-50 p-4">
-              <div className="flex">
-                <div className="ml-3">
-                  <h3 className="text-sm font-medium text-green-800">Correo enviado</h3>
-                  <p className="mt-2 text-sm text-green-700">
-                    Revisa tu bandeja de entrada (y la carpeta de spam) para continuar.
-                  </p>
-                </div>
+            <motion.div 
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mb-8 p-6 bg-emerald-50 border border-emerald-200 flex items-center gap-4"
+            >
+              <div className="h-10 w-10 bg-emerald-100 flex items-center justify-center text-emerald-600 shrink-0">
+                <ShieldCheck className="h-5 w-5" />
+              </div>
+              <p className="text-sm font-bold text-emerald-800 tracking-tight">
+                {t('forgot_password.reset_instructions_sent')}
+              </p>
+            </motion.div>
+          )}
+
+          <form onSubmit={(e) => {
+            e.preventDefault();
+            requestPasswordReset(new FormData(e.currentTarget));
+          }} className="space-y-5 relative z-10">
+            <div className="flex items-center gap-4 py-2">
+              <div className="h-px flex-1 bg-primary/10" />
+              <span className="text-[8px] font-black text-primary/30 uppercase tracking-[0.4em]">{t('forgot_password.or_email')}</span>
+              <div className="h-px flex-1 bg-primary/10" />
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-[9px] font-black text-primary/60 uppercase tracking-[0.3em] ml-2">
+                {t('forgot_password.email')}
+              </label>
+              <div className="relative group">
+                <Mail className="absolute left-5 top-1/2 -translate-y-1/2 h-4 w-4 text-primary/30 group-focus-within:text-primary transition-colors" />
+                <input
+                  name="email"
+                  type="email"
+                  required
+                  className="w-full bg-primary/[0.03] border border-primary/20 py-4 pl-14 pr-5 text-sm font-bold text-[#191c1e] placeholder:text-primary/30 focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all outline-none"
+                  placeholder="tucorreo@dominio.com"
+                />
               </div>
             </div>
-          )}
 
-          {!success && (
-            <form className="space-y-6" action={requestPasswordReset} method="POST">
-              <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                  Correo electrónico
-                </label>
-                <div className="mt-1">
-                  <input
-                    id="email"
-                    name="email"
-                    type="email"
-                    autoComplete="email"
-                    required
-                    className="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-primary-500 focus:outline-none focus:ring-primary-500 sm:text-sm text-black"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <button
-                  type="submit"
-                  className="flex w-full justify-center rounded-md border border-transparent bg-primary-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
-                >
-                  Enviar enlace
-                </button>
-              </div>
-            </form>
-          )}
-
-          <div className="mt-6 text-center">
-            <Link href="/login" className="text-sm font-medium text-primary-600 hover:text-primary-500">
-              ← Volver al inicio de sesión
-            </Link>
-          </div>
+            <button
+              type="submit"
+              className="w-full py-4 bg-primary text-white text-xs font-black uppercase tracking-[0.4em] transition-all shadow-xl shadow-primary/20 hover:bg-primary-light hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-3 group"
+            >
+              <span>{t('forgot_password.send_reset_link')}</span>
+              <ChevronRight className="h-4 w-4 group-hover:translate-x-2 transition-transform" />
+            </button>
+          </form>
         </div>
-      </div>
+
+        <Link
+          href="/"
+          className="flex items-center justify-center gap-3 text-[10px] font-black text-primary/50 uppercase tracking-[0.4em] mt-10 hover:text-primary transition-colors group"
+        >
+          <ArrowLeft className="h-3.5 w-3.5 transition-transform group-hover:-translate-x-2" />
+          {t('forgot_password.back_to_portal')}
+        </Link>
+      </motion.div>
     </div>
   )
 }

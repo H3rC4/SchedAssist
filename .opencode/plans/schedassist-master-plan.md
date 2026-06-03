@@ -11,7 +11,7 @@
 |---|-------|--------|--------|
 | 1 | Dynamic imports landing page (reduce JS) | ✅ | `9fa810d` |
 | 2 | Geolocalización cache localStorage (24h) | ✅ | `9fa810d` |
-| 3 | Redirección apex→www en next.config.mjs | ✅ | `9fa810d` |
+| 3 | Redirección apex→www in next.config.mjs | ✅ | `9fa810d` |
 | 4 | Placeholders de altura para CLS | ✅ | `9fa810d` |
 | 5 | White-label para todos los planes | ✅ | `d5c87f8` |
 | 6 | Starter sin WhatsApp, precio $29 | ✅ | `d5c87f8` |
@@ -23,6 +23,7 @@
 | 12 | **Página de pago con 3 planes** | ✅ | `5fb9be8` |
 | 13 | **TrialBanner con grace period y link a /pay** | ✅ | `5fb9be8` |
 | 14 | **Toggle Plan Superadmin v2** | ✅ | - |
+| 15 | **Sistema de email marca blanca para auth** | ✅ | `auth-email-whitelabel-plan.md` |
 
 ---
 
@@ -108,3 +109,4 @@ git push origin main
 2. **Verificar deploy** en Vercel después de cada push
 3. **White-label** está en todos los planes ahora
 4. **WhatsApp** solo en Pro y Premium (1 número incluido)
+5. **Sistema de email marca blanca** completado y verificado
