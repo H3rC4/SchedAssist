@@ -61,8 +61,8 @@ export async function POST(req: NextRequest) {
       professional_id,
       override_date,
       override_type,
-      start_time: override_type === 'open' ? start_time : null,
-      end_time:   override_type === 'open' ? end_time   : null,
+      start_time: start_time || null,
+      end_time:   end_time || null,
       note: note || null,
     }, { onConflict: 'professional_id,override_date' })
     .select()
