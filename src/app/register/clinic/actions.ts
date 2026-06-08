@@ -37,7 +37,13 @@ export async function createClinicAction(formData: FormData) {
         slug: `${clinicName.toLowerCase().replace(/[^a-z0-9]/g, '-')}-${Math.random().toString(36).substring(2, 6)}`,
         timezone: countryConfig.timezone,
         subscription_status: 'trial',
+        plan_tier: 'basic',
         trial_ends_at: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
+        max_professionals: 1,
+        max_services: -1,
+        max_locations: 1,
+        max_appointments_per_month: 150,
+        max_patients: 200,
         settings: { 
           language, 
           contact_phone: contactPhone, 

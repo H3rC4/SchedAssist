@@ -47,7 +47,7 @@ export async function GET(req: NextRequest) {
         id: tenant.id,
         name: tenant.name,
         slug: tenant.slug,
-        plan_tier: tenant.plan_tier || 'pro',
+        plan_tier: tenant.plan_tier || 'basic',
         payment_gateway: tenant.payment_gateway || 'stripe',
         billing_cycle: tenant.billing_cycle || 'monthly',
         subscription_status: tenant.subscription_status || 'trialing',
