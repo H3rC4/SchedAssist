@@ -21,7 +21,7 @@ const PRICING = {
   default: {
     currency: 'USD',
     plans: [
-      { tier: 'basic' as PlanTier, monthly: 39, yearly: 390, cta: 'Get Started' },
+      { tier: 'basic' as PlanTier, monthly: 29, yearly: 290, cta: 'Get Started' },
       { tier: 'pro' as PlanTier, monthly: 59, yearly: 590, cta: 'Choose Pro' },
       { tier: 'premium' as PlanTier, monthly: 129, yearly: 1161, cta: 'Choose Premium' },
     ],
