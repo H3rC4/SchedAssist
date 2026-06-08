@@ -48,11 +48,7 @@ export default function DoctorSchedulePage() {
   const [overrideConflicts, setOverrideConflicts] = useState<any[]>([])
 
   const locale = (dateLocales as any)[language]
-  const weekDays = language === 'es' 
-    ? ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado']
-    : language === 'it'
-    ? ['Domenica', 'Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Sabato']
-    : ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+  const weekDays = [fullT.sunday, fullT.monday, fullT.tuesday, fullT.wednesday, fullT.thursday, fullT.friday, fullT.saturday]
 
   const fetchData = useCallback(async () => {
     const { data: { user } } = await supabase.auth.getUser()
@@ -138,7 +134,7 @@ export default function DoctorSchedulePage() {
       await fetchData()
     } catch (err) {
       console.error('Error saving rules:', err)
-      alert(language === 'es' ? 'Error al guardar el horario. Por favor intenta de nuevo.' : 'Error saving schedule. Please try again.')
+      alert(fullT.schedule_save_error)
     } finally {
       setSaving(false)
     }
@@ -181,7 +177,7 @@ export default function DoctorSchedulePage() {
       if (overrideForm.type === 'block') {
          for (const app of overrideConflicts) {
             await supabase.from('appointments')
-              .update({ status: 'cancelled', cancellation_notified: false })
+              .update({ status: 'needs_rescheduling' })
               .eq('id', app.id)
          }
       }
@@ -191,8 +187,8 @@ export default function DoctorSchedulePage() {
         tenant_id: tenantId,
         override_date: overrideModal.date,
         override_type: overrideForm.type,
-        start_time: overrideForm.type === 'open' ? overrideForm.start_time + ':00' : null,
-        end_time: overrideForm.type === 'open' ? overrideForm.end_time + ':00' : null,
+        start_time: overrideForm.start_time ? overrideForm.start_time + ':00' : null,
+        end_time: overrideForm.end_time ? overrideForm.end_time + ':00' : null,
         note: overrideForm.note
       })
 
@@ -230,10 +226,10 @@ export default function DoctorSchedulePage() {
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
             <div className="max-w-2xl">
               <h1 className="text-2xl md:text-3xl font-black tracking-tighter text-on-surface leading-tight uppercase">
-                {fullT.nav_schedule || 'Gestión de Disponibilidad'}
+                {fullT.nav_schedule}
               </h1>
               <p className="mt-1 text-[9px] font-black text-on-surface-muted uppercase tracking-[0.3em]">
-                {language === 'es' ? 'Gestión de horarios y ausencias' : 'Manage availability and absences'}
+                {fullT.schedule_subtitle}
               </p>
             </div>
           </div>
@@ -246,7 +242,7 @@ export default function DoctorSchedulePage() {
             <div className="bg-white border border-on-surface/5 rounded-[1.5rem] p-6 md:p-8 shadow-sm">
               <div className="flex items-center justify-between mb-8">
                  <h3 className="text-[10px] font-black text-on-surface-muted uppercase tracking-widest flex items-center gap-2">
-                   <CalendarX className="h-4 w-4" /> {language === 'es' ? 'CALENDARIO DE EXCEPCIONES' : 'EXCEPTIONS CALENDAR'}
+                   <CalendarX className="h-4 w-4" /> {fullT.exceptions_calendar}
                  </h3>
                 <div className="flex items-center gap-4">
                   <button onClick={() => setCalendarMonth(subMonths(calendarMonth, 1))} className="p-2 bg-surface-container-low hover:bg-surface-container text-on-surface rounded-xl transition-colors">
@@ -262,7 +258,7 @@ export default function DoctorSchedulePage() {
               </div>
 
               <div className="grid grid-cols-7 gap-1 md:gap-2 mb-2 md:mb-4">
-                {(language === 'es' ? ['Dom', 'Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab'] : ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']).map(d => (
+                {(fullT.week_days_short || ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb']).map((d: string) => (
                   <div key={d} className="text-center text-[8px] md:text-[9px] font-black text-on-surface-muted uppercase py-1.5 md:py-2 tracking-widest">{d}</div>
                 ))}
               </div>
@@ -291,13 +287,13 @@ export default function DoctorSchedulePage() {
             {/* Exceptions List */}
             <div className="space-y-4">
               <div className="flex items-center justify-between px-2">
-                <h5 className="text-[10px] font-black text-on-surface-muted uppercase tracking-widest">{language === 'es' ? 'Próximos días bloqueados' : 'Upcoming blocked days'}</h5>
+                <h5 className="text-[10px] font-black text-on-surface-muted uppercase tracking-widest">{fullT.upcoming_blocked_days}</h5>
                 <span className="text-[10px] font-black text-primary uppercase tracking-widest bg-primary/5 px-3 py-1 rounded-full">{overrides.length} total</span>
               </div>
               {overrides.length === 0 ? (
                 <div className="bg-white border border-on-surface/5 rounded-[1.5rem] p-8 text-center shadow-sm">
                   <p className="text-xs font-black text-on-surface uppercase tracking-tighter">
-                    {language === 'es' ? 'NO HAY EXCEPCIONES' : 'NO SCHEDULED EXCEPTIONS'}
+                    {fullT.no_exceptions}
                   </p>
                 </div>
               ) : (
@@ -311,7 +307,7 @@ export default function DoctorSchedulePage() {
                         <div>
                           <p className="text-sm font-black text-on-surface uppercase tracking-tight">{format(parseISO(ov.override_date), "d MMMM", { locale })}</p>
                           <p className="text-[9px] font-bold text-on-surface-muted uppercase tracking-widest mt-0.5">
-                            {ov.override_type === 'block' ? (language === 'es' ? 'Bloqueado TOTAL' : 'TOTAL Blocked') : `${ov.start_time?.slice(0, 5)} - ${ov.end_time?.slice(0, 5)}`}
+                            {ov.override_type === 'block' ? fullT.full_block : `${ov.start_time?.slice(0, 5)} - ${ov.end_time?.slice(0, 5)}`}
                           </p>
                         </div>
                       </div>
@@ -329,7 +325,7 @@ export default function DoctorSchedulePage() {
           {/* Weekly Schedule (Right Side / 50%) */}
           <div className="w-full lg:w-1/2 bg-white border border-on-surface/5 rounded-[1.5rem] p-6 md:p-8 shadow-sm order-2">
             <h3 className="text-[10px] font-black text-on-surface-muted uppercase tracking-widest flex items-center gap-2 mb-8">
-              <Clock className="h-4 w-4" /> {language === 'es' ? 'CONFIGURACIÓN SEMANAL' : 'WEEKLY CONFIGURATION'}
+              <Clock className="h-4 w-4" /> {fullT.tab_weekly_config}
             </h3>
             
             <div className="grid gap-3 md:gap-4">
@@ -360,15 +356,15 @@ export default function DoctorSchedulePage() {
                         <label className="flex items-center gap-2 cursor-pointer text-[9px] text-amber-700 font-black uppercase tracking-widest whitespace-nowrap">
                           <input type="checkbox" checked={!!rule.lunch_break_start} onChange={e => toggleLunchBreak(rule.day_of_week, e.target.checked)}
                             className="w-4 h-4 rounded border-amber-500/30 text-amber-500 focus:ring-amber-500" />
-                          <Coffee className="h-4 w-4" /> {language === 'es' ? 'Pausa' : 'Break'}
+                          <Coffee className="h-4 w-4" /> {fullT.lunch_break_time}
                         </label>
 
                         {rule.lunch_break_start && (
                           <div className="flex items-center gap-2 md:ml-auto animate-in fade-in slide-in-from-right-2 duration-300">
-                            <span className="text-[9px] text-amber-600 font-black uppercase tracking-widest">{language === 'es' ? 'DE' : 'FROM'}</span>
+                            <span className="text-[9px] text-amber-600 font-black uppercase tracking-widest">{fullT.time_from}</span>
                             <input type="time" value={rule.lunch_break_start.slice(0, 5)} onChange={e => updateRule(rule.day_of_week, 'lunch_break_start', e.target.value + ':00')}
                               className="rounded-lg border border-amber-500/20 px-2 py-1.5 text-[10px] font-black focus:ring-2 focus:ring-amber-500 outline-none bg-white text-amber-900 w-20" />
-                            <span className="text-[9px] text-amber-600 font-black uppercase tracking-widest">{language === 'es' ? 'A' : 'TO'}</span>
+                            <span className="text-[9px] text-amber-600 font-black uppercase tracking-widest">{fullT.time_to}</span>
                             <input type="time" value={(rule.lunch_break_end || '14:00').slice(0, 5)} onChange={e => updateRule(rule.day_of_week, 'lunch_break_end', e.target.value + ':00')}
                               className="rounded-lg border border-amber-500/20 px-2 py-1.5 text-[10px] font-black focus:ring-2 focus:ring-amber-500 outline-none bg-white text-amber-900 w-20" />
                           </div>
@@ -382,7 +378,7 @@ export default function DoctorSchedulePage() {
 
             <button onClick={handleSaveRules} disabled={saving}
               className="w-full mt-6 flex items-center justify-center gap-3 py-4 rounded-[1.5rem] bg-primary text-white font-black text-xs uppercase tracking-widest shadow-lg hover:bg-primary/90 hover:-translate-y-0.5 disabled:opacity-50 transition-all active:scale-95">
-              {saved ? (<><CheckCircle className="h-5 w-5" /> {language === 'es' ? '¡Guardado!' : 'Saved!'}</>) : saving ? <Loader2 className="h-5 w-5 animate-spin" /> : (<><Save className="h-5 w-5" /> {fullT.save || 'Guardar'}</>)}
+              {saved ? (<><CheckCircle className="h-5 w-5" /> {fullT.saved}</>) : saving ? <Loader2 className="h-5 w-5 animate-spin" /> : (<><Save className="h-5 w-5" /> {fullT.save}</>)}
             </button>
           </div>
         </div>
@@ -405,13 +401,13 @@ export default function DoctorSchedulePage() {
                       className={`flex items-center justify-center gap-2 p-4 rounded-xl border-2 text-[10px] font-black uppercase tracking-widest transition-all ${
                         overrideForm.type === 'block' ? 'border-red-500/50 bg-red-50 text-red-600 shadow-sm' : 'border-on-surface/10 text-on-surface-muted hover:border-on-surface/20'
                       }`}>
-                      <CalendarX className="h-4 w-4" /> {language === 'es' ? 'Bloquear' : 'Block'}
+                      <CalendarX className="h-4 w-4" /> {fullT.blocked}
                     </button>
                     <button onClick={() => setOverrideForm(f => ({ ...f, type: 'open' }))}
                       className={`flex items-center justify-center gap-2 p-4 rounded-xl border-2 text-[10px] font-black uppercase tracking-widest transition-all ${
                         overrideForm.type === 'open' ? 'border-amber-500/50 bg-amber-50 text-amber-600 shadow-sm' : 'border-on-surface/10 text-on-surface-muted hover:border-on-surface/20'
                       }`}>
-                      <Clock className="h-4 w-4" /> {language === 'es' ? 'Especial' : 'Special'}
+                      <Clock className="h-4 w-4" /> {fullT.special_shift}
                     </button>
                   </div>
 
@@ -426,8 +422,8 @@ export default function DoctorSchedulePage() {
                   )}
 
                   <div className="space-y-1">
-                    <label className="text-[10px] font-black text-on-surface-muted uppercase tracking-widest ml-1">{language === 'es' ? 'Nota (Privada)' : 'Note (Private)'}</label>
-                    <input type="text" value={overrideForm.note} placeholder={language === 'es' ? 'Ej: Vacaciones o Trámite' : 'e.g. Vacation or Personal'} onChange={e => setOverrideForm(f => ({...f, note: e.target.value}))}
+                    <label className="text-[10px] font-black text-on-surface-muted uppercase tracking-widest ml-1">{fullT.note_private}</label>
+                    <input type="text" value={overrideForm.note} placeholder={fullT.note_placeholder} onChange={e => setOverrideForm(f => ({...f, note: e.target.value}))}
                       className="w-full rounded-xl bg-surface-container-lowest border border-on-surface/10 px-5 py-4 text-sm font-medium text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all placeholder:text-on-surface-muted" />
                   </div>
 
@@ -435,9 +431,7 @@ export default function DoctorSchedulePage() {
                     <div className="p-4 rounded-xl bg-red-50 border border-red-200 flex gap-4 animate-in shake duration-500">
                       <AlertTriangle className="h-6 w-6 text-red-500 flex-shrink-0" />
                       <div className="text-xs text-red-700 font-bold">
-                        {language === 'es' 
-                          ? `Tienes ${overrideConflicts.length} cita(s) este día que serán canceladas automáticamente.`
-                          : `You have ${overrideConflicts.length} appointment(s) this day that will be automatically cancelled.`}
+                        {fullT.danger_appointments_cancelled(overrideConflicts.length)}
                       </div>
                     </div>
                   )}
@@ -447,7 +441,7 @@ export default function DoctorSchedulePage() {
                       overrideForm.type === 'block' ? 'bg-red-500 hover:bg-red-600 text-white' : 'bg-amber-500 hover:bg-amber-600 text-white'
                     }`}>
                     {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-                    {saving ? (language === 'es' ? 'Guardando...' : 'Saving...') : (language === 'es' ? 'Aplicar Excepción' : 'Apply Exception')}
+                    {saving ? fullT.saving : fullT.apply_exception}
                   </button>
                 </div>
               </div>

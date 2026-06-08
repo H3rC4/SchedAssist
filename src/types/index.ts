@@ -1,7 +1,7 @@
 // file: src/types/index.ts
 
 export type UserRole = "tenant_admin" | "secretary" | "professional";
-export type AppointmentStatus = "pending" | "confirmed" | "awaiting_confirmation" | "cancelled" | "completed" | "no_show" | "rescheduled";
+export type AppointmentStatus = "pending" | "confirmed" | "awaiting_confirmation" | "cancelled" | "completed" | "no_show" | "rescheduled" | "needs_rescheduling";
 export type AppointmentSource = "dashboard" | "whatsapp" | "telegram" | (string & {});
 
 // Plan & Gateway Types
@@ -195,16 +195,6 @@ export interface AvailabilityRule {
   start_time: string; // HH:mm:ss
   end_time: string; // HH:mm:ss
   active: boolean;
-  created_at: string;
-}
-
-export interface BlockedSlot {
-  id: string;
-  tenant_id: string;
-  professional_id?: string;
-  start_at: string;
-  end_at: string;
-  reason?: string;
   created_at: string;
 }
 

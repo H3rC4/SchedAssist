@@ -80,7 +80,13 @@ export async function registerAction(formData: FormData) {
         name: clinicName,
         slug,
         subscription_status: 'trial',
+        plan_tier: 'basic',
         trial_ends_at: trialEndsAt.toISOString(),
+        max_professionals: 1,
+        max_services: -1,
+        max_locations: 1,
+        max_appointments_per_month: 150,
+        max_patients: 200,
         settings: {
           language: language,
           specialty: 'Medicina General'

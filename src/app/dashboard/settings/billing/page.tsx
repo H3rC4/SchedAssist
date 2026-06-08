@@ -42,7 +42,7 @@ const PLAN_CONFIGS = [
   {
     tier: 'basic',
     name: 'Starter',
-    price: '$39',
+    price: '$29',
     priceARS: '$60.000',
     features: ['1 profesional', 'Servicios ilimitados', '1 ubicación', '150 turnos/mes', 'WhatsApp'],
   },
