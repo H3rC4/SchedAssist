@@ -3,6 +3,8 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import * as otplib from 'otplib'
+import { createAdminClient } from '@/lib/supabase/admin'
+import crypto from 'crypto'
 
 // Robust authenticator instance selection
 const auth: any = (otplib as any).authenticator || (otplib as any).default?.authenticator || otplib;
@@ -10,10 +12,7 @@ const auth: any = (otplib as any).authenticator || (otplib as any).default?.auth
 const ISSUER = 'SchedAssist'
 
 function getAdminClient() {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
-  const { createClient } = require('@supabase/supabase-js')
-  return createClient(supabaseUrl, supabaseServiceKey)
+  return createAdminClient()
 }
 
 function getServerClient() {
@@ -54,7 +53,7 @@ export async function checkEnrollmentAction() {
   if (!secret) {
     // Generate new secret for first time
     // We use a safe way to generate secret if authenticator is not fully loaded
-    const newSecret = auth.generateSecret ? auth.generateSecret() : Math.random().toString(36).slice(2, 12).toUpperCase();
+    const newSecret = auth.generateSecret ? auth.generateSecret() : crypto.randomBytes(5).toString('hex').toUpperCase();
     
     // Manual OTPAuth URI construction to avoid 'split' errors in otplib internal methods
     const label = encodeURIComponent(user.email!)

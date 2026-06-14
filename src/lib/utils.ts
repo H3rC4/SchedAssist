@@ -1,5 +1,6 @@
 import { type ClassValue, clsx } from "clsx"
 import { twMerge } from "tailwind-merge"
+import crypto from "crypto"
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -14,21 +15,23 @@ export function hexToRgba(hex: string, alpha: number): string {
 
 /**
  * Generate a URL-safe random token for cancellation links
- * Uses crypto.getRandomValues for browser environments
- * Falls back to Math.random for SSR if crypto not available
+ * Uses crypto.randomBytes() in Node.js (server-side)
+ * Falls back to crypto.getRandomValues() in browser environments
+ * Both are cryptographically secure
  */
 export function generateCancellationToken(): string {
-  // Try to use crypto API if available (client-side)
+  // Server-side: use Node.js crypto
+  if (typeof window === 'undefined') {
+    return crypto.randomBytes(16).toString('hex')
+  }
+  
+  // Client-side: use Web Crypto API
   if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
     const array = new Uint8Array(16)
     crypto.getRandomValues(array)
     return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('')
   }
   
-  // Fallback for server-side or older environments
-  // This is not cryptographically secure but acceptable for cancellation tokens
-  // as they are single-use and short-lived
-  return Array.from({length: 16}, () => Math.floor(Math.random() * 256)
-    .toString(16)
-    .padStart(2, '0')).join('')
+  // Fallback (should never happen in modern environments)
+  return crypto.randomBytes(16).toString('hex')
 }

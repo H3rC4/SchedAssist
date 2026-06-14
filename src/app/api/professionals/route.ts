@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { verifyTenantAccess } from '@/lib/auth-utils';
 import { checkPlanLimit } from '@/lib/plan-limits';
+import crypto from 'crypto';
 
 // Note: For POST/DELETE where auth admin access is needed, 
 // the admin client will be created inside the method after verification.
@@ -67,8 +69,7 @@ export async function POST(req: NextRequest) {
   }
 
   // Use Service Role client for Auth manipulation
-  const { createClient: createAdminClient } = require('@supabase/supabase-js');
-  const supabaseAdmin = createAdminClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
+  const supabaseAdmin = createAdminClient();
 
   // 1. Check if professional record already exists for this tenant and email
   const { data: existingProf } = await supabaseAdmin
@@ -86,7 +87,7 @@ export async function POST(req: NextRequest) {
   let auth_password_hint: string | null = null;
 
   // 2. Try to create user in Supabase Auth
-  const randomSuffix = Math.random().toString(36).substring(2, 8);
+  const randomSuffix = crypto.randomBytes(3).toString('hex');
   const tempPassword = randomSuffix + 'X!';
 
   const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
@@ -185,8 +186,7 @@ export async function PATCH(req: NextRequest) {
   }
 
   // Use admin client for rules operations to bypass RLS
-  const { createClient: createAdminClient } = require('@supabase/supabase-js');
-  const supabaseAdmin = createAdminClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
+  const supabaseAdmin = createAdminClient();
 
   // If professional, can only edit own data
   if (access.role === 'professional') {
@@ -253,8 +253,7 @@ export async function DELETE(req: NextRequest) {
   }
 
   // Use admin client for deep cleanup
-  const { createClient: createAdminClient } = require('@supabase/supabase-js');
-  const supabaseAdmin = createAdminClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
+  const supabaseAdmin = createAdminClient();
 
   // 1. Obtener la data del profesional a eliminar
   const { data: profData } = await supabaseAdmin

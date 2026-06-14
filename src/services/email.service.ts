@@ -1,13 +1,14 @@
 import { Resend } from 'resend';
+import crypto from 'crypto';
 
 // Initialize Resend client if API key is available
 const resend = process.env.RESEND_API_KEY 
   ? new Resend(process.env.RESEND_API_KEY) 
   : null;
 
-// Function to generate a random token
+// Function to generate a cryptographically secure random token
 function generateToken(): string {
-  return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+  return crypto.randomBytes(32).toString('hex');
 }
 
 export class EmailService {

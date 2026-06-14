@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createClient as createAdminClient } from '@supabase/supabase-js'
+import crypto from 'crypto'
 
 export async function POST(req: NextRequest) {
   try {
@@ -46,8 +47,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Professional user not found' }, { status: 404 })
     }
 
-    // Generar nueva contraseña temporal: 8 caracteres random + X! para cumplir complejidad
-    const randomSuffix = Math.random().toString(36).substring(2, 8)
+    // Generar nueva contraseña temporal: 6 caracteres random hex + X! para cumplir complejidad
+    const randomSuffix = crypto.randomBytes(3).toString('hex')
     const newPassword = `${randomSuffix}X!`
 
     // Forzar cambio en Supabase Auth

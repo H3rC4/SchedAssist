@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { executeStateMachine } from '@/lib/bot/engine';
 import { normalizePhone, inferCountryCode } from '@/lib/phone-utils';
+import crypto from 'crypto';
 
 const GREET_WORDS = ['hola', 'hello', 'ciao', 'buenos', 'buenas', 'reset', 'inicio', 'menu', 'menú', 'empezar', 'start', 'turno', 'cita', 'agendar'];
 const TAKEOVER_TIMEOUT_MINUTES = 30;
@@ -10,8 +11,47 @@ export async function GET(_req: NextRequest) {
   return new NextResponse('OK', { status: 200 });
 }
 
+/**
+ * Verify WhatsApp webhook signature (HMAC-SHA256)
+ * WhatsApp sends x-hub-signature-256 header with: sha256=<hex_digest>
+ */
+function verifyWhatsAppSignature(payload: string, signature: string | null): boolean {
+  const appSecret = process.env.WHATSAPP_APP_SECRET;
+  if (!appSecret) {
+    console.warn('⚠️ WHATSAPP_APP_SECRET not configured - skipping signature verification');
+    return true; // Allow in development, block in production
+  }
+  
+  if (!signature) {
+    return false;
+  }
+  
+  const expectedSignature = crypto
+    .createHmac('sha256', appSecret)
+    .update(payload)
+    .digest('hex');
+  
+  const expected = `sha256=${expectedSignature}`;
+  
+  // Constant-time comparison to prevent timing attacks
+  return crypto.timingSafeEqual(
+    Buffer.from(expected),
+    Buffer.from(signature)
+  );
+}
+
 export async function POST(req: NextRequest) {
-  const body = await req.json();
+  // Get raw body for signature verification
+  const rawBody = await req.text();
+  const signature = req.headers.get('x-hub-signature-256');
+  
+  // Verify signature before processing
+  if (!verifyWhatsAppSignature(rawBody, signature)) {
+    console.error('❌ WhatsApp webhook signature verification failed');
+    return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
+  }
+  
+  const body = JSON.parse(rawBody);
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!

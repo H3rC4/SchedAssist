@@ -7,8 +7,7 @@ if (!stripeKey && process.env.NODE_ENV === 'production' && typeof window === 'un
 }
 
 export const stripe = new Stripe(stripeKey, {
-  // @ts-ignore
-  apiVersion: null, 
+  apiVersion: '2024-06-20',
   appInfo: {
     name: 'SchedAssist SaaS',
     version: '0.1.0',

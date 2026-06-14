@@ -8,7 +8,36 @@ import { t, Language } from '@/lib/bot/translations';
 
 const CHANNEL = 'telegram';
 
+/**
+ * Verify Telegram webhook secret token
+ * When setting webhook, pass secret_token parameter
+ * Telegram sends it in x-telegram-bot-api-secret-token header
+ */
+function verifyTelegramSecret(req: NextRequest): boolean {
+  const secretToken = process.env.TELEGRAM_WEBHOOK_SECRET;
+  
+  if (!secretToken) {
+    console.warn('⚠️ TELEGRAM_WEBHOOK_SECRET not configured - skipping verification');
+    return true; // Allow in development
+  }
+  
+  const receivedToken = req.headers.get('x-telegram-bot-api-secret-token');
+  
+  if (!receivedToken) {
+    return false;
+  }
+  
+  // Constant-time comparison
+  return receivedToken === secretToken;
+}
+
 export async function POST(req: NextRequest) {
+  // Verify Telegram secret token
+  if (!verifyTelegramSecret(req)) {
+    console.error('❌ Telegram webhook secret verification failed');
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+  
   const body = await req.json();
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,

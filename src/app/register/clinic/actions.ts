@@ -3,6 +3,7 @@
 import { createClient as createServerClient } from '@/lib/supabase/server';
 import { createClient as createAdminClient } from '@supabase/supabase-js';
 import { getCountryConfig } from '@/lib/country-config';
+import crypto from 'crypto';
 
 export async function createClinicAction(formData: FormData) {
   const supabase = createServerClient();
@@ -34,7 +35,7 @@ export async function createClinicAction(formData: FormData) {
       .from('tenants')
       .insert({
         name: clinicName,
-        slug: `${clinicName.toLowerCase().replace(/[^a-z0-9]/g, '-')}-${Math.random().toString(36).substring(2, 6)}`,
+        slug: `${clinicName.toLowerCase().replace(/[^a-z0-9]/g, '-')}-${crypto.randomBytes(2).toString('hex')}`,
         timezone: countryConfig.timezone,
         subscription_status: 'trial',
         plan_tier: 'basic',

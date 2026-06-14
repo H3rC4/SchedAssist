@@ -2,6 +2,7 @@
 
 import { createClient } from '@supabase/supabase-js';
 import { EmailService } from '@/services/email.service';
+import crypto from 'crypto';
 
 export async function registerAction(formData: FormData) {
   const email = formData.get('email') as string;
@@ -121,8 +122,7 @@ export async function registerAction(formData: FormData) {
     if (locationError) throw locationError;
 
     // ─── PHASE 6: GENERATE VERIFICATION TOKEN ─────────────────────
-    const verificationToken = Math.random().toString(36).substring(2, 15) +
-                              Math.random().toString(36).substring(2, 15);
+    const verificationToken = crypto.randomBytes(32).toString('hex');
     const tokenExpires = new Date();
     tokenExpires.setHours(tokenExpires.getHours() + 24);
 

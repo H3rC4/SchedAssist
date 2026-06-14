@@ -4,6 +4,7 @@ import { mpClient } from '@/lib/mercadopago';
 import { createClient } from '@supabase/supabase-js';
 import { NotificationService } from '@/services/notification.service';
 import { translations, Language } from '@/lib/i18n';
+import crypto from 'crypto';
 
 // Cliente con service role para saltar RLS
 const supabase = createClient(
@@ -11,9 +12,54 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
+/**
+ * Verify Mercado Pago webhook signature
+ * MP sends x-signature header with ts=<timestamp>,v1=<hmac_sha256>
+ */
+function verifyMercadoPagoSignature(req: NextRequest, body: string): boolean {
+  const secret = process.env.MP_WEBHOOK_SECRET;
+  
+  if (!secret) {
+    console.warn('⚠️ MP_WEBHOOK_SECRET not configured - skipping verification');
+    return true; // Allow in development
+  }
+  
+  const signature = req.headers.get('x-signature');
+  if (!signature) {
+    return false;
+  }
+  
+  // Parse signature: ts=<timestamp>,v1=<hash>
+  const parts = signature.split(',');
+  const ts = parts.find(p => p.startsWith('ts='))?.split('=')[1];
+  const v1 = parts.find(p => p.startsWith('v1='))?.split('=')[1];
+  
+  if (!ts || !v1) {
+    return false;
+  }
+  
+  // Create expected signature: ts:<timestamp>:body:<secret>
+  const expectedSignature = crypto
+    .createHmac('sha256', secret)
+    .update(`${ts}:${body}`)
+    .digest('hex');
+  
+  // Constant-time comparison
+  return v1 === expectedSignature;
+}
+
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
+    // Get raw body for signature verification
+    const rawBody = await req.text();
+    
+    // Verify signature before processing
+    if (!verifyMercadoPagoSignature(req, rawBody)) {
+      console.error('❌ Mercado Pago webhook signature verification failed');
+      return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
+    }
+    
+    const body = JSON.parse(rawBody);
     console.log('--- WEBHOOK MERCADO PAGO RECIBIDO ---', { type: body.type, data: body.data });
 
     // Mercado Pago envía: { type: 'payment', data: { id: '123' } }

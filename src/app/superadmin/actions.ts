@@ -185,8 +185,8 @@ export async function updateTenantEmailAction(tenantId: string, newEmail: string
 
 /**
  * Toggle el plan básico (Startup) para un tenant.
- * Cuando activate=true: subscription_status='active', plan_tier='basic'
- * Cuando activate=false: subscription_status='inactive', plan_tier='basic'
+ * Solo funciona con plan Starter/Basic (para amigos/descuentos).
+ * Los planes Pro y Premium solo se adquieren vía Stripe.
  */
 export async function toggleBasicPlanAction(tenantId: string, activate: boolean) {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
@@ -206,7 +206,7 @@ export async function toggleBasicPlanAction(tenantId: string, activate: boolean)
     }
 
     if (activate) {
-      // Activar plan básico
+      // Activar plan básico (solo para amigos/descuentos)
       const { error: updateErr } = await supabase
         .from('tenants')
         .update({

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import crypto from 'crypto'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -25,7 +26,7 @@ export async function POST(req: NextRequest) {
     if (prof.user_id) return NextResponse.json({ error: 'Professional already has an account' }, { status: 400 })
 
     // 2. Generate credentials
-    const randomSuffix = Math.random().toString(36).substring(2, 8);
+    const randomSuffix = crypto.randomBytes(3).toString('hex');
     const normalizedName = prof.full_name.toLowerCase().replace(/[^a-z0-9]/g, '');
     const auth_email = `dr.${normalizedName}@schedassist.com`;
     const auth_password_hint = randomSuffix + 'X!';

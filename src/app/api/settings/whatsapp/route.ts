@@ -1,10 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { verifyTenantAccess } from '@/lib/auth-utils';
+
+/**
+ * Mask sensitive token for display
+ * Returns last 4 characters only: "***abc123"
+ */
+function maskToken(token: string): string {
+  if (!token || token.length < 4) return '***';
+  return `***${token.slice(-4)}`;
+}
 
 /**
  * GET /api/settings/whatsapp
  * Returns a list of Whapi accounts for the tenant.
+ * Access tokens are masked for security.
  */
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
@@ -12,7 +23,7 @@ export async function GET(req: NextRequest) {
 
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  
+
   const access = await verifyTenantAccess(supabase, user, explicitTenantId || '');
   if (!access.authorized) {
     return NextResponse.json({ error: access.error }, { status: access.status });
@@ -28,7 +39,13 @@ export async function GET(req: NextRequest) {
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
-  return NextResponse.json(accounts || []);
+  // Mask access tokens before sending to client
+  const maskedAccounts = (accounts || []).map((acc: any) => ({
+    ...acc,
+    access_token: acc.access_token ? maskToken(acc.access_token) : null,
+  }));
+
+  return NextResponse.json(maskedAccounts);
 }
 
 /**
@@ -50,8 +67,7 @@ export async function POST(req: NextRequest) {
   const tenantId = access.tenantId;
 
   // Use admin client for upsert if needed, but here we can try with authenticated client if RLS allows
-  const { createClient: createAdminClient } = require('@supabase/supabase-js');
-  const supabaseAdmin = createAdminClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
+  const supabaseAdmin = createAdminClient();
 
   const result = await supabaseAdmin
     .from('whatsapp_accounts')

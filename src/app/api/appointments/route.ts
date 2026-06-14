@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { AppointmentService } from '@/services/appointment.service'
 import { MessageService } from '@/services/message.service'
 import { verifyTenantAccess } from '@/lib/auth-utils'
@@ -102,11 +103,7 @@ export async function POST(req: NextRequest) {
   }
 
   // Create admin client to bypass RLS for now (ensuring we strictly checked tenant_id above)
-  const { createClient: createSupabaseClient } = require('@supabase/supabase-js')
-  const supabaseAdmin = createSupabaseClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  )
+  const supabaseAdmin = createAdminClient()
 
   // Normalize names
   const capitalize = (s: string) => (s || '').trim().split(' ').map((w: string) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ')

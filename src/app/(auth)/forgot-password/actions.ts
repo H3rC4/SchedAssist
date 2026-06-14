@@ -3,6 +3,7 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@supabase/supabase-js'
 import { EmailService } from '@/services/email.service'
+import crypto from 'crypto'
 
 export async function requestPasswordReset(formData: FormData) {
   const email = formData.get('email') as string
@@ -29,7 +30,7 @@ export async function requestPasswordReset(formData: FormData) {
     }
 
     // Generate reset token and store it
-    const resetToken = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
+    const resetToken = crypto.randomBytes(32).toString('hex')
     const expiresAt = new Date()
     expiresAt.setHours(expiresAt.getHours() + 1) // Token expires in 1 hour
     

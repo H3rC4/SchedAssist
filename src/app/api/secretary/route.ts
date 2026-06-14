@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { verifyTenantAccess } from '@/lib/auth-utils'
+import crypto from 'crypto'
 
 // GET: List all secretaries for a tenant
 export async function GET(req: NextRequest) {
@@ -41,14 +43,10 @@ export async function POST(req: NextRequest) {
   if (!access.authorized) return NextResponse.json({ error: access.error }, { status: access.status })
 
   // Use admin client for auth user creation
-  const { createClient: createAdminClient } = require('@supabase/supabase-js')
-  const supabaseAdmin = createAdminClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  )
+  const supabaseAdmin = createAdminClient()
 
   // Generate credentials
-  const randomSuffix = Math.random().toString(36).substring(2, 8)
+  const randomSuffix = crypto.randomBytes(3).toString('hex')
   const normalizedName = full_name.toLowerCase().replace(/[^a-z0-9]/g, '')
   const auth_email = email || `sec.${normalizedName}@schedassist.com`
   const auth_password = randomSuffix + 'Sec!'

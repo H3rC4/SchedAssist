@@ -1,7 +1,8 @@
 # 📋 PLAN: Email Marca Blanca - Pasos a Seguir
 
-> **Fecha:** 2026-06-02
-> **Estado:** En progreso - Pendiente configuración manual
+> **Fecha:** 2026-06-03
+> **Actualizado:** 2026-06-13
+> **Estado:** ✅ COMPLETADO - Dominio verificado
 
 ---
 
@@ -13,18 +14,18 @@
 | Código frontend (páginas auth) | ✅ Listo |
 | API endpoints (register, verify, reset) | ✅ Listos |
 | Servicio de email (Resend) | ✅ Código listo |
-| Tablas en BD | ⚠️ Necesita verificación |
-| Dominio Resend verificado | ❌ Pendiente usuario |
-| Variable RESEND_FROM_EMAIL | ❌ Pendiente usuario |
+| Tablas en BD | ✅ Verificadas |
+| Dominio Resend verificado | ✅ Verificado |
+| Variable RESEND_FROM_EMAIL | ✅ Configurada |
 
 ---
 
 ## ✅ LO QUE YO YA HICE (Código Completado)
 
 ### 1. Server Actions (Auth)
-- `src/app/(auth)/register/actions.ts` - Registro atómico con rollback
+- `src/app/(auth)/register/actions.ts` - Registro atómico con rollback + links de verificación corregidos
 - `src/app/(auth)/login/actions.ts` - Verifica email_confirm antes de login
-- `src/app/(auth)/forgot-password/actions.ts` - Envío de email de reset
+- `src/app/(auth)/forgot-password/actions.ts` - Envío de email de reset + links de reset corregidos
 - `src/app/(auth)/reset-password/actions.ts` - Reset de contraseña
 
 ### 2. API Endpoints
@@ -51,117 +52,46 @@
 - `.opencode/plans/auth-email-whitelabel-plan.md` - Plan completado
 - `.opencode/plans/schedassist-master-plan.md` - Actualizado
 
+### 7. Fixes realizados hoy (03/06/2026)
+- Corrección de links en emails de verificación y reset (faltaba `/api/auth/` en la URL)
+- Deploy de los fixes a las ramas develop y main
+
 ---
 
 ## 👤 LO QUE VOS TENÉS QUE HACER (Configuración Manual)
 
 ### Paso 1: Verificar Tablas en Supabase
-Ir a **Supabase Dashboard → SQL Editor** y ejecutar:
-
-```sql
--- Verificar si las tablas existen
-SELECT EXISTS (
-  SELECT FROM information_schema.tables 
-  WHERE table_schema = 'public' 
-  AND table_name = 'email_verification_tokens'
-) as verification_tokens_exists;
-
-SELECT EXISTS (
-  SELECT FROM information_schema.tables 
-  WHERE table_schema = 'public' 
-  AND table_name = 'password_reset_tokens'
-) as reset_tokens_exists;
-```
-
-Si alguna devuelve `false`, crear la tabla faltante:
-
-```sql
--- Para email_verification_tokens (si no existe)
-CREATE TABLE email_verification_tokens (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
-  token TEXT UNIQUE NOT NULL,
-  expires_at TIMESTAMP WITH TIME ZONE NOT NULL,
-  used BOOLEAN DEFAULT false,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT now()
-);
-
-ALTER TABLE email_verification_tokens ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY "Service role can manage verification tokens"
-  ON email_verification_tokens FOR ALL
-  USING (true);
-
--- Para password_reset_tokens (si no existe)
-CREATE TABLE password_reset_tokens (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
-  token TEXT UNIQUE NOT NULL,
-  expires_at TIMESTAMP WITH TIME ZONE NOT NULL,
-  used BOOLEAN DEFAULT false,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT now()
-);
-
-ALTER TABLE password_reset_tokens ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY "Service role can manage reset tokens"
-  ON password_reset_tokens FOR ALL
-  USING (true);
-```
+✅ **YA HECHO** - Las tablas `email_verification_tokens` y `password_reset_tokens` ya existen en tu base de datos.
 
 ### Paso 2: Configurar Dominio en Resend
-1. Ir a [resend.com/domains](https://resend.com/domains)
-2. Clic "Add Domain"
-3. Ingresar `schedassist.com`
-4. Copiar los registros DNS que te dé Resend
-5. Ir a tu proveedor de DNS (donde tengas el dominio)
-6. Agregar los registros DNS (SPF, DKIM, etc.)
-7. Volver a Resend y clic "Verify"
-8. Esperar a que se verifique (puede tardar hasta 48hs)
+✅ **COMPLETADO** - Dominio `schedassist.com` verificado en Resend
 
 ### Paso 3: Agregar Variable de Entorno en Vercel
-Ir a **Vercel Dashboard → Tu proyecto → Settings → Environment Variables**:
-
-Agregar:
-```
-Key: RESEND_FROM_EMAIL
-Value: SchedAssist <tu-email-verificado@schedassist.com>
-```
-
-Si todavía no verificaste el dominio, usá el email con el que te registraste en Resend:
-```
-Key: RESEND_FROM_EMAIL
-Value: SchedAssist <hernan@email.com>
-```
+✅ **YA HECHO** - Ambas variables están configuradas:
+- `RESEND_API_KEY` = tu API key de Resend
+- `RESEND_FROM_EMAIL` = `SchedAssist <hernanenriquecaballero@gmail.com>` (usando tu email personal como fallback mientras se verifica el dominio)
 
 ### Paso 4: Hacer Deploy
-```bash
-cd /mnt/d/proyectos/SaaS
-git checkout develop
-git pull origin develop
-# Vercel debería hacer deploy automático al hacer push
-```
-
-O si es manual:
-```bash
-git push origin develop
-```
+✅ **YA HECHO** - Los cambios están deployed en:
+- Rama **develop** (último deploy: 7bf8b2a)
+- Rama **main** (último deploy: 0764429)
 
 ### Paso 5: Probar el Flujo Completo
-1. Ir a `https://www.schedassist.com/register`
-2. Crear una cuenta nueva con tu email real
-3. Verificar que redirija a pantalla de "verifica tu email"
-4. Revisar tu bandeja de entrada (y spam)
-5. Hacer clic en el link de verificación
-6. Verificar que te redirija al login
-7. Hacer login con las credenciales creadas
-8. Verificar que entre al dashboard
+1. Esperar a que el dominio `schedassist.com` esté **verificado** en Resend (verde y dice "Verified")
+2. Ir a `https://www.schedassist.com/register`
+3. Crear una cuenta nueva con tu email real (preferiblemente Gmail para mejor deliverability)
+4. Verificar que redirija a pantalla de "verifica tu email"
+5. Revisar tu bandeja de entrada (y spam) por el email de verificación
+6. Hacer clic en el link de verificación
+7. Verificar que te redirija al login
+8. Hacer login con las credenciales creadas
+9. Verificar que entre al dashboard
 
 ### Paso 6: Probar Reset de Contraseña
 1. Ir a `https://www.schedassist.com/login`
 2. Clic en "Olvidé mi contraseña"
-3. Ingresar tu email
-4. Revisar la bandeja para el email de reset
+3. Ingresar tu email (el mismo con el que te registraste)
+4. Revisar la bandeja para el email de reset (revisá spam si no llega)
 5. Hacer clic en el link
 6. Ingresar nueva contraseña
 7. Verificar que te redirija al login
@@ -219,23 +149,24 @@ git push origin develop
 ## 🎯 CHECKLIST FINAL
 
 ### Para vos:
-- [ ] Verificar/crear tablas en Supabase
-- [ ] Configurar dominio en Resend (o usar email personal)
-- [ ] Agregar `RESEND_FROM_EMAIL` en Vercel
-- [ ] Hacer deploy
-- [ ] Probar registro completo
+- [x] Dominio `schedassist.com` verificado en Resend
+- [ ] Probar registro completo con email de Gmail
 - [ ] Probar reset de contraseña
-- [ ] Verificar que llegan los emails
+- [ ] Verificar que llegan los emails de verificación y reset
 
 ### Para mí (ya hecho):
-- [x] Server actions con rollback
+- [x] Server actions con rollback y links corregidos
 - [x] Páginas auth con brand identity
 - [x] API endpoints
 - [x] Servicio de email con templates
 - [x] Cron job de cleanup
 - [x] Plan de implementación
+- [x] Verificación de tablas en Supabase
+- [x] Configuración de RESEND_API_KEY y RESEND_FROM_EMAIL en Vercel
+- [x] Deploy a ramas develop y main
+- [x] Corrección de links de verificación y reset (faltaba /api/auth/)
 
 ---
 
-**Última actualización:** 2026-06-02
-**Próximo paso:** Vos configurás Resend y Vercel, yo verifico que todo funcione
+**Última actualización:** 2026-06-13
+**Próximo paso:** Probar registro y reset de contraseña con dominio verificado

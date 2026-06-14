@@ -1,23 +1,25 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
-
-const rateLimitMap = new Map<string, { count: number, resetTime: number }>();
-const RATE_LIMIT_COUNT = 100;
-const RATE_LIMIT_WINDOW = 60 * 1000; // 1 minute
+import { checkRateLimit } from '@/lib/rate-limit'
+import { SUPERADMIN_EMAILS } from '@/lib/constants'
 
 export async function middleware(request: NextRequest) {
-  // --- RATE LIMITING ---
+  // --- RATE LIMITING con Upstash Redis ---
   const ip = request.ip || request.headers.get('x-forwarded-for') || 'unknown';
-  const now = Date.now();
-  const rateData = rateLimitMap.get(ip);
 
-  if (!rateData || now > rateData.resetTime) {
-    rateLimitMap.set(ip, { count: 1, resetTime: now + RATE_LIMIT_WINDOW });
-  } else {
-    rateData.count++;
-    if (rateData.count > RATE_LIMIT_COUNT) {
-      return new NextResponse('Too Many Requests', { status: 429 });
-    }
+  // Determinar tipo de rate limit según el path
+  const isAuthEndpoint =
+    request.nextUrl.pathname.startsWith('/login') ||
+    request.nextUrl.pathname.startsWith('/register') ||
+    request.nextUrl.pathname.startsWith('/forgot-password') ||
+    request.nextUrl.pathname.startsWith('/reset-password') ||
+    request.nextUrl.pathname.startsWith('/api/auth/')
+
+  const rateLimitType = isAuthEndpoint ? 'auth' : 'general'
+  const rateLimitResult = await checkRateLimit(ip, rateLimitType)
+
+  if (rateLimitResult.blocked) {
+    return rateLimitResult.response
   }
 
   let response = NextResponse.next({
@@ -46,7 +48,7 @@ export async function middleware(request: NextRequest) {
       },
     }
   )
-  
+
   // Skip auth check for the callback route to avoid interfering with PKCE flow
   if (request.nextUrl.pathname.startsWith('/auth/callback')) {
     return response
@@ -55,7 +57,6 @@ export async function middleware(request: NextRequest) {
   // Use getUser() instead of getSession() for more robust auth state checking
   const { data: { user } } = await supabase.auth.getUser()
 
-  const SUPERADMIN_EMAILS = ['hernanenriquecaballero@gmail.com']
   const userEmail = (user?.email || '').toLowerCase().trim()
   const isSuperAdmin = SUPERADMIN_EMAILS.includes(userEmail)
 
