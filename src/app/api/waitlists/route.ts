@@ -91,7 +91,7 @@ export async function POST(req: NextRequest) {
       if (clientErr) return NextResponse.json({ error: clientErr.message }, { status: 500 })
       existingClient = newClient
     }
-    resolvedClientId = existingClient.id
+    resolvedClientId = existingClient!.id
   }
 
   if (!resolvedClientId) {

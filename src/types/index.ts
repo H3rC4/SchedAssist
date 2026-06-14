@@ -6,7 +6,7 @@ export type AppointmentSource = "dashboard" | "whatsapp" | "telegram" | (string 
 
 // Plan & Gateway Types
 export type PlanTier = 'basic' | 'pro' | 'premium';
-export type PaymentGateway = 'stripe' | 'mercadopago';
+export type PaymentGateway = 'stripe';
 export type BillingCycle = 'monthly' | 'yearly';
 
 export interface Tenant {
@@ -26,11 +26,6 @@ export interface Tenant {
   stripe_subscription_id?: string;
   subscription_status?: string;
   subscription_price_id?: string;
-  
-  // Mercado Pago
-  mp_customer_id?: string;
-  mp_subscription_id?: string;
-  mp_plan_id?: string;
   
   // Limits
   max_professionals?: number;
@@ -61,8 +56,6 @@ export interface PlanConfig {
   name: string;
   stripe_price_monthly?: string;
   stripe_price_yearly?: string;
-  mp_plan_monthly?: string;
-  mp_plan_yearly?: string;
   max_professionals: number;
   max_services: number;
   max_locations: number;

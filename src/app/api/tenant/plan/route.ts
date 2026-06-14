@@ -18,7 +18,6 @@ export async function GET(req: NextRequest) {
         tenants(
           id, name, slug, plan_tier, payment_gateway, billing_cycle,
           subscription_status, stripe_customer_id, stripe_subscription_id,
-          mp_customer_id, mp_subscription_id,
           max_professionals, max_services, max_locations,
           max_appointments_per_month, max_patients,
           custom_domain_enabled, white_label_enabled, api_access_enabled,
