@@ -14,6 +14,17 @@ export function hexToRgba(hex: string, alpha: number): string {
 }
 
 /**
+ * Build a public app URL ensuring no double slashes.
+ * Normalizes NEXT_PUBLIC_APP_URL (with or without trailing slash)
+ * and appends the given path with a leading slash.
+ */
+export function buildAppUrl(path: string): string {
+  const base = (process.env.NEXT_PUBLIC_APP_URL || 'https://www.schedassist.com').replace(/\/$/, '')
+  const normalizedPath = path.startsWith('/') ? path : `/${path}`
+  return `${base}${normalizedPath}`
+}
+
+/**
  * Generate a URL-safe random token for cancellation links
  * Uses crypto.randomBytes() in Node.js (server-side)
  * Falls back to crypto.getRandomValues() in browser environments

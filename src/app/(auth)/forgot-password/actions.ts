@@ -3,6 +3,7 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@supabase/supabase-js'
 import { EmailService } from '@/services/email.service'
+import { buildAppUrl } from '@/lib/utils'
 import crypto from 'crypto'
 
 export async function requestPasswordReset(formData: FormData) {
@@ -47,7 +48,7 @@ export async function requestPasswordReset(formData: FormData) {
     
     if (tokenError) throw tokenError
     
-    const resetLink = `${process.env.NEXT_PUBLIC_APP_URL}api/auth/reset-password/${resetToken}`
+    const resetLink = buildAppUrl(`/api/auth/reset-password/${resetToken}`)
 
     // Send password reset email
     await EmailService.sendPasswordResetEmail(

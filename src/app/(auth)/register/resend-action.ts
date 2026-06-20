@@ -2,6 +2,7 @@
 
 import { createClient } from '@supabase/supabase-js';
 import { EmailService } from '@/services/email.service';
+import { buildAppUrl } from '@/lib/utils';
 import crypto from 'crypto';
 
 export async function resendVerificationEmailAction(formData: FormData) {
@@ -63,7 +64,7 @@ export async function resendVerificationEmailAction(formData: FormData) {
       if (tokenError) throw tokenError;
     }
 
-    const verificationLink = `${process.env.NEXT_PUBLIC_APP_URL}api/auth/verify-email/${verificationToken}`;
+    const verificationLink = buildAppUrl(`/api/auth/verify-email/${verificationToken}`);
 
     const emailResult = await EmailService.sendVerificationEmail(
       email,
