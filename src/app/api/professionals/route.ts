@@ -53,7 +53,7 @@ export async function POST(req: NextRequest) {
       { status: 400 }
     );
   }
-  const { tenant_id, full_name, specialty, email, phone, active, location_id } = body
+  const { tenant_id, full_name, specialty, email, phone, active, location_id } = parsed.data
 
   const supabase = createClient();
   const { data: { user: currentUser } } = await supabase.auth.getUser();

@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
       { status: 400 }
     );
   }
-  const { tenant_id, name, duration_minutes, price, active } = body
+  const { tenant_id, name, duration_minutes, price, active } = parsed.data
 
   if (!tenant_id) {
     return NextResponse.json({ error: 'tenant_id required' }, { status: 400 })
@@ -69,7 +69,7 @@ export async function POST(req: NextRequest) {
     .insert([{ 
       tenant_id, 
       name, 
-      duration_minutes: parseInt(duration_minutes), 
+      duration_minutes, 
       price, 
       active: active ?? true 
     }])
@@ -90,7 +90,7 @@ export async function PATCH(req: NextRequest) {
       { status: 400 }
     );
   }
-  const { id, tenant_id, name, duration_minutes, price, active } = body
+  const { id, tenant_id, name, duration_minutes, price, active } = parsed.data
 
   if (!id || !tenant_id) {
     return NextResponse.json({ error: 'id and tenant_id required' }, { status: 400 })
@@ -106,7 +106,7 @@ export async function PATCH(req: NextRequest) {
 
   const { data, error } = await supabase
     .from('services')
-    .update({ name, duration_minutes: parseInt(duration_minutes), price })
+    .update({ name, duration_minutes, price })
     .eq('id', id)
     .eq('tenant_id', tenant_id)
     .select()

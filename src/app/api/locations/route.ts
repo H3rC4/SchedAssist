@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
       { status: 400 }
     );
   }
-  const { tenant_id, name, address, city, active } = body
+  const { tenant_id, name, address, city, active } = parsed.data
 
   if (!tenant_id) {
     return NextResponse.json({ error: 'tenant_id required' }, { status: 400 })

@@ -75,7 +75,7 @@ export async function POST(req: NextRequest) {
     const {
       tenant_id, first_name, last_name, phone, email, notes, allergies,
       address, dni, birth_date, gender, occupation
-    } = body;
+    } = parsed.data;
 
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()

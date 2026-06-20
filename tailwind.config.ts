@@ -50,6 +50,7 @@ const config: Config = {
         "on-surface": {
           DEFAULT: "#191c1e",
           variant: "#444651",
+          muted: "#444651",
         },
         outline: {
           DEFAULT: "#757682",
