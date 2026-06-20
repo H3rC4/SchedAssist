@@ -1,53 +1,46 @@
 # 🚀 PLAN DE EJECUCIÓN - SchedAssist Hardening
 
-> **Estado:** 17/06/2026
-> **Código:** ✅ 100% completado
-> **Pendiente:** ⏳ SQL + Configuración manual de servicios externos
+> **Estado:** 20/06/2026
+> **Sesión de hoy:** Código hardening commiteado, deployado y bugs críticos fixeados
+> **Próxima sesión:** Configurar Upstash Redis
 
 ---
 
-## ✅ CÓDIGO COMPLETADO (Ya está deployeado)
+## ✅ HECHO HOY (20/06/2026)
 
-### Etapa 2: Performance
+### Bug crítico de email
 | Tarea | Archivos | Estado |
 |-------|----------|--------|
-| Vista SQL + RPC Dashboard | `supabase/migrations/20260617001_create_tenant_stats_view.sql` + `dashboard/page.tsx` | ✅ |
-| Paginación Appointments API | `appointments/route.ts` (from/to/limit/offset) + `clients/[id]/page.tsx` | ✅ |
-| Booking Cache | `src/lib/cache.ts` con unstable_cache | ✅ |
-| Índices DB | En el migration SQL | ✅ |
+| Arreglar link de verificación (faltaba `/`) | `src/lib/utils.ts` + `register/actions.ts` + `register/resend-action.ts` + `forgot-password/actions.ts` | ✅ Deployado |
+| Actualizar `RESEND_FROM_EMAIL` a dominio verificado | `.env` + Vercel | ✅ Hecho |
 
-### Etapa 3: Arquitectura
+### Hardening Etapas 2-4
 | Tarea | Archivos | Estado |
 |-------|----------|--------|
-| Zod Schemas + validación | `validation/schemas.ts` + clients, professionals, services, locations, appointments routes | ✅ |
-| Cleanup código | Express/body-parser desinstalados de package.json | ✅ |
+| Vista SQL + RPC Dashboard | `supabase/migrations/20260617001_create_tenant_stats_view.sql` + `dashboard/page.tsx` | ✅ Commiteado + SQL ejecutado |
+| Paginación Appointments API | `appointments/route.ts` | ✅ Commiteado |
+| Índices DB | Migration SQL | ✅ Ejecutado en Supabase |
+| Zod Schemas + validación | `validation/schemas.ts` + API routes | ✅ Commiteado |
+| Cleanup código | Express/body-parser desinstalados, `cache.ts` eliminado | ✅ Commiteado |
+| robots.txt | `src/app/robots.ts` | ✅ Commiteado |
+| OG Image + hreflang | `layout.tsx` | ✅ Commiteado |
+| i18n LandingFeatures + dashboard | `LandingFeatures.tsx` + locales | ✅ Commiteado |
+| Seguridad GET appointments | `verifyTenantAccess` agregado | ✅ Commiteado |
+| .gitignore para SQL | `!supabase/migrations/*.sql` | ✅ Commiteado |
+| Timeline paciente | `start_at` en vez de `date`/`time` | ✅ Commiteado |
+| Tailwind `text-on-surface-muted` | `tailwind.config.ts` | ✅ Commiteado |
 
-### Etapa 4: SEO
-| Tarea | Archivos | Estado |
-|-------|----------|--------|
-| robots.txt | `src/app/robots.ts` | ✅ |
-| OG Image + hreflang | `layout.tsx` | ✅ |
-| i18n LandingFeatures | `LandingFeatures.tsx` + locales es/en/it | ✅ |
+### Deploys
+| Rama | Commit | Estado |
+|------|--------|--------|
+| `develop` | `d6c930f` | ✅ Pusheado |
+| `main` | `d6c930f` | ✅ Pusheado + deploy en Vercel |
 
 ---
 
-## ⏳ PASOS MANUALES PENDIENTES
+## ⏳ PENDIENTE PARA MAÑANA
 
-### 🔴 PASO 1: Ejecutar Migration en Supabase (5 min)
-
-Ir a **Supabase Dashboard** → **SQL Editor** → pegar y ejecutar:
-```
-supabase/migrations/20260617001_create_tenant_stats_view.sql
-```
-
-Esto crea:
-- `tenant_appointment_stats` → vista con stats agregados
-- `get_daily_appointment_counts()` → RPC function para charts
-- `idx_appointments_tenant_date`, `idx_clients_tenant`, `idx_professionals_tenant` → índices
-
----
-
-### 🔴 PASO 2: Configurar Upstash Redis (5 min)
+### 🔴 PASO 1: Configurar Upstash Redis (5 min)
 
 1. Ir a https://upstash.com/ → crear cuenta
 2. Crear Database:
@@ -57,20 +50,23 @@ Esto crea:
 3. Copiar `UPSTASH_REDIS_REST_URL` y `UPSTASH_REDIS_REST_TOKEN`
 4. Ir a **Vercel Dashboard** → SchedAssist → Settings → Environment Variables
 5. Agregar ambas variables
-6. **Costo:** Free tier (10K req/día)
+6. Hacer redeploy
+7. **Costo:** Free tier (10K req/día)
+
+**Verificación:** Después de configurar, el rate limiting funcionará automáticamente. No requiere cambios en código.
 
 ---
 
-### 🔴 PASO 3: Configurar WhatsApp App Secret (3 min)
+## ⏸️ PENDIENTE PARA MÁS ADELANTE
+
+### 🟡 PASO 2: Configurar WhatsApp App Secret
 
 1. Ir a https://developers.facebook.com/apps/
 2. Seleccionar tu app de WhatsApp Business
 3. Settings → Basic → App Secret
 4. Copiar y agregar en Vercel como `WHATSAPP_APP_SECRET`
 
----
-
-### 🔴 PASO 4: Configurar Telegram Webhook (5 min)
+### 🟡 PASO 3: Configurar Telegram Webhook Secret
 
 1. En terminal: `openssl rand -hex 32` → copiar resultado
 2. Agregar en Vercel como `TELEGRAM_WEBHOOK_SECRET`
@@ -82,17 +78,17 @@ Esto crea:
 
 ---
 
-### 🟢 PASO 5: Verificar Resend (2 min)
+## 📊 Puntaje
 
-1. Ir a https://resend.com/domains
-2. Verificar que `schedassist.com` esté "Verified"
-3. Si no: seguir instrucciones de DNS
-4. Una vez verificado: actualizar `RESEND_FROM_EMAIL` en Vercel a `SchedAssist <no-reply@schedassist.com>`
+| Antes | Hoy | Con Upstash |
+|-------|-----|-------------|
+| 7.25/10 | 8.5/10 | 9/10 ✅ |
 
 ---
 
-## 📊 Puntaje
+## 📝 Notas
 
-| Antes | Ahora (código) | Con pasos manuales |
-|-------|----------------|-------------------|
-| 7.25/10 | 8/10 | 9/10 ✅ |
+- El código del hardening ya está en `main` y deployado en Vercel.
+- El email de verificación de registro ahora funciona correctamente.
+- El dashboard usa la vista SQL `tenant_appointment_stats` y la RPC `get_daily_appointment_counts`.
+- Mañana solo falta Upstash Redis para cerrar la Etapa 1 de seguridad.
