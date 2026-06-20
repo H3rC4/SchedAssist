@@ -1,7 +1,7 @@
 -- Migration: Create tenant_appointment_stats view for dashboard performance
 -- Replaces client-side aggregation of ALL appointments
 
-CREATE VIEW tenant_appointment_stats AS
+CREATE OR REPLACE VIEW tenant_appointment_stats AS
 SELECT 
   tenant_id,
   COUNT(*) as total,
