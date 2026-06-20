@@ -138,7 +138,7 @@ export async function registerAction(formData: FormData) {
 
     // ─── PHASE 7: SEND VERIFICATION EMAIL ──────────────────────────
     const verificationLink = `${process.env.NEXT_PUBLIC_APP_URL}api/auth/verify-email/${verificationToken}`;
-    
+
     const emailResult = await EmailService.sendVerificationEmail(
       email,
       clinicName,
@@ -146,13 +146,21 @@ export async function registerAction(formData: FormData) {
       { language, specialty: 'Medicina General' }
     );
 
+    // ─── ALL DONE ─────────────────────────────────────────────────
     if (!emailResult.success) {
       console.error('Failed to send verification email:', emailResult.error);
-      // Don't fail registration if email fails - user can request resend later
+      // Account was created successfully, but email failed.
+      // Return success with email error so UI can offer a resend action.
+      return {
+        success: true,
+        emailSent: false,
+        emailError: emailResult.error || 'Could not send verification email.',
+        email: email,
+        clinicName: clinicName
+      };
     }
 
-    // ─── ALL DONE ─────────────────────────────────────────────────
-    return { success: true };
+    return { success: true, emailSent: true, email: email, clinicName: clinicName };
 
   } catch (err: any) {
     console.error('Registration error:', err);

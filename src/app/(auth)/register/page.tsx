@@ -3,7 +3,8 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { registerAction } from './actions';
-import { ShieldCheck, ArrowLeft, Mail, Lock, Building, AlertCircle, Loader2, ChevronRight, Globe, Sparkles, CalendarCheck } from 'lucide-react';
+import { resendVerificationEmailAction } from './resend-action';
+import { ShieldCheck, ArrowLeft, Mail, Lock, Building, AlertCircle, Loader2, ChevronRight, Globe, Sparkles, CalendarCheck, RefreshCw, CheckCircle2 } from 'lucide-react';
 import { useLandingTranslation } from '@/components/LanguageContext';
 import { GoogleAuthButton } from '@/components/auth/GoogleAuthButton';
 import { MicrosoftAuthButton } from '@/components/auth/MicrosoftAuthButton';
@@ -16,6 +17,11 @@ export default function RegisterPage() {
   const [error, setError] = useState<string | null>(null);
   const [isSuccess, setIsSuccess] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [registeredEmail, setRegisteredEmail] = useState<string | null>(null);
+  const [registeredClinicName, setRegisteredClinicName] = useState<string | null>(null);
+  const [emailWarning, setEmailWarning] = useState<string | null>(null);
+  const [resendStatus, setResendStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [resendMessage, setResendMessage] = useState<string | null>(null);
 
   useEffect(() => {
     setMounted(true);
@@ -30,9 +36,16 @@ export default function RegisterPage() {
 
     try {
       const formData = new FormData(e.currentTarget);
+      const email = formData.get('email') as string;
+      const clinicName = formData.get('clinicName') as string;
       const result = await registerAction(formData);
 
       if (result?.success) {
+        setRegisteredEmail(email);
+        setRegisteredClinicName(clinicName);
+        if (result.emailSent === false) {
+          setEmailWarning(result.emailError || 'We could not send the verification email. You can resend it below.');
+        }
         setIsSuccess(true);
         setLoading(false);
       } else if (result?.error) {
@@ -46,13 +59,40 @@ export default function RegisterPage() {
     }
   }
 
+  const handleResend = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!registeredEmail) return;
+    setResendStatus('loading');
+    setResendMessage(null);
+
+    const formData = new FormData();
+    formData.set('email', registeredEmail);
+    if (registeredClinicName) formData.set('clinicName', registeredClinicName);
+    formData.set('language', language);
+
+    try {
+      const result = await resendVerificationEmailAction(formData);
+      if (result?.success) {
+        setResendStatus('success');
+        setResendMessage('Verification email sent. Please check your inbox.');
+        setEmailWarning(null);
+      } else if (result?.error) {
+        setResendStatus('error');
+        setResendMessage(result.error);
+      }
+    } catch (err) {
+      setResendStatus('error');
+      setResendMessage('Unexpected error. Please try again later.');
+    }
+  };
+
   if (isSuccess) {
     return (
       <div className="min-h-screen w-full flex items-center justify-center bg-white p-6 overflow-hidden relative">
         <motion.div 
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="max-w-xl w-full border border-primary/10 p-16 md:p-20 text-center relative"
+          className="max-w-xl w-full border border-primary/10 p-12 md:p-16 text-center relative"
         >
           <div className="h-24 w-24 bg-primary/[0.08] flex items-center justify-center mx-auto mb-10 border border-primary/20">
             <Mail className="h-10 w-10 text-primary animate-pulse" />
@@ -65,9 +105,68 @@ export default function RegisterPage() {
             Your clinical workspace has been initialized successfully. <br />
             Please authorize your session to continue.
           </p>
-          <Link href="/login" className="w-full inline-flex items-center justify-center gap-3 py-5 bg-primary text-white text-xs font-black uppercase tracking-[0.4em] hover:bg-primary-light hover:scale-[1.02] active:scale-95 transition-all shadow-xl shadow-primary/20">
-            Proceed to Secure Login <ChevronRight className="h-4 w-4" />
-          </Link>
+
+          {emailWarning && (
+            <motion.div 
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mb-6 p-5 bg-amber-50 border border-amber-200 flex items-start gap-4 text-left"
+            >
+              <AlertCircle className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
+              <div>
+                <p className="text-sm font-bold text-amber-800 tracking-tight">
+                  Verification email could not be sent
+                </p>
+                <p className="text-xs text-amber-700 mt-1">{emailWarning}</p>
+              </div>
+            </motion.div>
+          )}
+
+          {resendMessage && (
+            <motion.div 
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className={`mb-6 p-5 flex items-start gap-4 text-left ${
+                resendStatus === 'success' 
+                  ? 'bg-emerald-50 border border-emerald-200' 
+                  : 'bg-red-50 border border-red-200'
+              }`}
+            >
+              {resendStatus === 'success' ? (
+                <CheckCircle2 className="h-5 w-5 text-emerald-600 shrink-0 mt-0.5" />
+              ) : (
+                <AlertCircle className="h-5 w-5 text-red-600 shrink-0 mt-0.5" />
+              )}
+              <p className={`text-sm font-bold tracking-tight ${
+                resendStatus === 'success' ? 'text-emerald-800' : 'text-red-800'
+              }`}>
+                {resendMessage}
+              </p>
+            </motion.div>
+          )}
+
+          <div className="space-y-4">
+            <Link href="/login" className="w-full inline-flex items-center justify-center gap-3 py-5 bg-primary text-white text-xs font-black uppercase tracking-[0.4em] hover:bg-primary-light hover:scale-[1.02] active:scale-95 transition-all shadow-xl shadow-primary/20">
+              Proceed to Secure Login <ChevronRight className="h-4 w-4" />
+            </Link>
+
+            {(emailWarning || resendStatus !== 'idle') && (
+              <form onSubmit={handleResend}>
+                <button
+                  type="submit"
+                  disabled={resendStatus === 'loading'}
+                  className="w-full inline-flex items-center justify-center gap-3 py-4 border border-primary/20 text-primary text-xs font-black uppercase tracking-[0.4em] hover:bg-primary/[0.03] hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {resendStatus === 'loading' ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <RefreshCw className="h-4 w-4" />
+                  )}
+                  Resend Verification Email
+                </button>
+              </form>
+            )}
+          </div>
         </motion.div>
       </div>
     );
