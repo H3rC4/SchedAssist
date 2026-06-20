@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server';
 import { verifyTenantAccess } from '@/lib/auth-utils';
 import { normalizePhone, inferCountryCode } from '@/lib/phone-utils';
 import { checkPlanLimit } from '@/lib/plan-limits';
+import { createClientSchema } from '@/validation/schemas';
 
 export async function PATCH(req: NextRequest) {
   try {
@@ -63,14 +64,18 @@ export async function PATCH(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
+    const body = await req.json();
+    const parsed = createClientSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: 'Validation failed', details: parsed.error.flatten() },
+        { status: 400 }
+      );
+    }
     const {
       tenant_id, first_name, last_name, phone, email, notes, allergies,
       address, dni, birth_date, gender, occupation
-    } = await req.json();
-
-    if (!tenant_id || !first_name || !last_name || !phone) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
-    }
+    } = body;
 
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()

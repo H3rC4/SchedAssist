@@ -8,8 +8,9 @@ import { checkPlanLimit } from '@/lib/plan-limits'
 import { format, parseISO } from 'date-fns'
 import { fromZonedTime } from 'date-fns-tz'
 import { translations, dateLocales } from '@/lib/i18n'
+import { updateAppointmentNotesSchema } from '@/validation/schemas'
 
-// GET: Fetch appointments for a specific date & tenant (Keep direct for listing)
+// GET: Fetch appointments with pagination, filtering by date range
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
   const date = searchParams.get('date')
@@ -17,23 +18,38 @@ export async function GET(req: NextRequest) {
   const clientId = searchParams.get('client_id')
   const locationId = searchParams.get('location_id')
   const upcoming = searchParams.get('upcoming') === 'true'
+  const from = searchParams.get('from')
+  const to = searchParams.get('to')
+  const limit = Math.min(parseInt(searchParams.get('limit') || '50'), 200)
+  const offset = parseInt(searchParams.get('offset') || '0')
   const supabase = createClient()
 
   if (!tenantId) return NextResponse.json({ error: 'tenant_id required' }, { status: 400 })
 
   const { data: { user } } = await supabase.auth.getUser();
+
+  // Enforce tenant access for all authenticated reads
+  const access = await verifyTenantAccess(supabase, user, tenantId);
+  if (!access.authorized) {
+    return NextResponse.json({ error: access.error }, { status: access.status });
+  }
+
   let callerProfId = null;
   let isProfessional = false;
 
-  if (user) {
-    const { data: tuData } = await supabase.from('tenant_users').select('role').eq('user_id', user.id).single();
-    if (tuData?.role === 'professional') {
-      isProfessional = true;
-      const { data: profData } = await supabase.from('professionals').select('id').eq('user_id', user.id).single();
-      if (profData) callerProfId = profData.id;
-    }
+  if (access.role === 'professional') {
+    isProfessional = true;
+    const { data: profData } = await supabase.from('professionals').select('id').eq('user_id', user!.id).single();
+    if (profData) callerProfId = profData.id;
   }
 
+  // Primero obtener el total (sin paginación)
+  let countQuery = supabase
+    .from('appointments')
+    .select('*', { count: 'exact', head: true })
+    .eq('tenant_id', tenantId)
+
+  // Query con datos
   let query = supabase
     .from('appointments')
     .select(`*, clients(id, first_name, last_name, phone), services(name), professionals(id, full_name)`)
@@ -43,14 +59,17 @@ export async function GET(req: NextRequest) {
 
   if (isProfessional && callerProfId) {
     query = query.eq('professional_id', callerProfId);
+    countQuery = countQuery.eq('professional_id', callerProfId);
   }
 
   if (clientId) {
     query = query.eq('client_id', clientId);
+    countQuery = countQuery.eq('client_id', clientId);
   }
 
   if (locationId) {
     query = query.eq('location_id', locationId);
+    countQuery = countQuery.eq('location_id', locationId);
   }
 
   if (date) {
@@ -62,15 +81,32 @@ export async function GET(req: NextRequest) {
     query = query
       .gte('start_at', startUtc.toISOString())
       .lte('start_at', endUtc.toISOString())
+    countQuery = countQuery
+      .gte('start_at', startUtc.toISOString())
+      .lte('start_at', endUtc.toISOString())
+  }
+
+  if (from) {
+    query = query.gte('start_at', from)
+    countQuery = countQuery.gte('start_at', from)
+  }
+
+  if (to) {
+    query = query.lte('start_at', to)
+    countQuery = countQuery.lte('start_at', to)
   }
 
   if (upcoming) {
     query = query.gte('start_at', new Date().toISOString());
+    countQuery = countQuery.gte('start_at', new Date().toISOString());
   }
 
-  const { data, error } = await query
+  const [{ count: total }, { data, error }] = await Promise.all([
+    countQuery,
+    query.range(offset, offset + limit - 1)
+  ])
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-  return NextResponse.json(data)
+  return NextResponse.json({ data, total: total || 0, page: Math.floor(offset / limit) + 1, limit })
 }
 
 // POST: Create a new appointment manually (Refactored to use Service)
@@ -232,11 +268,15 @@ export async function DELETE(req: NextRequest) {
 // PATCH: Update appointment notes (Medical Record Observations)
 export async function PATCH(req: NextRequest) {
   try {
-    const { id, tenant_id, notes } = await req.json();
-
-    if (!id || !tenant_id) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+    const body = await req.json();
+    const parsed = updateAppointmentNotesSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: 'Validation failed', details: parsed.error.flatten() },
+        { status: 400 }
+      );
     }
+    const { id, tenant_id, notes } = parsed.data;
 
     const supabase = createClient();
     

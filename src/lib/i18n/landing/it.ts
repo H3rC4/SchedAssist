@@ -39,6 +39,16 @@ export const it_features_section = {
   feature_5_desc: 'Piattaforma multi-tenant progettata per cliniche e professionisti indipendenti con totale privacy.',
   feature_6_title: 'Automazione',
   feature_6_desc: 'Promemoria, conferme e riprogrammazioni senza intervento umano, 24/7.',
+  grid_1_title: 'Calendario Intelligente',
+  grid_1_desc: 'Vista settimanale con tutti gli appuntamenti organizzati per professionista. Colori per stato e trascina per riprogrammare.',
+  grid_2_title: 'WhatsApp AI',
+  grid_2_desc: 'Conferme automatiche, promemoria e cancellazioni via WhatsApp senza intervento umano.',
+  grid_3_title: 'Dashboard Analytics',
+  grid_3_desc: 'Metriche in tempo reale: appuntamenti, pazienti, entrate e tassi di conformità.',
+  grid_4_title: 'Pagamenti Integrati',
+  grid_4_desc: 'Fatturazione automatica tramite Stripe. Carte di credito, debito e bonifici.',
+  grid_5_title: 'Cartelle Cliniche',
+  grid_5_desc: 'Registrazione completa di ogni paziente con diagnosi, prescrizioni e note mediche.',
 };
 
 export const it_whatsapp_chat_preview = {

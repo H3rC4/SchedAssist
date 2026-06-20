@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server';
 import { verifyTenantAccess } from '@/lib/auth-utils';
 import { checkPlanLimit } from '@/lib/plan-limits';
+import { createLocationSchema } from '@/validation/schemas';
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
@@ -29,10 +30,17 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   const body = await req.json()
+  const parsed = createLocationSchema.safeParse(body);
+  if (!parsed.success) {
+    return NextResponse.json(
+      { error: 'Validation failed', details: parsed.error.flatten() },
+      { status: 400 }
+    );
+  }
   const { tenant_id, name, address, city, active } = body
 
-  if (!tenant_id || !name) {
-    return NextResponse.json({ error: 'tenant_id and name required' }, { status: 400 })
+  if (!tenant_id) {
+    return NextResponse.json({ error: 'tenant_id required' }, { status: 400 })
   }
 
   const supabase = createClient()

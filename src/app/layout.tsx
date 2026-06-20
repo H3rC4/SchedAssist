@@ -22,6 +22,14 @@ export const metadata: Metadata = {
     title: 'SchedAssist - Appointment Automation',
     description: 'Automatiza tus citas con IA y WhatsApp.',
     siteName: 'SchedAssist',
+    images: [
+      {
+        url: '/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'SchedAssist - Medical Appointment SaaS',
+      },
+    ],
   },
   twitter: {
     card: 'summary_large_image',
@@ -30,6 +38,11 @@ export const metadata: Metadata = {
   },
   alternates: {
     canonical: '/',
+    languages: {
+      'es': '/es',
+      'en': '/en',
+      'it': '/it',
+    },
   },
 };
 

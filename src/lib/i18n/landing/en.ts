@@ -39,6 +39,16 @@ export const en_features_section = {
   feature_5_desc: 'Multi-tenant platform designed for clinics and independent professionals with total privacy.',
   feature_6_title: 'Automation',
   feature_6_desc: 'Reminders, confirmations, and rescheduling without human intervention, 24/7.',
+  grid_1_title: 'Smart Calendar',
+  grid_1_desc: 'Weekly view with all appointments organized by professional. Color-coded statuses and drag-to-reschedule.',
+  grid_2_title: 'WhatsApp AI',
+  grid_2_desc: 'Automatic confirmations, reminders, and cancellations via WhatsApp with no human intervention.',
+  grid_3_title: 'Dashboard Analytics',
+  grid_3_desc: 'Real-time metrics: appointments, patients, revenue, and compliance rates.',
+  grid_4_title: 'Integrated Payments',
+  grid_4_desc: 'Automatic billing via Stripe. Credit cards, debits, and transfers.',
+  grid_5_title: 'Medical Records',
+  grid_5_desc: 'Complete patient records with diagnoses, prescriptions, and medical notes.',
 };
 
 export const en_whatsapp_chat_preview = {

@@ -158,8 +158,6 @@ export default function PatientProfilePage() {
   const [slotLoading, setSlotLoading] = useState(false)
 
   // ── TIMELINE LOGIC ──────────────────────────────────────────────
-  const timelineItems = useEffect(() => {}, []) // Cleaning up previous mistake if any
-
   const combinedTimeline = (history: MedicalEntry[], appointments: any[]) => {
     const records = history.map(h => ({
       id: h.id,
@@ -174,7 +172,7 @@ export default function PatientProfilePage() {
     const apps = appointments.map(a => ({
       id: a.id,
       type: 'appointment' as const,
-      date: new Date(`${a.date}T${a.time || '00:00'}`),
+      date: new Date(a.start_at),
       title: 'Turno Programado',
       description: `${a.services?.name || 'Servicio'} con ${a.professionals?.full_name || 'Profesional'}`,
       status: a.status,
@@ -226,7 +224,8 @@ export default function PatientProfilePage() {
       if (patientData.error) throw new Error(patientData.error)
       setPatient(patientData.client)
       setHistory(await historyRes.json())
-      setAppointments(await appointmentsRes.json())
+      const appointmentsData = await appointmentsRes.json()
+      setAppointments(appointmentsData.data || appointmentsData)
       
       // Also fetch metadata for the appointment drawer
       const [srvRes, profRes] = await Promise.all([

@@ -4,6 +4,7 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import { verifyTenantAccess } from '@/lib/auth-utils';
 import { checkPlanLimit } from '@/lib/plan-limits';
 import crypto from 'crypto';
+import { createProfessionalSchema } from '@/validation/schemas';
 
 // Note: For POST/DELETE where auth admin access is needed, 
 // the admin client will be created inside the method after verification.
@@ -45,11 +46,14 @@ export async function GET(req: NextRequest) {
 // POST: Add a new professional
 export async function POST(req: NextRequest) {
   const body = await req.json()
-  const { tenant_id, full_name, specialty, email, phone, active, location_id } = body
-
-  if (!tenant_id || !full_name || !email) {
-    return NextResponse.json({ error: 'tenant_id, full_name and email required' }, { status: 400 })
+  const parsed = createProfessionalSchema.safeParse(body);
+  if (!parsed.success) {
+    return NextResponse.json(
+      { error: 'Validation failed', details: parsed.error.flatten() },
+      { status: 400 }
+    );
   }
+  const { tenant_id, full_name, specialty, email, phone, active, location_id } = body
 
   const supabase = createClient();
   const { data: { user: currentUser } } = await supabase.auth.getUser();

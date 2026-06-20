@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server';
 import { verifyTenantAccess } from '@/lib/auth-utils';
 import { checkPlanLimit } from '@/lib/plan-limits';
+import { createServiceSchema, updateServiceSchema } from '@/validation/schemas';
 
 // Removed global admin client for security. Clients are created per request.
 
@@ -33,10 +34,17 @@ export async function GET(req: NextRequest) {
 // POST: Add a new service
 export async function POST(req: NextRequest) {
   const body = await req.json()
+  const parsed = createServiceSchema.safeParse(body);
+  if (!parsed.success) {
+    return NextResponse.json(
+      { error: 'Validation failed', details: parsed.error.flatten() },
+      { status: 400 }
+    );
+  }
   const { tenant_id, name, duration_minutes, price, active } = body
 
-  if (!tenant_id || !name || !duration_minutes) {
-    return NextResponse.json({ error: 'tenant_id, name and duration_minutes required' }, { status: 400 })
+  if (!tenant_id) {
+    return NextResponse.json({ error: 'tenant_id required' }, { status: 400 })
   }
 
   const supabase = createClient()
@@ -75,7 +83,14 @@ export async function POST(req: NextRequest) {
 // PATCH: Update an existing service
 export async function PATCH(req: NextRequest) {
   const body = await req.json()
-  const { id, tenant_id, name, duration_minutes, price } = body
+  const parsed = updateServiceSchema.safeParse(body);
+  if (!parsed.success) {
+    return NextResponse.json(
+      { error: 'Validation failed', details: parsed.error.flatten() },
+      { status: 400 }
+    );
+  }
+  const { id, tenant_id, name, duration_minutes, price, active } = body
 
   if (!id || !tenant_id) {
     return NextResponse.json({ error: 'id and tenant_id required' }, { status: 400 })

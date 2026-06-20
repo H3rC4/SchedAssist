@@ -51,3 +51,26 @@ export const createClientSchema = z.object({
   notes: z.string().optional(),
   whatsapp_opt_in: z.boolean().default(true),
 });
+
+// Actualización de notas de cita
+export const updateAppointmentNotesSchema = z.object({
+  id: z.string().uuid(),
+  tenant_id: z.string().uuid(),
+  notes: z.string().nullable().optional(),
+});
+
+// Creación de Ubicación
+export const createLocationSchema = z.object({
+  name: z.string().min(1, "El nombre es obligatorio"),
+  address: z.string().optional(),
+  active: z.boolean().default(true),
+});
+
+// Actualización de Servicio
+export const updateServiceSchema = z.object({
+  id: z.string().uuid(),
+  name: z.string().min(2).optional(),
+  duration_minutes: z.number().min(5).optional(),
+  price: z.number().optional(),
+  active: z.boolean().optional(),
+});

@@ -39,6 +39,16 @@ export const es_features_section = {
   feature_5_desc: 'Plataforma multi-usuario diseñada para clínicas y profesionales independientes con total privacidad.',
   feature_6_title: 'Automatización',
   feature_6_desc: 'Recordatorios, confirmaciones y reprogramaciones sin intervención humana, 24/7.',
+  grid_1_title: 'Agenda Inteligente',
+  grid_1_desc: 'Vista semanal con todos los turnos organizados por profesional. Colores por estado y arrastre para reprogramar.',
+  grid_2_title: 'WhatsApp AI',
+  grid_2_desc: 'Confirmaciones automáticas, recordatorios y cancelaciones vía WhatsApp sin intervención humana.',
+  grid_3_title: 'Dashboard Analytics',
+  grid_3_desc: 'Métricas en tiempo real: turnos, pacientes, ingresos y tasas de cumplimiento.',
+  grid_4_title: 'Pagos Integrados',
+  grid_4_desc: 'Cobros automáticos vía Stripe. Tarjetas de crédito, débito y transferencias.',
+  grid_5_title: 'Historias Clínicas',
+  grid_5_desc: 'Registro completo de cada paciente con diagnósticos, prescripciones y notas médicas.',
 };
 
 export const es_whatsapp_chat_preview = {

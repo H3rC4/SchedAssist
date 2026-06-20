@@ -26,7 +26,6 @@ type DateRange = 'today' | '7days' | '30days' | 'custom'
 export default function DashboardPage() {
   const { language: lang, fullT: t } = useLandingTranslation()
   const [appointments, setAppointments] = useState<any[]>([])
-  const [allAppointments, setAllAppointments] = useState<any[]>([])
   const [pendingCalls, setPendingCalls] = useState<any[]>([])
   const [stats, setStats] = useState<any>({ total: 0, pending: 0, completed: 0, clients: 0, chartData: [], statusData: [], revenue: 0 })
   const [loading, setLoading] = useState(true)
@@ -63,46 +62,63 @@ export default function DashboardPage() {
     setTenantName(tenant.name)
     setTenantSlug(tenant.slug)
 
-    const { data: apps } = await supabase.from('appointments').select(`
+    // Parallel queries en vez de un solo fetch masivo
+    const [
+      statsResult,
+      upcomingResult,
+      chartResult,
+      pendingResult,
+      { count: totalClients }
+    ] = await Promise.all([
+      // 1. Stats desde la vista (server-side aggregation)
+      supabase.from('tenant_appointment_stats').select('*').eq('tenant_id', tId).maybeSingle(),
+      
+      // 2. Solo próximos 5 turnos (no todos)
+      supabase.from('appointments').select(`
         id, status, start_at, cancellation_notified,
         clients(id, first_name, last_name, phone),
         services(name, price),
         professionals(full_name)
-      `).eq('tenant_id', tId).order('start_at', { ascending: false })
+      `).eq('tenant_id', tId).gte('start_at', new Date().toISOString()).order('start_at', { ascending: true }).limit(5),
+      
+      // 3. Chart data via RPC (últimos 7 días)
+      supabase.rpc('get_daily_appointment_counts', { tenant_id_param: tId, days_back: 7 }),
+      
+      // 4. Cancelaciones sin notificar
+      supabase.from('appointments').select('id, status, start_at, cancellation_notified, clients(first_name, last_name, phone)')
+        .eq('tenant_id', tId).eq('status', 'cancelled').is('cancellation_notified', false),
+      
+      // 5. Total clientes
+      supabase.from('clients').select('*', { count: 'exact', head: true }).eq('tenant_id', tId),
+    ])
 
-    if (apps) {
-      setAllAppointments(apps)
-      const upcoming = apps
-        .filter(a => new Date(a.start_at) >= new Date())
-        .sort((a, b) => new Date(a.start_at).getTime() - new Date(b.start_at).getTime())
-        .slice(0, 5)
-      setAppointments(upcoming)
+    const stats = statsResult.data
+    const upcoming = upcomingResult.data || []
+    const chartRows = chartResult.data || []
+    const pendingCallList = pendingResult.data || []
 
-      const last7Days = Array.from({ length: 7 }, (_, i) => {
-        const d = new Date(); d.setDate(d.getDate() - (6 - i))
-        return format(d, 'yyyy-MM-dd')
-      })
-      const chartData = last7Days.map(date => ({
-        date,
-        count: apps.filter(a => format(parseISO(a.start_at), 'yyyy-MM-dd') === date).length
-      }))
+    setAppointments(upcoming)
 
-      const statusData = [
-        { name: 'completed', value: apps.filter(a => a.status === 'completed').length },
-        { name: 'pending',   value: apps.filter(a => a.status === 'pending' || a.status === 'awaiting_confirmation').length },
-        { name: 'cancelled', value: apps.filter(a => a.status === 'cancelled').length },
-      ]
+    const chartData = chartRows.map((r: any) => ({ date: r.date, count: r.count }))
+    const statusData = [
+      { name: 'completed', value: stats?.completed || 0 },
+      { name: 'pending',   value: stats?.pending || 0 },
+      { name: 'cancelled', value: stats?.cancelled || 0 },
+    ]
+    // Revenue aproximado desde la vista no está disponible, mantenemos 0
+    // (se puede agregar a la view en el futuro si es necesario)
 
-      const totalRevenue = apps
-        .filter(a => a.status === 'completed')
-        .reduce((sum, a) => sum + ((a.services as any)?.price || 0), 0)
+    setStats({
+      total: stats?.total || 0,
+      pending: stats?.pending || 0,
+      completed: stats?.completed || 0,
+      clients: totalClients || 0,
+      chartData,
+      statusData,
+      revenue: 0,
+    })
+    setPendingCalls(pendingCallList)
 
-      const { count: totalClients } = await supabase
-        .from('clients').select('*', { count: 'exact', head: true }).eq('tenant_id', tId)
-
-      setStats({ total: apps.length, pending: statusData[1].value, completed: statusData[0].value, clients: totalClients || 0, chartData, statusData, revenue: totalRevenue })
-      setPendingCalls(apps.filter(a => a.status === 'cancelled' && !a.cancellation_notified))
-    }
     setLoading(false)
   }, [supabase])
 
@@ -120,34 +136,41 @@ export default function DashboardPage() {
     setCopied(true); setTimeout(() => setCopied(false), 2000)
   }
 
-  const getFilteredAppointments = () => {
+  const getExportParams = () => {
     const now = new Date()
-    let startDate: Date
-    let endDate = now
+    let from: Date
+    let to: Date = now
 
     if (selectedRange === 'today') {
-      startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+      from = new Date(now.getFullYear(), now.getMonth(), now.getDate())
     } else if (selectedRange === '7days') {
-      startDate = subDays(now, 7)
+      from = subDays(now, 7)
     } else if (selectedRange === '30days') {
-      startDate = subDays(now, 30)
+      from = subDays(now, 30)
     } else {
-      startDate = customFrom ? new Date(customFrom) : subDays(now, 7)
-      endDate = customTo ? new Date(customTo) : now
+      from = customFrom ? new Date(customFrom) : subDays(now, 7)
+      to = customTo ? new Date(customTo) : now
     }
-
-    return allAppointments.filter(a => {
-      const d = new Date(a.start_at)
-      return d >= startDate && d <= endDate
-    })
+    return { from: from.toISOString(), to: to.toISOString() }
   }
 
   const handleExportCSV = async () => {
     setExporting(true)
-    const filtered = getFilteredAppointments()
+    const { from, to } = getExportParams()
+    
+    // Fetch on-demand solo para exportación
+    const { data: filtered } = await supabase
+      .from('appointments')
+      .select(`id, status, start_at, clients(first_name, last_name, phone), services(name, price), professionals(full_name)`)
+      .eq('tenant_id', tenantId)
+      .gte('start_at', from)
+      .lte('start_at', to)
+      .order('start_at', { ascending: false })
+
+    if (!filtered) { setExporting(false); return }
 
     const headers = ['ID', 'Paciente', 'Servicio', 'Profesional', 'Fecha', 'Hora', 'Estado', 'Precio']
-    const rows = filtered.map(a => [
+    const rows = filtered.map((a: any) => [
       a.id,
       `${a.clients?.first_name || ''} ${a.clients?.last_name || ''}`,
       a.services?.name || '',
